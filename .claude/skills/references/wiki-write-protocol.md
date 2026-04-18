@@ -1,0 +1,172 @@
+# Wiki Write Protocol
+
+Shared protocol for all skills that write to the developer wiki. Include this reference in any skill that offers "write wiki".
+
+## Prerequisites
+
+- Wiki directory: `wiki/` (Obsidian vault root)
+- Index file: `wiki/.wiki-index.json`
+- Scripts: `scripts/wiki-write`, `scripts/lint`, `scripts/wiki-search`
+- TreeSearch: `treesearch` CLI (pytreesearch)
+- Ollama: running locally with `nomic-embed-text` model
+
+## "Write Wiki" Flow
+
+When the developer says "write wiki" (or "save to wiki", "add to wiki"):
+
+### Step 1: Read Index
+
+Read `wiki/.wiki-index.json`. This gives you all existing pages with titles, aliases, sections, tags, and flashcard_ids.
+
+### Step 2: Check for Existing Page (Extend/Split)
+
+Search the index for title/alias overlap with the current topic:
+
+1. Check index entries for title or alias matches
+2. Run `treesearch search --query "<topic>" --index_dir wiki/indexes` for keyword matches
+3. If Ollama is running, run `scripts/wiki-search "<topic>"` for semantic matches
+
+If a match is found, show the developer:
+> `architecture/event-sourcing` already exists with sections: Core Concepts, Projections, Related Concepts.
+>
+> Your walkthrough covered: event versioning, upcasting, schema evolution.
+>
+> **Extend** the existing page with new sections, or **split** into a new page?
+
+Developer decides. If extending, read the existing file and add new H2 sections.
+
+### Step 3: Draft Page Content
+
+Draft the wiki page from the walkthrough content. Use this format:
+
+```markdown
+---
+title: "Page Title"
+aliases: [alias one, alias two]
+tags: [topic-area, sub-topic]
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+source_skill: study-flashcard|study|study-walkthrough
+flashcard_ids: [cuid1abc, cuid2def]
+next_review: YYYY-MM-DD
+review_interval: 3
+---
+
+# Page Title
+
+Opening paragraph explaining the concept.
+
+## Section One
+
+Content...
+
+## Section Two
+
+Content...
+
+## Related Concepts
+
+- [[folder/page-name]] — brief explanation of relationship
+```
+
+### Step 4: Generate Aliases
+
+Generate 2-5 aliases for the page — common alternative names, abbreviations, alternate phrasings. Check each alias against the index to avoid collisions. Do not use single-letter abbreviations.
+
+### Step 5: Resolve Links
+
+Three sources of links, in order:
+
+1. **Exact match**: Scan the draft content for any existing page title or alias from the index. Wrap matches in `[[absolute/path]]` format. Always use absolute paths from wiki root.
+2. **TreeSearch**: Run `treesearch search --query "<key concepts>"` to find related pages. Present top hits to the developer: "These pages seem related — want to link any?"
+3. **Walkthrough links**: Concepts discussed during the interactive session that the developer already confirmed as related — include these as links.
+
+All wikilinks MUST use absolute paths: `[[architecture/cqrs]]` not `[[cqrs]]`.
+
+### Step 6: Propose Folder
+
+Infer the folder from tags and existing wiki structure:
+- Check existing top-level folders in `wiki/`
+- Propose: "I'd put this in `wiki/architecture/`. OK?"
+- Developer confirms or overrides
+- Create the folder if it doesn't exist: `mkdir -p wiki/<folder>/`
+
+### Step 7: Write File
+
+Write to `wiki/<folder>/<slug>.md` where slug is the slugified title (lowercase, hyphens, no special chars).
+
+### Step 8: Run Write Script
+
+```bash
+scripts/wiki-write wiki/<folder>/<slug>.md
+```
+
+This updates the index, reindexes TreeSearch, embeds via Ollama, and runs lint.
+
+Parse the JSON output:
+- `{"status":"ok","lint":"clean"}` → report success
+- `{"status":"ok","lint":"errors","details":"..."}` → show lint errors to developer
+
+### Step 8b: Update Depth Metadata (when extending)
+
+If the page was extended by `/study-walkthrough`, increment the `depth` frontmatter field and set `last_deepened` to today's date. If the field doesn't exist, add `depth: 2` (the initial write was depth 1).
+
+### Step 9: Append Session Log
+
+Append to `logs/YYYY-MM-DD.md` (create if doesn't exist):
+
+```markdown
+## Session N — <Skill Name> (HH:MM)
+- **Topic:** <topic>
+- **Wiki updates:** [[folder/page-name]] created|extended (depth: 3)
+- **Links added:** [[folder/other-page]], [[folder/another]]
+- **Flashcard IDs:** 123, 456 (if applicable)
+```
+
+### Step 10: Report Result
+
+Tell the developer:
+> Written `[[architecture/event-sourcing]]` with 3 links. Lint: clean.
+> Session logged to `logs/2026-04-09.md`.
+
+## "Show in Obsidian" Flow
+
+At any point during any skill, the developer can say "show in Obsidian", "open in Obsidian", or "present in Obsidian". The skill should:
+
+1. **Launch Obsidian** (only if not already running):
+   ```bash
+   pgrep -f "obsidian" >/dev/null 2>&1 || (snap run obsidian &>/dev/null & disown && sleep 3)
+   ```
+
+2. **Open the relevant page by slug:**
+   ```bash
+   obsidian open vault="study" file="<slug>"
+   ```
+   Use the bare slug (e.g. `git-restore`, `hsts`) — `file=` resolves by name like wikilinks. Do NOT use `path=` (returns "File not found"). The vault name is `study`.
+
+4. **Resume the skill session** — this is a non-blocking side action, not a skill interruption.
+
+## Linking Rules Summary
+
+- All wikilinks use absolute paths from wiki root: `[[architecture/cqrs]]`
+- Page filename = slugified title: lowercase, hyphens, no special chars
+- Aliases declared in frontmatter, checked against index for uniqueness
+- Obsidian resolves aliases automatically via frontmatter
+- When extending a page, preserve existing links and add new ones
+- Never create orphan links intentionally — if a target doesn't exist, either create a stub or don't link
+
+## Frontmatter Required Fields
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `title` | string | Yes | Human-readable title |
+| `aliases` | array | Yes | Alternative names for this concept |
+| `tags` | array | Yes | Topic tags for organization |
+| `created` | date | Yes | ISO date of creation |
+| `updated` | date | Yes | ISO date of last update |
+| `source_skill` | string | Yes | Which skill created this page |
+| `flashcard_ids` | array | No | Associated SRS flashcard IDs |
+| `depth` | number | No | How many times this page has been deepened (starts at 1, incremented by `/study-walkthrough`) |
+| `last_deepened` | date | No | ISO date of last deepening session |
+| `next_review` | date | No | ISO date of next scheduled review. Set to `created + 3 days` on page creation. Updated after each review by `/study`. |
+| `review_interval` | number | No | Current review interval in days. Starts at 3. Updated after each review using spaced repetition scheduling. |

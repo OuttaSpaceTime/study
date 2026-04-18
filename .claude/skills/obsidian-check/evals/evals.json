@@ -1,0 +1,37 @@
+{
+  "skill_name": "obsidian-check",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/obsidian-check (Obsidian not running, wiki has 3 pages with 1 broken link)",
+      "expected_output": "Skill should: (1) detect Obsidian not running, (2) launch with snap run obsidian, (3) wait and verify, (4) run standalone lint, (5) run CLI checks, (6) report combined results showing the broken link",
+      "assertions": [
+        {"text": "Launches Obsidian with snap run obsidian", "type": "behavior"},
+        {"text": "Runs scripts/lint as standalone fallback", "type": "behavior"},
+        {"text": "Runs obsidian unresolved, orphans, deadends CLI checks", "type": "behavior"},
+        {"text": "Reports broken link in combined summary", "type": "output"},
+        {"text": "Presents clean summary with page count, tag count, link count", "type": "format"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/obsidian-check --lint-only",
+      "expected_output": "Skill should skip Obsidian entirely and only run scripts/lint",
+      "assertions": [
+        {"text": "Does NOT attempt to launch Obsidian", "type": "behavior"},
+        {"text": "Runs scripts/lint wiki", "type": "behavior"},
+        {"text": "Reports lint results only", "type": "output"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "/obsidian-check architecture/event-sourcing",
+      "expected_output": "Skill should run health check AND open the specific page in Obsidian GUI",
+      "assertions": [
+        {"text": "Runs full health check before opening page", "type": "behavior"},
+        {"text": "Opens page with obsidian open path='architecture/event-sourcing.md' vault=<vault-name>", "type": "behavior"},
+        {"text": "Confirms page was opened to developer", "type": "format"}
+      ]
+    }
+  ]
+}

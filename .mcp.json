@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "master-dev-srs": {
+      "command": "npx",
+      "args": ["tsx", "/home/felix/Code/Misc/master-dev/src/mcp/server.ts"],
+      "env": {
+        "DATABASE_URL": "file:/home/felix/Code/Misc/master-dev/prisma/master.db"
+      }
+    }
+  }
+}

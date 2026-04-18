@@ -1,0 +1,12 @@
+# Python bytecode
+__pycache__/
+
+# Obsidian workspace (user-specific, changes constantly)
+wiki/.obsidian/workspace.json
+wiki/.obsidian/workspace-mobile.json
+
+# TreeSearch index (rebuilt from wiki content)
+wiki/indexes/
+
+# Ollama embeddings cache (rebuilt from wiki content)
+wiki/.embeddings.json

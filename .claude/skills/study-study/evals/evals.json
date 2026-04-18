@@ -1,0 +1,40 @@
+{
+  "skill_name": "study-study",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/study",
+      "expected_output": "Skill should: (1) call get_stats + get_due_cards + list_decks, (2) read recent session logs for macro analytics, (3) check wiki index for stale pages, (4) present status with weekly trend, (5) wait for confirmation before starting",
+      "assertions": [
+        {"text": "Calls get_stats, get_due_cards, and list_decks MCP tools", "type": "behavior"},
+        {"text": "Reads recent logs for weekly accuracy trend", "type": "behavior"},
+        {"text": "Checks wiki index for stale pages (>30 days, depth 1)", "type": "behavior"},
+        {"text": "Presents card count, streak, and weekly trend", "type": "format"},
+        {"text": "Waits for developer confirmation before starting study loop", "type": "behavior"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "(During study session, developer gets a card wrong about event sourcing, which has lapsed 3 times this week and has no wiki page)",
+      "expected_output": "Skill should rate Again, show feedback with generation prompt, and at session end proactively recommend /study-walkthrough for the repeated lapse topic",
+      "assertions": [
+        {"text": "Rates the card as Again (1)", "type": "behavior"},
+        {"text": "Shows constructive feedback revealing the card back", "type": "format"},
+        {"text": "At session end, detects repeated lapse pattern (3+ times)", "type": "behavior"},
+        {"text": "Proactively recommends /study-walkthrough for the topic with no wiki page", "type": "behavior"},
+        {"text": "Writes session log with lapses linked to wiki pages where they exist", "type": "behavior"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "(Developer says 'show in Obsidian' during study session)",
+      "expected_output": "Skill should check if Obsidian is running, launch if needed with snap run obsidian, open the relevant wiki page, and resume the study session",
+      "assertions": [
+        {"text": "Checks obsidian version to see if running", "type": "behavior"},
+        {"text": "Launches with snap run obsidian if not running", "type": "behavior"},
+        {"text": "Opens relevant page with obsidian open path=", "type": "behavior"},
+        {"text": "Resumes study session after opening", "type": "behavior"}
+      ]
+    }
+  ]
+}

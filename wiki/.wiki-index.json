@@ -1,0 +1,422 @@
+{
+  "git/git-restore": {
+    "file": "git/git-restore.md",
+    "title": "git restore",
+    "aliases": [
+      "git restore command",
+      "restore files git"
+    ],
+    "tags": [
+      "git",
+      "version-control"
+    ],
+    "sections": [
+      "Targets: --worktree and --staged",
+      "--source: Restoring from Any Commit",
+      "--ours and --theirs During Merge Conflicts",
+      "--merge: Recreate Conflict State",
+      "--ignore-unmerged",
+      "Interactive: -p",
+      "Common Patterns"
+    ],
+    "flashcard_ids": [
+      "cmne7xz9202lx0msonsbfhp3j",
+      "cmne7xz1y02k30msouw64srcz",
+      "cmne7xyv602if0msoa0ryw0o7",
+      "cmne7xyw902in0msoac5c4qm5",
+      "cmne7xyox02gx0msovt0cjf5p",
+      "cmne7xyge02ez0msohehvs3gj",
+      "cmne7xyd402e70mso1xuwru3o",
+      "cmne7xya902dh0msotg5sajyw",
+      "cmne7xy9k02d90mso2ibigeht"
+    ],
+    "created": "2026-04-09",
+    "updated": "2026-04-13",
+    "next_review": "2026-04-21",
+    "review_interval": 8
+  },
+  "rails/activerecord-pick": {
+    "file": "rails/activerecord-pick.md",
+    "title": "ActiveRecord pick",
+    "aliases": [
+      "pick",
+      "pick vs pluck",
+      "rails pick"
+    ],
+    "tags": [
+      "rails",
+      "activerecord",
+      "sql"
+    ],
+    "sections": [
+      "TL;DR",
+      "Behavior",
+      "vs pluck",
+      "Raw SQL expressions",
+      "Multiple aggregates in one query",
+      "Gotchas"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-09",
+    "updated": "2026-04-18",
+    "next_review": "2026-04-28",
+    "review_interval": 10
+  },
+  "openapi/schema-composition": {
+    "file": "openapi/schema-composition.md",
+    "title": "Schema Composition",
+    "aliases": [
+      "allOf anyOf oneOf",
+      "JSON Schema combiners",
+      "schema composition keywords",
+      "OpenAPI polymorphism"
+    ],
+    "tags": [
+      "openapi",
+      "json-schema",
+      "api-design"
+    ],
+    "sections": [
+      "anyOf vs oneOf",
+      "The oneOf Shared-Field Trap",
+      "allOf Is Not Inheritance",
+      "The additionalProperties Trap",
+      "not as a Filter"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-09",
+    "updated": "2026-04-13",
+    "next_review": "2026-04-21",
+    "review_interval": 8
+  },
+  "rails/index-with": {
+    "file": "rails/index-with.md",
+    "title": "index_with",
+    "aliases": [
+      "Enumerable index_with",
+      "ActiveSupport index_with"
+    ],
+    "tags": [
+      "ruby",
+      "rails",
+      "active-support",
+      "enumerable"
+    ],
+    "sections": [
+      "Fixed Value vs Block",
+      "index_with vs index_by",
+      "index_with vs to_h",
+      "Duplicate Keys",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-10",
+    "updated": "2026-04-13",
+    "next_review": "2026-04-21",
+    "review_interval": 8
+  },
+  "security/hsts": {
+    "file": "security/hsts.md",
+    "title": "HSTS",
+    "aliases": [
+      "HTTP Strict Transport Security",
+      "Strict-Transport-Security header",
+      "HSTS preload"
+    ],
+    "tags": [
+      "security",
+      "https",
+      "web"
+    ],
+    "sections": [
+      "The SSL Stripping Attack",
+      "The Header",
+      "TOFU Problem (Trust On First Use)",
+      "Preload",
+      "Cross-Host Redirects",
+      "Full Defense Stack"
+    ],
+    "flashcard_ids": [
+      "cmne7xvvx01sd0mso4nghg03i",
+      "cmne7xw1v01u10msoxw2b49vt",
+      "cmne7xw2401u30msofm43aa2a",
+      "cmne7xvym01t50msou805xi7h",
+      "cmne7xwri02050mso5k9tqzu4"
+    ],
+    "created": "2026-04-10",
+    "updated": "2026-04-18",
+    "next_review": "2026-04-23",
+    "review_interval": 5
+  },
+  "rails/singular-resource": {
+    "file": "rails/singular-resource.md",
+    "title": "Singular Resource",
+    "aliases": [
+      "resource singular",
+      "resource vs resources",
+      "singular route"
+    ],
+    "tags": [
+      "rails",
+      "routing"
+    ],
+    "sections": [
+      "6 Routes, Not 7",
+      "Controller Is Still Plural",
+      "When to Use",
+      "How Identity Is Resolved",
+      "Nesting Works the Same",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-13",
+    "updated": "2026-04-16",
+    "next_review": "2026-04-24",
+    "review_interval": 8
+  },
+  "rails/scope-vs-namespace": {
+    "file": "rails/scope-vs-namespace.md",
+    "title": "Scope vs Namespace",
+    "aliases": [
+      "rails scope",
+      "rails namespace",
+      "scope vs namespace routing",
+      "route scope"
+    ],
+    "tags": [
+      "rails",
+      "routing"
+    ],
+    "sections": [
+      "The Three Knobs",
+      "Scope Picks and Chooses",
+      "Module Path Format",
+      "Per-Resource Options",
+      "The controller: Option",
+      "When to Use What",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-13",
+    "updated": "2026-04-16",
+    "next_review": "2026-04-28",
+    "review_interval": 12
+  },
+  "rails/shallow-routing": {
+    "file": "rails/shallow-routing.md",
+    "title": "Shallow Routing",
+    "aliases": [
+      "shallow nesting",
+      "shallow routes",
+      "shallow true"
+    ],
+    "tags": [
+      "rails",
+      "routing"
+    ],
+    "sections": [
+      "The Split",
+      "Why This Split",
+      "Named Helpers Change Too",
+      "Applying to All Nested Resources",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-13",
+    "updated": "2026-04-16",
+    "next_review": "2026-04-24",
+    "review_interval": 8
+  },
+  "rails/routing-concerns": {
+    "file": "rails/routing-concerns.md",
+    "title": "Routing Concerns",
+    "aliases": [
+      "rails concern",
+      "route concerns",
+      "routing concern"
+    ],
+    "tags": [
+      "rails",
+      "routing"
+    ],
+    "sections": [
+      "The Problem",
+      "Extract a Concern",
+      "Multiple Concerns",
+      "When to Use",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-13",
+    "updated": "2026-04-16",
+    "next_review": "2026-04-28",
+    "review_interval": 12
+  },
+  "rails/route-organization": {
+    "file": "rails/route-organization.md",
+    "title": "Route Organization",
+    "aliases": [
+      "rails draw",
+      "route files",
+      "routes draw",
+      "rails defaults"
+    ],
+    "tags": [
+      "rails",
+      "routing"
+    ],
+    "sections": [
+      "draw -- Split Routes into Files",
+      "defaults -- Set Shared Parameters",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-13",
+    "updated": "2026-04-16",
+    "next_review": "2026-04-28",
+    "review_interval": 12
+  },
+  "rails/collection-and-member-routes": {
+    "file": "rails/collection-and-member-routes.md",
+    "title": "Collection and Member Routes",
+    "aliases": [
+      "collection route",
+      "member route",
+      "collection vs member",
+      "custom resource routes"
+    ],
+    "tags": [
+      "rails",
+      "routing"
+    ],
+    "sections": [
+      "The Decision Table",
+      "Syntax",
+      "Routing to a Different Controller",
+      "Param Naming Rules",
+      "When to Use What",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-14",
+    "updated": "2026-04-18",
+    "next_review": "2026-04-26",
+    "review_interval": 8
+  },
+  "rails/path-helper-naming": {
+    "file": "rails/path-helper-naming.md",
+    "title": "Path Helper Naming",
+    "aliases": [
+      "rename path helper",
+      "as option routes",
+      "path helper as",
+      "_index suffix"
+    ],
+    "tags": [
+      "rails",
+      "routing"
+    ],
+    "sections": [
+      "Renaming with `as:`",
+      "The `_index` Suffix",
+      "Fix: Set `as:` Explicitly",
+      "Verifying",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-14",
+    "updated": "2026-04-14",
+    "next_review": "2026-04-17",
+    "review_interval": 3
+  },
+  "ruby/transform-values": {
+    "file": "ruby/transform-values.md",
+    "title": "transform_values",
+    "aliases": [
+      "transform_values",
+      "ruby transform_values",
+      "hash transform values"
+    ],
+    "tags": [
+      "ruby",
+      "hash",
+      "enumerable"
+    ],
+    "sections": [
+      "TL;DR",
+      "The intuition",
+      "vs map on a hash",
+      "The block receives only the value",
+      "Bang variant",
+      "with_index for positional info",
+      "When not to use it",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-17",
+    "updated": "2026-04-17",
+    "next_review": "",
+    "review_interval": null
+  },
+  "sql/array-agg": {
+    "file": "sql/array-agg.md",
+    "title": "array_agg",
+    "aliases": [
+      "array_agg",
+      "postgres array_agg",
+      "sql array aggregate"
+    ],
+    "tags": [
+      "sql",
+      "postgres",
+      "aggregate"
+    ],
+    "sections": [
+      "TL;DR",
+      "The intuition",
+      "No GROUP BY means one implicit group",
+      "Ordering is non-deterministic by default",
+      "NULLs are included by default",
+      "Empty input returns NULL, not {}",
+      "DISTINCT + ORDER BY must share the expression",
+      "array_agg vs jsonb_agg",
+      "Canonical shape for \"safe\" usage",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-17",
+    "updated": "2026-04-17",
+    "next_review": "",
+    "review_interval": null
+  },
+  "rails/delegated-type": {
+    "file": "rails/delegated-type.md",
+    "title": "Delegated Type",
+    "aliases": [
+      "delegated_type",
+      "delegated types",
+      "delegated_type macro",
+      "Rails delegated type"
+    ],
+    "tags": [
+      "rails",
+      "activerecord",
+      "polymorphism"
+    ],
+    "sections": [
+      "The Problem It Solves",
+      "Schema Shape",
+      "The Declaration",
+      "Direction of Delegation",
+      "Design Rule: Where Attributes Live",
+      "STI vs Delegated Type",
+      "N+1 Gotcha",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-17",
+    "updated": "2026-04-17",
+    "next_review": "2026-04-20",
+    "review_interval": 3
+  }
+}

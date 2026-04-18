@@ -1,0 +1,280 @@
+---
+name: study-walkthrough
+description: "Interactive walkthrough that calibrates to the developer's understanding, fills gaps, pushes deeper, and optionally writes wiki pages. Handles both new-topic documentation and progressive deepening of existing material. Trigger keywords: deepen, walkthrough, study deeper, revisit, create reference, document this pattern."
+user_invocable: true
+---
+
+# /study-walkthrough — Interactive Walkthrough & Wiki Writing
+
+Interactive walkthrough that builds on what the developer already knows. Checks existing wiki pages and flashcards, calibrates depth, fills gaps, and pushes into new territory. Each session on the same topic goes deeper. Optionally produces a wiki page as an artifact.
+
+**Core guarantee:** The developer finishes with a deeper understanding than they started with. If they fail at specific questions, the skill walks through that concept again until it's internalized. Wiki pages grow as understanding grows.
+
+## Wiki Integration
+
+This skill reads from and writes to the developer wiki at `wiki/`. See `references/wiki-write-protocol.md` for the full "write wiki" flow, linking rules, and frontmatter spec.
+
+**At any point** during the session, the developer can say "show in Obsidian" to launch Obsidian and view wiki pages. Follow the "Show in Obsidian" flow in the wiki-write-protocol.
+
+## Session Rules
+
+For additional shared interactive principles (scope, handling disagreement, non-interactive mode), see `~/.claude/skills/references/interactive-principles.md`.
+
+- ONE concept per message, under 150-200 words of prose. Pause for discussion.
+- Start each phase with `Phase X/4: <title>`.
+- Pause after each phase -- ask whether to continue or discuss. Never auto-advance.
+- If the developer says "skip" or "I know this," fast-forward immediately.
+- If the developer fails a recall question, do NOT skip -- walk through it again until internalized.
+
+## Output Contract -- Progress Footer (mandatory)
+
+Every assistant message in this skill **must end with a progress footer as the LAST line**. No exceptions while the interactive flow is active -- this includes clarifying questions, short acknowledgements, and messages that contain only code. A message without this footer is a contract violation.
+
+**Format:**
+- With steps: `Step 1/2 · Phase 2/4 — Adaptive Walkthrough: recall check`
+- Without steps: `Phase 1/4 — Discovery & Calibration`
+
+The footer is a single line, rendered verbatim, at the very bottom of the message -- nothing after it.
+
+**Exceptions:** Omit the footer only when the developer has explicitly opted out of the interactive flow -- non-interactive subagent mode, or an explicit "one-shot explanation" request.
+
+## MCP Server Dependency
+
+This skill uses the `master-dev-srs` MCP server for flashcard lookup. Tools used: `find_similar_cards`, `search_cards`, `get_card`.
+
+## Invocation
+
+```
+/study-walkthrough                        — Start (asks for topic)
+/study-walkthrough <topic>                — Walkthrough on a specific topic
+/study-walkthrough --write <topic>        — Write-focused: walkthrough → wiki page (always writes)
+/study-walkthrough --from <url>           — Walkthrough from URL content
+/study-walkthrough <pasted text>          — Walkthrough from provided text
+```
+
+When invoked with `--write`, the session defaults to producing a wiki page as the primary artifact. The walkthrough still ensures understanding, but Phase 4 writes to wiki by default rather than offering it as an option.
+
+When invoked with a URL or pasted text, use it as source material. The walkthrough and wiki page capture only what the developer actually understood -- not a raw dump.
+
+## Mode Detection
+
+The skill operates in two modes based on invocation and context:
+
+- **Write-focused**: Triggered by `--write` flag, `--from <url>`, or pasted source text. Also triggered when no existing wiki material is found and the developer's intent is clearly "document this." Compresses calibration, writes wiki by default at the end.
+- **Deepen-focused**: Default mode. Full calibration against existing material, adaptive depth, wiki write offered but not assumed.
+
+## Phase Flow
+
+### Phase 1/4: Discovery & Calibration
+
+**Step 1 -- Find what exists:**
+
+1. Read `wiki/.wiki-index.json` for the topic
+2. Run `treesearch search --query "<topic>" --index_dir wiki/indexes` for keyword matches
+3. Run `scripts/wiki-search "<topic>"` for semantic matches (if Ollama running)
+4. Call `find_similar_cards` from MCP to find related flashcards
+
+**Step 2 -- Present existing knowledge:**
+
+If wiki pages exist, check their `depth` and `last_deepened` frontmatter:
+> You have a wiki page `[[architecture/event-sourcing]]` (depth: 2, last deepened 2026-03-15) covering: Core Concepts, Projections, Related Concepts.
+> You also have 4 flashcards on this topic.
+> Let me check what you actually remember.
+
+If no wiki pages exist:
+> No wiki pages found for this topic. Let's build your understanding from scratch.
+
+**Step 3 -- Calibration:**
+
+- **If existing material found**: Ask 1-2 targeted recall questions drawn from existing wiki page content (key concepts from sections) and flashcard backs (pick the hardest ones).
+- **If no existing material (write-focused)**: Ask one question: "What do you already know about this topic?" This sets the depth for Phase 2 without a full calibration cycle.
+- **If no existing material (deepen-focused)**: Same single question, then proceed to full walkthrough.
+
+Evaluate the developer's answers:
+- **Solid recall** -> "Good -- you've internalized the basics. Let's go deeper into [new area]."
+- **Partial recall** -> "You remember the gist but some details are fuzzy. Let me walk through the gaps."
+- **Poor recall** -> "Let's revisit the fundamentals before going deeper."
+
+This calibration determines where Phase 2 starts.
+
+**Step 4 -- Scope & page type (write-focused mode only):**
+
+If the session is write-focused, decide scope and page type now:
+
+- **Scope decision tree:**
+  - If the topic decomposes into >5 sub-concepts: suggest splitting into multiple pages
+  - If the developer already knows the topic well: compress Phase 2 and move to drafting
+  - If the topic is trivial (single fact or one-liner): suggest adding it to an existing page or skipping
+
+- **Page type** (choose together):
+  - **Tutorial/Concept** -- for learning a new pattern or technique
+  - **Problem-Solution** -- for documenting a specific gotcha, failure mode, or fix
+  - **Pattern/Technique** -- for documenting an established, repeatable approach
+  - **Feature/Tool Overview** -- for documenting capabilities and API surface
+
+### Phase 2/4: Adaptive Walkthrough
+
+Based on calibration results, the walkthrough adapts:
+
+**If recall was solid -- push deeper:**
+- Identify areas the existing wiki page doesn't cover
+- Explore edge cases, advanced patterns, real-world tradeoffs
+- Use concrete codebase code to illustrate advanced concepts
+- Ask the developer to predict behavior in complex scenarios
+
+**If recall had gaps -- fill them first:**
+- Walk through the weak concepts again with fresh examples
+- After each concept, ask the developer to explain it back
+- If they fail -> drill deeper with simpler sub-concepts, then build back up
+- Do NOT move on until the developer can articulate the concept clearly
+- Only after gaps are filled, push into new territory
+
+**If recall was poor -- start from foundations:**
+- Walk through the core concepts as if teaching for the first time
+- Build understanding incrementally: foundation -> mechanism -> application -> edge cases
+- Frequent checks: "What would happen if...?" "Why does this matter?"
+
+**Walkthrough techniques:**
+- Show concrete codebase code, never abstract examples
+- Ask predictions before revealing answers
+- When the developer's explanation is incomplete, ask a follow-up rather than correcting
+- **Concrete example/challenge (mandatory, every concept):** For each concept walked through, ask the developer to actively produce something -- not just passively receive:
+  - **Code concepts:** "What do you expect this outputs?" / "How would you write the code for that?" / "Here's a broken version -- what's wrong?" -- show a snippet and require a prediction or solution
+  - **Theory/architecture concepts:** "When would you choose this over X?" / "What breaks if you skip this step?" / "Explain why this matters in your own words"
+  - Keep each challenge focused -- one question, not a quiz. The developer's answer reveals whether they truly internalized the concept or just followed along.
+- Track related concepts for wiki linking as they come up
+- Note which areas are new understanding (these become wiki page extensions)
+
+### Phase 3/4: Verification & Gaps
+
+After the walkthrough:
+
+1. **Recall check**: Ask 2-3 questions covering both the new material AND the previously weak areas
+2. **If any question fails**: Walk through that specific concept again -- do not skip
+3. **Repeat until all questions are answered correctly**
+4. **Identify remaining gaps**: "We covered X, Y, Z today. What still feels unclear?"
+
+This is the key differentiator -- the skill loops on failure until concepts are internalized.
+
+**Write-focused addition**: In write-focused mode, also ask the developer to confirm:
+1. The key problem or context the page will cover
+2. One concrete code example and why it works that way
+3. Any gotchas or non-obvious behavior
+
+If any of these are missing or vague, return to the relevant concept and discuss until the developer can articulate it.
+
+### Phase 4/4: Write & Chain
+
+**Write-focused mode** -- proceed directly to wiki write:
+
+1. Present the full draft wiki page with frontmatter, wikilinks, and all sections
+2. For each section: ask the developer to explain it in their own words. If they cannot, discuss until they can.
+3. Adjust the page based on gaps surfaced during review
+4. Follow `references/wiki-write-protocol.md` for the full write flow
+5. Log the session
+
+**Deepen-focused mode** -- offer choices:
+
+1. **"write wiki"** -- Follow `references/wiki-write-protocol.md`:
+   - If extending an existing page: add new sections for the deeper material, increment `depth` frontmatter (e.g., depth 1 -> 2), set `last_deepened` to today
+   - If creating new: draft a full page with `depth: 1` and everything covered
+   - Include `flashcard_ids` for any related cards
+   - Run `scripts/wiki-write`, append session log
+
+2. **"add flashcard"** -- Chain to `/study-flashcard` for concepts that need SRS reinforcement, especially the ones that were initially failed during calibration
+
+3. **"done"** -- Just log the session, no writes
+
+**Wiki write details (both modes):**
+
+When writing a wiki page, follow this structure:
+
+- If extending an existing page: read the existing file, add new H2 sections, preserve existing links
+- If creating new, use the page type chosen in Phase 1 to determine structure:
+  - **Tutorial/Concept**: `## TL;DR` with key takeaways, then H2 sections per concept
+  - **Problem-Solution**: Brief context, then `## The problem` then `## How to fix it`
+  - **Pattern/Technique**: Jump into the pattern with descriptive H2/H3 headings
+  - **Feature/Tool Overview**: What is possible, then H2 sections per feature
+- Always include: `## Related Concepts` with `[[absolute/path]]` wikilinks
+
+**Session log** -- always append to `logs/YYYY-MM-DD.md`:
+
+```markdown
+## Session N -- Walkthrough (HH:MM)
+- **Topic:** event sourcing
+- **Mode:** write-focused | deepen-focused
+- **Starting level:** partial recall (Core Concepts solid, Projections weak)
+- **Covered:** event versioning, upcasting, schema evolution
+- **Gaps filled:** projections (re-walked, now solid)
+- **Wiki updates:** [[architecture/event-sourcing]] extended with 2 new sections (depth: 2 -> 3)
+- **Flashcards:** 2 created for event versioning
+```
+
+## Wiki Page Structure (for new pages)
+
+### 1. Frontmatter (YAML)
+Required fields: `title`, `aliases`, `tags`, `created`, `updated`, `source_skill`
+Optional: `flashcard_ids`, `depth`, `last_deepened`, `next_review`, `review_interval`
+
+### 2. Title (H1)
+- Clear, descriptive title identifying the topic
+- Use imperative form for how-to topics
+- Use descriptive form for concept topics
+- Prefix with "Careful:" or "Warning:" for gotcha-style pages
+
+### 3. Opening Context (varies by page type)
+Structure depends on the page type chosen in Phase 1.
+
+### 4. Code Examples
+- Minimal but complete enough to be functional
+- Show bad examples with `# bad` comment, good with `# good` comment
+- Use code from the actual codebase when possible
+
+### 5. Related Concepts (H2)
+- `[[absolute/path]]` wikilinks with brief relationship descriptions
+
+### 6. Warnings/Notes
+- Short warnings: bold inline. Standalone callouts: `> [Warning]` / `> [Note]`
+
+## Writing Style
+
+- Concise -- every sentence adds value
+- Technically precise -- exact terms, versions, paths
+- Practical -- working code, not pseudocode
+- Insightful -- non-obvious information
+- No emojis
+
+## Chaining
+
+**Into /study-walkthrough:**
+- After `/study` reveals weak areas -> "You had 2 lapses on event sourcing. Let's deepen that."
+- After `/study-flashcard` -> "Want to explore these concepts more deeply?"
+
+**Out of /study-walkthrough:**
+- After walkthrough -> offer `/study-flashcard` for SRS reinforcement
+- After walkthrough -> offer `/study` to immediately review related cards
+
+## Guardrails
+
+**Always:**
+- Check wiki and flashcards before starting -- never start blind
+- Calibrate before teaching -- never assume the developer's level
+- Loop on failed recall -- never skip past a gap
+- Use concrete codebase code, not abstract examples
+- Log every session, even if no wiki write happens
+- Track which concepts are new vs. reinforced for accurate logging
+
+**Never:**
+- Skip calibration when existing material exists
+- Move past a concept the developer can't explain back
+- Dump information without checking understanding
+- Auto-write to wiki without developer requesting it (deepen-focused mode)
+- Create flashcards automatically -- always offer, never force
+
+## Developer Preference — Intuition First, Syntax as Reference
+
+The developer wants walkthroughs and wiki pages centered on **high-level intuition and evaluation capacity** — tradeoffs, design principles, mental models, "when/why X over Y," threat models, failure modes, and concepts portable across languages/frameworks.
+
+Syntax details (exact API signatures, flag defaults, enum values) **are welcome in walkthroughs and wiki pages** — they make the reference material useful. Lead with the intuition, include the syntax as supporting reference.
+
+**Hard rule for the flashcard handoff:** if this session chains into `/study-flashcard`, do NOT propose syntax-recall cards. Only concept/tradeoff/intuition cards make it into the SRS. Syntax stays on the wiki page as a lookup.
