@@ -105,7 +105,8 @@ This updates the index, reindexes TreeSearch, embeds via Ollama, and runs lint.
 
 Parse the JSON output:
 - `{"status":"ok","lint":"clean"}` → report success
-- `{"status":"ok","lint":"errors","details":"..."}` → show lint errors to developer
+- `{"status":"ok","lint":"warnings","details":"..."}` → write succeeded; surface warnings (e.g., orphan pages) so the developer can decide whether to add inbound links
+- `{"status":"ok","lint":"errors","details":"..."}` → show lint errors to developer (these block a clean write)
 
 ### Step 8b: Update Depth Metadata (when extending)
 

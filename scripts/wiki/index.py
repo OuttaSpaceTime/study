@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 import json
-import re
 import shutil
 import sys
 from datetime import date
 from pathlib import Path
 
-from scripts.wiki.frontmatter import parse_frontmatter
+from scripts.wiki.frontmatter import extract_h2s, parse_frontmatter
 
 
 def load_index(index_path: Path) -> dict:
@@ -39,12 +38,19 @@ def get_wiki_key(wiki_dir: Path, page_path: Path) -> str:
     return str(rel.with_suffix(""))
 
 
+def iter_wiki_pages(wiki_dir: Path) -> list[Path]:
+    """Return all wiki markdown pages (sorted), skipping Obsidian metadata."""
+    return sorted(
+        p for p in wiki_dir.rglob("*.md") if ".obsidian" not in p.parts
+    )
+
+
 def update_entry(index: dict, wiki_dir: Path, page_path: Path) -> dict:
     """Parse a wiki page and update the index entry. Returns the updated index."""
     content = page_path.read_text()
     meta, body = parse_frontmatter(content)
 
-    sections = re.findall(r"^## (.+)$", body, re.MULTILINE)
+    sections = extract_h2s(body)
     wiki_key = get_wiki_key(wiki_dir, page_path)
     rel_path = str(page_path.relative_to(wiki_dir))
     today = date.today().isoformat()
@@ -68,6 +74,8 @@ def update_entry(index: dict, wiki_dir: Path, page_path: Path) -> dict:
         "updated": today,
         "next_review": meta.get("next_review", ""),
         "review_interval": meta.get("review_interval"),
+        "probe_sections": meta.get("probe_sections", []),
+        "last_probed": meta.get("last_probed", []),
     }
 
     return index

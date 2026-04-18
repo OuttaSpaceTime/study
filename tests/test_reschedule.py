@@ -132,3 +132,52 @@ class TestReschedulePage:
         page.write_text("# No frontmatter\n\nJust content.\n")
         with pytest.raises(ValueError, match="No frontmatter"):
             reschedule_page(page, rating=3)
+
+
+class TestProbedRotation:
+    """Passing probed=[...] should rotate last_probed: chosen moves to end."""
+
+    def test_probed_writes_rotated_queue(self, wiki_dir, sample_page):
+        """last_probed starts [A, B]; probing [A] should yield [B, A]."""
+        from scripts.wiki.frontmatter import parse_frontmatter
+
+        reschedule_page(
+            sample_page, rating=3, today="2026-04-14",
+            probed=["Section One"],
+        )
+        meta, _ = parse_frontmatter(sample_page.read_text())
+        assert meta["last_probed"] == ["Section Two", "Section One"]
+
+    def test_probed_multiple_rotates_all(self, wiki_dir, sample_page):
+        """Probing [A, B] on queue [A, B] should yield [A, B] (cycle)."""
+        from scripts.wiki.frontmatter import parse_frontmatter
+
+        reschedule_page(
+            sample_page, rating=3, today="2026-04-14",
+            probed=["Section One", "Section Two"],
+        )
+        meta, _ = parse_frontmatter(sample_page.read_text())
+        assert meta["last_probed"] == ["Section One", "Section Two"]
+
+    def test_probed_initializes_when_empty(self, wiki_dir, sample_page):
+        """If last_probed is missing/empty, fall back to probe_sections order, then rotate."""
+        from scripts.wiki.frontmatter import dump_page, parse_frontmatter
+
+        meta, body = parse_frontmatter(sample_page.read_text())
+        meta["last_probed"] = []
+        sample_page.write_text(dump_page(meta, body))
+
+        reschedule_page(
+            sample_page, rating=3, today="2026-04-14",
+            probed=["Section One"],
+        )
+        meta, _ = parse_frontmatter(sample_page.read_text())
+        assert meta["last_probed"] == ["Section Two", "Section One"]
+
+    def test_no_probed_arg_leaves_last_probed_alone(self, wiki_dir, sample_page):
+        """Omitting probed should not touch last_probed."""
+        from scripts.wiki.frontmatter import parse_frontmatter
+
+        reschedule_page(sample_page, rating=3, today="2026-04-14")
+        meta, _ = parse_frontmatter(sample_page.read_text())
+        assert meta["last_probed"] == ["Section One", "Section Two"]

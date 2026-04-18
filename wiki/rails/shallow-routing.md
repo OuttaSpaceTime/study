@@ -13,6 +13,12 @@ source_skill: study-walkthrough
 depth: 1
 next_review: '2026-04-24'
 review_interval: 8
+probe_sections:
+- The Split
+- Why This Split
+- Named Helpers Change Too
+- Applying to All Nested Resources
+last_probed: []
 ---
 
 # Shallow Routing

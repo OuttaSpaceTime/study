@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 from scripts.wiki.embed import update_embeddings
-from scripts.wiki.index import load_index, save_index, update_entry
+from scripts.wiki.index import iter_wiki_pages, load_index, save_index, update_entry
 from scripts.wiki.lint import lint_wiki
 
 
@@ -31,9 +31,7 @@ def wiki_write(page_path: Path, wiki_dir: Path = Path("wiki")) -> dict:
 
     # Step 2: Reindex TreeSearch
     if shutil.which("treesearch"):
-        md_files = [
-            str(p) for p in wiki_dir.rglob("*.md") if ".obsidian" not in p.parts
-        ]
+        md_files = [str(p) for p in iter_wiki_pages(wiki_dir)]
         if md_files:
             subprocess.run(
                 ["treesearch", "index", "--paths", *md_files, "-o", str(wiki_dir / "indexes"), "--force"],
@@ -55,15 +53,22 @@ def wiki_write(page_path: Path, wiki_dir: Path = Path("wiki")) -> dict:
         print(f"Warning: Ollama not available, skipping embedding: {e}", file=sys.stderr)
 
     # Step 4: Lint
-    errors = lint_wiki(wiki_dir)
-    if not errors:
+    errors, warnings = lint_wiki(wiki_dir)
+    if not errors and not warnings:
         return {"status": "ok", "lint": "clean"}
-    else:
-        md_count = len([p for p in wiki_dir.rglob("*.md") if ".obsidian" not in p.parts])
-        details = f"lint: {len(errors)} issue(s) found in {md_count} pages:\n\n"
-        for err in errors:
-            details += f"  \u2717 {err}\n"
-        return {"status": "ok", "lint": "errors", "details": details}
+    md_count = len(iter_wiki_pages(wiki_dir))
+    summary_parts = []
+    if errors:
+        summary_parts.append(f"{len(errors)} error(s)")
+    if warnings:
+        summary_parts.append(f"{len(warnings)} warning(s)")
+    details = f"lint: {', '.join(summary_parts)} in {md_count} pages:\n\n"
+    for err in errors:
+        details += f"  \u2717 {err}\n"
+    for warn in warnings:
+        details += f"  \u26a0 {warn}\n"
+    status = "errors" if errors else "warnings"
+    return {"status": "ok", "lint": status, "details": details}
 
 
 def main() -> None:

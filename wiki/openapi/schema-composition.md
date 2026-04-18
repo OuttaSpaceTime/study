@@ -1,14 +1,28 @@
 ---
-title: "Schema Composition"
-aliases: [allOf anyOf oneOf, JSON Schema combiners, schema composition keywords, OpenAPI polymorphism]
-tags: [openapi, json-schema, api-design]
-created: 2026-04-09
-updated: 2026-04-09
+title: Schema Composition
+aliases:
+- allOf anyOf oneOf
+- JSON Schema combiners
+- schema composition keywords
+- OpenAPI polymorphism
+tags:
+- openapi
+- json-schema
+- api-design
+created: '2026-04-09'
+updated: '2026-04-09'
 source_skill: study-walkthrough
 flashcard_ids: []
 depth: 1
-next_review: 2026-04-21
+next_review: '2026-04-21'
 review_interval: 8
+probe_sections:
+- anyOf vs oneOf
+- The oneOf Shared-Field Trap
+- allOf Is Not Inheritance
+- The additionalProperties Trap
+- not as a Filter
+last_probed: []
 ---
 
 # Schema Composition

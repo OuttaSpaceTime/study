@@ -29,20 +29,39 @@ def parse_frontmatter(content: str) -> tuple[dict, str]:
     if not isinstance(meta, dict):
         return {}, content
 
-    # Post-process: dates to ISO strings
     for key, val in meta.items():
-        if isinstance(val, (datetime.date, datetime.datetime)):
+        if isinstance(val, datetime.date):
             meta[key] = val.isoformat()
 
-    # Post-process: flashcard_ids to list of strings
-    if "flashcard_ids" in meta:
-        ids = meta["flashcard_ids"]
-        if isinstance(ids, list):
-            meta["flashcard_ids"] = [str(x) for x in ids]
-        else:
-            meta["flashcard_ids"] = []
+    for key in ("flashcard_ids", "probe_sections", "last_probed"):
+        if key in meta:
+            val = meta[key]
+            meta[key] = [str(x) for x in val] if isinstance(val, list) else []
 
     return meta, body
+
+
+def dump_page(meta: dict, body: str) -> str:
+    """Render a wiki page: YAML frontmatter + body."""
+    fm = yaml.dump(meta, default_flow_style=False, allow_unicode=True, sort_keys=False)
+    return f"---\n{fm}---\n{body}"
+
+
+_H2_RE = re.compile(r"^## (.+)$", re.MULTILINE)
+
+
+def extract_h2s(body: str) -> list[str]:
+    """Return H2 heading texts from a page body, in document order."""
+    return [m.strip() for m in _H2_RE.findall(body)]
+
+
+def normalize_heading(s: str) -> str:
+    """Normalize for H2-heading matching: lowercase, strip trailing .?!: and whitespace."""
+    return s.strip().rstrip(".?!:").lower()
+
+
+def norm_set(sections: list[str]) -> set[str]:
+    return {normalize_heading(s) for s in sections}
 
 
 def slugify(title: str) -> str:

@@ -28,7 +28,7 @@ The wiki lives in `wiki/` (Obsidian vault). Pages are organized by topic folders
 
 ### Page Format
 
-Every wiki page has YAML frontmatter with required fields: `title`, `aliases`, `tags`, `created`, `updated`, `source_skill`. Optional: `flashcard_ids`, `depth`, `last_deepened`, `next_review`, `review_interval`.
+Every wiki page has YAML frontmatter with required fields: `title`, `aliases`, `tags`, `created`, `updated`, `source_skill`, `probe_sections` (non-empty list of H2 headings the page will be probed against at review time), `last_probed` (queue that rotates during review — seed with `probe_sections` on a new page). Optional: `flashcard_ids`, `depth`, `last_deepened`, `next_review`, `review_interval`, `allow_orphan` (set to `true` to suppress the orphan warning for pages that are intentionally standalone).
 
 ### Linking Rules
 
@@ -52,7 +52,11 @@ All skills follow the shared protocol in `.claude/skills/references/wiki-write-p
 
 ### Linting
 
-`scripts/lint` checks: broken wikilinks, absolute path enforcement, frontmatter completeness, orphan pages, alias collisions, slug/filename consistency. Runs automatically after every wiki write.
+`scripts/lint` checks: broken wikilinks, absolute path enforcement, frontmatter completeness, orphan pages, alias collisions, slug/filename consistency, flashcard ID drift between frontmatter and index. Runs automatically after every wiki write.
+
+Results are split into **errors** (block clean status, exit 1) and **warnings** (informational, exit 0). Orphan pages are warnings — suppress per-page with `allow_orphan: true` in frontmatter. Wikilink parsing ignores fenced code blocks, inline code, and image embeds (`![[...]]`), and strips `#heading` anchors and `|display` pipes before resolving targets. Self-links do not count as inbound.
+
+Python code is linted with ruff: `uv run ruff check scripts/ tests/`. Config lives in `pyproject.toml`.
 
 ### Show in Obsidian
 

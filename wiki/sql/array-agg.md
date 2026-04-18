@@ -1,11 +1,27 @@
 ---
-title: "array_agg"
-aliases: [array_agg, postgres array_agg, sql array aggregate]
-tags: [sql, postgres, aggregate]
-created: 2026-04-17
-updated: 2026-04-17
+title: array_agg
+aliases:
+- array_agg
+- postgres array_agg
+- sql array aggregate
+tags:
+- sql
+- postgres
+- aggregate
+created: '2026-04-17'
+updated: '2026-04-17'
 source_skill: study-walkthrough
 depth: 1
+probe_sections:
+- The intuition
+- No GROUP BY means one implicit group
+- Ordering is non-deterministic by default
+- NULLs are included by default
+- Empty input returns NULL, not {}
+- DISTINCT + ORDER BY must share the expression
+- array_agg vs jsonb_agg
+- Canonical shape for "safe" usage
+last_probed: []
 ---
 
 # array_agg

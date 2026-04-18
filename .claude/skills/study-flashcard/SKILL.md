@@ -56,9 +56,26 @@ This skill requires the `flashcard-mcp` MCP server. Tools used: `find_similar_ca
 
 When invoked with a block of text or URL, treat it as source material. The flashcards and wiki page capture only what was walked through and understood — not a raw dump.
 
+## Preflight — SRS Pressure Check (MANDATORY, ALWAYS FIRST)
+
+**Before Checkpoint 1. Before any tool call. Before any deck listing, similarity scan, wiki read, or drafting.** The first assistant message of this skill invocation must be the pressure-check output — nothing else.
+
+Follow `references/srs-pressure-check.md` exactly. Summary:
+
+1. Call `mcp__flashcard-mcp__get_due_cards` and `mcp__flashcard-mcp__list_decks` (only for the pressure signals — do not use the decks result yet for Checkpoint 1).
+2. Run `scripts/srs-pressure --flashcards-due <N> --new-today <M> --human`.
+3. First message output:
+   - `ok` → one line: `SRS pressure: ok — proceeding.`
+   - `warn` / `pause` → full script output verbatim, then the gate question from the reference. Wait for an explicit answer before Checkpoint 1.
+4. Progress footer for this message: `Preflight — SRS Pressure Check`.
+
+**Contract:** skipping this step, folding it into Checkpoint 1, or running other tool calls before the verdict is a contract violation — same severity as omitting the progress footer. "Just one card" / "we already ran it earlier" / "the developer told me what they want" are **not** valid reasons to skip.
+
 ## Checkpoint Flow
 
 ### Checkpoint 1/4: Topic & Scope
+
+(Preflight must be complete and — if warn/pause — explicitly acknowledged by the developer before starting this checkpoint.)
 
 1. Call `list_decks` to show available decks. Ask which deck to target.
 2. Determine what the developer wants to create flashcards about. Accept any of:

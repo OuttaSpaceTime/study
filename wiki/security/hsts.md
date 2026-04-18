@@ -20,6 +20,14 @@ flashcard_ids:
 depth: 1
 next_review: '2026-04-23'
 review_interval: 5
+probe_sections:
+- The SSL Stripping Attack
+- The Header
+- TOFU Problem (Trust On First Use)
+- Preload
+- Cross-Host Redirects
+- Full Defense Stack
+last_probed: []
 ---
 
 # HSTS (HTTP Strict-Transport-Security)

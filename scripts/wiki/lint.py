@@ -5,101 +5,138 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
-from scripts.wiki.frontmatter import parse_frontmatter, slugify
-from scripts.wiki.index import load_index
+from scripts.wiki.frontmatter import (
+    extract_h2s,
+    norm_set,
+    normalize_heading,
+    parse_frontmatter,
+    slugify,
+)
+from scripts.wiki.index import get_wiki_key, iter_wiki_pages, load_index
 
-REQUIRED_FIELDS = {"title", "created", "tags"}
+REQUIRED_FIELDS = {
+    "title",
+    "aliases",
+    "tags",
+    "created",
+    "updated",
+    "source_skill",
+}
+
+_FENCED_CODE_RE = re.compile(r"```.*?```", re.DOTALL)
+_INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
+# Wikilink not preceded by `!` (image embed). Captures target before any `|display`.
+_WIKILINK_RE = re.compile(r"(?<!!)\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|[^\]]*)?\]\]")
 
 
-def lint_wiki(wiki_dir: Path) -> list[str]:
-    """Run all lint checks. Returns list of error strings (empty = clean)."""
+@dataclass
+class ParsedPage:
+    path: Path
+    rel: str
+    raw: str
+    meta: dict
+    body: str
+
+
+def _parse_pages(wiki_dir: Path, md_files: list[Path]) -> list[ParsedPage]:
+    """Read and parse each page once; shared across all lint checks."""
+    pages = []
+    for f in md_files:
+        raw = f.read_text()
+        meta, body = parse_frontmatter(raw)
+        pages.append(ParsedPage(f, str(f.relative_to(wiki_dir)), raw, meta, body))
+    return pages
+
+
+def lint_wiki(wiki_dir: Path) -> tuple[list[str], list[str]]:
+    """Run all lint checks.
+
+    Returns (errors, warnings). Errors should block CI; warnings are informational.
+    """
     wiki_dir = Path(wiki_dir)
-    md_files = sorted(
-        p
-        for p in wiki_dir.rglob("*.md")
-        if ".obsidian" not in p.parts
-    )
+    md_files = iter_wiki_pages(wiki_dir)
 
     if not md_files:
-        return []
+        return [], []
 
-    index_path = wiki_dir / ".wiki-index.json"
-    index = load_index(index_path)
+    pages = _parse_pages(wiki_dir, md_files)
+    index = load_index(wiki_dir / ".wiki-index.json")
 
     errors: list[str] = []
-    errors.extend(_check_frontmatter(wiki_dir, md_files))
-    link_errors, inbound = _check_wikilinks(wiki_dir, md_files)
+    warnings: list[str] = []
+
+    errors.extend(_check_frontmatter(pages))
+    link_errors, inbound = _check_wikilinks(wiki_dir, pages)
     errors.extend(link_errors)
-    errors.extend(_check_orphans(wiki_dir, md_files, inbound))
+    warnings.extend(_check_orphans(pages, inbound))
     errors.extend(_check_alias_collisions(index))
-    errors.extend(_check_slugs(wiki_dir, md_files))
-    errors.extend(_check_flashcard_ids(wiki_dir, index))
-    return errors
+    errors.extend(_check_slugs(pages))
+    errors.extend(_check_flashcard_ids(pages, index))
+    errors.extend(_check_probe_sections(wiki_dir, pages, index))
+
+    return errors, warnings
 
 
-def _check_frontmatter(wiki_dir: Path, md_files: list[Path]) -> list[str]:
+def _strip_code(body: str) -> str:
+    """Remove fenced and inline code so wikilinks inside them aren't linted."""
+    body = _FENCED_CODE_RE.sub("", body)
+    body = _INLINE_CODE_RE.sub("", body)
+    return body
+
+
+def _check_frontmatter(pages: list[ParsedPage]) -> list[str]:
     errors = []
-    for f in md_files:
-        rel = str(f.relative_to(wiki_dir))
-        content = f.read_text()
-        if not content.startswith("---\n"):
-            errors.append(f"missing-frontmatter: {rel} has no YAML frontmatter")
+    for p in pages:
+        if not p.raw.startswith("---\n"):
+            errors.append(f"missing-frontmatter: {p.rel} has no YAML frontmatter")
             continue
-        meta, _ = parse_frontmatter(content)
         for field in REQUIRED_FIELDS:
-            if field not in meta:
-                errors.append(f"missing-field: {rel} missing frontmatter field '{field}'")
+            if field not in p.meta:
+                errors.append(f"missing-field: {p.rel} missing frontmatter field '{field}'")
     return errors
 
 
 def _check_wikilinks(
-    wiki_dir: Path, md_files: list[Path]
+    wiki_dir: Path, pages: list[ParsedPage]
 ) -> tuple[list[str], dict[Path, int]]:
     errors = []
-    inbound: dict[Path, int] = {f: 0 for f in md_files}
+    inbound: dict[Path, int] = {p.path: 0 for p in pages}
+    valid_paths = {p.path for p in pages}
 
-    for f in md_files:
-        rel = str(f.relative_to(wiki_dir))
-        content = f.read_text()
-
-        # Extract body (after frontmatter)
-        if content.startswith("---\n"):
-            parts = content.split("---\n", 2)
-            body = parts[2] if len(parts) >= 3 else ""
-        else:
-            body = content
-
-        links = re.findall(r"\[\[([^\]|]+)", body)
-        for link in links:
+    for p in pages:
+        body = _strip_code(p.body)
+        for match in _WIKILINK_RE.finditer(body):
+            link = match.group(1).strip()
             target = wiki_dir / f"{link}.md"
-            if target.exists():
-                inbound[target] = inbound.get(target, 0) + 1
+            target_exists = target in valid_paths
+            if target_exists:
+                if target != p.path:
+                    inbound[target] = inbound.get(target, 0) + 1
             elif not (wiki_dir / link).exists():
-                errors.append(f"broken-link: {rel} → [[{link}]] does not resolve to a file")
+                errors.append(f"broken-link: {p.rel} → [[{link}]] does not resolve to a file")
 
-            # Check absolute path requirement
-            if "/" not in link:
-                if not (wiki_dir / f"{link}.md").exists():
-                    errors.append(
-                        f"relative-link: {rel} → [[{link}]] should use absolute path (e.g., [[folder/{link}]])"
-                    )
+            if "/" not in link and not target_exists:
+                errors.append(
+                    f"relative-link: {p.rel} → [[{link}]] should use absolute path (e.g., [[folder/{link}]])"
+                )
 
     return errors, inbound
 
 
-def _check_orphans(
-    wiki_dir: Path, md_files: list[Path], inbound: dict[Path, int]
-) -> list[str]:
-    if len(md_files) <= 1:
+def _check_orphans(pages: list[ParsedPage], inbound: dict[Path, int]) -> list[str]:
+    if len(pages) <= 1:
         return []
-    errors = []
-    for f in md_files:
-        if inbound.get(f, 0) == 0:
-            rel = str(f.relative_to(wiki_dir))
-            errors.append(f"orphan: {rel} has no inbound links")
-    return errors
+    warnings = []
+    for p in pages:
+        if inbound.get(p.path, 0) > 0:
+            continue
+        if p.meta.get("allow_orphan") is True:
+            continue
+        warnings.append(f"orphan: {p.rel} has no inbound links")
+    return warnings
 
 
 def _check_alias_collisions(index: dict) -> list[str]:
@@ -123,33 +160,72 @@ def _check_alias_collisions(index: dict) -> list[str]:
     return errors
 
 
-def _check_slugs(wiki_dir: Path, md_files: list[Path]) -> list[str]:
+def _check_slugs(pages: list[ParsedPage]) -> list[str]:
     errors = []
-    for f in md_files:
-        rel = str(f.relative_to(wiki_dir))
-        content = f.read_text()
-        meta, _ = parse_frontmatter(content)
-        title = meta.get("title", "")
+    for p in pages:
+        title = p.meta.get("title", "")
         if not title:
             continue
         expected = slugify(title)
-        actual = f.stem
+        actual = p.path.stem
         if expected != actual:
             errors.append(
-                f"slug-mismatch: {rel} filename '{actual}' doesn't match slugified title '{expected}'"
+                f"slug-mismatch: {p.rel} filename '{actual}' doesn't match slugified title '{expected}'"
             )
     return errors
 
 
-def _check_flashcard_ids(wiki_dir: Path, index: dict) -> list[str]:
-    errors = []
-    for key, entry in index.items():
-        page_path = wiki_dir / entry["file"]
-        if not page_path.exists():
+def _check_probe_sections(
+    wiki_dir: Path, pages: list[ParsedPage], index: dict
+) -> list[str]:
+    """Rules:
+    - probe-sections-missing: every page must declare non-empty probe_sections.
+    - probe-section-unresolved: each probe_sections entry must match an H2 heading.
+    - probe-rotation-drift: last_probed must equal probe_sections as a set.
+    - probe-index-drift: frontmatter probe_sections must match index probe_sections.
+    """
+    errors: list[str] = []
+    for p in pages:
+        if not p.meta:
             continue
-        content = page_path.read_text()
-        meta, _ = parse_frontmatter(content)
-        fm_ids = sorted(str(x) for x in meta.get("flashcard_ids", []))
+
+        probe_sections = p.meta.get("probe_sections", [])
+        last_probed = p.meta.get("last_probed", [])
+
+        if not probe_sections:
+            errors.append(f"probe-sections-missing: {p.rel} has no probe_sections")
+            continue
+
+        ps_norms = norm_set(probe_sections)
+        h2_norms = norm_set(extract_h2s(p.body))
+        for sec in probe_sections:
+            if normalize_heading(sec) not in h2_norms:
+                errors.append(
+                    f"probe-section-unresolved: {p.rel} probe_sections entry '{sec}' has no matching H2"
+                )
+
+        if last_probed and norm_set(last_probed) != ps_norms:
+            errors.append(
+                f"probe-rotation-drift: {p.rel} last_probed does not match probe_sections"
+            )
+
+        entry = index.get(get_wiki_key(wiki_dir, p.path))
+        if entry is not None and norm_set(entry.get("probe_sections", [])) != ps_norms:
+            errors.append(
+                f"probe-index-drift: {p.rel} frontmatter probe_sections differs from index"
+            )
+
+    return errors
+
+
+def _check_flashcard_ids(pages: list[ParsedPage], index: dict) -> list[str]:
+    errors = []
+    pages_by_rel = {p.rel: p for p in pages}
+    for _key, entry in index.items():
+        p = pages_by_rel.get(entry["file"])
+        if p is None:
+            continue
+        fm_ids = sorted(str(x) for x in p.meta.get("flashcard_ids", []))
         index_ids = sorted(str(x) for x in entry.get("flashcard_ids", []))
         if fm_ids != index_ids:
             errors.append(
@@ -164,20 +240,26 @@ def main() -> None:
     args = parser.parse_args()
 
     wiki_dir = Path(args.wiki_dir)
-    md_files = sorted(
-        p for p in wiki_dir.rglob("*.md") if ".obsidian" not in p.parts
-    )
-    errors = lint_wiki(wiki_dir)
+    md_files = iter_wiki_pages(wiki_dir)
+    errors, warnings = lint_wiki(wiki_dir)
 
-    if not errors:
+    if not errors and not warnings:
         print(f"lint: wiki is clean ({len(md_files)} pages checked)")
         sys.exit(0)
-    else:
-        print(f"lint: {len(errors)} issue(s) found in {len(md_files)} pages:")
-        print()
-        for err in errors:
-            print(f"  \u2717 {err}")
-        sys.exit(1)
+
+    summary = []
+    if errors:
+        summary.append(f"{len(errors)} error(s)")
+    if warnings:
+        summary.append(f"{len(warnings)} warning(s)")
+    print(f"lint: {', '.join(summary)} in {len(md_files)} pages:")
+    print()
+    for err in errors:
+        print(f"  \u2717 {err}")
+    for warn in warnings:
+        print(f"  \u26a0 {warn}")
+
+    sys.exit(1 if errors else 0)
 
 
 if __name__ == "__main__":

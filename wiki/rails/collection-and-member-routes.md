@@ -14,6 +14,13 @@ source_skill: study-walkthrough
 depth: 1
 next_review: '2026-04-26'
 review_interval: 8
+probe_sections:
+- The Decision Table
+- Syntax
+- Routing to a Different Controller
+- Param Naming Rules
+- When to Use What
+last_probed: []
 ---
 
 # Collection and Member Routes

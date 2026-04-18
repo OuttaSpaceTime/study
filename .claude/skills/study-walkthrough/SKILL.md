@@ -63,9 +63,26 @@ The skill operates in two modes based on invocation and context:
 - **Write-focused**: Triggered by `--write` flag, `--from <url>`, or pasted source text. Also triggered when no existing wiki material is found and the developer's intent is clearly "document this." Compresses calibration, writes wiki by default at the end.
 - **Deepen-focused**: Default mode. Full calibration against existing material, adaptive depth, wiki write offered but not assumed.
 
+## Preflight — SRS Pressure Check (MANDATORY, ALWAYS FIRST)
+
+**Before Phase 1. Before any tool call. Before any wiki-index read, TreeSearch, wiki-search, `find_similar_cards`, or drafting.** The first assistant message of this skill invocation must be the pressure-check output — nothing else. This applies regardless of mode, flags, or whether a wiki page will be written.
+
+Follow `references/srs-pressure-check.md` exactly. Summary:
+
+1. Call `mcp__flashcard-mcp__get_due_cards` and `mcp__flashcard-mcp__list_decks` for the pressure signals.
+2. Run `scripts/srs-pressure --flashcards-due <N> --new-today <M> --human`.
+3. First message output:
+   - `ok` → one line: `SRS pressure: ok — proceeding.`
+   - `warn` / `pause` → full script output verbatim, then the gate question. Wait for an explicit answer before Phase 1.
+4. Progress footer for this message: `Preflight — SRS Pressure Check`.
+
+**Contract:** skipping this step, folding it into Phase 1, or running other tool calls before the verdict is a contract violation — same severity as omitting the progress footer. The developer can always opt out of downstream steps (e.g., "just deepen, no wiki") mid-session — that does not justify skipping preflight.
+
 ## Phase Flow
 
 ### Phase 1/4: Discovery & Calibration
+
+(Preflight must be complete and — if warn/pause — explicitly acknowledged by the developer before starting this phase.)
 
 **Step 1 -- Find what exists:**
 
@@ -170,14 +187,15 @@ If any of these are missing or vague, return to the relevant concept and discuss
 1. Present the full draft wiki page with frontmatter, wikilinks, and all sections
 2. For each section: ask the developer to explain it in their own words. If they cannot, discuss until they can.
 3. Adjust the page based on gaps surfaced during review
-4. Follow `references/wiki-write-protocol.md` for the full write flow
-5. Log the session
+4. **Probe sections:** Default `probe_sections` to all H2 headings except `Related Concepts`, `References`, `See also`, and `TL;DR`. Offer the developer a chance to mark any remaining sections as reference-only — but default-all is usually correct. Write `probe_sections` in frontmatter and seed `last_probed` with the same list (keeps the queue invariant `set(last_probed) == set(probe_sections)` true from day one; first review rotates as if fresh).
+5. Follow `references/wiki-write-protocol.md` for the full write flow
+6. Log the session
 
 **Deepen-focused mode** -- offer choices:
 
-1. **"write wiki"** -- Follow `references/wiki-write-protocol.md`:
-   - If extending an existing page: add new sections for the deeper material, increment `depth` frontmatter (e.g., depth 1 -> 2), set `last_deepened` to today
-   - If creating new: draft a full page with `depth: 1` and everything covered
+1. **"write wiki"** -- Follow `references/wiki-write-protocol.md`. (Preflight was already run up front — no re-run needed.)
+   - If extending an existing page: add new sections for the deeper material, increment `depth` frontmatter (e.g., depth 1 -> 2), set `last_deepened` to today. If any new H2 sections were added, extend `probe_sections` to include them (excluding `Related Concepts`, `References`, `See also`, `TL;DR`) **and reset `last_probed` to match the new `probe_sections`** so the queue invariant holds (avoids a persistent `probe-rotation-drift` lint error between now and the next review).
+   - If creating new: draft a full page with `depth: 1` and everything covered. Set `probe_sections` to all H2s except the reference-only set; seed `last_probed` with the same list.
    - Include `flashcard_ids` for any related cards
    - Run `scripts/wiki-write`, append session log
 

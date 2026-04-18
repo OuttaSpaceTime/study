@@ -13,6 +13,13 @@ updated: '2026-04-09'
 source_skill: study-card
 next_review: '2026-04-28'
 review_interval: 10
+probe_sections:
+- Behavior
+- vs pluck
+- Raw SQL expressions
+- Multiple aggregates in one query
+- Gotchas
+last_probed: []
 ---
 
 # ActiveRecord pick

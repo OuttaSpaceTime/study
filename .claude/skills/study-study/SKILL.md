@@ -100,30 +100,33 @@ Present the due entries as a numbered list:
 
 1. Developer says "open 1" (or "open git-restore", or "next")
 2. Read the wiki page. Present a brief summary: title, sections, depth, when created, current interval — but do NOT open Obsidian yet.
-3. **Questioning — adaptive by page type and history:**
+3. **Pick sections to probe — rotation via `last_probed`:**
+
+   Read `probe_sections` and `last_probed` from the index entry. `last_probed` is an ordered queue (oldest first); on the very first review it may be empty, treat as `probe_sections` order.
+
+   Choose `n = min(len(probe_sections), 3)` sections. Pick the first `n` from the queue — these are the longest-unprobed. Ask **one focused question per picked section** — do NOT ask multiple questions per section. This keeps the total at 1-3 questions regardless of page size.
 
    **Pick the question shape based on page content:**
-   - **Code-heavy page:** predict output, fix a broken snippet, write a function that does X, trace execution order
-   - **Concept page:** compare/contrast with alternative ("when X over Y?"), explain consequences of skipping, apply to a scenario, define in own words
-   - **List/reference page:** recall key items, explain rationale behind an item, identify which item applies to a scenario
-   - **Mixed page:** combine — e.g., "explain the concept, then show me a code example"
+   - **Code-heavy section:** predict output, fix a broken snippet, write a function that does X, trace execution order
+   - **Concept section:** compare/contrast with alternative ("when X over Y?"), explain consequences of skipping, apply to a scenario, define in own words
+   - **List/reference section:** recall key items, explain rationale behind an item, identify which item applies to a scenario
 
    **Tune difficulty based on the page's last rating (from frontmatter `review_interval`):**
-   - **Short interval (1-3 days) — recent lapse:** gentle recall, single focused question. "What is X?" / "What does this command do?"
+   - **Short interval (1-3 days) — recent lapse:** gentle recall. "What is X?" / "What does this command do?"
    - **Medium interval (4-14 days):** standard application question. "When would you use X?" / "What happens if you omit this?"
    - **Long interval (15+ days) — strong recall history:** harder applied question. "Given this scenario, how would you combine X and Y?" / "Teach this back to me — what's the mental model?"
 
-   **Number of questions:** Usually one focused question. For long-interval pages (15+ days) or depth ≥ 3, ask a **follow-up probe** if the first answer is shallow — but cap at 2 questions total. Never turn this into a quiz.
+   Never turn this into a quiz — one question per probed section, cap 3.
 
-4. **Wait for the developer's answer.**
-5. **Evaluate the answer:** Brief feedback on what was correct/missing (1-2 sentences). If a follow-up probe is warranted (see above), ask it now and wait again. This evaluation informs the rating.
+4. **Wait for the developer's answer to each question in turn.** Ask one, wait, evaluate, then move to the next probed section.
+5. **Evaluate each answer** with brief feedback (1-2 sentences) and a per-section rating (1-4). After all picked sections are answered, **assign the page rating = worst-of the per-section evaluations** — if any section was Again, the page is Again; if the worst was Hard, the page is Hard. Conservative by design: one shaky section drops the whole page.
 6. **Open Obsidian:** Open the page in Obsidian using the "Show in Obsidian" flow from `references/wiki-write-protocol.md`. Never display the page content in chat — the developer reads it in Obsidian.
-7. Present rating options:
-   > How's your recall?
-   > **1** Again (forgot — review tomorrow) · **2** Hard (partial — ~3 days) · **3** Good (solid recall) · **4** Easy (instant — fast-track)
-8. Developer rates 1-4
-9. Run `scripts/wiki-reschedule <path> <rating>` — this computes the new interval, rewrites frontmatter, and re-indexes in one step
-10. Confirm rating and next review date: `Rated **Good (3)** — next review in 8 days (2026-04-17)`
+7. State the computed rating with the per-section breakdown, and offer an override:
+   > Section A: Good · Section B: Hard · Section C: Good → page rated **Hard (2)**.
+   > Say "actually good" / "actually again" to override, otherwise I'll apply this.
+8. If the developer overrides, use their rating; otherwise use the computed one.
+9. Run `scripts/wiki-reschedule <path> <rating> --probed "<Section A>,<Section B>"` — computes the new interval, rewrites frontmatter (including rotating `last_probed`), and re-indexes. Pass the exact section headings you probed, comma-separated.
+10. Confirm rating and next review date: `Rated **Hard (2)** — next review in 3 days (2026-04-22)`
 11. **Pause here.** Do NOT auto-advance. Wait for the developer to say "go on to next wiki", "next wiki", or "next" before proceeding. This gives them room to ask follow-up questions, request a deeper walkthrough, or discuss the entry.
 12. After all entries reviewed (or developer says "done with wiki"), proceed to Phase 3
 

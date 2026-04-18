@@ -14,6 +14,14 @@ source_skill: study-walkthrough
 depth: 1
 next_review: '2026-04-28'
 review_interval: 12
+probe_sections:
+- The Three Knobs
+- Scope Picks and Chooses
+- Module Path Format
+- Per-Resource Options
+- 'The controller: Option'
+- When to Use What
+last_probed: []
 ---
 
 # Scope vs Namespace

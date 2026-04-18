@@ -1,14 +1,30 @@
 ---
-title: "Delegated Type"
-aliases: [delegated_type, delegated types, delegated_type macro, Rails delegated type]
-tags: [rails, activerecord, polymorphism]
-created: 2026-04-17
-updated: 2026-04-17
+title: Delegated Type
+aliases:
+- delegated_type
+- delegated types
+- delegated_type macro
+- Rails delegated type
+tags:
+- rails
+- activerecord
+- polymorphism
+created: '2026-04-17'
+updated: '2026-04-17'
 source_skill: study-walkthrough
 depth: 1
-last_deepened: 2026-04-17
-next_review: 2026-04-20
+last_deepened: '2026-04-17'
+next_review: '2026-04-20'
 review_interval: 3
+probe_sections:
+- The Problem It Solves
+- Schema Shape
+- The Declaration
+- Direction of Delegation
+- 'Design Rule: Where Attributes Live'
+- STI vs Delegated Type
+- N+1 Gotcha
+last_probed: []
 ---
 
 # Delegated Type

@@ -13,6 +13,13 @@ source_skill: study-walkthrough
 depth: 1
 next_review: '2026-04-24'
 review_interval: 8
+probe_sections:
+- 6 Routes, Not 7
+- Controller Is Still Plural
+- When to Use
+- How Identity Is Resolved
+- Nesting Works the Same
+last_probed: []
 ---
 
 # Singular Resource

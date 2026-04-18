@@ -102,7 +102,9 @@
       "Bash(chezmoi forget:*)",
       "Bash(obsidian open:*)",
       "Bash(obsidian \"obsidian://open?vault=study&file=openapi/schema-composition\")",
-      "Read(//home/felix/.agents/skills/references/**)"
+      "Read(//home/felix/.agents/skills/references/**)",
+      "Bash(git diff *)",
+      "Read(//tmp/**)"
     ]
   }
 }

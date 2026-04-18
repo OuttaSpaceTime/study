@@ -1,15 +1,37 @@
 ---
-title: "git restore"
-aliases: [git restore command, restore files git]
-tags: [git, version-control]
-created: 2026-04-09
-updated: 2026-04-09
+title: git restore
+aliases:
+- git restore command
+- restore files git
+tags:
+- git
+- version-control
+created: '2026-04-09'
+updated: '2026-04-09'
 source_skill: study-walkthrough
-flashcard_ids: [cmne7xz9202lx0msonsbfhp3j, cmne7xz1y02k30msouw64srcz, cmne7xyv602if0msoa0ryw0o7, cmne7xyw902in0msoac5c4qm5, cmne7xyox02gx0msovt0cjf5p, cmne7xyge02ez0msohehvs3gj, cmne7xyd402e70mso1xuwru3o, cmne7xya902dh0msotg5sajyw, cmne7xy9k02d90mso2ibigeht]
+flashcard_ids:
+- cmne7xz9202lx0msonsbfhp3j
+- cmne7xz1y02k30msouw64srcz
+- cmne7xyv602if0msoa0ryw0o7
+- cmne7xyw902in0msoac5c4qm5
+- cmne7xyox02gx0msovt0cjf5p
+- cmne7xyge02ez0msohehvs3gj
+- cmne7xyd402e70mso1xuwru3o
+- cmne7xya902dh0msotg5sajyw
+- cmne7xy9k02d90mso2ibigeht
 depth: 1
-last_deepened: 2026-04-09
-next_review: 2026-04-21
+last_deepened: '2026-04-09'
+next_review: '2026-04-21'
 review_interval: 8
+probe_sections:
+- 'Targets: --worktree and --staged'
+- '--source: Restoring from Any Commit'
+- --ours and --theirs During Merge Conflicts
+- '--merge: Recreate Conflict State'
+- --ignore-unmerged
+- 'Interactive: -p'
+- Common Patterns
+last_probed: []
 ---
 
 # git restore

@@ -14,6 +14,10 @@ source_skill: study-walkthrough
 depth: 1
 next_review: '2026-04-28'
 review_interval: 12
+probe_sections:
+- draw -- Split Routes into Files
+- defaults -- Set Shared Parameters
+last_probed: []
 ---
 
 # Route Organization

@@ -1,11 +1,25 @@
 ---
-title: "transform_values"
-aliases: [transform_values, ruby transform_values, hash transform values]
-tags: [ruby, hash, enumerable]
-created: 2026-04-17
-updated: 2026-04-17
+title: transform_values
+aliases:
+- transform_values
+- ruby transform_values
+- hash transform values
+tags:
+- ruby
+- hash
+- enumerable
+created: '2026-04-17'
+updated: '2026-04-17'
 source_skill: study-walkthrough
 depth: 1
+probe_sections:
+- The intuition
+- vs map on a hash
+- The block receives only the value
+- Bang variant
+- with_index for positional info
+- When not to use it
+last_probed: []
 ---
 
 # transform_values

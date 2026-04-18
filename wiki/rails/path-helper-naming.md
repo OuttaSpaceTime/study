@@ -1,13 +1,25 @@
 ---
-title: "Path Helper Naming"
-aliases: [rename path helper, as option routes, path helper as, _index suffix]
-tags: [rails, routing]
-created: 2026-04-14
-updated: 2026-04-14
+title: Path Helper Naming
+aliases:
+- rename path helper
+- as option routes
+- path helper as
+- _index suffix
+tags:
+- rails
+- routing
+created: '2026-04-14'
+updated: '2026-04-14'
 source_skill: study-walkthrough
 depth: 1
-next_review: 2026-04-17
-review_interval: 3
+next_review: '2026-04-22'
+review_interval: 4
+probe_sections:
+- Renaming with `as:`
+- The `_index` Suffix
+- 'Fix: Set `as:` Explicitly'
+- Verifying
+last_probed: []
 ---
 
 # Path Helper Naming

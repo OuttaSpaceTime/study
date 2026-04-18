@@ -1,14 +1,26 @@
 ---
-title: "index_with"
-aliases: [Enumerable index_with, ActiveSupport index_with]
-tags: [ruby, rails, active-support, enumerable]
-created: 2026-04-10
-updated: 2026-04-10
+title: index_with
+aliases:
+- Enumerable index_with
+- ActiveSupport index_with
+tags:
+- ruby
+- rails
+- active-support
+- enumerable
+created: '2026-04-10'
+updated: '2026-04-10'
 source_skill: study-walkthrough
 flashcard_ids: []
 depth: 1
-next_review: 2026-04-21
+next_review: '2026-04-21'
 review_interval: 8
+probe_sections:
+- Fixed Value vs Block
+- index_with vs index_by
+- index_with vs to_h
+- Duplicate Keys
+last_probed: []
 ---
 
 # index_with
