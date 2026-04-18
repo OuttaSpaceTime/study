@@ -1,10 +1,10 @@
 {
   "mcpServers": {
-    "master-dev-srs": {
+    "flashcard-mcp": {
       "command": "npx",
-      "args": ["tsx", "/home/felix/Code/Misc/master-dev/src/mcp/server.ts"],
+      "args": ["tsx", "/home/felix/Code/Misc/flashcard-mcp/src/mcp/server.ts"],
       "env": {
-        "DATABASE_URL": "file:/home/felix/Code/Misc/master-dev/prisma/master.db"
+        "DATABASE_URL": "file:/home/felix/Code/Misc/flashcard-mcp/prisma/master.db"
       }
     }
   }

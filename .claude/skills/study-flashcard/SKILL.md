@@ -40,7 +40,7 @@ The footer is a single line, rendered verbatim, at the very bottom of the messag
 
 ## MCP Server Dependency
 
-This skill requires the `master-dev-srs` MCP server. Tools used: `find_similar_cards`, `create_card`, `list_decks`.
+This skill requires the `flashcard-mcp` MCP server. Tools used: `find_similar_cards`, `create_card`, `list_decks`.
 
 **Note:** Always use `find_similar_cards` for duplicate detection — it uses semantic similarity (Jaccard + cosine embeddings). `search_cards` is exact substring match only and is not suitable for duplicate checks.
 

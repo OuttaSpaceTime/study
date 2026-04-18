@@ -1,6 +1,6 @@
 # Study Workspace
 
-Personal development workspace combining daily rituals, spaced repetition flashcard review, and a developer wiki. Uses the [master-dev](../master-dev) SRS system via MCP. Inspired by the [Karpathy LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) pattern — but content only enters through interactive skills, never raw ingestion.
+Personal development workspace combining daily rituals, spaced repetition flashcard review, and a developer wiki. Uses the [flashcard-mcp](../flashcard-mcp) SRS system via MCP. Inspired by the [Karpathy LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) pattern — but content only enters through interactive skills, never raw ingestion.
 
 ## Available Skills
 
@@ -70,9 +70,9 @@ Daily append-only logs in `logs/YYYY-MM-DD.md`. Each session records: skill used
 
 ## MCP Server
 
-The `master-dev-srs` MCP server must be running. It starts automatically via `.mcp.json` (stdio transport pointing to `~/Code/Misc/master-dev/src/mcp/server.ts`).
+The `flashcard-mcp` MCP server must be running. It starts automatically via `.mcp.json` (stdio transport pointing to `~/Code/Misc/flashcard-mcp/src/mcp/server.ts`).
 
-If tools aren't available, check that `~/Code/Misc/master-dev` has dependencies installed (`npm install` in that directory).
+If tools aren't available, check that `~/Code/Misc/flashcard-mcp` has dependencies installed (`npm install` in that directory).
 
 ## Development
 

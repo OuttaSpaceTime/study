@@ -35,9 +35,9 @@ See `~/.claude/skills/references/interactive-principles.md` for shared interacti
 
 ## MCP Server Dependency
 
-This skill requires the `master-dev-srs` MCP server running from `~/Code/Misc/master-dev`. If tools are not available, tell the user:
+This skill requires the `flashcard-mcp` MCP server running from `~/Code/Misc/flashcard-mcp`. If tools are not available, tell the user:
 
-> The master-dev SRS server isn't running. Check `.mcp.json` or run `npm install` in `~/Code/Misc/master-dev`.
+> The flashcard-mcp SRS server isn't running. Check `.mcp.json` or run `npm install` in `~/Code/Misc/flashcard-mcp`.
 
 ## Modes of Invocation
 

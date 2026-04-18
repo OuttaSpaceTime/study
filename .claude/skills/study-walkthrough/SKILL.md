@@ -40,7 +40,7 @@ The footer is a single line, rendered verbatim, at the very bottom of the messag
 
 ## MCP Server Dependency
 
-This skill uses the `master-dev-srs` MCP server for flashcard lookup. Tools used: `find_similar_cards`, `search_cards`, `get_card`.
+This skill uses the `flashcard-mcp` MCP server for flashcard lookup. Tools used: `find_similar_cards`, `search_cards`, `get_card`.
 
 ## Invocation
 

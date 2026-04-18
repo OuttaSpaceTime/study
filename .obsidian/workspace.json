@@ -185,6 +185,8 @@
   },
   "active": "04acedb9c3bb2614",
   "lastOpenFiles": [
+    "AGENTS.md.tmp.362539.1776546103041",
+    "AGENTS.md.tmp.362539.1776546095144",
     "wiki/indexes/index.db-shm",
     "wiki/indexes/index.db-wal",
     "wiki/security/hsts.md",
@@ -200,7 +202,6 @@
     "logs/2026-04-17.md.tmp.130568.1776437951284",
     "wiki/sql/array-agg.md",
     "wiki/sql/array-agg.md.tmp.130568.1776437930098",
-    "wiki/sql",
     "wiki/rails/index-with.md",
     "logs/2026-04-17.md",
     "wiki/rails/scope-vs-namespace.md",
