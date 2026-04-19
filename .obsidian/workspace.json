@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "wiki/rails/path-helper-naming.md",
+                "file": "wiki/git/git-restore.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "path-helper-naming"
+              "title": "git-restore"
             }
           }
         ]
@@ -185,41 +185,41 @@
   },
   "active": "04acedb9c3bb2614",
   "lastOpenFiles": [
+    "logs/2026-04-19.md.tmp.110439.1776611883895",
+    "logs/2026-04-19.md.tmp.8363.1776590716485",
+    "logs/2026-04-19.md.tmp.8363.1776589762954",
+    "logs/2026-04-19.md.tmp.8363.1776589703002",
+    "logs/2026-04-19.md",
+    "logs/2026-04-19.md.tmp.8363.1776578753006",
+    "wiki/ruby/transform-values.md",
+    "wiki/openapi/schema-composition.md",
+    "2026-04-13.md",
+    "wiki/rails/route-organization.md",
+    "wiki/rails/delegated-type.md",
+    "wiki/rails/index-with.md",
+    "wiki/rails/path-helper-naming.md",
     "tests/test_reschedule.py.tmp.410215.1776550753786",
     "scripts/wiki/write.py.tmp.410215.1776550744330",
     "scripts/wiki/write.py.tmp.410215.1776550741025",
     "scripts/wiki/write.py.tmp.410215.1776550733956",
     "scripts/wiki/lint.py.tmp.410215.1776550724744",
     "scripts/wiki/lint.py.tmp.410215.1776550717448",
-    "scripts/wiki/lint.py.tmp.410215.1776550707762",
-    "scripts/wiki/lint.py.tmp.410215.1776550697864",
-    "scripts/srs_pressure.py.tmp.410215.1776550519541",
-    "AGENTS.md.tmp.410215.1776550500762",
-    "scripts/wiki/lint.py.tmp.374651.1776550456289",
     "wiki/rails/collection-and-member-routes.md",
     "wiki/security/hsts.md",
     "wiki/rails/activerecord-pick.md",
     "logs/2026-04-18.md",
-    "wiki/ruby/transform-values.md",
-    "wiki/rails/delegated-type.md",
     "wiki/sql/array-agg.md",
-    "wiki/rails/index-with.md",
     "logs/2026-04-17.md",
     "wiki/rails/scope-vs-namespace.md",
     "wiki/rails/shallow-routing.md",
     "wiki/rails/singular-resource.md",
     "wiki/rails/routing-concerns.md",
-    "wiki/rails/route-organization.md",
-    "wiki/rails/path-helper-naming.md",
     "logs/2026-04-16.md",
     "CLAUDE.md",
     "wiki/rails/collection-member-routes.md",
     "logs/2026-04-14.md",
     "Replaced elements.md",
     "logs/2026-04-13.md",
-    "grid line numbering.md",
-    "2026-04-13.md",
-    "wiki/openapi/schema-composition.md",
-    "wiki/git/git-restore.md"
+    "grid line numbering.md"
   ]
 }
