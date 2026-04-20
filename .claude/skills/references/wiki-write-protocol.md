@@ -91,6 +91,7 @@ Infer the folder from tags and existing wiki structure:
 - Propose: "I'd put this in `wiki/architecture/`. OK?"
 - Developer confirms or overrides
 - Create the folder if it doesn't exist: `mkdir -p wiki/<folder>/`
+- If the proposed folder has no `<folder>-index.md` yet, offer to create the MOC page in the same step (see "MOC Pages" below).
 
 ### Step 7: Write File
 
@@ -147,6 +148,58 @@ At any point during any skill, the developer can say "show in Obsidian", "open i
    Use the bare slug (e.g. `git-restore`, `hsts`) — `file=` resolves by name like wikilinks. Do NOT use `path=` (returns "File not found"). The vault name is `study`.
 
 4. **Resume the skill session** — this is a non-blocking side action, not a skill interruption.
+
+## MOC Pages
+
+Every top-level wiki folder has a **MOC (Map of Content) page** — a hub that wikilinks every other page in the folder. This gives the Obsidian graph a clean hub-and-spoke shape per topic and provides a browsable index.
+
+### Convention
+
+- One MOC per top-level folder: `wiki/<folder>/<folder>-index.md` (e.g. `wiki/git/git-index.md`)
+- Title: `"<Folder> Index"`, slug = `<folder>-index`, wikilink: `[[<folder>/<folder>-index]]`
+- Only top-level folders get MOCs — nested folders do not.
+
+### MOC frontmatter template
+
+```yaml
+---
+title: "Git Index"
+aliases: [git-moc, git map]
+tags: [moc, git]
+category: work
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+source_skill: manual
+probe_sections: [Pages]
+last_probed: [Pages]
+allow_orphan: true
+---
+
+# Git Index
+
+Map of content for the `git/` wiki folder. Auto-maintained by `scripts/wiki-write`.
+
+## Pages
+
+- [[git/git-restore]]
+```
+
+### Rules for MOC pages
+
+- **Must include `tags: [moc, <folder>]`** — the `moc` tag is the exclusion marker; `scripts/wiki-due` and study-selection skips any entry tagged `moc`.
+- **Must NOT include `next_review` / `review_interval`** — MOCs are hubs, not studyable content.
+- **Must include `allow_orphan: true`** — MOCs have no inbound links by design.
+- **Must NOT be created as flashcard sources** — do not pass them to `/study-flashcard`.
+
+### Auto-maintenance
+
+`scripts/wiki-write` **auto-rebuilds the `## Pages` section** of the folder's MOC every time any page in that folder is written. The rebuild is from the filesystem (sorted wikilinks to every non-MOC `*.md` in the folder), so:
+
+- Skills writing a new page do **not** need to touch the MOC manually — it will be updated automatically.
+- Deleted pages drop out on the next write in that folder.
+- Manual edits to the `## Pages` section are overwritten on the next write; edit other sections freely.
+
+If a folder has no MOC yet, `scripts/wiki-write` emits a stderr warning and the lint reports `moc-missing`. Create the MOC once using the template above, then run `scripts/wiki-write wiki/<folder>/<folder>-index.md`.
 
 ## Linking Rules Summary
 

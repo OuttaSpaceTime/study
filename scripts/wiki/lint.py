@@ -80,8 +80,43 @@ def lint_wiki(wiki_dir: Path) -> tuple[list[str], list[str]]:
     errors.extend(_check_slugs(pages))
     errors.extend(_check_flashcard_ids(pages, index))
     errors.extend(_check_probe_sections(wiki_dir, pages, index))
+    warnings.extend(_check_moc_coverage(wiki_dir, pages))
 
     return errors, warnings
+
+
+def _check_moc_coverage(wiki_dir: Path, pages: list[ParsedPage]) -> list[str]:
+    """Warn when MOCs and folders drift out of sync.
+
+    - moc-missing: folder has pages but no <folder>-index.md
+    - moc-drift:   folder has a MOC but some non-MOC page isn't listed in it
+    """
+    warnings: list[str] = []
+    by_folder: dict[str, list[ParsedPage]] = {}
+    for p in pages:
+        parent = p.path.parent
+        if parent.parent != wiki_dir:
+            continue
+        by_folder.setdefault(parent.name, []).append(p)
+
+    for folder, folder_pages in by_folder.items():
+        moc_name = f"{folder}-index.md"
+        moc = next((p for p in folder_pages if p.path.name == moc_name), None)
+        siblings = [p for p in folder_pages if p.path.name != moc_name]
+        if moc is None:
+            if siblings:
+                warnings.append(
+                    f"moc-missing: folder '{folder}' has {len(siblings)} page(s) but no {moc_name}"
+                )
+            continue
+        listed = set(_WIKILINK_RE.findall(_strip_code(moc.body)))
+        for sib in siblings:
+            expected = f"{folder}/{sib.path.stem}"
+            if expected not in listed:
+                warnings.append(
+                    f"moc-drift: {sib.rel} not listed in {folder}/{moc_name}"
+                )
+    return warnings
 
 
 def _strip_code(body: str) -> str:

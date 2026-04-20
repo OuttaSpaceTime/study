@@ -7,11 +7,53 @@ import json
 import shutil
 import subprocess
 import sys
+from datetime import date
 from pathlib import Path
 
 from scripts.wiki.embed import update_embeddings
+from scripts.wiki.frontmatter import dump_page, parse_frontmatter
 from scripts.wiki.index import iter_wiki_pages, load_index, save_index, update_entry
 from scripts.wiki.lint import lint_wiki
+
+
+def _moc_path(wiki_dir: Path, folder: str) -> Path:
+    return wiki_dir / folder / f"{folder}-index.md"
+
+
+def update_moc(page_path: Path, wiki_dir: Path) -> bool:
+    """Rebuild the folder MOC's `## Pages` from the filesystem. Returns True iff the MOC changed."""
+    page_path = Path(page_path)
+    wiki_dir = Path(wiki_dir)
+
+    if page_path.parent.parent != wiki_dir:
+        return False
+
+    folder = page_path.parent.name
+    moc = _moc_path(wiki_dir, folder)
+    if not moc.exists():
+        print(f"Warning: no MOC for folder '{folder}' — create {moc.relative_to(wiki_dir.parent)}", file=sys.stderr)
+        return False
+
+    slugs = sorted(p.stem for p in (wiki_dir / folder).glob("*.md") if p.name != moc.name)
+    moc_meta, moc_body = parse_frontmatter(moc.read_text())
+
+    lines = moc_body.splitlines()
+    start = next((i for i, line in enumerate(lines) if line.strip() == "## Pages"), None)
+    if start is None:
+        raise ValueError(f"MOC {moc} has no '## Pages' section")
+    end = next((j for j in range(start + 1, len(lines)) if lines[j].startswith("## ")), len(lines))
+
+    new_block = [lines[start], ""] + [f"- [[{folder}/{s}]]" for s in slugs] + [""]
+    rebuilt_body = "\n".join(lines[:start] + new_block + lines[end:])
+    if moc_body.endswith("\n"):
+        rebuilt_body += "\n"
+
+    if rebuilt_body == moc_body:
+        return False
+
+    moc_meta["updated"] = date.today().isoformat()
+    moc.write_text(dump_page(moc_meta, rebuilt_body))
+    return True
 
 
 def wiki_write(page_path: Path, wiki_dir: Path = Path("wiki")) -> dict:
@@ -51,6 +93,16 @@ def wiki_write(page_path: Path, wiki_dir: Path = Path("wiki")) -> dict:
         print(f"Embedded: {rel_key}", file=sys.stderr)
     except Exception as e:
         print(f"Warning: Ollama not available, skipping embedding: {e}", file=sys.stderr)
+
+    # Step 3b: Auto-update folder MOC (reindex only if changed)
+    try:
+        if update_moc(page_path, wiki_dir):
+            moc = _moc_path(wiki_dir, page_path.parent.name)
+            if moc != page_path:
+                index = update_entry(index, wiki_dir, moc)
+                save_index(index_path, index)
+    except (OSError, ValueError) as e:
+        print(f"Warning: MOC update failed ({type(e).__name__}): {e}", file=sys.stderr)
 
     # Step 4: Lint
     errors, warnings = lint_wiki(wiki_dir)

@@ -556,5 +556,167 @@
       "N+1 Gotcha"
     ],
     "last_probed": []
+  },
+  "git/git-index": {
+    "file": "git/git-index.md",
+    "title": "Git Index",
+    "aliases": [
+      "git-moc",
+      "git map"
+    ],
+    "tags": [
+      "moc",
+      "git"
+    ],
+    "category": "work",
+    "sections": [
+      "Pages"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-20",
+    "updated": "2026-04-20",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Pages"
+    ],
+    "last_probed": [
+      "Pages"
+    ]
+  },
+  "openapi/openapi-index": {
+    "file": "openapi/openapi-index.md",
+    "title": "OpenAPI Index",
+    "aliases": [
+      "openapi-moc",
+      "openapi map"
+    ],
+    "tags": [
+      "moc",
+      "openapi"
+    ],
+    "category": "work",
+    "sections": [
+      "Pages"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-20",
+    "updated": "2026-04-20",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Pages"
+    ],
+    "last_probed": [
+      "Pages"
+    ]
+  },
+  "rails/rails-index": {
+    "file": "rails/rails-index.md",
+    "title": "Rails Index",
+    "aliases": [
+      "rails-moc",
+      "rails map"
+    ],
+    "tags": [
+      "moc",
+      "rails"
+    ],
+    "category": "work",
+    "sections": [
+      "Pages"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-20",
+    "updated": "2026-04-20",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Pages"
+    ],
+    "last_probed": [
+      "Pages"
+    ]
+  },
+  "ruby/ruby-index": {
+    "file": "ruby/ruby-index.md",
+    "title": "Ruby Index",
+    "aliases": [
+      "ruby-moc",
+      "ruby map"
+    ],
+    "tags": [
+      "moc",
+      "ruby"
+    ],
+    "category": "work",
+    "sections": [
+      "Pages"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-20",
+    "updated": "2026-04-20",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Pages"
+    ],
+    "last_probed": [
+      "Pages"
+    ]
+  },
+  "security/security-index": {
+    "file": "security/security-index.md",
+    "title": "Security Index",
+    "aliases": [
+      "security-moc",
+      "security map"
+    ],
+    "tags": [
+      "moc",
+      "security"
+    ],
+    "category": "work",
+    "sections": [
+      "Pages"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-20",
+    "updated": "2026-04-20",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Pages"
+    ],
+    "last_probed": [
+      "Pages"
+    ]
+  },
+  "sql/sql-index": {
+    "file": "sql/sql-index.md",
+    "title": "SQL Index",
+    "aliases": [
+      "sql-moc",
+      "sql map"
+    ],
+    "tags": [
+      "moc",
+      "sql"
+    ],
+    "category": "work",
+    "sections": [
+      "Pages"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-20",
+    "updated": "2026-04-20",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Pages"
+    ],
+    "last_probed": [
+      "Pages"
+    ]
   }
 }

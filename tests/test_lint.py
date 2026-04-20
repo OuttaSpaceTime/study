@@ -42,6 +42,26 @@ MINIMAL_PAGE = """\
 class TestCleanWiki:
     def test_single_page_clean(self, wiki_dir: Path):
         _write_page(wiki_dir, "git/test-page.md", MINIMAL_PAGE)
+        _write_page(wiki_dir, "git/git-index.md", textwrap.dedent("""\
+            ---
+            title: "Git Index"
+            aliases: [git-moc]
+            tags: [moc, git]
+            category: work
+            created: 2026-04-09
+            updated: 2026-04-09
+            source_skill: manual
+            probe_sections: [Pages]
+            last_probed: [Pages]
+            allow_orphan: true
+            ---
+
+            # Git Index
+
+            ## Pages
+
+            - [[git/test-page]]
+        """))
         _write_index(wiki_dir, {
             "git/test-page": {
                 "file": "git/test-page.md",

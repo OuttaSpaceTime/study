@@ -27,6 +27,8 @@ def get_due_entries(
             continue
         if nr > today:
             continue
+        if "moc" in (entry.get("tags") or []):
+            continue
         if category is not None and entry.get("category") != category:
             continue
         due.append(
