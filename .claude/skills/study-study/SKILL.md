@@ -58,25 +58,25 @@ Every study session is scoped to a single category. Follow `references/category-
 
 ## Study Session Flow
 
-### Phase 1: Status Check & Wiki Revisit Prompt (1 message)
+### Phase 1: Pressure Check & Status (1 message)
 
-Call MCP tools: `get_stats`, `get_due_cards`, `list_decks`.
+**Burdened-state preflight — always first.** Run `scripts/srs-pressure --human` and surface its verdict as the opening line of the first message. State explicitly whether the developer is within a burdened state or not before anything else. The script is the **single source of truth** for due counts and per-deck breakdown — it fetches accurate counts via the flashcard-mcp CLI.
 
-Resolve the **session category** first (see Category section). Once known, pass `--category <cat>` to every `scripts/wiki-due` call in this skill so counts and lists are scoped consistently.
+Do **not** call `mcp__flashcard-mcp__get_due_cards` for pressure counts — it caps at 30 and underreports. The script's per-deck breakdown replaces a separate `list_decks` call for status purposes. You may still call `get_stats` for streak/recent-sessions context, and `list_decks` is fine only if you later need deck IDs for `start_session`.
+
+Resolve the **session category** (see Category section). Once known, pass `--category <cat>` to every `scripts/wiki-due` call in this skill so counts and lists are scoped consistently.
 
 Run `scripts/wiki-due --count --category <cat>` to get the number of wiki entries due for review **in the chosen category**.
 
-**Macro analytics:** Read recent entries from `logs/` (last 7 days). Compute:
-- Cards reviewed this week, average accuracy, lapse trend (improving or declining)
-- Topics with repeated lapses (same card lapsed 2+ times across sessions)
+**Read `logs/` for analysis, never tail into chat.** You may read recent log entries to compute macro analytics (weekly accuracy, lapse trends, repeated-lapse topics) and use them to shape recommendations (e.g., suggest a walkthrough for a repeatedly-lapsed topic). But do **not** print log excerpts, weekly stats dumps, or lapse tables into the chat. Surface only a single-line takeaway when it drives a concrete suggestion — otherwise stay silent. The pressure-check verdict remains the only load signal shown at the top of Phase 1.
 
 **Wiki revisit check:** Read `wiki/.wiki-index.json`, find pages where `last_deepened` is >30 days ago or `depth` is 1. If any exist, surface 1-2:
 > Wiki page [[architecture/event-sourcing]] hasn't been revisited in 45 days (depth: 1). Consider `/study-walkthrough` to deepen it.
 
 Present a brief status (include wiki due count when > 0):
 
-> You have **2 wiki entries due for review** and **8 cards due** (3 in Deck A, 5 in Deck B). Your streak is 4 days.
-> This week: 34 cards, 81% accuracy (↑ from 76% last week). Repeated lapses on: event sourcing (3x).
+> **Pressure:** not burdened (42 due, within capacity).
+> You have **2 wiki entries due for review** and **8 cards due** (3 in Deck A, 5 in Deck B).
 > We'll start with wiki review, then move to flashcards. Ready?
 
 If no cards are due but wiki entries are:
@@ -221,10 +221,7 @@ Omit the **Wiki reviewed** line if no wiki entries were reviewed in this session
 
 **Wiki review entries use bare wikilinks, never backticked.** Write `[[architecture/event-sourcing]]` not `` `[[architecture/event-sourcing]]` ``. Backticks prevent Obsidian from rendering clickable links.
 
-**Repeated lapse detection:** Check session logs from the past 7 days. If a topic has lapsed 3+ times across sessions and has no wiki page, **proactively recommend** creating one:
-> "Event sourcing has lapsed 3 times this week and has no wiki page. This pattern suggests a gap that flashcards alone aren't closing. I'd recommend `/study-walkthrough event sourcing` to build a deeper understanding and write a wiki page."
-
-This is stronger than "offer" — it's a data-driven recommendation. The developer still decides.
+**Repeated lapse detection:** Read recent session logs to detect cross-session repeat lapses. If a topic has lapsed 3+ times across the past 7 days and has no wiki page, recommend `/study-walkthrough <topic>` — but keep the recommendation to a single sentence. Do not print the supporting log excerpts or per-session breakdowns.
 
 **Post-session offers:**
 - `/study-walkthrough <topic>` for struggling areas — "You had 2 lapses on event sourcing. Want to deepen that with /study-walkthrough?"

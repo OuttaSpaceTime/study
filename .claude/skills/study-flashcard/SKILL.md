@@ -67,12 +67,11 @@ When invoked with a block of text or URL, treat it as source material. The flash
 
 Follow `references/srs-pressure-check.md` exactly. Summary:
 
-1. Call `mcp__flashcard-mcp__get_due_cards` and `mcp__flashcard-mcp__list_decks` (only for the pressure signals — do not use the decks result yet for Checkpoint 1).
-2. Run `scripts/srs-pressure --flashcards-due <N> --new-today <M> --human`.
-3. First message output:
+1. Run `scripts/srs-pressure --human` — it fetches accurate counts via the flashcard-mcp CLI itself. Do **not** call `mcp__flashcard-mcp__get_due_cards` or `mcp__flashcard-mcp__list_decks` for pressure signals (`get_due_cards` caps at 30 and will underreport).
+2. First message output:
    - `ok` → one line: `SRS pressure: ok — proceeding.`
    - `warn` / `pause` → full script output verbatim, then the gate question from the reference. Wait for an explicit answer before Checkpoint 1.
-4. Progress footer for this message: `Preflight — SRS Pressure Check`.
+3. Progress footer for this message: `Preflight — SRS Pressure Check`.
 
 **Contract:** skipping this step, folding it into Checkpoint 1, or running other tool calls before the verdict is a contract violation — same severity as omitting the progress footer. "Just one card" / "we already ran it earlier" / "the developer told me what they want" are **not** valid reasons to skip.
 

@@ -74,12 +74,11 @@ The skill operates in two modes based on invocation and context:
 
 Follow `references/srs-pressure-check.md` exactly. Summary:
 
-1. Call `mcp__flashcard-mcp__get_due_cards` and `mcp__flashcard-mcp__list_decks` for the pressure signals.
-2. Run `scripts/srs-pressure --flashcards-due <N> --new-today <M> --human`.
-3. First message output:
+1. Run `scripts/srs-pressure --human` — it fetches accurate counts via the flashcard-mcp CLI itself. Do **not** call `mcp__flashcard-mcp__get_due_cards` or `mcp__flashcard-mcp__list_decks` for pressure signals (`get_due_cards` caps at 30 and will underreport).
+2. First message output:
    - `ok` → one line: `SRS pressure: ok — proceeding.`
    - `warn` / `pause` → full script output verbatim, then the gate question. Wait for an explicit answer before Phase 1.
-4. Progress footer for this message: `Preflight — SRS Pressure Check`.
+3. Progress footer for this message: `Preflight — SRS Pressure Check`.
 
 **Contract:** skipping this step, folding it into Phase 1, or running other tool calls before the verdict is a contract violation — same severity as omitting the progress footer. The developer can always opt out of downstream steps (e.g., "just deepen, no wiki") mid-session — that does not justify skipping preflight.
 

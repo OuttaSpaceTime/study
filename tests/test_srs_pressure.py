@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from scripts import srs_pressure
 from scripts.srs_pressure import (
     EXIT_OK,
     EXIT_PAUSE,
@@ -17,8 +18,10 @@ from scripts.srs_pressure import (
     WARN_FLASHCARDS,
     WARN_NEW_TODAY,
     WARN_WIKI,
+    DeckState,
     exit_code,
     main,
+    parse_decks_output,
     render_human,
     verdict,
     wiki_due_count,
@@ -173,9 +176,26 @@ class TestMainCLI:
         with pytest.raises(json.JSONDecodeError):
             json.loads(out)
 
-    def test_requires_flashcards_due(self, capsys, wiki_dir: Path):
-        with pytest.raises(SystemExit):
-            main(["--wiki-dir", str(wiki_dir)])
+    def test_self_fetches_when_flashcards_due_omitted(self, monkeypatch, capsys, wiki_dir: Path):
+        fake_decks = [
+            DeckState(name="Software Engineering", total=439, due=221, new=153, learning=5, review=275),
+        ]
+        monkeypatch.setattr(srs_pressure, "fetch_srs_state", lambda: fake_decks)
+        rc = main(["--wiki-dir", str(wiki_dir)])
+        assert rc == EXIT_PAUSE
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["flashcards_due"] == 221
+        assert payload["total_due"] == 221
+        assert payload["decks"] == [
+            {
+                "name": "Software Engineering",
+                "total": 439,
+                "due": 221,
+                "new": 153,
+                "learning": 5,
+                "review": 275,
+            }
+        ]
 
     def test_wiki_due_contributes_to_verdict(self, capsys, wiki_dir: Path):
         # Build an index with enough due entries to trigger a warn.
@@ -189,6 +209,42 @@ class TestMainCLI:
         payload = json.loads(capsys.readouterr().out)
         assert payload["wiki_due"] == WARN_WIKI
         assert payload["verdict"] == "warn"
+
+
+class TestParseDecksOutput:
+    SAMPLE = """Decks:
+
+  Software Engineering (439 cards)
+    Due: 221 | New: 153 | Learning: 5 | Review: 275
+  Personal (10 cards)
+    Due: 2 | New: 1 | Learning: 0 | Review: 9
+"""
+
+    def test_parses_multiple_decks(self):
+        decks = parse_decks_output(self.SAMPLE)
+        assert len(decks) == 2
+        assert decks[0] == DeckState("Software Engineering", 439, 221, 153, 5, 275)
+        assert decks[1] == DeckState("Personal", 10, 2, 1, 0, 9)
+
+    def test_empty_output(self):
+        assert parse_decks_output("") == []
+
+    def test_handles_deck_names_with_spaces_and_parens_in_total(self):
+        text = "  My Deck Name (7 cards)\n    Due: 0 | New: 0 | Learning: 0 | Review: 7\n"
+        decks = parse_decks_output(text)
+        assert decks == [DeckState("My Deck Name", 7, 0, 0, 0, 7)]
+
+
+class TestHumanOutputDeckBreakdown:
+    def test_includes_deck_breakdown_line(self):
+        decks = [DeckState("Software Engineering", 439, 221, 153, 5, 275)]
+        out = render_human("warn", ["221 flashcards due"], 221, 0, 0, decks)
+        assert "Decks:" in out
+        assert "Software Engineering — 221 due (153 new, 5 learning, 275 review)" in out
+
+    def test_omits_deck_breakdown_when_no_decks(self):
+        out = render_human("ok", [], 0, 0, 0, [])
+        assert "Decks:" not in out
 
 
 class TestThresholdInvariants:
