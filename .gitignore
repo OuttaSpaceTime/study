@@ -2,8 +2,13 @@
 __pycache__/
 
 # Obsidian workspace (user-specific, changes constantly)
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
 wiki/.obsidian/workspace.json
 wiki/.obsidian/workspace-mobile.json
+
+# Obsidian scratch canvases
+Untitled*.canvas
 
 # TreeSearch index (rebuilt from wiki content)
 wiki/indexes/
