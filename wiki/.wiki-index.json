@@ -10,6 +10,7 @@
       "git",
       "version-control"
     ],
+    "category": "work",
     "sections": [
       "Targets: --worktree and --staged",
       "--source: Restoring from Any Commit",
@@ -31,7 +32,7 @@
       "cmne7xy9k02d90mso2ibigeht"
     ],
     "created": "2026-04-09",
-    "updated": "2026-04-18",
+    "updated": "2026-04-20",
     "next_review": "2026-04-21",
     "review_interval": 8,
     "probe_sections": [
@@ -58,6 +59,7 @@
       "activerecord",
       "sql"
     ],
+    "category": "work",
     "sections": [
       "TL;DR",
       "Behavior",
@@ -68,7 +70,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-09",
-    "updated": "2026-04-18",
+    "updated": "2026-04-20",
     "next_review": "2026-04-28",
     "review_interval": 10,
     "probe_sections": [
@@ -94,6 +96,7 @@
       "json-schema",
       "api-design"
     ],
+    "category": "work",
     "sections": [
       "anyOf vs oneOf",
       "The oneOf Shared-Field Trap",
@@ -103,7 +106,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-09",
-    "updated": "2026-04-18",
+    "updated": "2026-04-20",
     "next_review": "2026-04-21",
     "review_interval": 8,
     "probe_sections": [
@@ -128,6 +131,7 @@
       "active-support",
       "enumerable"
     ],
+    "category": "work",
     "sections": [
       "Fixed Value vs Block",
       "index_with vs index_by",
@@ -137,7 +141,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-10",
-    "updated": "2026-04-18",
+    "updated": "2026-04-20",
     "next_review": "2026-04-21",
     "review_interval": 8,
     "probe_sections": [
@@ -161,6 +165,7 @@
       "https",
       "web"
     ],
+    "category": "work",
     "sections": [
       "The SSL Stripping Attack",
       "The Header",
@@ -177,7 +182,7 @@
       "cmne7xwri02050mso5k9tqzu4"
     ],
     "created": "2026-04-10",
-    "updated": "2026-04-18",
+    "updated": "2026-04-20",
     "next_review": "2026-04-23",
     "review_interval": 5,
     "probe_sections": [
@@ -202,6 +207,7 @@
       "rails",
       "routing"
     ],
+    "category": "work",
     "sections": [
       "6 Routes, Not 7",
       "Controller Is Still Plural",
@@ -212,7 +218,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-13",
-    "updated": "2026-04-18",
+    "updated": "2026-04-20",
     "next_review": "2026-04-24",
     "review_interval": 8,
     "probe_sections": [
@@ -237,6 +243,7 @@
       "rails",
       "routing"
     ],
+    "category": "work",
     "sections": [
       "The Three Knobs",
       "Scope Picks and Chooses",
@@ -248,7 +255,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-13",
-    "updated": "2026-04-18",
+    "updated": "2026-04-20",
     "next_review": "2026-04-28",
     "review_interval": 12,
     "probe_sections": [
@@ -273,6 +280,7 @@
       "rails",
       "routing"
     ],
+    "category": "work",
     "sections": [
       "The Split",
       "Why This Split",
@@ -282,7 +290,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-13",
-    "updated": "2026-04-18",
+    "updated": "2026-04-20",
     "next_review": "2026-04-24",
     "review_interval": 8,
     "probe_sections": [
@@ -305,6 +313,7 @@
       "rails",
       "routing"
     ],
+    "category": "work",
     "sections": [
       "The Problem",
       "Extract a Concern",
@@ -314,7 +323,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-13",
-    "updated": "2026-04-18",
+    "updated": "2026-04-20",
     "next_review": "2026-04-28",
     "review_interval": 12,
     "probe_sections": [
@@ -338,6 +347,7 @@
       "rails",
       "routing"
     ],
+    "category": "work",
     "sections": [
       "draw -- Split Routes into Files",
       "defaults -- Set Shared Parameters",
@@ -345,7 +355,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-13",
-    "updated": "2026-04-18",
+    "updated": "2026-04-20",
     "next_review": "2026-04-28",
     "review_interval": 12,
     "probe_sections": [
@@ -367,6 +377,7 @@
       "rails",
       "routing"
     ],
+    "category": "work",
     "sections": [
       "The Decision Table",
       "Syntax",
@@ -377,7 +388,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-14",
-    "updated": "2026-04-18",
+    "updated": "2026-04-20",
     "next_review": "2026-04-26",
     "review_interval": 8,
     "probe_sections": [
@@ -402,6 +413,7 @@
       "rails",
       "routing"
     ],
+    "category": "work",
     "sections": [
       "Renaming with `as:`",
       "The `_index` Suffix",
@@ -411,7 +423,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-14",
-    "updated": "2026-04-18",
+    "updated": "2026-04-20",
     "next_review": "2026-04-22",
     "review_interval": 4,
     "probe_sections": [
@@ -435,6 +447,7 @@
       "hash",
       "enumerable"
     ],
+    "category": "work",
     "sections": [
       "TL;DR",
       "The intuition",
@@ -447,7 +460,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-17",
-    "updated": "2026-04-18",
+    "updated": "2026-04-20",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -473,6 +486,7 @@
       "postgres",
       "aggregate"
     ],
+    "category": "work",
     "sections": [
       "TL;DR",
       "The intuition",
@@ -487,7 +501,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-17",
-    "updated": "2026-04-18",
+    "updated": "2026-04-20",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -516,6 +530,7 @@
       "activerecord",
       "polymorphism"
     ],
+    "category": "work",
     "sections": [
       "The Problem It Solves",
       "Schema Shape",
@@ -528,7 +543,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-17",
-    "updated": "2026-04-18",
+    "updated": "2026-04-20",
     "next_review": "2026-04-20",
     "review_interval": 3,
     "probe_sections": [

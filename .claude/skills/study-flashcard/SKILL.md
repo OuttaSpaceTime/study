@@ -47,12 +47,17 @@ This skill requires the `flashcard-mcp` MCP server. Tools used: `find_similar_ca
 ## Invocation
 
 ```
-/study-flashcard                          — Create flashcards (asks for topic and deck)
+/study-flashcard                          — Create flashcards (asks for topic, deck, and category)
 /study-flashcard <topic>                  — Create flashcards about a specific topic
 /study-flashcard <topic> <deck-name>      — Create flashcards about a topic in a specific deck
+/study-flashcard -c work|personal         — Preselect category (skip the category prompt)
 /study-flashcard --from <url>             — Create flashcards from a URL (use WebFetch to retrieve content)
 /study-flashcard <any text or paragraph>  — Extract key concepts from the provided text and create flashcards
 ```
+
+## Category
+
+Every `create_card` call in this skill must include a `category`. Follow `references/category-policy.md` to resolve it — prompt happens in Checkpoint 1 only if no `-c` flag and no inherited wiki category applies. The resolved value also lands in the companion wiki page's frontmatter if one is written in Checkpoint 4.
 
 When invoked with a block of text or URL, treat it as source material. The flashcards and wiki page capture only what was walked through and understood — not a raw dump.
 
@@ -78,6 +83,7 @@ Follow `references/srs-pressure-check.md` exactly. Summary:
 (Preflight must be complete and — if warn/pause — explicitly acknowledged by the developer before starting this checkpoint.)
 
 1. Call `list_decks` to show available decks. Ask which deck to target.
+1b. **Category prompt** (if not already set — see Category section above): ask work/personal. Store for use in Checkpoint 4 `create_card` calls.
 2. Determine what the developer wants to create flashcards about. Accept any of:
    - A topic, URL, file path, raw text, free text, or a concept from a recent session
    If raw text was provided at invocation, summarize: "I see 3 key concepts here: X, Y, Z. Which should we flashcard?"
@@ -128,12 +134,13 @@ For each card draft:
 
 1. Present all approved drafts in a numbered list
 2. Developer confirms: "Create these" or makes final edits
-3. For each approved draft, call `create_card` with deckId, front, back, tags, type
+3. For each approved draft, call `create_card` with deckId, front, back, tags, type, **and `category`** (the value captured in Checkpoint 1)
 4. Report results
 5. **Offer "write wiki"**: "Want to save a companion wiki page for these concepts?"
    - If yes, follow the full flow from `references/wiki-write-protocol.md`:
      - Draft a wiki page that goes beyond a thin summary — include context, examples, and the developer's own explanations from the walkthrough
      - Include `flashcard_ids` in frontmatter with the IDs of created cards
+     - Include `category` in frontmatter — the same value used for the cards
      - **Required:** link to at least 2 related wiki pages via `[[absolute/path]]` — search the index for connections. Companion pages must not be leaf nodes in the graph.
      - Resolve links, propose folder, write file, run `scripts/wiki-write`, append session log
    - If no, just log the session

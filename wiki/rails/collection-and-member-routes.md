@@ -8,6 +8,7 @@ aliases:
 tags:
 - rails
 - routing
+category: work
 created: '2026-04-14'
 updated: '2026-04-14'
 source_skill: study-walkthrough

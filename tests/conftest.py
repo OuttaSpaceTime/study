@@ -26,6 +26,7 @@ def sample_page(wiki_dir: Path) -> Path:
         title: "test page"
         aliases: [test alias, another alias]
         tags: [git, testing]
+        category: work
         created: 2026-04-09
         updated: 2026-04-09
         source_skill: study-walkthrough

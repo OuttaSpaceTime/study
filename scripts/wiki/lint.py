@@ -21,10 +21,13 @@ REQUIRED_FIELDS = {
     "title",
     "aliases",
     "tags",
+    "category",
     "created",
     "updated",
     "source_skill",
 }
+
+KNOWN_CATEGORIES = {"work", "personal"}
 
 _FENCED_CODE_RE = re.compile(r"```.*?```", re.DOTALL)
 _INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
@@ -69,6 +72,7 @@ def lint_wiki(wiki_dir: Path) -> tuple[list[str], list[str]]:
     warnings: list[str] = []
 
     errors.extend(_check_frontmatter(pages))
+    errors.extend(_check_category(pages))
     link_errors, inbound = _check_wikilinks(wiki_dir, pages)
     errors.extend(link_errors)
     warnings.extend(_check_orphans(pages, inbound))
@@ -96,6 +100,19 @@ def _check_frontmatter(pages: list[ParsedPage]) -> list[str]:
         for field in REQUIRED_FIELDS:
             if field not in p.meta:
                 errors.append(f"missing-field: {p.rel} missing frontmatter field '{field}'")
+    return errors
+
+
+def _check_category(pages: list[ParsedPage]) -> list[str]:
+    errors = []
+    for p in pages:
+        if "category" not in p.meta:
+            continue
+        value = p.meta.get("category")
+        if value not in KNOWN_CATEGORIES:
+            errors.append(
+                f"invalid-category: {p.rel} has category '{value}' (must be one of {sorted(KNOWN_CATEGORIES)})"
+            )
     return errors
 
 

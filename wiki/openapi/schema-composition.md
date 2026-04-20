@@ -9,6 +9,7 @@ tags:
 - openapi
 - json-schema
 - api-design
+category: work
 created: '2026-04-09'
 updated: '2026-04-09'
 source_skill: study-walkthrough

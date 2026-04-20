@@ -45,9 +45,9 @@ Read today's `logs/YYYY-MM-DD.md` (create date if file doesn't exist). Count exi
 
 > **Yesterday you left off:** [left off text]
 
-### Phase 2: Todo Review (light)
+### Phase 2: Todo Read (silent)
 
-Read `todo.md` from the project root. It is a single ordered list — top item is the current highest priority.
+Read `todo.md` from the project root. It is a single ordered list — top item is the current highest priority. Do **not** present the list to the developer — the todo list is auto-managed. Hold it in memory for Phase 3.5 reorder logic.
 
 If `todo.md` doesn't exist, create it empty:
 
@@ -56,17 +56,7 @@ If `todo.md` doesn't exist, create it empty:
 
 ```
 
-Show the top 5 items (or all, if fewer):
-
-> **Current priorities (top first):**
-> 1. [top item]
-> 2. …
->
-> Anything to check off or add before we dig in?
-
-Wait for response. Apply simple updates (check off completed, add new items at a position the developer specifies — default to the end if unspecified). Do NOT reorder yet — that happens after the focus question in Phase 3.5.
-
-If the list is empty: acknowledge and move on.
+Move directly into Phase 3 without surfacing the current items or asking for check-offs.
 
 ### Phase 3: Fixed Questions
 
@@ -181,7 +171,7 @@ Otherwise hand off plainly. Don't force the suggestion.
 
 **Always:**
 - Ask questions one at a time
-- Read `todo.md` every session; only modify with explicit confirmation
+- Read `todo.md` every session silently; only modify with explicit confirmation and never present the list unprompted
 - Open the motivational interview with time-framing
 - Write the session log
 - Respect "done" / "stop" immediately

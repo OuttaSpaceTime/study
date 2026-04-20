@@ -48,9 +48,14 @@ This skill uses the `flashcard-mcp` MCP server for flashcard lookup. Tools used:
 /study-walkthrough                        — Start (asks for topic)
 /study-walkthrough <topic>                — Walkthrough on a specific topic
 /study-walkthrough --write <topic>        — Write-focused: walkthrough → wiki page (always writes)
+/study-walkthrough -c work|personal       — Preselect category for a new wiki page (inherits when extending)
 /study-walkthrough --from <url>           — Walkthrough from URL content
 /study-walkthrough <pasted text>          — Walkthrough from provided text
 ```
+
+## Category
+
+Every wiki page written or extended by this skill carries a `category`. Follow `references/category-policy.md` to resolve it — extending inherits from the existing page (never overwrite); creating prompts in Phase 1 Step 4 (write-focused) or before the first write (deepen-focused) unless `-c` was passed. Propagate the resolved value to any chained `/study-flashcard` session.
 
 When invoked with `--write`, the session defaults to producing a wiki page as the primary artifact. The walkthrough still ensures understanding, but Phase 4 writes to wiki by default rather than offering it as an option.
 
@@ -122,6 +127,8 @@ If the session is write-focused, decide scope and page type now:
   - If the topic decomposes into >5 sub-concepts: suggest splitting into multiple pages
   - If the developer already knows the topic well: compress Phase 2 and move to drafting
   - If the topic is trivial (single fact or one-liner): suggest adding it to an existing page or skipping
+
+- **Category** (closed set): `work` or `personal`. If extending an existing page, inherit from that page. If `-c` was passed, use it. Otherwise ask once. This value goes into the new page's `category` frontmatter and flows to any chained flashcard creation.
 
 - **Page type** (choose together):
   - **Tutorial/Concept** -- for learning a new pattern or technique

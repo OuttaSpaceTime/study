@@ -8,6 +8,7 @@ tags:
 - security
 - https
 - web
+category: work
 created: '2026-04-10'
 updated: '2026-04-10'
 source_skill: study-walkthrough

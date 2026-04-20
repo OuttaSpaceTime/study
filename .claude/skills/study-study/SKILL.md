@@ -42,12 +42,17 @@ This skill requires the `flashcard-mcp` MCP server running from `~/Code/Misc/fla
 ## Modes of Invocation
 
 ```
-/study                    — Start a default study session
+/study                    — Start a default study session (prompts for category)
+/study -c work|personal   — Scope the session to one category (skips the prompt)
 /study <deck-name>        — Focus on a specific deck
 /study --short            — Short session (5 cards max)
 /study add                — Create new flashcards (chain to /study-flashcard)
 /study add <deck-name>    — Create flashcards for a specific deck
 ```
+
+## Category
+
+Every study session is scoped to a single category. Follow `references/category-policy.md` to resolve it — prompt happens after the Phase 1 status summary when no `-c` flag was passed. The resolved value flows into `start_session({ category })` and every `scripts/wiki-due --category <cat>` call. Mid-session, `focus work` / `focus personal` narrows via `adjust_session({ focusCategory })` — see Mid-Session Actions.
 
 ---
 
@@ -56,7 +61,10 @@ This skill requires the `flashcard-mcp` MCP server running from `~/Code/Misc/fla
 ### Phase 1: Status Check & Wiki Revisit Prompt (1 message)
 
 Call MCP tools: `get_stats`, `get_due_cards`, `list_decks`.
-Run `scripts/wiki-due --count` to get the number of wiki entries due for review.
+
+Resolve the **session category** first (see Category section). Once known, pass `--category <cat>` to every `scripts/wiki-due` call in this skill so counts and lists are scoped consistently.
+
+Run `scripts/wiki-due --count --category <cat>` to get the number of wiki entries due for review **in the chosen category**.
 
 **Macro analytics:** Read recent entries from `logs/` (last 7 days). Compute:
 - Cards reviewed this week, average accuracy, lapse trend (improving or declining)
@@ -84,7 +92,7 @@ Wait for developer confirmation before starting.
 
 ### Phase 2: Wiki Review
 
-Run `scripts/wiki-due` to get the full list of due wiki entries.
+Run `scripts/wiki-due --category <cat>` to get the full list of due wiki entries in the session's category.
 
 If no wiki entries are due, skip silently to Phase 3 (Flashcard Study Loop).
 
@@ -153,7 +161,7 @@ Initial values are set when a wiki page is created: `review_interval: 3`, `next_
 
 ### Phase 3: Study Loop (1 card per message)
 
-Call `start_session` with appropriate config. If cards span multiple decks, **interleave** them — don't exhaust one deck before starting the next. Mix topics to strengthen cross-domain connections.
+Call `start_session` with appropriate config, including **`category`** (the session category captured in Phase 1). If cards span multiple decks, **interleave** them — don't exhaust one deck before starting the next. Mix topics to strengthen cross-domain connections.
 
 Then loop:
 
@@ -266,6 +274,10 @@ Go to Phase 3 (Session Summary) with whatever was reviewed.
 ### "fewer" / "less" / "shorten"
 
 Call `adjust_session`. Confirm reduction. Continue.
+
+### "focus work" / "focus personal"
+
+Narrow the current session to one category mid-flight. Call `adjust_session({ focusCategory: "work" | "personal" })`. Confirm the narrowing and resume with the filtered queue. Use when the developer realizes mid-session that they want to ignore cards outside the current focus.
 
 ### "add" / "new card"
 

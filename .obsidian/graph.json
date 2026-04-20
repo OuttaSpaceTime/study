@@ -1,22 +1,65 @@
 {
   "collapse-filter": false,
-  "search": "",
+  "search": "path:wiki/ -path:wiki/indexes",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,
   "showOrphans": true,
-  "collapse-color-groups": true,
-  "colorGroups": [],
-  "collapse-display": true,
+  "collapse-color-groups": false,
+  "colorGroups": [
+    {
+      "query": "path:wiki/git/",
+      "color": {
+        "a": 1,
+        "rgb": 13352381
+      }
+    },
+    {
+      "query": "path:wiki/openapi/",
+      "color": {
+        "a": 1,
+        "rgb": 5431518
+      }
+    },
+    {
+      "query": "path:wiki/rails/",
+      "color": {
+        "a": 1,
+        "rgb": 13840175
+      }
+    },
+    {
+      "query": "path:wiki/ruby/",
+      "color": {
+        "a": 1,
+        "rgb": 15158332
+      }
+    },
+    {
+      "query": "path:wiki/security/",
+      "color": {
+        "a": 1,
+        "rgb": 16098851
+      }
+    },
+    {
+      "query": "path:wiki/sql/",
+      "color": {
+        "a": 1,
+        "rgb": 3581519
+      }
+    }
+  ],
+  "collapse-display": false,
   "showArrow": false,
   "textFadeMultiplier": 0,
   "nodeSizeMultiplier": 1,
   "lineSizeMultiplier": 1,
-  "collapse-forces": true,
-  "centerStrength": 0.518713248970312,
-  "repelStrength": 10,
+  "collapse-forces": false,
+  "centerStrength": 0.2,
+  "repelStrength": 18,
   "linkStrength": 1,
   "linkDistance": 250,
-  "scale": 0.6603612821185922,
+  "scale": 0.19566260210921232,
   "close": false
 }
