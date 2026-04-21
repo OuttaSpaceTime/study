@@ -213,7 +213,11 @@ Then loop:
 - **Accuracy:** 83%
 - **Lapses:** event sourcing (Again), CQRS (Hard)
 - **Duration:** 11 min
+- **Surprising:** <one card/concept the developer thought they knew but lapsed on, or vice versa — skip if nothing stood out>
+- **Heuristic:** <one sentence a future study session in this area should read first — skip if none surfaced>
 ```
+
+The `Surprising` and `Heuristic` fields are optional on `/study` (unlike `/study-walkthrough` where they're mandatory in Learning cadence). Write them only when the session actually produced a surprise or a generalizable rule — a routine clean-accuracy session doesn't need them. When present, they compound across sessions and feed `/progress` and `/reflect`.
 
 Omit the **Wiki reviewed** line if no wiki entries were reviewed in this session.
 
@@ -247,6 +251,10 @@ Chain into `/study-walkthrough` on the current card's topic. When complete, ask:
 ### "edit" / "this card is wrong" / "fix this card"
 
 Show current front and back. Developer provides corrections. Call `update_card`. Resume.
+
+### "actually, your last explanation was wrong" / correction mid-feedback
+
+**Correction Primitive.** If the developer corrects an explanation you gave in the feedback for a previous card (not the card itself), do not argue or layer a second explanation on top. Acknowledge in one line ("Got it — the correct answer is X"), re-state the correction cleanly, and carry the corrected version forward for any later card on the same topic. If a card whose feedback was wrong has already been rated, do not silently re-rate it — offer: "I gave you bad feedback on card N. Want me to reschedule it as Again/Hard so you see it again soon?" Let the developer decide.
 
 ### "split" / "this card is too big"
 

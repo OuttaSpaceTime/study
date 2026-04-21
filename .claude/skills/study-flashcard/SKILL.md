@@ -26,6 +26,14 @@ For additional shared interactive principles (scope, handling disagreement, non-
 - Pause after each checkpoint — ask whether to continue or discuss. Never auto-advance.
 - At each checkpoint, blend guided and unguided modes.
 
+## Correction Primitive
+
+When the developer corrects a concept explanation or draft card mid-session:
+
+- **Edit the draft in place**, do not append "actually, X". The running draft list is the artifact; if Checkpoint 3 already shows a bad front/back, rewrite it in the next message rather than adding a second version below it.
+- If a correction invalidates a concept walked through in Checkpoint 2, mark any dependent drafts `[STALE — redraw]` and redo them before Checkpoint 4.
+- If cards have already been created (mid-Checkpoint-4 corrections), call `update_card` to fix them rather than creating new variants. Never leave two near-duplicate cards in the deck because of a mid-session correction.
+
 ## Output Contract — Progress Footer (mandatory)
 
 Every assistant message in this skill **must end with a progress footer as the LAST line**. No exceptions while the interactive flow is active — this includes clarifying questions, short acknowledgements, and messages that contain only code. A message without this footer is a contract violation.

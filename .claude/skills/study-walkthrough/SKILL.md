@@ -26,6 +26,17 @@ For additional shared interactive principles (scope, handling disagreement, non-
 - If the developer says "skip" or "I know this," fast-forward immediately.
 - If the developer fails a recall question, do NOT skip -- walk through it again until internalized.
 
+## Running Ledger
+
+For walkthroughs that span more than ~3 phase messages, maintain a tiny ledger at the top of each phase message (one line per field, skip empty fields):
+
+- **Known:** concepts calibrated solid or probed successfully this session
+- **Gaps filled:** concepts initially weak that were walked through and reconfirmed
+- **Still fuzzy:** concepts flagged but not yet reinforced — these gate Phase 3 completion
+- **Queued:** flashcard / wiki deltas to propose at Phase 4
+
+The ledger is chat-only — do NOT write it into the wiki page. It exists so the developer (and you) can see session state at a glance and so Phase 3 verification targets the real gaps instead of a generic recall quiz. Skip the ledger for short walkthroughs (single-concept refreshes).
+
 ## Output Contract -- Progress Footer (mandatory)
 
 Every assistant message in this skill **must end with a progress footer as the LAST line**. No exceptions while the interactive flow is active -- this includes clarifying questions, short acknowledgements, and messages that contain only code. A message without this footer is a contract violation.
@@ -67,6 +78,27 @@ The skill operates in two modes based on invocation and context:
 
 - **Write-focused**: Triggered by `--write` flag, `--from <url>`, or pasted source text. Also triggered when no existing wiki material is found and the developer's intent is clearly "document this." Compresses calibration, writes wiki by default at the end.
 - **Deepen-focused**: Default mode. Full calibration against existing material, adaptive depth, wiki write offered but not assumed.
+
+## Session Cadence
+
+A separate axis from Mode Detection — sets *depth*, not *output type*. Default is **Learning**.
+
+- **Learning** — predict-first mandatory on every concept, every concept gets an active challenge (the "Concrete example/challenge" bullet in Phase 2 is load-bearing here), loop on every failed recall. This is today's default behavior.
+- **Refresh** — for high-depth pages (`depth >= 3`) or when the developer says "just refresh this." Probe only the `last_probed` queue, skip predictions on concepts calibrated as solid, no mandatory challenge on every concept — only on sections that were gap-flagged.
+- **Concise** — single-pass re-read with one calibration check, no looping on failure. For when the developer just wants a compressed restatement. Session log coda collapses to one sentence.
+
+Announce the active cadence in Phase 1 Step 3 after calibration. If calibration reveals a mismatch (developer keeps saying "I know this" → bump to Refresh; keeps saying "wait, walk me through that again" → bump to Learning), suggest a cadence change once. Do not switch silently.
+
+## Correction Primitive
+
+When the developer corrects something you said in a prior phase:
+
+- **Edit the original statement in place** — in the chat summary and in any in-progress wiki draft. Do not append "actually, X" at the bottom.
+- If the correction invalidates a drafted flashcard or wiki section, mark it `[STALE — redraw]` and redo it together before advancing.
+- In chat, acknowledge the edit with one line: "Updated Phase 2 — the explanation of X now reads Y." Then continue from the corrected state.
+- Never carry forward a concept the developer flagged as wrong.
+
+This matters because the walkthrough compounds: a wrong explanation in Phase 2 poisons the recall check in Phase 3 and the wiki draft in Phase 4.
 
 ## Preflight — SRS Pressure Check (MANDATORY, ALWAYS FIRST)
 
@@ -160,6 +192,7 @@ Based on calibration results, the walkthrough adapts:
 **Walkthrough techniques:**
 - Show concrete codebase code, never abstract examples
 - Ask predictions before revealing answers
+- **Probe when possible.** For code-shaped concepts (git, Python, shell, SQL, API behavior, algorithms), ask the developer to actually run a minimal snippet and paste the output — `uv run python -c`, a repl one-liner, a `git` command, `curl | jq`, a unit test. Compare the output against the prediction they made in the concrete challenge step. Probes turn Assumed understanding into Known and catch the "I thought I knew this" failure mode that pure discussion misses. Skip probes for theory-only concepts where no small snippet would demonstrate the point.
 - When the developer's explanation is incomplete, ask a follow-up rather than correcting
 - **Concrete example/challenge (mandatory, every concept):** For each concept walked through, ask the developer to actively produce something -- not just passively receive:
   - **Code concepts:** "What do you expect this outputs?" / "How would you write the code for that?" / "Here's a broken version -- what's wrong?" -- show a snippet and require a prediction or solution
@@ -227,12 +260,18 @@ When writing a wiki page, follow this structure:
 ## Session N -- Walkthrough (HH:MM)
 - **Topic:** event sourcing
 - **Mode:** write-focused | deepen-focused
+- **Cadence:** learning | refresh | concise
 - **Starting level:** partial recall (Core Concepts solid, Projections weak)
 - **Covered:** event versioning, upcasting, schema evolution
 - **Gaps filled:** projections (re-walked, now solid)
 - **Wiki updates:** [[architecture/event-sourcing]] extended with 2 new sections (depth: 2 -> 3)
 - **Flashcards:** 2 created for event versioning
+- **Surprising:** upcasting was expected to be a compile-time transform; it's runtime-per-event
+- **Heuristic:** any change to a persisted event shape needs an upcaster, not a migration
+- **Next-time unblocker:** a small probe script that replays one serialized event through the upcaster chain
 ```
+
+**Look-Back fields are mandatory in Learning cadence, recommended in Refresh, and collapse to a single **Takeaway:** line in Concise.** If nothing was surprising, write `Surprising: none — cadence may have been too shallow` so the pattern shows up across sessions. The heuristic is the single line a future session in this area should read first.
 
 ## Wiki Page Structure (for new pages)
 
