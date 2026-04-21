@@ -47,16 +47,43 @@ Read today's `logs/YYYY-MM-DD.md` (create date if file doesn't exist). Count exi
 
 ### Phase 2: Todo Read (silent)
 
-Read `todo.md` from the project root. It is a single ordered list — top item is the current highest priority. Do **not** present the list to the developer — the todo list is auto-managed. Hold it in memory for Phase 3.5 reorder logic.
+Read `todo.md` from the project root. It has two headings: `## Today` (today's chosen tasks, cleared daily) and `## Backlog` (the ongoing ordered list). Top item of `## Today` is the current highest priority when populated; otherwise top of `## Backlog` is. Do **not** present the list to the developer — the todo list is auto-managed. Hold it in memory for Phase 2.5 and Phase 3.5 logic.
 
-If `todo.md` doesn't exist, create it empty:
+If `todo.md` doesn't exist, create it with both headings empty:
 
 ```markdown
 # Todo
 
+## Today
+
+## Backlog
+
 ```
 
-Move directly into Phase 3 without surfacing the current items or asking for check-offs.
+### Phase 2.5: Stale Today Clear (first kickoff only)
+
+If this is the first kickoff of the day **and** `## Today` has items, it's from a previous day. Auto-migrate without prompting:
+
+- Unchecked items (`- [ ]`) → move to the top of `## Backlog`, preserving order
+- Checked items (`- [x]`) → drop
+
+Leave `## Today` empty. The developer provides a fresh list in Phase 2.8.
+
+On a refocus (not the first kickoff), skip this phase — leave `## Today` as-is.
+
+### Phase 2.8: Today's List (first kickoff only)
+
+Ask as one paired message:
+
+> **What are your tasks for today, and how do you want to reward yourself with pauses?**
+
+Wait for the developer's response. Expect a list of tasks and a description of pauses (could be one line each, could be a bulleted list).
+
+Write the tasks to `## Today` in `todo.md` as `- [ ]` items, preserving the order given. Do **not** put pauses in `todo.md` — they go into the session log's **Pauses:** field in Phase 5.
+
+If the developer gives only tasks and no pauses (or vice versa), accept what they gave — don't re-prompt for the missing half. Note the absence in the log.
+
+On a refocus, skip this phase entirely.
 
 ### Phase 3: Fixed Questions
 
@@ -75,11 +102,12 @@ Keep your responses brief — acknowledge, maybe reflect back one phrase, move o
 
 ### Phase 3.5: Todo Reorder (conditional)
 
-Compare the stated focus to the current top of `todo.md`.
+Compare the stated focus to `## Today` first, then `## Backlog`. Reorder happens within `## Today` — the focus should be at the top of `## Today`.
 
-- **If the focus matches an existing item that is already at the top** → acknowledge briefly ("top of the list, good") and move on.
-- **If the focus matches an existing item lower down** → propose: *"You said X is your focus — want me to move it to the top?"* Apply on confirm.
-- **If the focus is new (not yet on the list)** → propose: *"Want me to add '[focus]' to the top of your list?"* Apply on confirm.
+- **If the focus matches an item already at the top of `## Today`** → acknowledge briefly ("top of the list, good") and move on.
+- **If the focus matches an item lower in `## Today`** → propose: *"You said X is your focus — want me to move it to the top of Today?"* Apply on confirm.
+- **If the focus matches an item in `## Backlog`** → propose: *"Want me to pull '[item]' up to the top of Today?"* Apply on confirm (move, don't copy).
+- **If the focus is entirely new** → propose: *"Want me to add '[focus]' to the top of Today?"* Apply on confirm.
 - **If unsure which item the focus maps to** → ask the developer to pick, don't guess.
 
 Only touch `todo.md` with the developer's explicit confirmation.
@@ -124,6 +152,8 @@ Append to `logs/YYYY-MM-DD.md`. Determine the session number by counting existin
 
 ```markdown
 ## Session N — Kickoff (HH:MM)
+- **Today's tasks:** [the list the developer gave for `## Today`]
+- **Pauses:** [how the developer wants to reward themselves with pauses today]
 - **Feeling:** [brief]
 - **Noticing:** [brief]
 - **Focus:** [stated focus]
@@ -131,7 +161,7 @@ Append to `logs/YYYY-MM-DD.md`. Determine the session number by counting existin
 - **Next:** [what the developer will move to when time is up]
 - **Pause:** [what the developer will do in the micro pause between this block and the next]
 - **Blockers:** [what's in the way]
-- **Todo updates:** [items added / checked off / reordered]
+- **Todo updates:** [items added / checked off / reordered, including carry-overs from prior `## Today` to `## Backlog`]
 - **Interview notes:** [2-3 sentence summary — what shifted, what became clear]
 ```
 
@@ -170,15 +200,17 @@ Otherwise hand off plainly. Don't force the suggestion.
 ## Guardrails
 
 **Always:**
-- Ask questions one at a time
-- Read `todo.md` every session silently; only modify with explicit confirmation and never present the list unprompted
+- Ask questions one at a time (the Today-tasks + pauses pair is one message)
+- Read `todo.md` every session silently; only modify with explicit confirmation except for the automated stale-`## Today` clear, and never present the list unprompted
+- On the first kickoff of the day, auto-clear stale `## Today` (unchecked → Backlog, checked → dropped) and ask for today's tasks + pauses before the fixed questions
 - Open the motivational interview with time-framing
 - Write the session log
 - Respect "done" / "stop" immediately
 
 **Never:**
 - Skip the fixed questions on a first kickoff (they're the trackable part)
-- Silently reorder `todo.md` — always propose, wait for confirmation
+- Ask for today's tasks on a refocus — that's first-kickoff only
+- Silently reorder `todo.md` beyond the automated stale-`## Today` clear — always propose, wait for confirmation
 - Over-coach — if the developer is clear and ready, let them go
 - Create todos the developer didn't mention
 - Judge or diagnose feelings — reflect, don't analyze

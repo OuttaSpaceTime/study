@@ -20,7 +20,7 @@ Personal development workspace combining daily rituals, spaced repetition flashc
 
 ## Todo
 
-`todo.md` at project root is a single ordered list of todos — top = highest priority, bubbles up during `/kickoff`. Simple markdown checkboxes. Read and updated by `/kickoff` and `/end` — not a project management tool, but a thinking artifact for setting focus, boundaries, and intentions.
+`todo.md` at project root has two headings: `## Today` and `## Backlog`. `## Today` is the short list the developer commits to for the current day (set at the first `/kickoff` of the day); it is auto-cleared at the next day's first kickoff — unchecked items roll back to `## Backlog`, checked items are dropped. `## Backlog` is the ongoing ordered list — top = highest priority. Read and updated by `/kickoff` and `/end` — not a project management tool, but a thinking artifact for setting focus, boundaries, and intentions.
 
 ## Wiki
 
@@ -71,6 +71,8 @@ Then open pages with `obsidian open vault="study" file="<slug>"` (use bare slug,
 ## Session Logs
 
 Daily append-only logs in `logs/YYYY-MM-DD.md`. Each session records: skill used, topic, cards reviewed/created, accuracy, lapses, wiki updates, duration.
+
+**Always log repo changes.** Any change you make to this repo — skills, scripts, wiki, todo, config, AGENTS.md itself — must be recorded in today's `logs/YYYY-MM-DD.md` as a `## Session N — Change (HH:MM)` entry with **Files:**, **Change:**, and **Why:** fields. Do this even outside a kickoff/end ritual. If today's log doesn't exist yet, create it.
 
 ## MCP Server
 

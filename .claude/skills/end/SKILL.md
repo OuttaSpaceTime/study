@@ -26,22 +26,34 @@ See `~/.claude/skills/references/interactive-principles.md` for shared interacti
 ## Invocation
 
 ```
-/end        — Auto-detect: block-end if a kickoff is still open (no End logged after it), day-end otherwise
-/end block  — Force block-end mode
-/end day    — Force day-end mode
+/end        — Ask the developer (via AskUserQuestion) whether this is a focused-session end or day-end
+/end block  — Skip the question, go straight to block-end
+/end day    — Skip the question, go straight to day-end
 ```
 
 ---
 
 ## Flow
 
-### Phase 0: Detect Mode
+### Phase 0: Choose Mode
 
-Read today's `logs/YYYY-MM-DD.md`. Look at the session headers.
+Do **not** auto-detect mode from session logs — past auto-detects assumed the wrong thing too often.
 
-- If the most recent Kickoff/Refocus session has no matching End session after it → **block-end** (the developer is closing the block they started).
-- If all Kickoff sessions have matching End sessions, or the developer passed `day` → **day-end**.
-- The developer can always override with `block` or `day`.
+- If the developer passed `block` → **block-end**, skip the question.
+- If the developer passed `day` → **day-end**, skip the question.
+- Otherwise → ask the developer with the `AskUserQuestion` tool:
+
+```
+question: "Ending the day, or closing a focused session?"
+header: "End mode"
+options:
+  - label: "Focused session"
+    description: "Closing the current work block — quick reflection to empty your head before a pause."
+  - label: "End of day"
+    description: "Full day close — review git activity, session logs, todos, and intentions for next time."
+```
+
+Map "Focused session" → **block-end**, "End of day" → **day-end**. If the developer picks Other, interpret their answer; if still ambiguous, ask the question again.
 
 **If block-end → jump to Block-End Flow below.**
 **If day-end → continue to Phase 1.**
@@ -145,10 +157,12 @@ If the working directory is clean, skip silently.
 
 ### Phase 5: Todo Update
 
-Based on the reflection, update `todo.md`:
-- Check off completed items (`- [x]`)
-- Add new carry-forward items (position per developer's instruction, default to end)
-- Reorder if requested — especially if something needs to bubble to the top for tomorrow
+Based on the reflection, update `todo.md`. It has two headings: `## Today` (cleared daily at next-day kickoff) and `## Backlog`:
+
+- Check off completed items in `## Today` (`- [x]`) — they'll be dropped at next kickoff
+- Move any `## Today` items the developer wants to keep for tomorrow into `## Backlog` now (so they're not accidentally dropped at the auto-clear). Kickoff tomorrow re-seeds `## Today` from the developer's fresh list.
+- Add new carry-forward items to `## Backlog` (position per developer's instruction, default to end)
+- Reorder `## Backlog` if requested — if something needs to bubble up for tomorrow, put it at the top of Backlog
 - Remove items the developer explicitly drops
 
 Read `todo.md` before editing to work from current state.
