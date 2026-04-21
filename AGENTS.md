@@ -118,6 +118,7 @@ Available scripts:
 - `scripts/wiki-search "<query>"` — Semantic search against wiki embeddings
 - `scripts/wiki-due` — List wiki pages due for review
 - `scripts/wiki-reschedule <page> <rating>` — Reschedule a wiki page after review (1-4), rewrites frontmatter and re-indexes
+- `scripts/wiki-probes [<wiki-path>]` — List probes linked to a wiki page (derived from probe frontmatter). Omit argument to list all grouped by wiki page; `--topic <slug>` to match by topic folder instead; `--count` for count only
 
 Python modules live in `scripts/wiki/`. The top-level scripts are thin entry points.
 

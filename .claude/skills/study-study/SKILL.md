@@ -108,6 +108,7 @@ Present the due entries as a numbered list:
 
 1. Developer says "open 1" (or "open git-restore", or "next")
 2. Read the wiki page. Present a brief summary: title, sections, depth, when created, current interval — but do NOT open Obsidian yet.
+2a. **Surface linked probes (if any):** Run `scripts/wiki-probes <wiki-path>` (e.g. `scripts/wiki-probes architecture/event-sourcing`). If probes exist, list them with path and Takeaway one-liner. Offer: "Want to re-run one as a recall check before I ask the section questions?" A probe the developer can no longer predict the output of is a real gap. Skip silently if the script returns an empty list.
 3. **Pick sections to probe — rotation via `last_probed`:**
 
    Read `probe_sections` and `last_probed` from the index entry. `last_probed` is an ordered queue (oldest first); on the very first review it may be empty, treat as `probe_sections` order.

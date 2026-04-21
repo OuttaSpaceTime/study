@@ -137,8 +137,25 @@ If the probe's Command section takes more than ~4 lines once deps are included, 
 
 `probes/_template.md` is a blank probe file. Copy it when scaffolding a new one. The leading underscore keeps it out of any topic-slug directory listings.
 
+## Linking probes to wiki pages
+
+The link is **one-way and derived.** Each probe's frontmatter has a `wiki:` field pointing up to its wiki page. Wiki pages do **not** store a list of their probes — that would dual-maintain and drift.
+
+To list probes for a wiki page, run:
+
+```bash
+scripts/wiki-probes architecture/event-sourcing
+scripts/wiki-probes --count architecture/event-sourcing
+scripts/wiki-probes --topic event-sourcing    # alternative: match by topic folder
+scripts/wiki-probes                            # all probes grouped by wiki page
+```
+
+`/study` Phase 2 wiki review calls this automatically and surfaces probes as optional recall checks. A probe whose output the developer can no longer predict is a real recall gap, not a trivial re-read.
+
 ## Cross-references
 
 - Spec: `.claude/skills/study-walkthrough/SKILL.md` → Phase 2 "Probe when possible" bullet
+- Wiki review hook: `.claude/skills/study-study/SKILL.md` → Phase 2 Step 2a
+- Lookup script: `scripts/wiki-probes`
 - Principles: `AGENTS.md` → Skill Design Principles
 - Methodology source: the Solveit page in the master-terminal wiki (`wiki/solveit-method.md`)
