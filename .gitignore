@@ -15,3 +15,11 @@ wiki/indexes/
 
 # Ollama embeddings cache (rebuilt from wiki content)
 wiki/.embeddings.json
+
+# Probe per-topic envs — lockfiles are committed, build artifacts are not
+probes/*/.venv/
+probes/*/__pycache__/
+probes/*/node_modules/
+probes/*/.bundle/
+probes/*/vendor/bundle/
+probes/*/target/

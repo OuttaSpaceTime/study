@@ -78,6 +78,10 @@ pgrep -f "obsidian" >/dev/null 2>&1 || (snap run obsidian &>/dev/null & disown &
 
 Then open pages with `obsidian open vault="study" file="<slug>"` (use bare slug, not path — `path=` does not work). Never run `snap run obsidian` unconditionally — it breaks when Obsidian is already open.
 
+## Probes
+
+`probes/` is where `/study-walkthrough` Probe mode saves load-bearing runtime checks — the portable analog of Solveit's live kernel. One markdown file per probe, four sections (Prediction / Command / Output / Takeaway), committed. See `probes/README.md` for the full format spec and the three-tier dependency model (inline → topic env → scratch project). Only persist probes that changed the developer's understanding; skip the ones that merely confirmed what was already known.
+
 ## Session Logs
 
 Daily append-only logs in `logs/YYYY-MM-DD.md`. Each session records: skill used, topic, cards reviewed/created, accuracy, lapses, wiki updates, duration.
