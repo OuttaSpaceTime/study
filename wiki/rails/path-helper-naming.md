@@ -13,14 +13,18 @@ created: '2026-04-14'
 updated: '2026-04-14'
 source_skill: study-walkthrough
 depth: 1
-next_review: '2026-04-22'
-review_interval: 4
+next_review: '2026-04-23'
+review_interval: 1
 probe_sections:
 - Renaming with `as:`
 - The `_index` Suffix
 - 'Fix: Set `as:` Explicitly'
 - Verifying
-last_probed: []
+last_probed:
+- Verifying
+- Renaming with `as:`
+- The `_index` Suffix
+- 'Fix: Set `as:` Explicitly'
 ---
 
 # Path Helper Naming

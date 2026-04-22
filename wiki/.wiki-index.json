@@ -16,6 +16,7 @@
       "--source: Restoring from Any Commit",
       "--ours and --theirs During Merge Conflicts",
       "--merge: Recreate Conflict State",
+      "Conflicts from `git stash pop`",
       "--ignore-unmerged",
       "Interactive: -p",
       "Common Patterns"
@@ -32,19 +33,29 @@
       "cmne7xy9k02d90mso2ibigeht"
     ],
     "created": "2026-04-09",
-    "updated": "2026-04-20",
-    "next_review": "2026-04-21",
-    "review_interval": 8,
+    "updated": "2026-04-22",
+    "next_review": "2026-05-02",
+    "review_interval": 10,
     "probe_sections": [
       "Targets: --worktree and --staged",
       "--source: Restoring from Any Commit",
       "--ours and --theirs During Merge Conflicts",
       "--merge: Recreate Conflict State",
+      "Conflicts from `git stash pop`",
       "--ignore-unmerged",
       "Interactive: -p",
       "Common Patterns"
     ],
-    "last_probed": []
+    "last_probed": [
+      "Conflicts from `git stash pop`",
+      "--merge: Recreate Conflict State",
+      "--ignore-unmerged",
+      "Interactive: -p",
+      "Common Patterns",
+      "Targets: --worktree and --staged",
+      "--source: Restoring from Any Commit",
+      "--ours and --theirs During Merge Conflicts"
+    ]
   },
   "rails/activerecord-pick": {
     "file": "rails/activerecord-pick.md",
@@ -106,9 +117,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-09",
-    "updated": "2026-04-20",
-    "next_review": "2026-04-21",
-    "review_interval": 8,
+    "updated": "2026-04-22",
+    "next_review": "2026-04-23",
+    "review_interval": 1,
     "probe_sections": [
       "anyOf vs oneOf",
       "The oneOf Shared-Field Trap",
@@ -116,7 +127,13 @@
       "The additionalProperties Trap",
       "not as a Filter"
     ],
-    "last_probed": []
+    "last_probed": [
+      "The additionalProperties Trap",
+      "not as a Filter",
+      "anyOf vs oneOf",
+      "The oneOf Shared-Field Trap",
+      "allOf Is Not Inheritance"
+    ]
   },
   "rails/index-with": {
     "file": "rails/index-with.md",
@@ -141,16 +158,21 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-10",
-    "updated": "2026-04-20",
-    "next_review": "2026-04-21",
-    "review_interval": 8,
+    "updated": "2026-04-22",
+    "next_review": "2026-05-02",
+    "review_interval": 10,
     "probe_sections": [
       "Fixed Value vs Block",
       "index_with vs index_by",
       "index_with vs to_h",
       "Duplicate Keys"
     ],
-    "last_probed": []
+    "last_probed": [
+      "Duplicate Keys",
+      "Fixed Value vs Block",
+      "index_with vs index_by",
+      "index_with vs to_h"
+    ]
   },
   "security/hsts": {
     "file": "security/hsts.md",
@@ -423,16 +445,21 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-14",
-    "updated": "2026-04-20",
-    "next_review": "2026-04-22",
-    "review_interval": 4,
+    "updated": "2026-04-22",
+    "next_review": "2026-04-23",
+    "review_interval": 1,
     "probe_sections": [
       "Renaming with `as:`",
       "The `_index` Suffix",
       "Fix: Set `as:` Explicitly",
       "Verifying"
     ],
-    "last_probed": []
+    "last_probed": [
+      "Verifying",
+      "Renaming with `as:`",
+      "The `_index` Suffix",
+      "Fix: Set `as:` Explicitly"
+    ]
   },
   "ruby/transform-values": {
     "file": "ruby/transform-values.md",

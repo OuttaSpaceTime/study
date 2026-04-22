@@ -8,7 +8,7 @@ tags:
 - version-control
 category: work
 created: '2026-04-09'
-updated: '2026-04-09'
+updated: '2026-04-22'
 source_skill: study-walkthrough
 flashcard_ids:
 - cmne7xz9202lx0msonsbfhp3j
@@ -22,17 +22,26 @@ flashcard_ids:
 - cmne7xy9k02d90mso2ibigeht
 depth: 1
 last_deepened: '2026-04-09'
-next_review: '2026-04-21'
-review_interval: 8
+next_review: '2026-05-02'
+review_interval: 10
 probe_sections:
 - 'Targets: --worktree and --staged'
 - '--source: Restoring from Any Commit'
 - --ours and --theirs During Merge Conflicts
 - '--merge: Recreate Conflict State'
+- Conflicts from `git stash pop`
 - --ignore-unmerged
 - 'Interactive: -p'
 - Common Patterns
-last_probed: []
+last_probed:
+- Conflicts from `git stash pop`
+- '--merge: Recreate Conflict State'
+- --ignore-unmerged
+- 'Interactive: -p'
+- Common Patterns
+- 'Targets: --worktree and --staged'
+- '--source: Restoring from Any Commit'
+- --ours and --theirs During Merge Conflicts
 ---
 
 # git restore
@@ -93,6 +102,20 @@ git restore --merge -- config.ts
 ```
 
 Recreates conflict markers in a resolved file. Useful when you want to re-approach a resolution.
+
+## Conflicts from `git stash pop`
+
+`git stash pop` applies the stash as a 3-way merge: HEAD is **ours**, the stash is **theirs**. Semantics match a normal merge — **not** inverted like rebase.
+
+```bash
+git stash pop                         # conflict in utils.ts
+git restore --ours -- utils.ts        # discard the stashed change, keep HEAD
+git restore --theirs -- utils.ts      # keep the stashed change, discard HEAD
+git add utils.ts
+git stash drop                        # pop leaves the stash on failure — drop manually
+```
+
+The `git stash drop` is the stash-specific trap: a successful pop auto-drops, but a **conflicted** pop does not. Without it, the stash stays on the stack and you'll re-apply the same conflict next time.
 
 ## --ignore-unmerged
 

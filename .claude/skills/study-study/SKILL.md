@@ -1,6 +1,6 @@
 ---
 name: study
-description: "Interactive spaced repetition study session with Claude as evaluator. Reviews due flashcards, rates answers, logs sessions, and supports mid-session actions: discuss, walkthrough, edit, split, reschedule, pause. Trigger keywords: study, review cards, flashcards, spaced repetition."
+description: "Interactive spaced repetition study session with Claude as evaluator. Reviews due flashcards, rates answers, logs sessions, and supports mid-session actions: discuss, walkthrough, edit, split, delete, reschedule, pause. Trigger keywords: study, review cards, flashcards, spaced repetition."
 user_invocable: true
 ---
 
@@ -73,30 +73,28 @@ Run `scripts/wiki-due --count --category <cat>` to get the number of wiki entrie
 **Wiki revisit check:** Read `wiki/.wiki-index.json`, find pages where `last_deepened` is >30 days ago or `depth` is 1. If any exist, surface 1-2:
 > Wiki page [[architecture/event-sourcing]] hasn't been revisited in 45 days (depth: 1). Consider `/study-walkthrough` to deepen it.
 
-Present a brief status (include wiki due count when > 0):
+Present the pressure verdict as a single opening line, then **proceed directly into Phase 2 (Wiki Review) in the same message** — do not ask "Ready?" and do not wait for confirmation. The preflight verdict is the only preamble; wiki review starts immediately after it.
 
-> **Pressure:** not burdened (42 due, within capacity).
-> You have **2 wiki entries due for review** and **8 cards due** (3 in Deck A, 5 in Deck B).
-> We'll start with wiki review, then move to flashcards. Ready?
+> **Pressure:** not burdened (42 due, within capacity). 2 wiki entries due, 8 cards due. Starting with wiki.
+>
+> **Wiki review:** 2 entries due.
+> 1. [[git/git-restore]] — …
+> 2. [[architecture/event-sourcing]] — …
+>
+> Say "open 1" to start, or "skip wiki" to go straight to flashcards.
 
-If no cards are due but wiki entries are:
+If no wiki entries are due, state that in the opening line and go straight into Phase 3 (flashcard loop) — still no confirmation gate.
 
-> No cards due today, but **2 wiki entries** are ready for review. Ready?
-
-If nothing is due:
+If nothing is due anywhere:
 
 > No cards or wiki entries due today — you're all caught up!
 > Want to: add new cards, revisit a stale wiki page with /study-walkthrough, or call it a day?
 
-Wait for developer confirmation before starting.
-
 ### Phase 2: Wiki Review
 
-Run `scripts/wiki-due --category <cat>` to get the full list of due wiki entries in the session's category.
+Run `scripts/wiki-due --category <cat>` to get the full list of due wiki entries in the session's category. This runs as part of the Phase 1 message — the numbered list (shown in Phase 1) is the entry point into this phase. If no wiki entries are due, skip silently to Phase 3.
 
-If no wiki entries are due, skip silently to Phase 3 (Flashcard Study Loop).
-
-Present the due entries as a numbered list:
+Listing format (emitted from Phase 1):
 
 > **Wiki review:** 2 entries due.
 > 1. [[git/git-restore]] — git, version-control (due: 2026-04-12, interval: 3d)
@@ -111,7 +109,7 @@ Present the due entries as a numbered list:
 2a. **Surface linked probes (if any):** Run `scripts/wiki-probes <wiki-path>` (e.g. `scripts/wiki-probes architecture/event-sourcing`). If probes exist, list them with path and Takeaway one-liner. Offer: "Want to re-run one as a recall check before I ask the section questions?" A probe the developer can no longer predict the output of is a real gap. Skip silently if the script returns an empty list.
 3. **Pick sections to probe — rotation via `last_probed`:**
 
-   Read `probe_sections` and `last_probed` from the index entry. `last_probed` is an ordered queue (oldest first); on the very first review it may be empty, treat as `probe_sections` order.
+   Read `probe_sections` and `last_probed` from the page's YAML frontmatter (already loaded in step 2 — do not re-parse the index). `last_probed` is an ordered queue (oldest first); on the very first review it may be empty, treat as `probe_sections` order.
 
    Choose `n = min(len(probe_sections), 3)` sections. Pick the first `n` from the queue — these are the longest-unprobed. Ask **one focused question per picked section** — do NOT ask multiple questions per section. This keeps the total at 1-3 questions regardless of page size.
 
@@ -128,16 +126,15 @@ Present the due entries as a numbered list:
    Never turn this into a quiz — one question per probed section, cap 3.
 
 4. **Wait for the developer's answer to each question in turn.** Ask one, wait, evaluate, then move to the next probed section.
-5. **Evaluate each answer** with brief feedback (1-2 sentences) and a per-section rating (1-4). After all picked sections are answered, **assign the page rating = worst-of the per-section evaluations** — if any section was Again, the page is Again; if the worst was Hard, the page is Hard. Conservative by design: one shaky section drops the whole page.
-6. **Open Obsidian:** Open the page in Obsidian using the "Show in Obsidian" flow from `references/wiki-write-protocol.md`. Never display the page content in chat — the developer reads it in Obsidian.
-7. State the computed rating with the per-section breakdown, and offer an override:
-   > Section A: Good · Section B: Hard · Section C: Good → page rated **Hard (2)**.
-   > Say "actually good" / "actually again" to override, otherwise I'll apply this.
-8. If the developer overrides, use their rating; otherwise use the computed one.
-9. Run `scripts/wiki-reschedule <path> <rating> --probed "<Section A>,<Section B>"` — computes the new interval, rewrites frontmatter (including rotating `last_probed`), and re-indexes. Pass the exact section headings you probed, comma-separated.
-10. Confirm rating and next review date: `Rated **Hard (2)** — next review in 3 days (2026-04-22)`
-11. **Pause here.** Do NOT auto-advance. Wait for the developer to say "go on to next wiki", "next wiki", or "next" before proceeding. This gives them room to ask follow-up questions, request a deeper walkthrough, or discuss the entry.
-12. After all entries reviewed (or developer says "done with wiki"), proceed to Phase 3
+5. **Evaluate each answer** with brief feedback (1-2 sentences) and a per-section rating (1-4). After all picked sections are answered, **assign the page rating = rounded mean of the per-section evaluations** (round half-down toward the weaker rating — e.g. Good+Hard → Hard, Good+Good+Hard → Good). This surfaces a reasonable middle ground rather than letting one shaky section drop the whole page.
+6. State the computed rating with the per-section breakdown, then apply it directly — do not ask the developer to confirm or override:
+   > Section A: Good · Section B: Hard · Section C: Good → page rated **Good (3)**. Applying.
+7. Run `scripts/wiki-reschedule wiki/<path>.md <rating> --probed "<Section A>,<Section B>"` (e.g. `scripts/wiki-reschedule wiki/git/git-restore.md 2 --probed "..."`) — computes the new interval, rewrites frontmatter (including rotating `last_probed`), and re-indexes. The path is filesystem-relative with the `wiki/` prefix and `.md` suffix — unlike `scripts/wiki-probes`, which takes the bare wiki-root path. Pass the exact section headings you probed, comma-separated.
+8. Confirm rating and next review date: `Rated **Hard (2)** — next review in 3 days (2026-04-22)`
+9. **Open Obsidian at the end:** Open the page in Obsidian using the "Show in Obsidian" flow from `references/wiki-write-protocol.md`. Never display the page content in chat — the developer reads it in Obsidian. Then say:
+   > Opened in Obsidian — take your time reading. Say "next" / "go on to next wiki" when done, or "discuss" / "walkthrough" to dig in.
+10. **Wait for the developer to finish reading.** Do NOT auto-advance. Only proceed after the developer explicitly says "next", "go on to next wiki", or similar. This is a hard pause — never assume they're done just because time has passed or because the previous tool call returned. Follow-up questions, discussion, or a deeper walkthrough are all valid uses of this pause.
+11. After all entries reviewed (or developer says "done with wiki"), proceed to Phase 3
 
 **Wiki scheduling algorithm** is implemented in `scripts/wiki-reschedule` (source: `scripts/wiki/reschedule.py`). The rating-to-interval mapping:
 
@@ -167,7 +164,8 @@ Call `start_session` with appropriate config, including **`category`** (the sess
 Then loop:
 
 1. **Call `get_next_card`** — if null, go to Phase 4
-2. **Present the card front**
+2. **Present the card front**, followed by a small italic footer listing mid-session actions:
+   > *(discuss · edit · split · delete · reschedule · pause · show in Obsidian)*
 3. **Wait for the developer's answer**
 4. **Evaluate the answer** against the card back:
    - `Again (1)`: Wrong or fundamentally misses the concept
@@ -187,7 +185,7 @@ Then loop:
      - Do NOT flag cards that are intentionally minimal — simple recall cards with precise, correct backs are fine.
      - **When a quality issue is detected: stop advancing.** Explicitly describe the problem and ask the developer to fix it before continuing. Example: "This card's front is ambiguous — it could mean X or Y. Want to edit it to be more specific, or split it?" Wait for the developer to edit, split, or explicitly say "skip" before moving on.
    - **Generation prompt** (on Good/Easy cards, ~1 in 4 cards): Ask the developer to generate their own example or analogy: "Can you give me a real-world scenario where this applies?" This strengthens encoding. Keep it brief — one sentence is enough.
-   - One-liner reminder: *(harder/easier · discuss · edit · split · pause · show in Obsidian)*
+   - One-liner reminder: *(harder/easier · discuss · edit · split · delete · pause · show in Obsidian)*
 6. **Call `submit_review`** with the rating
 7. **Advance** — call `get_next_card` and present the next card in the same message. Only advance if no quality issue was flagged (or developer resolved/skipped it).
 
@@ -259,7 +257,11 @@ Show current front and back. Developer provides corrections. Call `update_card`.
 
 ### "split" / "this card is too big"
 
-Show current card. Developer identifies distinct concepts. Draft focused cards for each. Create new cards, suspend original. Resume.
+Show current card. Developer identifies distinct concepts. Draft focused cards for each. Create new cards, delete original (or ask if the original is worth keeping in a narrower form). Resume.
+
+### "delete" / "drop this card" / "this card is useless"
+
+Delete the card via `delete_card`. Do not counter-offer suspend — adding new cards is cheap; preserving review history on a bad card is not valuable. One-line confirm is fine for borderline cases ("delete permanently — sure?"), but on an unambiguous instruction just act. Resume.
 
 ### "reschedule" / "show this later" / "not now"
 
