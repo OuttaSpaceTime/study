@@ -82,6 +82,26 @@ Then open pages with `obsidian open vault="study" file="<slug>"` (use bare slug,
 
 `probes/` is where `/study-walkthrough` Probe mode saves load-bearing runtime checks — the portable analog of Solveit's live kernel. One markdown file per probe, four sections (Prediction / Command / Output / Takeaway), committed. See `probes/README.md` for the full format spec and the three-tier dependency model (inline → topic env → scratch project). Only persist probes that changed the developer's understanding; skip the ones that merely confirmed what was already known.
 
+## Query Protocol
+
+When the developer asks a substantive knowledge question — any "what is X / how does X work / why does X" or equivalent — answer it through this flow, not from first-instinct recall:
+
+1. **Search saved knowledge first.** Run `scripts/wiki-search "<query>"` and skim the top hits. Also call `mcp__flashcard-mcp__search_cards` with the same query to surface flashcards that cover the topic. Glance at `wiki/.wiki-index.json` sections/aliases if the phrasing might not embed well.
+2. **Log the query.** Append a `## Query N (HH:MM)` entry to today's `logs/YYYY-MM-DD.md` (create the file if missing) with:
+   - **Question:** the developer's question, verbatim or tightened
+   - **Wiki hits:** wikilinks to matching pages (or `none`)
+   - **Card hits:** flashcard ids + one-line fronts (or `none`)
+   - **Source:** `wiki` | `cards` | `research` | `mixed`
+   - **Answer:** one-line summary of what you told the developer
+3. **Answer.**
+   - If the wiki covers it: answer from the page(s), cite with `[[folder/slug]]` wikilinks, and quote or paraphrase the relevant section. Prefer the saved knowledge over paraphrasing from memory.
+   - If only flashcards cover it: answer from the card(s), cite the ids, and note the wiki gap — offer `/study-walkthrough --write` to promote the concept into a proper page.
+   - If partial: answer the covered part from wiki/cards, then research the gap (WebSearch/WebFetch or source reading), mark Source as `mixed`.
+   - If no coverage: research, answer, then offer `/study-walkthrough` (append `--write`) to capture it into the wiki. Do not silently auto-write.
+4. **Never skip the log, even when answering from memory is tempting.** The log is how we see which topics recur and which warrant a wiki page. A one-liner is fine; this is a thinking artifact, not a report.
+
+Scope: this applies to knowledge/explanation questions. It does *not* apply to operational requests ("edit this file", "run the tests", "what did I just change") or to clarifying questions inside an active skill (`/study`, `/kickoff`, etc.) — those skills own their own flow.
+
 ## Session Logs
 
 Daily append-only logs in `logs/YYYY-MM-DD.md`. Each session records: skill used, topic, cards reviewed/created, accuracy, lapses, wiki updates, duration.
