@@ -117,9 +117,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-09",
-    "updated": "2026-04-22",
-    "next_review": "2026-04-23",
-    "review_interval": 1,
+    "updated": "2026-04-23",
+    "next_review": "2026-04-25",
+    "review_interval": 2,
     "probe_sections": [
       "anyOf vs oneOf",
       "The oneOf Shared-Field Trap",
@@ -128,11 +128,11 @@
       "not as a Filter"
     ],
     "last_probed": [
+      "The oneOf Shared-Field Trap",
+      "allOf Is Not Inheritance",
       "The additionalProperties Trap",
       "not as a Filter",
-      "anyOf vs oneOf",
-      "The oneOf Shared-Field Trap",
-      "allOf Is Not Inheritance"
+      "anyOf vs oneOf"
     ]
   },
   "rails/index-with": {
@@ -194,7 +194,9 @@
       "TOFU Problem (Trust On First Use)",
       "Preload",
       "Cross-Host Redirects",
-      "Full Defense Stack"
+      "Full Defense Stack",
+      "Header in Practice",
+      "Browser Storage"
     ],
     "flashcard_ids": [
       "cmne7xvvx01sd0mso4nghg03i",
@@ -204,18 +206,29 @@
       "cmne7xwri02050mso5k9tqzu4"
     ],
     "created": "2026-04-10",
-    "updated": "2026-04-20",
-    "next_review": "2026-04-23",
-    "review_interval": 5,
+    "updated": "2026-04-23",
+    "next_review": "2026-04-29",
+    "review_interval": 6,
     "probe_sections": [
       "The SSL Stripping Attack",
       "The Header",
       "TOFU Problem (Trust On First Use)",
       "Preload",
       "Cross-Host Redirects",
-      "Full Defense Stack"
+      "Full Defense Stack",
+      "Header in Practice",
+      "Browser Storage"
     ],
-    "last_probed": []
+    "last_probed": [
+      "Preload",
+      "Cross-Host Redirects",
+      "Full Defense Stack",
+      "Header in Practice",
+      "Browser Storage",
+      "The SSL Stripping Attack",
+      "The Header",
+      "TOFU Problem (Trust On First Use)"
+    ]
   },
   "rails/singular-resource": {
     "file": "rails/singular-resource.md",
@@ -445,9 +458,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-14",
-    "updated": "2026-04-22",
-    "next_review": "2026-04-23",
-    "review_interval": 1,
+    "updated": "2026-04-23",
+    "next_review": "2026-04-25",
+    "review_interval": 2,
     "probe_sections": [
       "Renaming with `as:`",
       "The `_index` Suffix",
@@ -455,10 +468,10 @@
       "Verifying"
     ],
     "last_probed": [
+      "Fix: Set `as:` Explicitly",
       "Verifying",
       "Renaming with `as:`",
-      "The `_index` Suffix",
-      "Fix: Set `as:` Explicitly"
+      "The `_index` Suffix"
     ]
   },
   "ruby/transform-values": {
@@ -663,7 +676,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-20",
-    "updated": "2026-04-20",
+    "updated": "2026-04-23",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -752,6 +765,47 @@
     ],
     "last_probed": [
       "Pages"
+    ]
+  },
+  "rails/solidqueue-queue-admin": {
+    "file": "rails/solidqueue-queue-admin.md",
+    "title": "SolidQueue Queue Admin",
+    "aliases": [
+      "solid_queue clear queue",
+      "solid queue drain",
+      "solid_queue delete jobs",
+      "solid_queue purge"
+    ],
+    "tags": [
+      "rails",
+      "solid-queue",
+      "background-jobs",
+      "ops"
+    ],
+    "category": "work",
+    "sections": [
+      "Clearing a queue",
+      "The batching gotcha",
+      "Nuclear path for large queues",
+      "discard vs delete_all",
+      "Sources"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-23",
+    "updated": "2026-04-23",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Clearing a queue",
+      "The batching gotcha",
+      "Nuclear path for large queues",
+      "discard vs delete_all"
+    ],
+    "last_probed": [
+      "Clearing a queue",
+      "The batching gotcha",
+      "Nuclear path for large queues",
+      "discard vs delete_all"
     ]
   }
 }

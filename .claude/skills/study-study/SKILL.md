@@ -1,6 +1,6 @@
 ---
 name: study
-description: "Interactive spaced repetition study session with Claude as evaluator. Reviews due flashcards, rates answers, logs sessions, and supports mid-session actions: discuss, walkthrough, edit, split, delete, reschedule, pause. Trigger keywords: study, review cards, flashcards, spaced repetition."
+description: "Interactive spaced repetition study session with Claude as evaluator. Reviews due flashcards, rates answers, logs sessions, and supports mid-session actions: discuss, walkthrough, edit, split, delete, reschedule. Trigger keywords: study, review cards, flashcards, spaced repetition."
 user_invocable: true
 ---
 
@@ -8,7 +8,7 @@ user_invocable: true
 
 ## Core Guarantee
 
-The developer leaves each session with reinforced knowledge, accurate scheduling, and awareness of weak areas. Claude evaluates answers — no self-rating required. The developer can interrupt any card to discuss, edit, split, reschedule, pause, or chain into a walkthrough. The session adapts to the developer, not the other way around.
+The developer leaves each session with reinforced knowledge, accurate scheduling, and awareness of weak areas. Claude evaluates answers — no self-rating required. The developer can interrupt any card to discuss, edit, split, reschedule, or chain into a walkthrough. The session adapts to the developer, not the other way around.
 
 ## Wiki Integration
 
@@ -165,7 +165,7 @@ Then loop:
 
 1. **Call `get_next_card`** — if null, go to Phase 4
 2. **Present the card front**, followed by a small italic footer listing mid-session actions:
-   > *(discuss · edit · split · delete · reschedule · pause · show in Obsidian)*
+   > *(discuss · edit · split · delete · reschedule · show in Obsidian)*
 3. **Wait for the developer's answer**
 4. **Evaluate the answer** against the card back:
    - `Again (1)`: Wrong or fundamentally misses the concept
@@ -185,7 +185,7 @@ Then loop:
      - Do NOT flag cards that are intentionally minimal — simple recall cards with precise, correct backs are fine.
      - **When a quality issue is detected: stop advancing.** Explicitly describe the problem and ask the developer to fix it before continuing. Example: "This card's front is ambiguous — it could mean X or Y. Want to edit it to be more specific, or split it?" Wait for the developer to edit, split, or explicitly say "skip" before moving on.
    - **Generation prompt** (on Good/Easy cards, ~1 in 4 cards): Ask the developer to generate their own example or analogy: "Can you give me a real-world scenario where this applies?" This strengthens encoding. Keep it brief — one sentence is enough.
-   - One-liner reminder: *(harder/easier · discuss · edit · split · delete · pause · show in Obsidian)*
+   - One-liner reminder: *(harder/easier · discuss · edit · split · delete · show in Obsidian)*
 6. **Call `submit_review`** with the rating
 7. **Advance** — call `get_next_card` and present the next card in the same message. Only advance if no quality issue was flagged (or developer resolved/skipped it).
 
@@ -266,10 +266,6 @@ Delete the card via `delete_card`. Do not counter-offer suspend — adding new c
 ### "reschedule" / "show this later" / "not now"
 
 Ask when to resurface. Rate accordingly to push FSRS scheduling out. Resume.
-
-### "pause" / "brb"
-
-Note progress. Wait for "resume" or "done".
 
 ### "skip"
 

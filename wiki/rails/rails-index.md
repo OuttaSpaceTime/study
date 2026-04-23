@@ -8,7 +8,7 @@ tags:
 - rails
 category: work
 created: '2026-04-20'
-updated: '2026-04-20'
+updated: '2026-04-23'
 source_skill: manual
 probe_sections:
 - Pages
@@ -33,4 +33,5 @@ Map of content for the `rails/` wiki folder. Auto-maintained by `scripts/wiki-wr
 - [[rails/scope-vs-namespace]]
 - [[rails/shallow-routing]]
 - [[rails/singular-resource]]
+- [[rails/solidqueue-queue-admin]]
 

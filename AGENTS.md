@@ -84,21 +84,29 @@ Then open pages with `obsidian open vault="study" file="<slug>"` (use bare slug,
 
 ## Query Protocol
 
-When the developer asks a substantive knowledge question — any "what is X / how does X work / why does X" or equivalent — answer it through this flow, not from first-instinct recall:
+When the developer asks a substantive knowledge question — any "what is X / how does X work / why does X" or equivalent — handle it through this flow. The guiding principle: **never block the first answer on lookups**. Answer from memory immediately; run saved-knowledge lookups in the background and reconcile afterward.
 
-1. **Search saved knowledge first.** Run `scripts/wiki-search "<query>"` and skim the top hits. Also call `mcp__flashcard-mcp__search_cards` with the same query to surface flashcards that cover the topic. Glance at `wiki/.wiki-index.json` sections/aliases if the phrasing might not embed well.
-2. **Log the query.** Append a `## Query N (HH:MM)` entry to today's `logs/YYYY-MM-DD.md` (create the file if missing) with:
-   - **Question:** the developer's question, verbatim or tightened
-   - **Wiki hits:** wikilinks to matching pages (or `none`)
-   - **Card hits:** flashcard ids + one-line fronts (or `none`)
-   - **Source:** `wiki` | `cards` | `research` | `mixed`
-   - **Answer:** one-line summary of what you told the developer
-3. **Answer.**
-   - If the wiki covers it: answer from the page(s), cite with `[[folder/slug]]` wikilinks, and quote or paraphrase the relevant section. Prefer the saved knowledge over paraphrasing from memory.
-   - If only flashcards cover it: answer from the card(s), cite the ids, and note the wiki gap — offer `/study-walkthrough --write` to promote the concept into a proper page.
-   - If partial: answer the covered part from wiki/cards, then research the gap (WebSearch/WebFetch or source reading), mark Source as `mixed`.
-   - If no coverage: research, answer, then offer `/study-walkthrough` (append `--write`) to capture it into the wiki. Do not silently auto-write.
-4. **Never skip the log, even when answering from memory is tempting.** The log is how we see which topics recur and which warrant a wiki page. A one-liner is fine; this is a thinking artifact, not a report.
+1. **Answer first, from memory.** Give the developer your best answer right away based on your own knowledge. Do not run `scripts/wiki-search`, `mcp__flashcard-mcp__search_cards`, or any other lookup before this first response — those are slow (Ollama embedding round-trip) and would block the reply.
+
+2. **Spawn one background subagent to do all lookup + verification + logging in parallel.** Immediately after (or alongside) the first answer, launch a single background agent (`run_in_background: true`) with a prompt that instructs it to:
+   - Run `scripts/wiki-search "<query>"` and collect top hits.
+   - Call `mcp__flashcard-mcp__search_cards` with the same query.
+   - Optionally glance at `wiki/.wiki-index.json` sections/aliases if phrasing is unlikely to embed well.
+   - **Always verify the memory answer against the web** via `WebSearch` (and `WebFetch` on the most authoritative result — official docs, source code, RFC, upstream repo — when the question has a specific factual claim to check). This runs regardless of whether wiki/cards hit, so memory answers are never trusted on their own.
+   - Append a `## Query N (HH:MM)` entry to today's `logs/YYYY-MM-DD.md` (creating the file if missing) with: **Question**, **Wiki hits** (wikilinks or `none`), **Card hits** (ids + one-line fronts or `none`), **Web check** (one-line verdict: `confirms` | `contradicts: <what>` | `refines: <what>` | `inconclusive`, plus the authoritative URL used), **Source** (`wiki` | `cards` | `research` | `mixed` | `memory`), **Answer** (one-line summary of what you told the developer).
+   - Report back the wiki/card hits **and the web-check verdict** so the main thread can reconcile.
+
+   The main thread must not `Read` or `Write` the log file itself, and must not run wiki-search / card-search directly. Same rule for the wiki-write follow-up when the developer accepts a `/study-walkthrough --write` offer: spawn it in the background.
+
+3. **Reconcile when the subagent returns.** Once the background agent reports hits + web verdict:
+   - If the wiki/cards **confirm** your answer, add a brief follow-up citing the page(s) with `[[folder/slug]]` wikilinks or flashcard ids. Keep it short — the developer already has the answer.
+   - If the wiki/cards **contradict or correct** your answer, post a correction immediately, citing the saved knowledge. Do not let a wrong memory-answer stand.
+   - If the **web check contradicts** the memory answer (even when wiki/cards are silent or agreed with memory), post a correction citing the authoritative URL. Web truth wins over stale memory and stale wiki both.
+   - If the **web check refines** the answer (adds a caveat, version note, edge case), extend the original answer with the new detail and cite the URL.
+   - If **only flashcards** cover it, cite the ids and note the wiki gap — offer `/study-walkthrough --write` to promote the concept into a proper page.
+   - If **no coverage** in wiki or cards, offer `/study-walkthrough` (append `--write`) to capture the topic. Do not silently auto-write.
+
+4. **Never skip the log, even when answering from memory is tempting.** The log is how we see which topics recur and which warrant a wiki page. A one-liner is fine; this is a thinking artifact, not a report. The background agent owns this — the main thread only needs to spawn it.
 
 Scope: this applies to knowledge/explanation questions. It does *not* apply to operational requests ("edit this file", "run the tests", "what did I just change") or to clarifying questions inside an active skill (`/study`, `/kickoff`, etc.) — those skills own their own flow.
 

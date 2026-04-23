@@ -10,7 +10,7 @@ tags:
 - web
 category: work
 created: '2026-04-10'
-updated: '2026-04-10'
+updated: '2026-04-23'
 source_skill: study-walkthrough
 flashcard_ids:
 - cmne7xvvx01sd0mso4nghg03i
@@ -19,8 +19,8 @@ flashcard_ids:
 - cmne7xvym01t50msou805xi7h
 - cmne7xwri02050mso5k9tqzu4
 depth: 1
-next_review: '2026-04-23'
-review_interval: 5
+next_review: '2026-04-29'
+review_interval: 6
 probe_sections:
 - The SSL Stripping Attack
 - The Header
@@ -28,7 +28,17 @@ probe_sections:
 - Preload
 - Cross-Host Redirects
 - Full Defense Stack
-last_probed: []
+- Header in Practice
+- Browser Storage
+last_probed:
+- Preload
+- Cross-Host Redirects
+- Full Defense Stack
+- Header in Practice
+- Browser Storage
+- The SSL Stripping Attack
+- The Header
+- TOFU Problem (Trust On First Use)
 ---
 
 # HSTS (HTTP Strict-Transport-Security)
@@ -91,3 +101,60 @@ The middle hop lets `example.com` serve its own HSTS header. This reduces the vu
 1. **Same-host HTTPS redirect** — each domain serves its own HSTS header
 2. **HSTS with `max-age` + `includeSubDomains`** — protects returning visitors
 3. **`preload`** — protects first-time visitors
+
+## Header in Practice
+
+The header is just a plain response header on an HTTPS response — no middleware magic at the protocol level. Inspecting a real site:
+
+```bash
+$ curl -sI https://github.com | grep -i strict-transport-security
+strict-transport-security: max-age=31536000; includeSubdomains; preload
+```
+
+GitHub uses `max-age=31536000` (1 year), not the 2-year wiki recommendation — a deliberate tradeoff to limit blast radius if a subdomain ever needs to drop HTTPS.
+
+**Setting it in Rails** (via `ActionDispatch::SSL` middleware):
+
+```ruby
+# config/environments/production.rb
+config.force_ssl = true
+config.ssl_options = {
+  hsts: {
+    expires: 1.year,
+    subdomains: true,
+    preload: true
+  }
+}
+```
+
+`force_ssl = true` does two things: redirects HTTP→HTTPS **and** adds the `Strict-Transport-Security` header on HTTPS responses.
+
+**Raw equivalent** (any framework):
+
+```ruby
+response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload'
+```
+
+The security does not come from the header itself — it comes from (a) browser persistence of the rule and (b) TLS authenticating the header's origin on the HTTPS response it arrived on.
+
+## Browser Storage
+
+Browsers maintain a persistent **HSTS store** per user profile — a local database of `(host, expiry, includeSubDomains)` tuples.
+
+**On receiving the header** (over HTTPS only):
+- Parse `max-age` + directives, stamp `received_at`, write or update the entry.
+- Every subsequent HTTPS response refreshes `max-age` — a sliding window.
+- `max-age=0` **deletes** the entry (the spec's opt-out mechanism).
+
+**On every navigation, before DNS/TCP:**
+1. Check the **static preload list** (baked into the browser binary, e.g. Chromium's `transport_security_state_static.json`). Hit → upgrade to HTTPS.
+2. Else check the **dynamic store** — match the host directly, or any parent with `includeSubDomains`. Hit and not expired → upgrade.
+3. Otherwise fall through to normal resolution.
+
+The "upgrade" rewrites `http://` to `https://` in-memory before any packet leaves the machine. DevTools shows it as an internal `307 Internal Redirect` — zero network round trip, zero MitM opportunity.
+
+**Where it lives on disk:**
+- Chrome: `~/.config/google-chrome/<Profile>/TransportSecurity` (JSON)
+- Firefox: `~/.mozilla/firefox/<profile>/SiteSecurityServiceState.txt`
+
+Chrome also exposes `chrome://net-internals/#hsts` for inspecting, adding, or deleting entries in the dynamic store — useful when debugging a site you accidentally pinned.
