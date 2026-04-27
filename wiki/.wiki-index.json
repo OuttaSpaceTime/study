@@ -117,9 +117,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-09",
-    "updated": "2026-04-23",
-    "next_review": "2026-04-25",
-    "review_interval": 2,
+    "updated": "2026-04-25",
+    "next_review": "2026-04-30",
+    "review_interval": 5,
     "probe_sections": [
       "anyOf vs oneOf",
       "The oneOf Shared-Field Trap",
@@ -128,11 +128,11 @@
       "not as a Filter"
     ],
     "last_probed": [
+      "not as a Filter",
+      "anyOf vs oneOf",
       "The oneOf Shared-Field Trap",
       "allOf Is Not Inheritance",
-      "The additionalProperties Trap",
-      "not as a Filter",
-      "anyOf vs oneOf"
+      "The additionalProperties Trap"
     ]
   },
   "rails/index-with": {
@@ -253,9 +253,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-13",
-    "updated": "2026-04-20",
-    "next_review": "2026-04-24",
-    "review_interval": 8,
+    "updated": "2026-04-25",
+    "next_review": "2026-05-15",
+    "review_interval": 20,
     "probe_sections": [
       "6 Routes, Not 7",
       "Controller Is Still Plural",
@@ -263,7 +263,13 @@
       "How Identity Is Resolved",
       "Nesting Works the Same"
     ],
-    "last_probed": []
+    "last_probed": [
+      "6 Routes, Not 7",
+      "How Identity Is Resolved",
+      "Nesting Works the Same",
+      "Controller Is Still Plural",
+      "When to Use"
+    ]
   },
   "rails/scope-vs-namespace": {
     "file": "rails/scope-vs-namespace.md",
@@ -325,16 +331,21 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-13",
-    "updated": "2026-04-20",
-    "next_review": "2026-04-24",
-    "review_interval": 8,
+    "updated": "2026-04-25",
+    "next_review": "2026-05-15",
+    "review_interval": 20,
     "probe_sections": [
       "The Split",
       "Why This Split",
       "Named Helpers Change Too",
       "Applying to All Nested Resources"
     ],
-    "last_probed": []
+    "last_probed": [
+      "Applying to All Nested Resources",
+      "The Split",
+      "Why This Split",
+      "Named Helpers Change Too"
+    ]
   },
   "rails/routing-concerns": {
     "file": "rails/routing-concerns.md",
@@ -458,9 +469,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-14",
-    "updated": "2026-04-23",
-    "next_review": "2026-04-25",
-    "review_interval": 2,
+    "updated": "2026-04-25",
+    "next_review": "2026-04-30",
+    "review_interval": 5,
     "probe_sections": [
       "Renaming with `as:`",
       "The `_index` Suffix",
@@ -468,10 +479,10 @@
       "Verifying"
     ],
     "last_probed": [
+      "The `_index` Suffix",
       "Fix: Set `as:` Explicitly",
       "Verifying",
-      "Renaming with `as:`",
-      "The `_index` Suffix"
+      "Renaming with `as:`"
     ]
   },
   "ruby/transform-values": {
@@ -583,9 +594,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-17",
-    "updated": "2026-04-20",
-    "next_review": "2026-04-24",
-    "review_interval": 4,
+    "updated": "2026-04-25",
+    "next_review": "2026-04-30",
+    "review_interval": 5,
     "probe_sections": [
       "The Problem It Solves",
       "Schema Shape",
@@ -596,13 +607,13 @@
       "N+1 Gotcha"
     ],
     "last_probed": [
-      "Direction of Delegation",
-      "Design Rule: Where Attributes Live",
-      "STI vs Delegated Type",
       "N+1 Gotcha",
       "The Problem It Solves",
       "Schema Shape",
-      "The Declaration"
+      "The Declaration",
+      "Direction of Delegation",
+      "Design Rule: Where Attributes Live",
+      "STI vs Delegated Type"
     ]
   },
   "git/git-index": {

@@ -12,15 +12,20 @@ created: '2026-04-13'
 updated: '2026-04-16'
 source_skill: study-walkthrough
 depth: 1
-next_review: '2026-04-24'
-review_interval: 8
+next_review: '2026-05-15'
+review_interval: 20
 probe_sections:
 - 6 Routes, Not 7
 - Controller Is Still Plural
 - When to Use
 - How Identity Is Resolved
 - Nesting Works the Same
-last_probed: []
+last_probed:
+- 6 Routes, Not 7
+- How Identity Is Resolved
+- Nesting Works the Same
+- Controller Is Still Plural
+- When to Use
 ---
 
 # Singular Resource
@@ -35,14 +40,14 @@ resource :profile
 
 Generates:
 
-| HTTP   | URL             | Action  |
-|--------|-----------------|---------|
-| GET    | /profile/new    | new     |
-| POST   | /profile        | create  |
-| GET    | /profile        | show    |
-| GET    | /profile/edit   | edit    |
-| PATCH  | /profile        | update  |
-| DELETE | /profile        | destroy |
+| HTTP   | URL           | Action  |
+| ------ | ------------- | ------- |
+| GET    | /profile/new  | new     |
+| POST   | /profile      | create  |
+| GET    | /profile      | show    |
+| GET    | /profile/edit | edit    |
+| PATCH  | /profile      | update  |
+| DELETE | /profile      | destroy |
 
 No `index` -- there's only one. No `:id` in any URL -- identity comes from context (e.g., the session).
 

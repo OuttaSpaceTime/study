@@ -15,8 +15,8 @@ updated: '2026-04-17'
 source_skill: study-walkthrough
 depth: 1
 last_deepened: '2026-04-17'
-next_review: '2026-04-24'
-review_interval: 4
+next_review: '2026-04-30'
+review_interval: 5
 probe_sections:
 - The Problem It Solves
 - Schema Shape
@@ -26,13 +26,13 @@ probe_sections:
 - STI vs Delegated Type
 - N+1 Gotcha
 last_probed:
-- Direction of Delegation
-- 'Design Rule: Where Attributes Live'
-- STI vs Delegated Type
 - N+1 Gotcha
 - The Problem It Solves
 - Schema Shape
 - The Declaration
+- Direction of Delegation
+- 'Design Rule: Where Attributes Live'
+- STI vs Delegated Type
 ---
 
 # Delegated Type
@@ -115,12 +115,12 @@ This is what makes `Entry.where(account_id: 5).order(created_at: :desc)` a singl
 
 ## STI vs Delegated Type
 
-| Choose STI when | Choose Delegated Type when |
-|---|---|
-| Variants share structure, differ in behavior | Variants diverge structurally |
+| Choose STI when                                | Choose Delegated Type when                     |
+| ---------------------------------------------- | ---------------------------------------------- |
+| Variants share structure, differ in behavior   | Variants diverge structurally                  |
 | Adding a column to one variant is fine for all | Variant columns would pollute the shared table |
-| Cross-variant queries dominate | Same |
-| You want one class hierarchy | You want separate models with a shared parent |
+| Cross-variant queries dominate                 | Same                                           |
+| You want one class hierarchy                   | You want separate models with a shared parent  |
 
 Classic STI fit: `User` → `Admin`, `Moderator`, `Guest` (same columns, different methods).
 Classic delegated-type fit: `Entry` → `Message`, `Comment`, `Post` (different payload columns, shared metadata).

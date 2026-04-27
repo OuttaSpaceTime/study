@@ -15,8 +15,8 @@ updated: '2026-04-09'
 source_skill: study-walkthrough
 flashcard_ids: []
 depth: 1
-next_review: '2026-04-25'
-review_interval: 2
+next_review: '2026-04-30'
+review_interval: 5
 probe_sections:
 - anyOf vs oneOf
 - The oneOf Shared-Field Trap
@@ -24,23 +24,23 @@ probe_sections:
 - The additionalProperties Trap
 - not as a Filter
 last_probed:
+- not as a Filter
+- anyOf vs oneOf
 - The oneOf Shared-Field Trap
 - allOf Is Not Inheritance
 - The additionalProperties Trap
-- not as a Filter
-- anyOf vs oneOf
 ---
 
 # Schema Composition
 
 JSON Schema provides four keywords for combining schemas. OpenAPI inherits all four.
 
-| Keyword | Logic | Rule |
-|---------|-------|------|
-| `allOf` | AND | Value must match **every** schema |
-| `anyOf` | OR | Value must match **at least one** |
-| `oneOf` | XOR | Value must match **exactly one** |
-| `not` | NOT | Value must **not** match the schema |
+| Keyword | Logic | Rule                                |
+| ------- | ----- | ----------------------------------- |
+| `allOf` | AND   | Value must match **every** schema   |
+| `anyOf` | OR    | Value must match **at least one**   |
+| `oneOf` | XOR   | Value must match **exactly one**    |
+| `not`   | NOT   | Value must **not** match the schema |
 
 ## anyOf vs oneOf
 
