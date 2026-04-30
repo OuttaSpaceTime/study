@@ -81,9 +81,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-09",
-    "updated": "2026-04-20",
-    "next_review": "2026-04-28",
-    "review_interval": 10,
+    "updated": "2026-04-29",
+    "next_review": "2026-05-11",
+    "review_interval": 12,
     "probe_sections": [
       "Behavior",
       "vs pluck",
@@ -91,7 +91,13 @@
       "Multiple aggregates in one query",
       "Gotchas"
     ],
-    "last_probed": []
+    "last_probed": [
+      "Multiple aggregates in one query",
+      "Gotchas",
+      "Behavior",
+      "vs pluck",
+      "Raw SQL expressions"
+    ]
   },
   "openapi/schema-composition": {
     "file": "openapi/schema-composition.md",
@@ -206,9 +212,9 @@
       "cmne7xwri02050mso5k9tqzu4"
     ],
     "created": "2026-04-10",
-    "updated": "2026-04-23",
-    "next_review": "2026-04-29",
-    "review_interval": 6,
+    "updated": "2026-04-29",
+    "next_review": "2026-05-14",
+    "review_interval": 15,
     "probe_sections": [
       "The SSL Stripping Attack",
       "The Header",
@@ -220,14 +226,14 @@
       "Browser Storage"
     ],
     "last_probed": [
-      "Preload",
-      "Cross-Host Redirects",
-      "Full Defense Stack",
       "Header in Practice",
       "Browser Storage",
       "The SSL Stripping Attack",
       "The Header",
-      "TOFU Problem (Trust On First Use)"
+      "TOFU Problem (Trust On First Use)",
+      "Preload",
+      "Cross-Host Redirects",
+      "Full Defense Stack"
     ]
   },
   "rails/singular-resource": {
@@ -296,9 +302,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-13",
-    "updated": "2026-04-20",
-    "next_review": "2026-04-28",
-    "review_interval": 12,
+    "updated": "2026-04-29",
+    "next_review": "2026-05-29",
+    "review_interval": 30,
     "probe_sections": [
       "The Three Knobs",
       "Scope Picks and Chooses",
@@ -307,7 +313,14 @@
       "The controller: Option",
       "When to Use What"
     ],
-    "last_probed": []
+    "last_probed": [
+      "Per-Resource Options",
+      "The controller: Option",
+      "When to Use What",
+      "The Three Knobs",
+      "Scope Picks and Chooses",
+      "Module Path Format"
+    ]
   },
   "rails/shallow-routing": {
     "file": "rails/shallow-routing.md",
@@ -369,16 +382,21 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-13",
-    "updated": "2026-04-20",
-    "next_review": "2026-04-28",
-    "review_interval": 12,
+    "updated": "2026-04-29",
+    "next_review": "2026-06-16",
+    "review_interval": 48,
     "probe_sections": [
       "The Problem",
       "Extract a Concern",
       "Multiple Concerns",
       "When to Use"
     ],
-    "last_probed": []
+    "last_probed": [
+      "When to Use",
+      "The Problem",
+      "Extract a Concern",
+      "Multiple Concerns"
+    ]
   },
   "rails/route-organization": {
     "file": "rails/route-organization.md",
@@ -401,14 +419,17 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-13",
-    "updated": "2026-04-20",
-    "next_review": "2026-04-28",
-    "review_interval": 12,
+    "updated": "2026-04-29",
+    "next_review": "2026-05-13",
+    "review_interval": 14,
     "probe_sections": [
       "draw -- Split Routes into Files",
       "defaults -- Set Shared Parameters"
     ],
-    "last_probed": []
+    "last_probed": [
+      "draw -- Split Routes into Files",
+      "defaults -- Set Shared Parameters"
+    ]
   },
   "rails/collection-and-member-routes": {
     "file": "rails/collection-and-member-routes.md",
@@ -434,9 +455,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-14",
-    "updated": "2026-04-20",
-    "next_review": "2026-04-26",
-    "review_interval": 8,
+    "updated": "2026-04-27",
+    "next_review": "2026-05-07",
+    "review_interval": 10,
     "probe_sections": [
       "The Decision Table",
       "Syntax",
@@ -444,7 +465,13 @@
       "Param Naming Rules",
       "When to Use What"
     ],
-    "last_probed": []
+    "last_probed": [
+      "Param Naming Rules",
+      "When to Use What",
+      "The Decision Table",
+      "Syntax",
+      "Routing to a Different Controller"
+    ]
   },
   "rails/path-helper-naming": {
     "file": "rails/path-helper-naming.md",
@@ -741,7 +768,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-20",
-    "updated": "2026-04-20",
+    "updated": "2026-04-29",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -817,6 +844,48 @@
       "The batching gotcha",
       "Nuclear path for large queues",
       "discard vs delete_all"
+    ]
+  },
+  "security/same-origin-policy": {
+    "file": "security/same-origin-policy.md",
+    "title": "Same-Origin Policy",
+    "aliases": [
+      "SOP",
+      "same origin policy"
+    ],
+    "tags": [
+      "security",
+      "web",
+      "browser"
+    ],
+    "category": "work",
+    "sections": [
+      "TL;DR",
+      "What an Origin Is",
+      "What SOP Actually Blocks",
+      "The Threat Model",
+      "SOP Is Not Configurable",
+      "Server-to-Server Requests",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-29",
+    "updated": "2026-04-29",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "What an Origin Is",
+      "What SOP Actually Blocks",
+      "The Threat Model",
+      "SOP Is Not Configurable",
+      "Server-to-Server Requests"
+    ],
+    "last_probed": [
+      "What an Origin Is",
+      "What SOP Actually Blocks",
+      "The Threat Model",
+      "SOP Is Not Configurable",
+      "Server-to-Server Requests"
     ]
   }
 }

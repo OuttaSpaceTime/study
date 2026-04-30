@@ -12,14 +12,18 @@ created: '2026-04-13'
 updated: '2026-04-13'
 source_skill: study-walkthrough
 depth: 1
-next_review: '2026-04-28'
-review_interval: 12
+next_review: '2026-06-16'
+review_interval: 48
 probe_sections:
 - The Problem
 - Extract a Concern
 - Multiple Concerns
 - When to Use
-last_probed: []
+last_probed:
+- When to Use
+- The Problem
+- Extract a Concern
+- Multiple Concerns
 ---
 
 # Routing Concerns

@@ -8,7 +8,7 @@ tags:
 - security
 category: work
 created: '2026-04-20'
-updated: '2026-04-20'
+updated: '2026-04-29'
 source_skill: manual
 probe_sections:
 - Pages
@@ -24,4 +24,5 @@ Map of content for the `security/` wiki folder. Auto-maintained by `scripts/wiki
 ## Pages
 
 - [[security/hsts]]
+- [[security/same-origin-policy]]
 

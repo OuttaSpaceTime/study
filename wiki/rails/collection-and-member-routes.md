@@ -13,15 +13,20 @@ created: '2026-04-14'
 updated: '2026-04-14'
 source_skill: study-walkthrough
 depth: 1
-next_review: '2026-04-26'
-review_interval: 8
+next_review: '2026-05-07'
+review_interval: 10
 probe_sections:
 - The Decision Table
 - Syntax
 - Routing to a Different Controller
 - Param Naming Rules
 - When to Use What
-last_probed: []
+last_probed:
+- Param Naming Rules
+- When to Use What
+- The Decision Table
+- Syntax
+- Routing to a Different Controller
 ---
 
 # Collection and Member Routes

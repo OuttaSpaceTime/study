@@ -19,8 +19,8 @@ flashcard_ids:
 - cmne7xvym01t50msou805xi7h
 - cmne7xwri02050mso5k9tqzu4
 depth: 1
-next_review: '2026-04-29'
-review_interval: 6
+next_review: '2026-05-14'
+review_interval: 15
 probe_sections:
 - The SSL Stripping Attack
 - The Header
@@ -31,14 +31,14 @@ probe_sections:
 - Header in Practice
 - Browser Storage
 last_probed:
-- Preload
-- Cross-Host Redirects
-- Full Defense Stack
 - Header in Practice
 - Browser Storage
 - The SSL Stripping Attack
 - The Header
 - TOFU Problem (Trust On First Use)
+- Preload
+- Cross-Host Redirects
+- Full Defense Stack
 ---
 
 # HSTS (HTTP Strict-Transport-Security)
