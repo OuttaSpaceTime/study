@@ -167,7 +167,8 @@ Then loop:
 2. **Present the card front**, followed by a small italic footer listing mid-session actions:
    > *(discuss · edit · split · delete · reschedule · show in Obsidian)*
 3. **Wait for the developer's answer**
-4. **Evaluate the answer** against the card back:
+3a. **Probe option for code-shaped cards.** When the card is code-shaped (git, Python, shell, SQL, HTTP, regex, algorithms) **and** the developer's answer is uncertain, partial, or asserts a specific output, offer one quick probe before evaluating: a `python -c` line, a `git` command, a `curl | jq`, a small unit assertion. The developer runs it and pastes the output. Compare to what they predicted. If prediction and output disagree, name the gap explicitly (`predicted X, got Y`) before rating — that gap is the rating signal, not a side note. If a probe surprises, persist it under `probes/<topic-slug>/YYYY-MM-DD-HHMM-<brief>.md` using `probes/_template.md` (Prediction / Command / Output / Takeaway). Skip the probe entirely for theory-only cards or when the developer's recall was clearly solid — probing in that case is ceremony.
+4. **Evaluate the answer** against the card back (and the probe output, when one was run):
    - `Again (1)`: Wrong or fundamentally misses the concept
    - `Hard (2)`: Mostly correct but significant gaps
    - `Good (3)`: Correct answer with reasonable detail
