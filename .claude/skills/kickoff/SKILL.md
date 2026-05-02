@@ -45,6 +45,24 @@ Read today's `logs/YYYY-MM-DD.md` (create date if file doesn't exist). Count exi
 
 > **Yesterday you left off:** [left off text]
 
+### Phase 1.5: Scope (work or personal)
+
+Ask via the `AskUserQuestion` tool — never ask inline as plain text:
+
+```
+question: "Is this kickoff for work or personal?"
+header: "Scope"
+options:
+  - label: "Work"
+    description: "Professional context — job, client work, team commitments."
+  - label: "Personal"
+    description: "Personal projects, learning, life — outside work scope."
+```
+
+Hold the answer for the session log (`**Scope:**` field). Let the developer's framing of subsequent answers (focus, blockers, time) flow naturally — do not re-prompt the scope question into the fixed questions.
+
+If the developer picks Other, treat their custom text as the scope label verbatim.
+
 ### Phase 2: Todo Read (silent)
 
 Read `todo.md` from the project root. It has two headings: `## Today` (today's chosen tasks, cleared daily) and `## Backlog` (the ongoing ordered list). Top item of `## Today` is the current highest priority when populated; otherwise top of `## Backlog` is. Do **not** present the list to the developer — the todo list is auto-managed. Hold it in memory for Phase 2.5 and Phase 3.5 logic.
@@ -152,6 +170,7 @@ Append to `logs/YYYY-MM-DD.md`. Determine the session number by counting existin
 
 ```markdown
 ## Session N — Kickoff (HH:MM)
+- **Scope:** [work | personal | <other>]
 - **Today's tasks:** [the list the developer gave for `## Today`]
 - **Pauses:** [how the developer wants to reward themselves with pauses today]
 - **Feeling:** [brief]
@@ -169,6 +188,7 @@ Append to `logs/YYYY-MM-DD.md`. Determine the session number by counting existin
 
 ```markdown
 ## Session N — Kickoff/Refocus (HH:MM)
+- **Scope:** [work | personal | <other>]
 - **Focus:** [stated focus]
 - **Time:** [time frame set in the interview]
 - **Next:** [what the developer will move to when time is up]
@@ -200,6 +220,7 @@ Otherwise hand off plainly. Don't force the suggestion.
 ## Guardrails
 
 **Always:**
+- Ask the work-vs-personal scope via `AskUserQuestion` — never inline as plain text
 - Ask questions one at a time (the Today-tasks + pauses pair is one message)
 - Read `todo.md` every session silently; only modify with explicit confirmation except for the automated stale-`## Today` clear, and never present the list unprompted
 - On the first kickoff of the day, auto-clear stale `## Today` (unchecked → Backlog, checked → dropped) and ask for today's tasks + pauses before the fixed questions

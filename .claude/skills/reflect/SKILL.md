@@ -35,6 +35,24 @@ No mode arguments.
 
 ## Flow
 
+### Phase 0: Scope (work or personal)
+
+Ask via the `AskUserQuestion` tool — never ask inline as plain text:
+
+```
+question: "Is this reflection for work or personal?"
+header: "Scope"
+options:
+  - label: "Work"
+    description: "Professional context — job, client work, team commitments."
+  - label: "Personal"
+    description: "Personal projects, learning, life — outside work scope."
+```
+
+Hold the answer for the session log (`**Scope:**` field). Let the developer's framing of the fixed anchors flow naturally — do not re-prompt scope into the anchors.
+
+If the developer picks Other, treat their custom text as the scope label verbatim.
+
 ### Phase 1: Context Priming (silent)
 
 Read in parallel, do not dump output:
@@ -85,6 +103,7 @@ Append to today's `logs/YYYY-MM-DD.md`. Determine session number by counting exi
 
 ```markdown
 ## Session N — Reflection (HH:MM)
+- **Scope:** [work | personal | <other>]
 - **Growing into:** [anchor 1 — developer's words]
 - **Pattern:** [anchor 2 — developer's words]
 - **Better version:** [anchor 3 — developer's words]
@@ -105,6 +124,7 @@ Brief, warm sign-off. No summary — the developer was there.
 ## Guardrails
 
 **Always:**
+- Ask the work-vs-personal scope via `AskUserQuestion` — never inline as plain text
 - Ask anchors one at a time
 - Stay in the multi-day / multi-week horizon
 - Write the session log

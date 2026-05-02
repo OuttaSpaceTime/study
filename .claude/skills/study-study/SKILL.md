@@ -118,6 +118,27 @@ Listing format (emitted from Phase 1):
    - **Concept section:** compare/contrast with alternative ("when X over Y?"), explain consequences of skipping, apply to a scenario, define in own words
    - **List/reference section:** recall key items, explain rationale behind an item, identify which item applies to a scenario
 
+   **Ground the question in a concrete scenario with code, not an abstract concept prompt.** Don't ask "what is the difference between X and Y?" — show a real snippet (or a plausible setup the developer would encounter at work) and ask what happens, what changes, what breaks, what the output is, or how to modify it. The developer's recall is sharper when the prompt looks like a thing they'd see in a PR or a console, not a textbook entry. Compare:
+
+   - Weak (abstract): *"What's the difference between `index_by` and `index_with`?"*
+   - Strong (grounded): *"Given `users = User.where(active: true).limit(3)` returning users with ids 7, 12, 19 and emails alice@/bob@/carol@. What's the shape of `users.index_by(&:id)` vs `users.index_with(&:email)`? Pick one and write it out."*
+
+   - Weak (abstract): *"How do you fix the polymorphic-includes limit?"*
+   - Strong (grounded): *"You have `Entry.includes(entryable: :author)` but `Comment` has `:commenter` instead of `:author`. What error fires, and what's the rewrite?"*
+
+   - Weak (abstract): *"What does `not` do in JSON Schema?"*
+   - Strong (grounded): *"You have an `Animal` schema and want to accept only animals that don't require a `wings` property. Sketch the YAML."*
+
+   Use real-looking values, real method names, real error text where you can. The setup does the framing; the question itself can stay short.
+
+   **When the question expects a code answer, anchor the expected shape in the question itself.** State explicitly that a rough outline is fine and give a one-line example of the shape you'd accept. The developer is demonstrating recall, not writing teaching material — a structurally correct sketch is a complete answer. Examples of how to phrase the shape hint:
+   - "Sketch the YAML — `key: value` / `key: { nested }` form is enough, no need for full schemas."
+   - "Show the call shape — something like `Model.scope.includes(:assoc)` is plenty."
+   - "One-line outline of the method call and its key argument — e.g. `method_name(arg)` — no need to write the full block."
+   - "Sketch the columns per table — `users: id, name, email` form is enough."
+
+   This anchoring prevents the developer from over-investing in literal-perfect code and lets you evaluate against the structural elements that actually matter (method name, dispatch form, key vs value placement, association vs scope, etc.).
+
    **Tune difficulty based on the page's last rating (from frontmatter `review_interval`):**
    - **Short interval (1-3 days) — recent lapse:** gentle recall. "What is X?" / "What does this command do?"
    - **Medium interval (4-14 days):** standard application question. "When would you use X?" / "What happens if you omit this?"
@@ -127,6 +148,8 @@ Listing format (emitted from Phase 1):
 
 4. **Wait for the developer's answer to each question in turn.** Ask one, wait, evaluate, then move to the next probed section.
 5. **Evaluate each answer** with brief feedback (1-2 sentences) and a per-section rating (1-4). After all picked sections are answered, **assign the page rating = rounded mean of the per-section evaluations** (round half-down toward the weaker rating — e.g. Good+Hard → Hard, Good+Good+Hard → Good). This surfaces a reasonable middle ground rather than letting one shaky section drop the whole page.
+
+   **For code-shaped answers, score on structural correctness, not literal completeness.** If the developer's outline contains the load-bearing pieces (correct method name, correct dispatch form, correct argument shape, correct relationship direction), rate Good even if the answer is a one-line sketch. Reserve Hard/Again for genuine conceptual gaps — wrong direction, wrong dispatch, missing pieces — not for terseness or skipped `# =>` comments. When you spell out a fuller example in the recap, that's you adding teaching value, not raising the bar the answer needed to clear.
 6. State the computed rating with the per-section breakdown, then apply it directly — do not ask the developer to confirm or override:
    > Section A: Good · Section B: Hard · Section C: Good → page rated **Good (3)**. Applying.
 7. Run `scripts/wiki-reschedule wiki/<path>.md <rating> --probed "<Section A>,<Section B>"` (e.g. `scripts/wiki-reschedule wiki/git/git-restore.md 2 --probed "..."`) — computes the new interval, rewrites frontmatter (including rotating `last_probed`), and re-indexes. The path is filesystem-relative with the `wiki/` prefix and `.md` suffix — unlike `scripts/wiki-probes`, which takes the bare wiki-root path. Pass the exact section headings you probed, comma-separated.

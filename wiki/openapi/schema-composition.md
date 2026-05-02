@@ -15,8 +15,8 @@ updated: '2026-04-09'
 source_skill: study-walkthrough
 flashcard_ids: []
 depth: 1
-next_review: '2026-04-30'
-review_interval: 5
+next_review: '2026-05-08'
+review_interval: 6
 probe_sections:
 - anyOf vs oneOf
 - The oneOf Shared-Field Trap
@@ -24,11 +24,11 @@ probe_sections:
 - The additionalProperties Trap
 - not as a Filter
 last_probed:
+- allOf Is Not Inheritance
+- The additionalProperties Trap
 - not as a Filter
 - anyOf vs oneOf
 - The oneOf Shared-Field Trap
-- allOf Is Not Inheritance
-- The additionalProperties Trap
 ---
 
 # Schema Composition
@@ -44,7 +44,7 @@ JSON Schema provides four keywords for combining schemas. OpenAPI inherits all f
 
 ## anyOf vs oneOf
 
-`anyOf` passes when one or more schemas match — it doesn't care about overlap. `oneOf` is strict: if a payload matches two or more schemas, validation fails.
+`anyOf` passes when one or more schemas match — it doesn't care about overlap, and validation can short-circuit on the first match. `oneOf` is strict: it must validate the payload against **every** listed schema to confirm exactly one matches. If two or more match, validation fails.
 
 Practical distinction: use `anyOf` when formats may overlap (e.g., a field accepting ISO date string or Unix timestamp). Use `oneOf` when types are truly exclusive (e.g., polymorphic API responses).
 

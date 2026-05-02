@@ -35,25 +35,37 @@ See `~/.claude/skills/references/interactive-principles.md` for shared interacti
 
 ## Flow
 
-### Phase 0: Choose Mode
+### Phase 0: Choose Mode and Scope
 
 Do **not** auto-detect mode from session logs — past auto-detects assumed the wrong thing too often.
 
-- If the developer passed `block` → **block-end**, skip the question.
-- If the developer passed `day` → **day-end**, skip the question.
-- Otherwise → ask the developer with the `AskUserQuestion` tool:
+- If the developer passed `block` → **block-end**, skip the mode question (still ask scope below).
+- If the developer passed `day` → **day-end**, skip the mode question (still ask scope below).
+- Otherwise → ask both questions in a single `AskUserQuestion` call (never inline as plain text):
 
 ```
-question: "Ending the day, or closing a focused session?"
-header: "End mode"
-options:
-  - label: "Focused session"
-    description: "Closing the current work block — quick reflection to empty your head before a pause."
-  - label: "End of day"
-    description: "Full day close — review git activity, session logs, todos, and intentions for next time."
+question 1:
+  question: "Ending the day, or closing a focused session?"
+  header: "End mode"
+  options:
+    - label: "Focused session"
+      description: "Closing the current work block — quick reflection to empty your head before a pause."
+    - label: "End of day"
+      description: "Full day close — review git activity, session logs, todos, and intentions for next time."
+
+question 2:
+  question: "Is this end for work or personal?"
+  header: "Scope"
+  options:
+    - label: "Work"
+      description: "Professional context — job, client work, team commitments."
+    - label: "Personal"
+      description: "Personal projects, learning, life — outside work scope."
 ```
 
-Map "Focused session" → **block-end**, "End of day" → **day-end**. If the developer picks Other, interpret their answer; if still ambiguous, ask the question again.
+Map "Focused session" → **block-end**, "End of day" → **day-end**. If the developer picks Other on either question, interpret their answer; if still ambiguous, ask again. Hold the scope answer for the session log (`**Scope:**` field).
+
+When the mode is pre-supplied via CLI (`block` or `day`), still call `AskUserQuestion` with just the scope question — never ask scope inline as plain text.
 
 **If block-end → jump to Block-End Flow below.**
 **If day-end → continue to Phase 1.**
@@ -88,6 +100,7 @@ Append to `logs/YYYY-MM-DD.md`:
 
 ```markdown
 ## Session N — Block End (HH:MM)
+- **Scope:** [work | personal | <other>]
 - **Block focus:** [what was set in kickoff]
 - **Achieved:** [brief — what actually happened]
 - **Open threads:** [anything the developer emptied from their head]
@@ -173,6 +186,7 @@ Append to `logs/YYYY-MM-DD.md`.
 
 ```markdown
 ## Session N — End (HH:MM)
+- **Scope:** [work | personal | <other>]
 - **Achieved:** [what the developer said they accomplished]
 - **Commits:** [count and brief summary of key changes]
 - **Study stats:** [cards reviewed, accuracy, wiki pages — only if any]
@@ -195,6 +209,7 @@ Brief, warm sign-off. Don't over-summarize — the log has the details.
 ## Guardrails
 
 **Always:**
+- Ask the work-vs-personal scope via `AskUserQuestion` — never inline as plain text
 - Check git activity for concrete evidence
 - Read today's log for session context
 - Update `todo.md`
