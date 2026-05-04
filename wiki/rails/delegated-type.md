@@ -15,8 +15,8 @@ updated: '2026-04-17'
 source_skill: study-walkthrough
 depth: 1
 last_deepened: '2026-04-17'
-next_review: '2026-05-03'
-review_interval: 1
+next_review: '2026-05-06'
+review_interval: 3
 probe_sections:
 - The Problem It Solves
 - Schema Shape
@@ -27,14 +27,14 @@ probe_sections:
 - STI vs Delegated Type
 - N+1 Gotcha
 last_probed:
-- The Declaration
-- Direction of Delegation
-- 'Design Rule: Where Attributes Live'
 - STI vs Delegated Type
 - N+1 Gotcha
 - The Problem It Solves
 - Schema Shape
 - What `delegated_type` Expands To
+- The Declaration
+- Direction of Delegation
+- 'Design Rule: Where Attributes Live'
 ---
 
 # Delegated Type
@@ -134,16 +134,45 @@ What's an association vs what's not — this matters for `includes`:
 
 ## Direction of Delegation
 
-Counterintuitive: `delegated_type` does **not** auto-delegate methods from the parent down to the subtype. `entry.subject` raises `NoMethodError` unless you write your own `delegate :subject, to: :entryable` on `Entry`.
+**Nothing is method-delegated by default — in either direction.** The macro name oversells what it does. `delegated_type` generates the scaffolding (association, scopes, predicates, atomic creators); delegation is a **convention you write manually** using the `delegate` keyword. The "delegated" in the name describes the *intended pattern*, not an automatic mechanism.
 
-The "delegated" in the name refers to the **inverse direction**: each subtype delegates *up* to the parent for shared attributes. `account_id` lives on `entries`, so:
+What this means concretely:
+
+```ruby
+# Without manual delegation — both raise NoMethodError:
+entry.subject       # → no method 'subject' on Entry
+message.account     # → no method 'account' on Message
+```
+
+To make either side ergonomic you write the delegate yourself:
+
+```ruby
+# Parent → variant (often added on Entry for callers that hold an Entry)
+class Entry < ApplicationRecord
+  delegated_type :entryable, types: %w[Message Comment]
+  delegate :subject, :body, :content, to: :entryable
+end
+
+# Variant → parent (the "delegated" in the macro name)
+module Entryable
+  extend ActiveSupport::Concern
+  included do
+    has_one :entry, as: :entryable, touch: true
+    delegate :account, :created_at, to: :entry
+  end
+end
+```
+
+The "delegated" in the macro name refers to the **subtype → parent** direction specifically: each subtype delegates *up* to the parent for shared attributes. `account_id` lives on `entries`, so without the up-delegate, callers would walk `.entry.account` manually.
 
 ```ruby
 message.account          # works via delegate :account, to: :entry
 message.entry.account    # same thing, explicit
 ```
 
-Without the delegate, callers would have to walk through `.entry` manually. The delegate is pure ergonomics — the data path is unchanged.
+The delegate is pure ergonomics — the data path is unchanged. Whether you write it or not, the row lookup goes Message → entry row → account_id either way. Skip the delegate and the path leaks into every caller; add it and the surface looks uniform.
+
+**Mnemonic: the macro is more accurately named `polymorphic_parent_with_creators`.** It does *not* auto-forward methods. Hang the delegations on the scaffolding yourself, in whichever direction matches the call sites you have.
 
 ## Design Rule: Where Attributes Live
 

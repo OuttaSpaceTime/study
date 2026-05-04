@@ -622,9 +622,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-17",
-    "updated": "2026-05-02",
-    "next_review": "2026-05-03",
-    "review_interval": 1,
+    "updated": "2026-05-03",
+    "next_review": "2026-05-06",
+    "review_interval": 3,
     "probe_sections": [
       "The Problem It Solves",
       "Schema Shape",
@@ -636,14 +636,14 @@
       "N+1 Gotcha"
     ],
     "last_probed": [
-      "The Declaration",
-      "Direction of Delegation",
-      "Design Rule: Where Attributes Live",
       "STI vs Delegated Type",
       "N+1 Gotcha",
       "The Problem It Solves",
       "Schema Shape",
-      "What `delegated_type` Expands To"
+      "What `delegated_type` Expands To",
+      "The Declaration",
+      "Direction of Delegation",
+      "Design Rule: Where Attributes Live"
     ]
   },
   "git/git-index": {
