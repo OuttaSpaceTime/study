@@ -873,7 +873,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-29",
-    "updated": "2026-04-29",
+    "updated": "2026-05-04",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -889,6 +889,90 @@
       "The Threat Model",
       "SOP Is Not Configurable",
       "Server-to-Server Requests"
+    ]
+  },
+  "networking/url-anatomy": {
+    "file": "networking/url-anatomy.md",
+    "title": "URL Anatomy",
+    "aliases": [
+      "URL parts",
+      "URL structure",
+      "scheme host port path",
+      "domain vs host",
+      "subdomain SLD TLD"
+    ],
+    "tags": [
+      "networking",
+      "web",
+      "http",
+      "dns"
+    ],
+    "category": "work",
+    "sections": [
+      "TL;DR",
+      "URL anatomy at a glance",
+      "Scheme vs protocol",
+      "Host - subdomain, SLD, TLD",
+      "Port",
+      "Path and query",
+      "DNS resolution",
+      "DNS caching, TTL, and safe migrations",
+      "Host header and virtual hosts",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [
+      "cmoqrprzu0000ld0mfbwqly5v"
+    ],
+    "created": "2026-05-04",
+    "updated": "2026-05-04",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "URL anatomy at a glance",
+      "Scheme vs protocol",
+      "Host - subdomain, SLD, TLD",
+      "Port",
+      "Path and query",
+      "DNS resolution",
+      "DNS caching, TTL, and safe migrations",
+      "Host header and virtual hosts"
+    ],
+    "last_probed": [
+      "URL anatomy at a glance",
+      "Scheme vs protocol",
+      "Host - subdomain, SLD, TLD",
+      "Port",
+      "Path and query",
+      "DNS resolution",
+      "DNS caching, TTL, and safe migrations",
+      "Host header and virtual hosts"
+    ]
+  },
+  "networking/networking-index": {
+    "file": "networking/networking-index.md",
+    "title": "Networking Index",
+    "aliases": [
+      "networking-moc",
+      "networking map"
+    ],
+    "tags": [
+      "moc",
+      "networking"
+    ],
+    "category": "work",
+    "sections": [
+      "Pages"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-04",
+    "updated": "2026-05-04",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Pages"
+    ],
+    "last_probed": [
+      "Pages"
     ]
   }
 }

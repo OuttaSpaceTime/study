@@ -38,7 +38,7 @@ last_probed:
 
 ## What an Origin Is
 
-Origin is the tuple `(scheme, host, port)`. Two URLs share an origin only when all three match.
+Origin is the tuple `(scheme, host, port)`. Two URLs share an origin only when all three match. See [[networking/url-anatomy]] for what each component means.
 
 | URL A | URL B | Same origin? | Why |
 |---|---|---|---|
