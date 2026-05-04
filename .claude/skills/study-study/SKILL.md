@@ -182,7 +182,21 @@ Initial values are set when a wiki page is created: `review_interval: 3`, `next_
 
 ### Phase 3: Study Loop (1 card per message)
 
-Call `start_session` with appropriate config, including **`category`** (the session category captured in Phase 1). If cards span multiple decks, **interleave** them — don't exhaust one deck before starting the next. Mix topics to strengthen cross-domain connections.
+**`start_session` config — derive `maxNewCards` from the Phase 1 pressure verdict.** Pass `category` (the session category captured in Phase 1) and:
+
+| Pressure verdict | `maxNewCards` | `maxReviewCards` |
+|------------------|--------------:|-----------------:|
+| `ok` (< 20 due) | 5 (default) | 15 (default) |
+| `warn` (≥ 20 due) | **0** | 15 |
+| `pause` (≥ 50 due) | **0** | 15 |
+
+The warn-threshold cap exists because over-adding under load is the recurring failure mode (see `feedback_srs_over_adding`). The pressure script's `flashcards due` count is the trigger — not the wiki/new-today axes. The developer can override explicitly ("include new cards anyway") — pass their requested number and note the override in the session log.
+
+**Surface the cap in the opening line of Phase 3** so the developer never wonders where the new cards went. Example:
+
+> Starting session — 4 due (3 relearning + 1 review), 18 new held back (pressure: warn). `maxNewCards: 0`.
+
+If cards span multiple decks, **interleave** them — don't exhaust one deck before starting the next. Mix topics to strengthen cross-domain connections.
 
 Then loop:
 
