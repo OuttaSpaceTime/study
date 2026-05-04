@@ -54,12 +54,22 @@ class DeckState:
     new: int
     learning: int
     review: int
+    relearning: int = 0
+    due_new: int = 0
+    due_learning: int = 0
+    due_review: int = 0
+    due_relearning: int = 0
 
 
 _DECK_HEADER_RE = re.compile(r"^ {2}(?P<name>.+?) \((?P<total>\d+) cards\)\s*$")
 _DECK_STATS_RE = re.compile(
     r"^ {4}Due: (?P<due>\d+) \| New: (?P<new>\d+) \| "
-    r"Learning: (?P<learning>\d+) \| Review: (?P<review>\d+)\s*$"
+    r"Learning: (?P<learning>\d+) \| Review: (?P<review>\d+)"
+    r"(?: \| Relearning: (?P<relearning>\d+))?\s*$"
+)
+_DECK_DUE_BREAKDOWN_RE = re.compile(
+    r"^ {4}Due breakdown: (?P<new>\d+) new \| (?P<learning>\d+) learning \| "
+    r"(?P<review>\d+) review \| (?P<relearning>\d+) relearning\s*$"
 )
 
 
@@ -67,26 +77,52 @@ def parse_decks_output(text: str) -> list[DeckState]:
     """Parse the text output of `flashcard-mcp decks` into DeckState list."""
     decks: list[DeckState] = []
     pending_header: tuple[str, int] | None = None
+    pending_stats: dict | None = None
 
     for raw in text.splitlines():
         header = _DECK_HEADER_RE.match(raw)
         if header:
             pending_header = (header["name"], int(header["total"]))
+            pending_stats = None
             continue
         stats = _DECK_STATS_RE.match(raw)
         if stats and pending_header is not None:
+            pending_stats = {
+                "due": int(stats["due"]),
+                "new": int(stats["new"]),
+                "learning": int(stats["learning"]),
+                "review": int(stats["review"]),
+                "relearning": int(stats["relearning"] or 0),
+            }
+            continue
+        breakdown = _DECK_DUE_BREAKDOWN_RE.match(raw)
+        if breakdown and pending_header is not None and pending_stats is not None:
             name, total = pending_header
             decks.append(
                 DeckState(
                     name=name,
                     total=total,
-                    due=int(stats["due"]),
-                    new=int(stats["new"]),
-                    learning=int(stats["learning"]),
-                    review=int(stats["review"]),
+                    **pending_stats,
+                    due_new=int(breakdown["new"]),
+                    due_learning=int(breakdown["learning"]),
+                    due_review=int(breakdown["review"]),
+                    due_relearning=int(breakdown["relearning"]),
                 )
             )
             pending_header = None
+            pending_stats = None
+            continue
+        # Stats line without a following breakdown line (older flashcard-mcp): flush.
+        if pending_header is not None and pending_stats is not None and raw.strip() == "":
+            name, total = pending_header
+            decks.append(DeckState(name=name, total=total, **pending_stats))
+            pending_header = None
+            pending_stats = None
+
+    # Tail: stats line at end of input with no breakdown and no trailing blank.
+    if pending_header is not None and pending_stats is not None:
+        name, total = pending_header
+        decks.append(DeckState(name=name, total=total, **pending_stats))
 
     return decks
 
@@ -154,10 +190,25 @@ def render_human(
         lines.append("")
         lines.append("  Decks:")
         for d in decks:
-            lines.append(
-                f"    {d.name} — {d.due} due "
-                f"({d.new} new, {d.learning} learning, {d.review} review)"
-            )
+            accounted = d.new + d.learning + d.review + d.relearning
+            suspended = d.total - accounted
+            state_parts = [
+                f"{d.new} new",
+                f"{d.learning} learning",
+                f"{d.review} review",
+                f"{d.relearning} relearning",
+            ]
+            if suspended:
+                state_parts.append(f"{suspended} suspended")
+            due_parts = [
+                f"{d.due_new} new",
+                f"{d.due_learning} learning",
+                f"{d.due_review} review",
+                f"{d.due_relearning} relearning",
+            ]
+            lines.append(f"    {d.name} — {d.total} cards")
+            lines.append(f"      State:   {' · '.join(state_parts)}")
+            lines.append(f"      Due now: {d.due} = {' + '.join(due_parts)}")
 
     if level == "ok":
         return "\n".join(lines)

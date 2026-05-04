@@ -194,6 +194,11 @@ class TestMainCLI:
                 "new": 153,
                 "learning": 5,
                 "review": 275,
+                "relearning": 0,
+                "due_new": 0,
+                "due_learning": 0,
+                "due_review": 0,
+                "due_relearning": 0,
             }
         ]
 
@@ -214,33 +219,74 @@ class TestMainCLI:
 class TestParseDecksOutput:
     SAMPLE = """Decks:
 
-  Software Engineering (439 cards)
-    Due: 221 | New: 153 | Learning: 5 | Review: 275
+  Software Engineering (274 cards)
+    Due: 36 | New: 17 | Learning: 0 | Review: 251 | Relearning: 6
+    Due breakdown: 17 new | 0 learning | 14 review | 5 relearning
   Personal (10 cards)
-    Due: 2 | New: 1 | Learning: 0 | Review: 9
+    Due: 2 | New: 1 | Learning: 0 | Review: 9 | Relearning: 0
+    Due breakdown: 1 new | 0 learning | 1 review | 0 relearning
 """
 
     def test_parses_multiple_decks(self):
         decks = parse_decks_output(self.SAMPLE)
         assert len(decks) == 2
-        assert decks[0] == DeckState("Software Engineering", 439, 221, 153, 5, 275)
-        assert decks[1] == DeckState("Personal", 10, 2, 1, 0, 9)
+        assert decks[0] == DeckState(
+            "Software Engineering", 274, 36, 17, 0, 251,
+            relearning=6, due_new=17, due_learning=0, due_review=14, due_relearning=5,
+        )
+        assert decks[1] == DeckState(
+            "Personal", 10, 2, 1, 0, 9,
+            relearning=0, due_new=1, due_learning=0, due_review=1, due_relearning=0,
+        )
 
     def test_empty_output(self):
         assert parse_decks_output("") == []
 
-    def test_handles_deck_names_with_spaces_and_parens_in_total(self):
-        text = "  My Deck Name (7 cards)\n    Due: 0 | New: 0 | Learning: 0 | Review: 7\n"
+    def test_parses_legacy_output_without_relearning_or_breakdown(self):
+        # Older flashcard-mcp output (pre-2026-05-04) — no Relearning, no Due breakdown line.
+        text = (
+            "  My Deck Name (7 cards)\n"
+            "    Due: 0 | New: 0 | Learning: 0 | Review: 7\n"
+        )
         decks = parse_decks_output(text)
         assert decks == [DeckState("My Deck Name", 7, 0, 0, 0, 7)]
 
 
 class TestHumanOutputDeckBreakdown:
-    def test_includes_deck_breakdown_line(self):
-        decks = [DeckState("Software Engineering", 439, 221, 153, 5, 275)]
-        out = render_human("warn", ["221 flashcards due"], 221, 0, 0, decks)
+    def test_includes_state_and_due_breakdown_lines(self):
+        decks = [
+            DeckState(
+                "Software Engineering", 274, 36, 17, 0, 251,
+                relearning=6, due_new=17, due_learning=0, due_review=14, due_relearning=5,
+            )
+        ]
+        out = render_human("warn", ["36 flashcards due"], 36, 0, 0, decks)
         assert "Decks:" in out
-        assert "Software Engineering — 221 due (153 new, 5 learning, 275 review)" in out
+        assert "Software Engineering — 274 cards" in out
+        assert "State:   17 new · 0 learning · 251 review · 6 relearning" in out
+        assert "Due now: 36 = 17 new + 0 learning + 14 review + 5 relearning" in out
+
+    def test_appends_suspended_when_state_sum_below_total(self):
+        decks = [
+            DeckState(
+                "D", 10, 0, 1, 0, 7,
+                relearning=0, due_new=0, due_learning=0, due_review=0, due_relearning=0,
+            )
+        ]
+        out = render_human("warn", ["x"], 0, 0, 0, decks)
+        assert "1 new · 0 learning · 7 review · 0 relearning · 2 suspended" in out
+
+    def test_omits_suspended_when_state_sum_equals_total(self):
+        decks = [
+            DeckState(
+                "Personal", 10, 2, 1, 0, 9,
+                relearning=0, due_new=1, due_learning=0, due_review=1, due_relearning=0,
+            )
+        ]
+        out = render_human("warn", ["x"], 2, 0, 0, decks)
+        assert "Personal — 10 cards" in out
+        assert "1 new · 0 learning · 9 review · 0 relearning" in out
+        assert "suspended" not in out
 
     def test_omits_deck_breakdown_when_no_decks(self):
         out = render_human("ok", [], 0, 0, 0, [])
