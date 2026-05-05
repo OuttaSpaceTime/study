@@ -974,5 +974,350 @@
     "last_probed": [
       "Pages"
     ]
+  },
+  "programming-languages/compilers-and-interpreters": {
+    "file": "programming-languages/compilers-and-interpreters.md",
+    "title": "Compilers and Interpreters",
+    "aliases": [
+      "compiler",
+      "interpreter",
+      "bytecode",
+      "JIT",
+      "virtual machine",
+      "Python execution model"
+    ],
+    "tags": [
+      "compilers",
+      "programming-languages",
+      "interpreters",
+      "bytecode",
+      "jit"
+    ],
+    "category": "work",
+    "sections": [
+      "TL;DR",
+      "Compiler vs interpreter — roles, not languages",
+      "Two orthogonal axes — type checking ⊥ compile target",
+      "Case study: the CPython chain",
+      "JIT — when bytecode becomes machine code at runtime",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-05",
+    "updated": "2026-05-05",
+    "next_review": "2026-05-08",
+    "review_interval": 3,
+    "probe_sections": [
+      "Compiler vs interpreter — roles, not languages",
+      "Two orthogonal axes — type checking ⊥ compile target",
+      "Case study: the CPython chain",
+      "JIT — when bytecode becomes machine code at runtime"
+    ],
+    "last_probed": [
+      "Compiler vs interpreter — roles, not languages",
+      "Two orthogonal axes — type checking ⊥ compile target",
+      "Case study: the CPython chain",
+      "JIT — when bytecode becomes machine code at runtime"
+    ]
+  },
+  "programming-languages/programming-languages-index": {
+    "file": "programming-languages/programming-languages-index.md",
+    "title": "Programming Languages Index",
+    "aliases": [
+      "programming-languages-moc",
+      "programming languages map"
+    ],
+    "tags": [
+      "moc",
+      "programming-languages"
+    ],
+    "category": "work",
+    "sections": [
+      "Pages"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-05",
+    "updated": "2026-05-05",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Pages"
+    ],
+    "last_probed": [
+      "Pages"
+    ]
+  },
+  "llm/llm-index": {
+    "file": "llm/llm-index.md",
+    "title": "LLM Index",
+    "aliases": [
+      "llm-moc",
+      "llm map"
+    ],
+    "tags": [
+      "moc",
+      "llm"
+    ],
+    "category": "work",
+    "sections": [
+      "Pages"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-05",
+    "updated": "2026-05-05",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Pages"
+    ],
+    "last_probed": [
+      "Pages"
+    ]
+  },
+  "llm/serving-runtime-and-vram": {
+    "file": "llm/serving-runtime-and-vram.md",
+    "title": "Serving Runtime and VRAM",
+    "aliases": [
+      "LLM serving",
+      "Ollama VRAM",
+      "LLM model loading",
+      "KEEP_ALIVE",
+      "VRAM budget for LLMs"
+    ],
+    "tags": [
+      "llm",
+      "ollama",
+      "gpu",
+      "infrastructure"
+    ],
+    "category": "work",
+    "sections": [
+      "TL;DR",
+      "The model is a file",
+      "VRAM and why GPUs",
+      "KEEP_ALIVE and the cold-start tax",
+      "Multi-tenancy - what is shared, what is per-slot",
+      "Same model, different num_ctx, two instances",
+      "Practical heuristics",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-05",
+    "updated": "2026-05-05",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "The model is a file",
+      "VRAM and why GPUs",
+      "KEEP_ALIVE and the cold-start tax",
+      "Multi-tenancy - what is shared, what is per-slot",
+      "Same model, different num_ctx, two instances"
+    ],
+    "last_probed": [
+      "The model is a file",
+      "VRAM and why GPUs",
+      "KEEP_ALIVE and the cold-start tax",
+      "Multi-tenancy - what is shared, what is per-slot",
+      "Same model, different num_ctx, two instances"
+    ]
+  },
+  "llm/inference-prefill-and-decode": {
+    "file": "llm/inference-prefill-and-decode.md",
+    "title": "Inference - Prefill and Decode",
+    "aliases": [
+      "prefill decode",
+      "LLM inference phases",
+      "autoregressive generation",
+      "why decode is slow",
+      "num_predict mechanics"
+    ],
+    "tags": [
+      "llm",
+      "inference",
+      "performance"
+    ],
+    "category": "work",
+    "sections": [
+      "TL;DR",
+      "Inference vs training",
+      "The two phases at a glance",
+      "Prefill - one pass, parallel",
+      "Decode - N passes, sequential",
+      "Why output length dominates",
+      "num_predict as the circuit breaker",
+      "Practical heuristics",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-05",
+    "updated": "2026-05-05",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Inference vs training",
+      "The two phases at a glance",
+      "Prefill - one pass, parallel",
+      "Decode - N passes, sequential",
+      "Why output length dominates",
+      "num_predict as the circuit breaker"
+    ],
+    "last_probed": [
+      "Inference vs training",
+      "The two phases at a glance",
+      "Prefill - one pass, parallel",
+      "Decode - N passes, sequential",
+      "Why output length dominates",
+      "num_predict as the circuit breaker"
+    ]
+  },
+  "llm/kv-cache": {
+    "file": "llm/kv-cache.md",
+    "title": "KV Cache",
+    "aliases": [
+      "KV cache",
+      "key-value cache",
+      "attention cache",
+      "num_ctx mechanics",
+      "why decode is O(n)"
+    ],
+    "tags": [
+      "llm",
+      "inference",
+      "attention",
+      "transformer"
+    ],
+    "category": "work",
+    "sections": [
+      "TL;DR",
+      "What attention is doing - Q, K, V",
+      "Why two vectors per token, not one",
+      "Why K and V are cached but not Q",
+      "The cache grows by one entry per decode step",
+      "Cost formula",
+      "Without the cache - O(N²)",
+      "num_ctx is the cache buffer size",
+      "Sizing num_ctx in practice",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-05",
+    "updated": "2026-05-05",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "What attention is doing - Q, K, V",
+      "Why two vectors per token, not one",
+      "Why K and V are cached but not Q",
+      "The cache grows by one entry per decode step",
+      "Cost formula",
+      "Without the cache - O(N²)",
+      "num_ctx is the cache buffer size"
+    ],
+    "last_probed": [
+      "What attention is doing - Q, K, V",
+      "Why two vectors per token, not one",
+      "Why K and V are cached but not Q",
+      "The cache grows by one entry per decode step",
+      "Cost formula",
+      "Without the cache - O(N²)",
+      "num_ctx is the cache buffer size"
+    ]
+  },
+  "llm/sampling-knobs": {
+    "file": "llm/sampling-knobs.md",
+    "title": "Sampling Knobs",
+    "aliases": [
+      "temperature num_predict think",
+      "LLM API knobs",
+      "thinking mode footgun",
+      "LLM sampling controls",
+      "temperature 0"
+    ],
+    "tags": [
+      "llm",
+      "inference",
+      "sampling",
+      "ollama"
+    ],
+    "category": "work",
+    "sections": [
+      "TL;DR",
+      "The decode loop has a sampler",
+      "Temperature - how peaked the distribution is",
+      "num_predict - the output cap",
+      "Thinking mode - reasoning preamble",
+      "Choosing knobs by task shape",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-05",
+    "updated": "2026-05-05",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "The decode loop has a sampler",
+      "Temperature - how peaked the distribution is",
+      "num_predict - the output cap",
+      "Thinking mode - reasoning preamble",
+      "Choosing knobs by task shape"
+    ],
+    "last_probed": [
+      "The decode loop has a sampler",
+      "Temperature - how peaked the distribution is",
+      "num_predict - the output cap",
+      "Thinking mode - reasoning preamble",
+      "Choosing knobs by task shape"
+    ]
+  },
+  "llm/embeddings-vs-embedding-layer": {
+    "file": "llm/embeddings-vs-embedding-layer.md",
+    "title": "Embeddings vs Embedding Layer",
+    "aliases": [
+      "embedding model",
+      "embedding layer",
+      "semantic search",
+      "RAG flow",
+      "two meanings of embedding",
+      "nomic-embed-text"
+    ],
+    "tags": [
+      "llm",
+      "embeddings",
+      "rag",
+      "retrieval"
+    ],
+    "category": "work",
+    "sections": [
+      "TL;DR",
+      "The two meanings, untangled",
+      "Meaning 1 - the embedding layer",
+      "Meaning 2 - embedding models",
+      "Cost asymmetry vs generative LLMs",
+      "The RAG data flow",
+      "Why retrieval is necessary, not optional",
+      "Practical heuristics",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-05",
+    "updated": "2026-05-05",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "The two meanings, untangled",
+      "Meaning 1 - the embedding layer",
+      "Meaning 2 - embedding models",
+      "Cost asymmetry vs generative LLMs",
+      "The RAG data flow",
+      "Why retrieval is necessary, not optional"
+    ],
+    "last_probed": [
+      "The two meanings, untangled",
+      "Meaning 1 - the embedding layer",
+      "Meaning 2 - embedding models",
+      "Cost asymmetry vs generative LLMs",
+      "The RAG data flow",
+      "Why retrieval is necessary, not optional"
+    ]
   }
 }

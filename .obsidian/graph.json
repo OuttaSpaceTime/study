@@ -48,6 +48,34 @@
         "a": 1,
         "rgb": 3581519
       }
+    },
+    {
+      "query": "path:wiki/networking/ ",
+      "color": {
+        "a": 1,
+        "rgb": 6053078
+      }
+    },
+    {
+      "query": "path:wiki/programming-languages/",
+      "color": {
+        "a": 1,
+        "rgb": 11361494
+      }
+    },
+    {
+      "query": "path:wiki/llm/",
+      "color": {
+        "a": 1,
+        "rgb": 14048429
+      }
+    },
+    {
+      "query": "",
+      "color": {
+        "a": 1,
+        "rgb": 14048348
+      }
     }
   ],
   "collapse-display": false,
@@ -60,6 +88,6 @@
   "repelStrength": 15,
   "linkStrength": 1,
   "linkDistance": 150,
-  "scale": 0.229207012627806,
+  "scale": 0.21041836943189574,
   "close": false
 }
