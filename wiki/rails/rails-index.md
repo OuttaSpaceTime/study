@@ -8,7 +8,7 @@ tags:
 - rails
 category: work
 created: '2026-04-20'
-updated: '2026-04-23'
+updated: '2026-05-05'
 source_skill: manual
 probe_sections:
 - Pages
@@ -24,6 +24,7 @@ Map of content for the `rails/` wiki folder. Auto-maintained by `scripts/wiki-wr
 ## Pages
 
 - [[rails/activerecord-pick]]
+- [[rails/activerecord-preloading]]
 - [[rails/collection-and-member-routes]]
 - [[rails/delegated-type]]
 - [[rails/index-with]]

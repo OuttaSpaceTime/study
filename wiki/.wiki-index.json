@@ -717,7 +717,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-20",
-    "updated": "2026-04-23",
+    "updated": "2026-05-05",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -1318,6 +1318,55 @@
       "Cost asymmetry vs generative LLMs",
       "The RAG data flow",
       "Why retrieval is necessary, not optional"
+    ]
+  },
+  "rails/activerecord-preloading": {
+    "file": "rails/activerecord-preloading.md",
+    "title": "ActiveRecord preloading",
+    "aliases": [
+      "activerecord preloading",
+      "preload vs eager_load vs includes",
+      "includes vs preload",
+      "n+1 prevention rails",
+      "association preloading"
+    ],
+    "tags": [
+      "rails",
+      "activerecord",
+      "performance",
+      "n-plus-one"
+    ],
+    "category": "work",
+    "sections": [
+      "TL;DR",
+      "The four methods",
+      "How includes auto-switches",
+      "Cost model — when JOIN multiplies rows",
+      "Decision guide",
+      "Polymorphic associations",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [
+      "cmosqcwsg0000h30mvfne2v51",
+      "cmosqd3r80001h30mwd2tbpht"
+    ],
+    "created": "2026-05-05",
+    "updated": "2026-05-05",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "The four methods",
+      "How includes auto-switches",
+      "Cost model — when JOIN multiplies rows",
+      "Decision guide",
+      "Polymorphic associations"
+    ],
+    "last_probed": [
+      "The four methods",
+      "How includes auto-switches",
+      "Cost model — when JOIN multiplies rows",
+      "Decision guide",
+      "Polymorphic associations"
     ]
   }
 }
