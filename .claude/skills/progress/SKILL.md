@@ -45,24 +45,6 @@ Determine the window:
 
 Note the resolved window — you will state it to the developer in Phase 3.
 
-### Phase 1.5: Scope (work or personal)
-
-Ask via the `AskUserQuestion` tool — never ask inline as plain text:
-
-```
-question: "Is this progression check for work or personal?"
-header: "Scope"
-options:
-  - label: "Work"
-    description: "Professional context — job, client work, team commitments."
-  - label: "Personal"
-    description: "Personal projects, learning, life — outside work scope."
-```
-
-Hold the answer for the session log (`**Scope:**` field) and as framing for the hypothesis. The evidence pass in Phase 2 still reads everything in window — scope filtering of past logs is best-effort since older entries may not be tagged.
-
-If the developer picks Other, treat their custom text as the scope label verbatim.
-
 ### Phase 2: Evidence Gathering (silent)
 
 Read in parallel. Do **not** dump raw output.
@@ -148,7 +130,6 @@ Append to today's `logs/YYYY-MM-DD.md`:
 
 ```markdown
 ## Session N — Progression (HH:MM)
-- **Scope:** [work | personal | <other>]
 - **Window:** [window start] → today ([N] days; reason: [last-progression / default-14d / override])
 - **Activity:** [commits count, sessions count, study stats, dominant themes — one line]
 - **Growth:** [hypothesis bullet — post-pushback version]
@@ -171,7 +152,6 @@ Otherwise — brief sign-off.
 ## Guardrails
 
 **Always:**
-- Ask the work-vs-personal scope via `AskUserQuestion` — never inline as plain text
 - Ground every claim in evidence from commits or logs
 - State the window explicitly and why it was chosen
 - Make the hypothesis easy to disagree with

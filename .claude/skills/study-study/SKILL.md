@@ -25,6 +25,10 @@ See `~/.claude/skills/references/interactive-principles.md` for shared interacti
 - Start each card with its position: `Card 3/12 — [Deck Name]`
 - After feedback, immediately advance to the next card — do not wait for "next".
 
+## Output Discipline
+
+**Run all lookups silently.** `scripts/srs-pressure`, `scripts/wiki-due`, `scripts/wiki-probes`, `Read` of wiki pages or the index, `mcp__flashcard-mcp__*` calls — these execute without preamble narration ("Starting Phase 1…", "Let me check…") and without any echoing of their stdout, JSON, or file contents into chat. The chat shows only synthesized output: the pressure verdict line, the wiki-due numbered list, the question, the rating, the next prompt. If a script exits non-zero or errors, surface a one-line summary, not the stderr blob. This generalizes the existing "read logs, never tail" rule to every tool the skill calls.
+
 ## Anti-Overload Principle
 
 - Default to conservative session sizes (5 new + 15 review cards)
@@ -42,17 +46,12 @@ This skill requires the `flashcard-mcp` MCP server running from `~/Code/Misc/fla
 ## Modes of Invocation
 
 ```
-/study                    — Start a default study session (prompts for category)
-/study -c work|personal   — Scope the session to one category (skips the prompt)
+/study                    — Start a default study session
 /study <deck-name>        — Focus on a specific deck
 /study --short            — Short session (5 cards max)
 /study add                — Create new flashcards (chain to /study-flashcard)
 /study add <deck-name>    — Create flashcards for a specific deck
 ```
-
-## Category
-
-Every study session is scoped to a single category. Follow `references/category-policy.md` to resolve it — prompt happens after the Phase 1 status summary when no `-c` flag was passed. The resolved value flows into `start_session({ category })` and every `scripts/wiki-due --category <cat>` call. Mid-session, `focus work` / `focus personal` narrows via `adjust_session({ focusCategory })` — see Mid-Session Actions.
 
 ---
 
@@ -64,9 +63,7 @@ Every study session is scoped to a single category. Follow `references/category-
 
 Do **not** call `mcp__flashcard-mcp__get_due_cards` for pressure counts — it caps at 30 and underreports. The script's per-deck breakdown replaces a separate `list_decks` call for status purposes. You may still call `get_stats` for streak/recent-sessions context, and `list_decks` is fine only if you later need deck IDs for `start_session`.
 
-Resolve the **session category** (see Category section). Once known, pass `--category <cat>` to every `scripts/wiki-due` call in this skill so counts and lists are scoped consistently.
-
-Run `scripts/wiki-due --count --category <cat>` to get the number of wiki entries due for review **in the chosen category**.
+Run `scripts/wiki-due --count` to get the number of wiki entries due for review.
 
 **Read `logs/` for analysis, never tail into chat.** You may read recent log entries to compute macro analytics (weekly accuracy, lapse trends, repeated-lapse topics) and use them to shape recommendations (e.g., suggest a walkthrough for a repeatedly-lapsed topic). But do **not** print log excerpts, weekly stats dumps, or lapse tables into the chat. Surface only a single-line takeaway when it drives a concrete suggestion — otherwise stay silent. The pressure-check verdict remains the only load signal shown at the top of Phase 1.
 
@@ -92,7 +89,7 @@ If nothing is due anywhere:
 
 ### Phase 2: Wiki Review
 
-Run `scripts/wiki-due --category <cat>` to get the full list of due wiki entries in the session's category. This runs as part of the Phase 1 message — the numbered list (shown in Phase 1) is the entry point into this phase. If no wiki entries are due, skip silently to Phase 3.
+Run `scripts/wiki-due` to get the full list of due wiki entries. This runs as part of the Phase 1 message — the numbered list (shown in Phase 1) is the entry point into this phase. If no wiki entries are due, skip silently to Phase 3.
 
 Listing format (emitted from Phase 1):
 
@@ -182,7 +179,7 @@ Initial values are set when a wiki page is created: `review_interval: 3`, `next_
 
 ### Phase 3: Study Loop (1 card per message)
 
-**`start_session` config — derive `maxNewCards` from the Phase 1 pressure verdict.** Pass `category` (the session category captured in Phase 1) and:
+**`start_session` config — derive `maxNewCards` from the Phase 1 pressure verdict.**
 
 | Pressure verdict | `maxNewCards` | `maxReviewCards` |
 |------------------|--------------:|-----------------:|
@@ -316,10 +313,6 @@ Go to Phase 3 (Session Summary) with whatever was reviewed.
 ### "fewer" / "less" / "shorten"
 
 Call `adjust_session`. Confirm reduction. Continue.
-
-### "focus work" / "focus personal"
-
-Narrow the current session to one category mid-flight. Call `adjust_session({ focusCategory: "work" | "personal" })`. Confirm the narrowing and resume with the filtered queue. Use when the developer realizes mid-session that they want to ignore cards outside the current focus.
 
 ### "add" / "new card"
 

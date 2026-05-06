@@ -8,7 +8,6 @@ tags:
 - rails
 - activerecord
 - sql
-category: work
 created: '2026-04-09'
 updated: '2026-04-09'
 source_skill: study-card

@@ -6,7 +6,6 @@ aliases:
 tags:
 - moc
 - networking
-category: work
 created: '2026-05-04'
 updated: '2026-05-04'
 source_skill: manual

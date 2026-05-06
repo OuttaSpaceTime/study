@@ -6,7 +6,6 @@ aliases:
 tags:
 - moc
 - security
-category: work
 created: '2026-04-20'
 updated: '2026-04-29'
 source_skill: manual

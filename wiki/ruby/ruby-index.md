@@ -6,7 +6,6 @@ aliases:
 tags:
 - moc
 - ruby
-category: work
 created: '2026-04-20'
 updated: '2026-04-20'
 source_skill: manual

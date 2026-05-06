@@ -10,7 +10,6 @@ tags:
 - llm
 - inference
 - performance
-category: work
 created: '2026-05-05'
 updated: '2026-05-05'
 source_skill: study-walkthrough

@@ -24,7 +24,6 @@ MINIMAL_PAGE = """\
     title: "test page"
     aliases: [test alias]
     tags: [git]
-    category: work
     created: 2026-04-09
     updated: 2026-04-09
     source_skill: study-walkthrough
@@ -47,7 +46,6 @@ class TestCleanWiki:
             title: "Git Index"
             aliases: [git-moc]
             tags: [moc, git]
-            category: work
             created: 2026-04-09
             updated: 2026-04-09
             source_skill: manual
@@ -98,7 +96,7 @@ class TestFrontmatter:
         """)
         _write_index(wiki_dir, {})
         errors, _ = lint_wiki(wiki_dir)
-        for field in ("created", "tags", "aliases", "updated", "source_skill", "category"):
+        for field in ("created", "tags", "aliases", "updated", "source_skill"):
             assert any("missing-field" in e and field in e for e in errors), (
                 f"expected missing-field for {field}"
             )
@@ -109,7 +107,6 @@ class TestFrontmatter:
             title: "test"
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             ---
@@ -155,7 +152,6 @@ class TestWikilinks:
             aliases: []
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             ---
@@ -175,7 +171,6 @@ class TestWikilinks:
             aliases: []
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             ---
@@ -195,7 +190,6 @@ class TestWikilinks:
             aliases: []
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             ---
@@ -210,7 +204,6 @@ class TestWikilinks:
             aliases: []
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             ---
@@ -232,7 +225,6 @@ class TestWikilinks:
             aliases: []
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             ---
@@ -245,7 +237,6 @@ class TestWikilinks:
             aliases: []
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             ---
@@ -265,7 +256,6 @@ class TestWikilinks:
             aliases: []
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             ---
@@ -278,7 +268,6 @@ class TestWikilinks:
             aliases: []
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             ---
@@ -298,7 +287,6 @@ class TestWikilinks:
             aliases: []
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             ---
@@ -315,7 +303,6 @@ class TestWikilinks:
             aliases: []
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             ---
@@ -336,7 +323,6 @@ class TestWikilinks:
             aliases: []
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             ---
@@ -351,7 +337,6 @@ class TestWikilinks:
             aliases: []
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             ---
@@ -370,7 +355,6 @@ class TestWikilinks:
             aliases: []
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             ---
@@ -385,7 +369,6 @@ class TestWikilinks:
             aliases: []
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             ---
@@ -407,7 +390,6 @@ class TestOrphans:
             aliases: []
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             ---
@@ -428,7 +410,6 @@ class TestOrphans:
             aliases: []
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             allow_orphan: true
@@ -450,7 +431,6 @@ class TestOrphans:
             aliases: []
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             ---
@@ -477,7 +457,6 @@ class TestAliasCollisions:
             aliases: [shared alias]
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             ---
@@ -490,7 +469,6 @@ class TestAliasCollisions:
             aliases: [shared alias]
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             ---
@@ -527,7 +505,6 @@ class TestSlugMismatch:
             aliases: []
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             ---
@@ -545,7 +522,6 @@ class TestSlugMismatch:
             aliases: []
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             ---
@@ -569,7 +545,6 @@ class TestProbeSections:
             aliases: []
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             next_review: 2026-05-01
@@ -608,7 +583,6 @@ class TestProbeSections:
             aliases: []
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             next_review: 2026-05-01
@@ -647,7 +621,6 @@ class TestProbeSections:
             aliases: []
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             next_review: 2026-05-01
@@ -687,7 +660,6 @@ class TestProbeSections:
             aliases: []
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             next_review: 2026-05-01
@@ -726,7 +698,6 @@ class TestProbeSections:
             aliases: []
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             ---
@@ -758,7 +729,6 @@ class TestProbeSections:
             aliases: []
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             next_review: 2026-05-01
@@ -791,96 +761,6 @@ class TestProbeSections:
         )
 
 
-class TestCategory:
-    """Every page must declare a valid `category` (work|personal)."""
-
-    def test_missing_category_is_error(self, wiki_dir: Path):
-        _write_page(wiki_dir, "git/test-page.md", """\
-            ---
-            title: "test page"
-            aliases: []
-            tags: [git]
-            created: 2026-04-09
-            updated: 2026-04-09
-            source_skill: study-walkthrough
-            probe_sections: [Section One]
-            ---
-
-            # test page
-
-            ## Section One
-        """)
-        _write_index(wiki_dir, {})
-        errors, _ = lint_wiki(wiki_dir)
-        assert any("missing-field" in e and "category" in e for e in errors), (
-            f"expected missing-field for category: {errors}"
-        )
-
-    def test_invalid_category_value_is_error(self, wiki_dir: Path):
-        _write_page(wiki_dir, "git/test-page.md", """\
-            ---
-            title: "test page"
-            aliases: []
-            tags: [git]
-            category: other
-            created: 2026-04-09
-            updated: 2026-04-09
-            source_skill: study-walkthrough
-            probe_sections: [Section One]
-            ---
-
-            # test page
-
-            ## Section One
-        """)
-        _write_index(wiki_dir, {})
-        errors, _ = lint_wiki(wiki_dir)
-        assert any("invalid-category" in e for e in errors), (
-            f"expected invalid-category: {errors}"
-        )
-
-    def test_valid_work_category_clean(self, wiki_dir: Path):
-        _write_page(wiki_dir, "git/test-page.md", MINIMAL_PAGE)
-        _write_index(wiki_dir, {
-            "git/test-page": {
-                "file": "git/test-page.md",
-                "title": "test page",
-                "aliases": ["test alias"],
-                "tags": ["git"],
-                "category": "work",
-                "sections": ["Section One"],
-                "flashcard_ids": [],
-                "probe_sections": ["Section One"],
-                "last_probed": [],
-            }
-        })
-        errors, _ = lint_wiki(wiki_dir)
-        cat_errors = [e for e in errors if "category" in e]
-        assert cat_errors == [], f"unexpected category errors: {cat_errors}"
-
-    def test_valid_personal_category_clean(self, wiki_dir: Path):
-        _write_page(wiki_dir, "git/test-page.md", """\
-            ---
-            title: "test page"
-            aliases: []
-            tags: [git]
-            category: personal
-            created: 2026-04-09
-            updated: 2026-04-09
-            source_skill: study-walkthrough
-            probe_sections: [Section One]
-            ---
-
-            # test page
-
-            ## Section One
-        """)
-        _write_index(wiki_dir, {})
-        errors, _ = lint_wiki(wiki_dir)
-        cat_errors = [e for e in errors if "category" in e]
-        assert cat_errors == [], f"unexpected category errors: {cat_errors}"
-
-
 class TestFlashcardMismatch:
     def test_mismatch_detected(self, wiki_dir: Path):
         _write_page(wiki_dir, "git/test-page.md", """\
@@ -889,7 +769,6 @@ class TestFlashcardMismatch:
             aliases: [test alias]
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             flashcard_ids: [cmne7xz9202lx, cmne7xz1y02k3]
@@ -921,7 +800,6 @@ class TestFlashcardMismatch:
             aliases: [test alias]
             tags: [git]
             created: 2026-04-09
-            category: work
             updated: 2026-04-09
             source_skill: study-walkthrough
             flashcard_ids: [abc123, def456]

@@ -2,7 +2,6 @@
 title: "Compilers and Interpreters"
 aliases: [compiler, interpreter, bytecode, JIT, virtual machine, Python execution model]
 tags: [compilers, programming-languages, interpreters, bytecode, jit]
-category: work
 created: 2026-05-05
 updated: 2026-05-05
 source_skill: study-walkthrough

@@ -116,10 +116,6 @@ class TestUpdateEntry:
         assert entry["next_review"] == "2026-04-12"
         assert entry["review_interval"] == 3
 
-    def test_category_round_trips(self, wiki_dir: Path, sample_page: Path):
-        index = update_entry({}, wiki_dir, sample_page)
-        assert index["git/test-page"]["category"] == "work"
-
     def test_updated_field_set_to_today(self, wiki_dir: Path, sample_page: Path):
         from datetime import date
 

@@ -2,7 +2,6 @@
 title: "SolidQueue Queue Admin"
 aliases: [solid_queue clear queue, solid queue drain, solid_queue delete jobs, solid_queue purge]
 tags: [rails, solid-queue, background-jobs, ops]
-category: work
 created: 2026-04-23
 updated: 2026-04-23
 source_skill: study-walkthrough

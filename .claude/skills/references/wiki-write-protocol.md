@@ -44,7 +44,6 @@ Draft the wiki page from the walkthrough content. Use this format:
 title: "Page Title"
 aliases: [alias one, alias two]
 tags: [topic-area, sub-topic]
-category: work|personal
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
 source_skill: study-flashcard|study|study-walkthrough
@@ -166,7 +165,6 @@ Every top-level wiki folder has a **MOC (Map of Content) page** — a hub that w
 title: "Git Index"
 aliases: [git-moc, git map]
 tags: [moc, git]
-category: work
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
 source_skill: manual
@@ -217,7 +215,6 @@ If a folder has no MOC yet, `scripts/wiki-write` emits a stderr warning and the 
 | `title` | string | Yes | Human-readable title |
 | `aliases` | array | Yes | Alternative names for this concept |
 | `tags` | array | Yes | Topic tags for organization |
-| `category` | string | Yes | `work` or `personal` — scopes SRS sessions and wiki review |
 | `created` | date | Yes | ISO date of creation |
 | `updated` | date | Yes | ISO date of last update |
 | `source_skill` | string | Yes | Which skill created this page |

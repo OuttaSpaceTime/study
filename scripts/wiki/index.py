@@ -68,7 +68,6 @@ def update_entry(index: dict, wiki_dir: Path, page_path: Path) -> dict:
         "title": meta.get("title", ""),
         "aliases": aliases,
         "tags": tags,
-        "category": meta.get("category"),
         "sections": sections,
         "flashcard_ids": meta.get("flashcard_ids", []),
         "created": meta.get("created", today),

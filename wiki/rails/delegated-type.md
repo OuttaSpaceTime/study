@@ -9,14 +9,13 @@ tags:
 - rails
 - activerecord
 - polymorphism
-category: work
 created: '2026-04-17'
 updated: '2026-04-17'
 source_skill: study-walkthrough
 depth: 1
 last_deepened: '2026-04-17'
-next_review: '2026-05-06'
-review_interval: 3
+next_review: '2026-05-14'
+review_interval: 8
 probe_sections:
 - The Problem It Solves
 - Schema Shape
@@ -27,14 +26,14 @@ probe_sections:
 - STI vs Delegated Type
 - N+1 Gotcha
 last_probed:
-- STI vs Delegated Type
-- N+1 Gotcha
-- The Problem It Solves
 - Schema Shape
 - What `delegated_type` Expands To
 - The Declaration
 - Direction of Delegation
 - 'Design Rule: Where Attributes Live'
+- STI vs Delegated Type
+- N+1 Gotcha
+- The Problem It Solves
 ---
 
 # Delegated Type

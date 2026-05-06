@@ -11,6 +11,7 @@ Applies to every skill in this repo.
 - **Small, verifiable steps.** One concept per message. Predict before revealing. Probe when possible. Loop on failure rather than moving on.
 - **Look back.** Every substantive skill session captures what was surprising and what heuristic generalizes — see the session log templates in each skill.
 - **Correct in place.** When the developer corrects something, edit the prior statement rather than appending a contradiction.
+- **Read silently, never cat.** Skills run `Read`, `Bash`, MCP calls, and `scripts/*` lookups *silently*. The chat shows only synthesized output — questions, verdicts, ratings, the next prompt — never raw file contents, command stdout, JSON dumps, or tool-result expanders. If a tool errors, surface a one-line summary, not the stderr blob. State intent in one short sentence per natural beat, not per call. This generalizes the existing `/study` no-logs rule across every skill.
 
 ## Available Skills
 

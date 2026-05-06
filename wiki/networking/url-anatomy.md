@@ -11,7 +11,6 @@ tags:
 - web
 - http
 - dns
-category: work
 created: '2026-05-04'
 updated: '2026-05-04'
 source_skill: study-walkthrough

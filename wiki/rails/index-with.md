@@ -8,7 +8,6 @@ tags:
 - rails
 - active-support
 - enumerable
-category: work
 created: '2026-04-10'
 updated: '2026-04-10'
 source_skill: study-walkthrough

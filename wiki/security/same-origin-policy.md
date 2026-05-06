@@ -7,7 +7,6 @@ tags:
 - security
 - web
 - browser
-category: work
 created: '2026-04-29'
 updated: '2026-04-29'
 source_skill: study-walkthrough

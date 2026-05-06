@@ -6,7 +6,6 @@ aliases:
 tags:
 - moc
 - programming-languages
-category: work
 created: '2026-05-05'
 updated: '2026-05-05'
 source_skill: manual
