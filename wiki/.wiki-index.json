@@ -798,7 +798,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-20",
-    "updated": "2026-04-20",
+    "updated": "2026-05-05",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -1367,6 +1367,62 @@
       "Cost model — when JOIN multiplies rows",
       "Decision guide",
       "Polymorphic associations"
+    ]
+  },
+  "sql/nullable-columns": {
+    "file": "sql/nullable-columns.md",
+    "title": "Nullable Columns",
+    "aliases": [
+      "nullable columns",
+      "null columns",
+      "sql null",
+      "nullable schema",
+      "null in sql"
+    ],
+    "tags": [
+      "sql",
+      "postgres",
+      "schema-design",
+      "data-modeling",
+      null
+    ],
+    "category": "work",
+    "sections": [
+      "TL;DR",
+      "Three-valued logic is the root cause",
+      "The NOT IN trap",
+      "UNIQUE does not constrain NULLs",
+      "Partial unique indexes",
+      "Nullable foreign keys",
+      "Migrating to NOT NULL is expensive",
+      "When NULL is the right choice",
+      "Sentinels masquerading as values",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-05",
+    "updated": "2026-05-05",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Three-valued logic is the root cause",
+      "The NOT IN trap",
+      "UNIQUE does not constrain NULLs",
+      "Partial unique indexes",
+      "Nullable foreign keys",
+      "Migrating to NOT NULL is expensive",
+      "When NULL is the right choice",
+      "Sentinels masquerading as values"
+    ],
+    "last_probed": [
+      "Three-valued logic is the root cause",
+      "The NOT IN trap",
+      "UNIQUE does not constrain NULLs",
+      "Partial unique indexes",
+      "Nullable foreign keys",
+      "Migrating to NOT NULL is expensive",
+      "When NULL is the right choice",
+      "Sentinels masquerading as values"
     ]
   }
 }
