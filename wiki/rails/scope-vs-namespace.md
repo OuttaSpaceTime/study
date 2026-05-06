@@ -20,11 +20,11 @@ probe_sections:
 - Module Path Format
 - Per-Resource Options
 - 'The controller: Option'
-- When to Use What
+- "When to use scope vs namespace vs module"
 last_probed:
 - Per-Resource Options
 - 'The controller: Option'
-- When to Use What
+- "When to use scope vs namespace vs module"
 - The Three Knobs
 - Scope Picks and Chooses
 - Module Path Format
@@ -103,7 +103,7 @@ resources :posts, as: :blog_posts      # changes helper name
 
 ## The controller: Option
 
-`controller:` pins all routes to a specific controller, unlike `module:` which sets the namespace. It's supported by:
+`controller:` pins all routes to a specific controller, unlike `module:` which sets the namespace. It is supported by:
 
 - **`scope`** -- wraps multiple routes under one controller
 - **`resources` / `resource`** -- overrides the controller inferred from the resource name
@@ -128,13 +128,13 @@ get "/users/:id", controller: "users", action: :show
 
 Use directory notation for namespaced controllers (`"admin/posts"` not `"Admin::Posts"`).
 
-## When to Use What
+## When to use scope vs namespace vs module
 
 - **`namespace`**: you want all three knobs (typical for admin panels, API versions)
 - **`scope`**: you want to change one knob without the others
 - **`scope` wrapping multiple resources**: apply options to several resources at once, avoiding repetition on each `resources` call
 
-Common real-world case for `scope module:`: refactoring `PostsController` into `Admin::PostsController` without breaking existing URLs.
+Common real-world case for `scope module:`. Refactoring `PostsController` into `Admin::PostsController` without breaking existing URLs.
 
 ## Related Concepts
 

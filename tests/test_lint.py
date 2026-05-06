@@ -824,3 +824,450 @@ class TestFlashcardMismatch:
         errors, _ = lint_wiki(wiki_dir)
         fc_errors = [e for e in errors if "flashcard-mismatch" in e]
         assert fc_errors == []
+
+
+# A minimal single-page setup for prose quality tests: allow_orphan suppresses orphan
+# warning so we only see prose-quality hits.
+_PROSE_PAGE_TEMPLATE = """\
+    ---
+    title: "{title}"
+    aliases: []
+    tags: [git]
+    created: 2026-04-09
+    updated: 2026-04-09
+    source_skill: study-walkthrough
+    probe_sections: [Section One]
+    allow_orphan: true
+    ---
+
+    # {title}
+
+    ## Section One
+
+    {body}
+"""
+
+
+class TestProseQuality:
+    def test_em_dash_flagged(self, wiki_dir: Path):
+        """Page body containing an em dash outside a code block → prose-quality warning."""
+        _write_page(wiki_dir, "git/em-dash.md", textwrap.dedent(
+            _PROSE_PAGE_TEMPLATE.format(
+                title="em dash",
+                body="The function validates the token — it raises if invalid.",
+            )
+        ))
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        prose = [w for w in warnings if "prose-quality" in w and "em-dash" in w]
+        assert len(prose) == 1, f"expected one em-dash warning, got: {warnings}"
+
+    def test_in_order_to_flagged(self, wiki_dir: Path):
+        """Page body containing 'in order to' → prose-quality warning."""
+        _write_page(wiki_dir, "git/wordy.md", textwrap.dedent(
+            _PROSE_PAGE_TEMPLATE.format(
+                title="wordy",
+                body="Call this function in order to parse the response.",
+            )
+        ))
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        prose = [w for w in warnings if "prose-quality" in w and "in-order-to" in w]
+        assert len(prose) == 1, f"expected one in-order-to warning, got: {warnings}"
+
+    def test_em_dash_in_code_block_not_flagged(self, wiki_dir: Path):
+        """Em dash only inside a fenced code block → no prose-quality warning."""
+        body = "```\nresult — value\n```\n\nNo em dash outside the fence."
+        _write_page(wiki_dir, "git/code-dash.md", textwrap.dedent(
+            _PROSE_PAGE_TEMPLATE.format(
+                title="code dash",
+                body=body,
+            )
+        ))
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        prose = [w for w in warnings if "prose-quality" in w and "em-dash" in w]
+        assert prose == [], f"em dash in code block should not warn, got: {warnings}"
+
+    def test_clean_page_no_warning(self, wiki_dir: Path):
+        """Page with none of the banned patterns → no prose-quality warnings."""
+        _write_page(wiki_dir, "git/clean.md", textwrap.dedent(
+            _PROSE_PAGE_TEMPLATE.format(
+                title="clean",
+                body="Use this function to parse the response. It raises on error.",
+            )
+        ))
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        prose = [w for w in warnings if "prose-quality" in w]
+        assert prose == [], f"expected no prose-quality warnings, got: {warnings}"
+
+
+class TestColonConnectors:
+    def test_mid_line_prose_colon_flagged(self, wiki_dir: Path):
+        """': ' connecting two prose clauses → prose-colon warning."""
+        _write_page(wiki_dir, "git/colon.md", textwrap.dedent(
+            _PROSE_PAGE_TEMPLATE.format(
+                title="colon",
+                body="The function validates the token: it raises if invalid.",
+            )
+        ))
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        assert any("prose-colon" in w for w in warnings), f"expected prose-colon: {warnings}"
+
+    def test_heading_colon_not_flagged(self, wiki_dir: Path):
+        """Colon in a heading line → not flagged."""
+        _write_page(wiki_dir, "git/heading-colon.md", textwrap.dedent("""\
+            ---
+            title: "heading colon"
+            aliases: []
+            tags: [git]
+            created: 2026-04-09
+            updated: 2026-04-09
+            source_skill: study-walkthrough
+            probe_sections: ["What pick does: return first row"]
+            allow_orphan: true
+            ---
+
+            # heading colon
+
+            ## What pick does: return first row
+
+            Clean prose without connectors.
+        """))
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        colon_warns = [w for w in warnings if "prose-colon" in w]
+        assert colon_warns == [], f"heading colon should not warn: {warnings}"
+
+    def test_list_item_colon_not_flagged(self, wiki_dir: Path):
+        """Colon separating term from description in a list item → not flagged."""
+        _write_page(wiki_dir, "git/list-colon.md", """\
+---
+title: "list colon"
+aliases: []
+tags: [git]
+created: 2026-04-09
+updated: 2026-04-09
+source_skill: study-walkthrough
+probe_sections: [Section One]
+allow_orphan: true
+---
+
+# list colon
+
+## Section One
+
+- **max-age**: how long the browser remembers the rule
+- **preload**: opts into the preload list
+""")
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        colon_warns = [w for w in warnings if "prose-colon" in w]
+        assert colon_warns == [], f"list colon should not warn: {warnings}"
+
+    def test_eol_colon_before_list_not_flagged(self, wiki_dir: Path):
+        """End-of-line colon followed by a list → not flagged."""
+        _write_page(wiki_dir, "git/eol-list.md", """\
+---
+title: "eol list"
+aliases: []
+tags: [git]
+created: 2026-04-09
+updated: 2026-04-09
+source_skill: study-walkthrough
+probe_sections: [Section One]
+allow_orphan: true
+---
+
+# eol list
+
+## Section One
+
+Three options:
+
+- first
+- second
+- third
+""")
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        colon_warns = [w for w in warnings if "prose-colon" in w]
+        assert colon_warns == [], f"eol colon before list should not warn: {warnings}"
+
+    def test_eol_colon_before_code_not_flagged(self, wiki_dir: Path):
+        """End-of-line colon followed by a code fence → not flagged."""
+        _write_page(wiki_dir, "git/eol-code.md", """\
+---
+title: "eol code"
+aliases: []
+tags: [git]
+created: 2026-04-09
+updated: 2026-04-09
+source_skill: study-walkthrough
+probe_sections: [Section One]
+allow_orphan: true
+---
+
+# eol code
+
+## Section One
+
+Example:
+
+```ruby
+puts 'hello'
+```
+""")
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        colon_warns = [w for w in warnings if "prose-colon" in w]
+        assert colon_warns == [], f"eol colon before code should not warn: {warnings}"
+
+    def test_eol_colon_before_prose_flagged(self, wiki_dir: Path):
+        """End-of-line colon followed by a plain prose line → flagged."""
+        _write_page(wiki_dir, "git/eol-prose.md", textwrap.dedent(
+            _PROSE_PAGE_TEMPLATE.format(
+                title="eol prose",
+                body="The key rule:\n\nAlways validate before writing.",
+            )
+        ))
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        assert any("prose-colon" in w for w in warnings), f"expected prose-colon: {warnings}"
+
+    def test_colon_in_code_block_not_flagged(self, wiki_dir: Path):
+        """': ' inside a fenced code block → not flagged."""
+        _write_page(wiki_dir, "git/code-colon.md", """\
+---
+title: "code colon"
+aliases: []
+tags: [git]
+created: 2026-04-09
+updated: 2026-04-09
+source_skill: study-walkthrough
+probe_sections: [Section One]
+allow_orphan: true
+---
+
+# code colon
+
+## Section One
+
+```ruby
+user = User.find_by(email: params[:email])
+```
+""")
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        colon_warns = [w for w in warnings if "prose-colon" in w]
+        assert colon_warns == [], f"colon in code block should not warn: {warnings}"
+
+    def test_colon_in_quoted_string_not_flagged(self, wiki_dir: Path):
+        """': ' inside a quoted string → not flagged."""
+        _write_page(wiki_dir, "git/quoted-colon.md", """\
+---
+title: "quoted colon"
+aliases: []
+tags: [git]
+created: 2026-04-09
+updated: 2026-04-09
+source_skill: study-walkthrough
+probe_sections: [Section One]
+allow_orphan: true
+---
+
+# quoted colon
+
+## Section One
+
+The method returns "type: value" format for all responses.
+""")
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        colon_warns = [w for w in warnings if "prose-colon" in w]
+        assert colon_warns == [], f"colon in quoted string should not warn: {warnings}"
+
+    def test_colon_in_backtick_not_flagged(self, wiki_dir: Path):
+        """': ' inside double-backtick inline code → not flagged."""
+        _write_page(wiki_dir, "git/backtick-colon.md", """\
+---
+title: "backtick colon"
+aliases: []
+tags: [git]
+created: 2026-04-09
+updated: 2026-04-09
+source_skill: study-walkthrough
+probe_sections: [Section One]
+allow_orphan: true
+---
+
+# backtick colon
+
+## Section One
+
+Pass ``content_type: application/json`` in the header.
+""")
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        colon_warns = [w for w in warnings if "prose-colon" in w]
+        assert colon_warns == [], f"colon in backtick code should not warn: {warnings}"
+
+
+class TestSentenceFragments:
+    def test_short_sentence_mid_line_flagged(self, wiki_dir: Path):
+        """≤3-word sentence followed by lowercase continuation → sentence-fragment warning."""
+        _write_page(wiki_dir, "git/fragment.md", """\
+---
+title: "fragment"
+aliases: []
+tags: [git]
+created: 2026-04-09
+updated: 2026-04-09
+source_skill: study-walkthrough
+probe_sections: [Section One]
+allow_orphan: true
+---
+
+# fragment
+
+## Section One
+
+The practical takeaway. **for long-context requests the cache can exceed the weights.**
+""")
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        frags = [w for w in warnings if "sentence-fragment" in w]
+        assert len(frags) == 1, f"expected one sentence-fragment warning, got: {warnings}"
+
+    def test_short_sentence_uppercase_continuation_not_flagged(self, wiki_dir: Path):
+        """Short sentence (≤3 words) followed by uppercase continuation → no warning."""
+        _write_page(wiki_dir, "git/ok-sentence.md", """\
+---
+title: "ok sentence"
+aliases: []
+tags: [git]
+created: 2026-04-09
+updated: 2026-04-09
+source_skill: study-walkthrough
+probe_sections: [Section One]
+allow_orphan: true
+---
+
+# ok sentence
+
+## Section One
+
+Both are bad. The fix is a convention, not a runtime feature.
+""")
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        frags = [w for w in warnings if "sentence-fragment" in w]
+        assert frags == [], f"short sentence before uppercase should not warn: {warnings}"
+
+    def test_terminal_short_sentence_not_flagged(self, wiki_dir: Path):
+        """A short sentence at end of line (no continuation) is not flagged."""
+        _write_page(wiki_dir, "git/terminal-short.md", """\
+---
+title: "terminal short"
+aliases: []
+tags: [git]
+created: 2026-04-09
+updated: 2026-04-09
+source_skill: study-walkthrough
+probe_sections: [Section One]
+allow_orphan: true
+---
+
+# terminal short
+
+## Section One
+
+A detailed explanation of the concept ends here. Both are bad.
+""")
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        frags = [w for w in warnings if "sentence-fragment" in w]
+        assert frags == [], f"terminal short sentence should not warn: {warnings}"
+
+    def test_short_sentence_in_code_not_flagged(self, wiki_dir: Path):
+        """Short sentence inside a code block → not flagged."""
+        _write_page(wiki_dir, "git/code-fragment.md", """\
+---
+title: "code fragment"
+aliases: []
+tags: [git]
+created: 2026-04-09
+updated: 2026-04-09
+source_skill: study-walkthrough
+probe_sections: [Section One]
+allow_orphan: true
+---
+
+# code fragment
+
+## Section One
+
+```
+# Short. Comment here for the reader.
+```
+
+Normal prose with four or more words per sentence.
+""")
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        frags = [w for w in warnings if "sentence-fragment" in w]
+        assert frags == [], f"short sentence in code block should not warn: {warnings}"
+
+    def test_inline_code_at_sentence_start_not_flagged(self, wiki_dir: Path):
+        """Inline code token at start of next sentence (e.g. `WHERE`) must not lose its case info."""
+        _write_page(wiki_dir, "git/inline-code-start.md", """\
+---
+title: "inline code start"
+aliases: []
+tags: [git]
+created: 2026-04-09
+updated: 2026-04-09
+source_skill: study-walkthrough
+probe_sections: [Section One]
+allow_orphan: true
+---
+
+# inline code start
+
+## Section One
+
+Any comparison involving `NULL` returns `UNKNOWN`. Including `NULL = NULL`. `WHERE` only keeps rows where the predicate is `TRUE`.
+""")
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        frags = [w for w in warnings if "sentence-fragment" in w]
+        assert frags == [], f"inline code at sentence start should not warn: {warnings}"
+
+    def test_abbreviation_period_not_flagged(self, wiki_dir: Path):
+        """Period after abbreviation like 'vs.' must not be treated as sentence-ending."""
+        _write_page(wiki_dir, "git/abbrev-period.md", """\
+---
+title: "abbrev period"
+aliases: []
+tags: [git]
+created: 2026-04-09
+updated: 2026-04-09
+source_skill: study-walkthrough
+probe_sections: [Section One]
+allow_orphan: true
+---
+
+# abbrev period
+
+## Section One
+
+Two changes vs. a regular unique index:
+
+- The index stores only matching rows.
+""")
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        frags = [w for w in warnings if "sentence-fragment" in w]
+        assert frags == [], f"abbreviation period should not warn: {warnings}"

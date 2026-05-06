@@ -106,5 +106,13 @@
       "Bash(git diff *)",
       "Read(//tmp/**)"
     ]
+  },
+  "skillOverrides": {
+    "channel-artifact": "off",
+    "dot-manage": "user-invocable-only",
+    "explore-solutions": "off",
+    "insights-focus": "user-invocable-only",
+    "research": "off",
+    "scope-first": "off"
   }
 }

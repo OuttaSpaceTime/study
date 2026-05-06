@@ -14,13 +14,13 @@ depth: 1
 next_review: '2026-05-15'
 review_interval: 20
 probe_sections:
-- The Split
+- "How shallow routing splits member vs collection routes"
 - Why This Split
 - Named Helpers Change Too
 - Applying to All Nested Resources
 last_probed:
 - Applying to All Nested Resources
-- The Split
+- "How shallow routing splits member vs collection routes"
 - Why This Split
 - Named Helpers Change Too
 ---
@@ -29,7 +29,7 @@ last_probed:
 
 Nested resources produce long URLs like `/posts/:post_id/comments/:id`. Once you have the comment's `:id`, the parent prefix is redundant. `shallow: true` flattens the routes that don't need the parent.
 
-## The Split
+## How shallow routing splits member vs collection routes
 
 ```ruby
 resources :posts do

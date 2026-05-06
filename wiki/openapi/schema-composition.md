@@ -43,9 +43,9 @@ JSON Schema provides four keywords for combining schemas. OpenAPI inherits all f
 
 ## anyOf vs oneOf
 
-`anyOf` passes when one or more schemas match — it doesn't care about overlap, and validation can short-circuit on the first match. `oneOf` is strict: it must validate the payload against **every** listed schema to confirm exactly one matches. If two or more match, validation fails.
+`anyOf` passes when one or more schemas match. It doesn't care about overlap, and validation can short-circuit on the first match. `oneOf` is strict. It must validate the payload against **every** listed schema to confirm exactly one matches. If two or more match, validation fails.
 
-Practical distinction: use `anyOf` when formats may overlap (e.g., a field accepting ISO date string or Unix timestamp). Use `oneOf` when types are truly exclusive (e.g., polymorphic API responses).
+Practical distinction. Use `anyOf` when formats may overlap (e.g., a field accepting ISO date string or Unix timestamp). Use `oneOf` when types are truly exclusive (e.g., polymorphic API responses).
 
 ## The oneOf Shared-Field Trap
 
@@ -57,9 +57,9 @@ oneOf:
   - $ref: '#/components/schemas/BankTransferPayment'  # has amount: number
 ```
 
-A payload `{ "amount": 100 }` matches both — `oneOf` rejects it.
+A payload with just `"amount"` field matches both schemas. `oneOf` rejects it.
 
-Fix: add a **discriminator** so each schema has a unique required field:
+Fix. Add a **discriminator** so each schema has a unique required field.
 
 ```yaml
 oneOf:
@@ -73,7 +73,7 @@ Each schema declares `payment_type` as required with a fixed value (`"credit_car
 
 ## allOf Is Not Inheritance
 
-`allOf` means "validate against every listed schema simultaneously." It's often used to extend a base schema, but it's pure composition — not OOP inheritance.
+`allOf` means "validate against every listed schema simultaneously." It's often used to extend a base schema, but it's pure composition. Not OOP inheritance.
 
 ```yaml
 allOf:
@@ -84,11 +84,11 @@ allOf:
         type: string
 ```
 
-The payload must satisfy both schemas. If they define the same property with incompatible types (e.g., `id: string` vs `id: integer`), no payload can ever validate — a silent, schema-level contradiction with no syntax error.
+The payload must satisfy both schemas. If they define the same property with incompatible types (e.g., `id` as `string` vs `id` as `integer`), no payload can ever validate. This is a silent, schema-level contradiction with no syntax error.
 
 ## The additionalProperties Trap
 
-Combining `additionalProperties: false` inside `allOf` breaks composition:
+Using `additionalProperties` set to `false` inside `allOf` breaks composition.
 
 ```yaml
 allOf:
@@ -103,9 +103,9 @@ allOf:
         type: string
 ```
 
-`additionalProperties: false` is evaluated per-schema, not on the merged result. The first schema sees `name` as an additional property and rejects it — even though it's defined in the second schema.
+When `additionalProperties` is set to `false`, it's evaluated per-schema, not on the merged result. The first schema sees `name` as an additional property and rejects it. Even though it's defined in the second schema.
 
-Fix: apply `additionalProperties: false` only on the final composed schema, not inside individual `allOf` members.
+Fix. Apply `additionalProperties` (set to `false`) only on the final composed schema, not inside individual `allOf` members.
 
 ## not as a Filter
 

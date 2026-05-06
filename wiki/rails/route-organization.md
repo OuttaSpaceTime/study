@@ -24,7 +24,7 @@ last_probed:
 
 # Route Organization
 
-Two tools for keeping `config/routes.rb` manageable as it grows: `draw` splits routes into files, `defaults` sets shared parameters.
+Two tools keep `config/routes.rb` manageable as it grows. `draw` splits routes into files and `defaults` sets shared parameters.
 
 ## draw -- Split Routes into Files
 

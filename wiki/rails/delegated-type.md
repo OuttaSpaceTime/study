@@ -19,7 +19,7 @@ review_interval: 8
 probe_sections:
 - The Problem It Solves
 - Schema Shape
-- The Declaration
+- "What the delegated_type declaration generates"
 - What `delegated_type` Expands To
 - Direction of Delegation
 - 'Design Rule: Where Attributes Live'
@@ -28,7 +28,7 @@ probe_sections:
 last_probed:
 - Schema Shape
 - What `delegated_type` Expands To
-- The Declaration
+- "What the delegated_type declaration generates"
 - Direction of Delegation
 - 'Design Rule: Where Attributes Live'
 - STI vs Delegated Type
@@ -40,16 +40,16 @@ last_probed:
 
 A Rails pattern for modeling heterogeneous subtypes that **share some fields but have different payload schemas**. A "superclass" table holds the shared attributes; each variant lives in its own table. The parent row points to the variant row via a polymorphic association, and variants delegate shared-attribute reads *back up* to the parent.
 
-It's the answer to "STI would work but the variants diverge too much in schema" and "polymorphic associations alone make cross-type queries awkward."
+It's the answer to "STI would work but the variants diverge too much in schema" and to "polymorphic associations alone make cross-type queries awkward."
 
 ## The Problem It Solves
 
 Modeling `Entry` with variants `Message`, `Comment`, `Post`:
 
-- **Fat table** (one table, nullable columns per variant) — NULL-heavy, no schema discipline.
-- **STI** (`type` column, one table) — variants must share the schema; adding variant-specific columns bloats the table.
-- **Polymorphic only** — flexible, but shared attributes (`account_id`, `created_at`) scatter across subtype tables, so "all entries this week across types" requires UNIONs.
-- **Delegated type** — shared attrs on the parent, variant attrs on the subtype. One indexable, queryable parent table plus clean per-variant tables.
+- **Fat table** (one table, nullable columns per variant): NULL-heavy, no schema discipline.
+- **STI** (`type` column, one table): variants must share the schema. Adding variant-specific columns bloats the table.
+- **Polymorphic only**: flexible, but shared attributes (`account_id`, `created_at`) scatter across subtype tables, so "all entries this week across types" requires UNIONs.
+- **Delegated type**: shared attrs on the parent, variant attrs on the subtype. Use one indexable, queryable parent table plus clean per-variant tables.
 
 ## Schema Shape
 
@@ -61,12 +61,12 @@ comments:  id, content
 ```
 
 The `entries` row holds:
-- `entryable_id` — the row id in the subtype table
-- `entryable_type` — string like `"Message"` / `"Comment"` telling Rails which table
+- `entryable_id`: the row id in the subtype table
+- `entryable_type`: string like `"Message"` / `"Comment"` telling Rails which table
 
-Both are needed: an id alone is ambiguous across multiple subtype tables.
+Both are needed. An id alone is ambiguous across multiple subtype tables.
 
-## The Declaration
+## What the delegated_type declaration generates
 
 ```ruby
 class Entry < ApplicationRecord
@@ -92,11 +92,11 @@ end
 1. `belongs_to :entryable, polymorphic: true`
 2. Scopes: `Entry.messages`, `Entry.comments`
 3. Type predicates: `entry.message?`, `entry.comment?`
-4. Creators: `Entry.create_with_message!(subject: "hi", body: "...")` — creates the subtype row *and* the parent `Entry` row atomically.
+4. Creators: `Entry.create_with_message!(subject: "hi", body: "...")`. This creates the subtype row *and* the parent `Entry` row atomically.
 
 ## What `delegated_type` Expands To
 
-`delegated_type` is a **declaration macro**, not an association itself — but it generates one. The hand-rolled equivalent of `delegated_type :entryable, types: %w[Message Comment], dependent: :destroy`:
+`delegated_type` is a **declaration macro**, not an association itself. But it generates one. The hand-rolled equivalent of `delegated_type :entryable, types: %w[Message Comment], dependent: :destroy`:
 
 ```ruby
 class Entry < ApplicationRecord
@@ -121,19 +121,19 @@ class Entry < ApplicationRecord
 end
 ```
 
-What's an association vs what's not — this matters for `includes`:
+Know what's an association vs what's not. This matters for `includes`:
 
 | Symbol | What it is | `includes(...)` works? |
 | ------ | ---------- | ---------------------- |
 | `:entryable` | polymorphic `belongs_to` | yes |
-| `:messages`, `:comments` | scopes (SQL filters) | no — `AssociationNotFoundError` |
+| `:messages`, `:comments` | scopes (SQL filters) | no (raises `AssociationNotFoundError`) |
 | `:message?`, `:comment?` | predicate methods | no |
 
-`delegated_type` itself sits next to `belongs_to` / `has_many` syntactically — class-level declaration with side effects — but it's a **higher-order** declaration that expands into one association, two scopes, two predicates, and two creators (multiplied by the number of variant types).
+`delegated_type` itself sits next to `belongs_to` / `has_many` syntactically. It's a class-level declaration with side effects. Specifically, it's a **higher-order** declaration that expands into one association, two scopes, two predicates, and two creators (multiplied by the number of variant types).
 
 ## Direction of Delegation
 
-**Nothing is method-delegated by default — in either direction.** The macro name oversells what it does. `delegated_type` generates the scaffolding (association, scopes, predicates, atomic creators); delegation is a **convention you write manually** using the `delegate` keyword. The "delegated" in the name describes the *intended pattern*, not an automatic mechanism.
+**Nothing is method-delegated by default in either direction.** The macro name oversells what it does. `delegated_type` generates the scaffolding (association, scopes, predicates, atomic creators); delegation is a **convention you write manually** using the `delegate` keyword. The "delegated" in the name describes the *intended pattern*, not an automatic mechanism.
 
 What this means concretely:
 
@@ -162,21 +162,21 @@ module Entryable
 end
 ```
 
-The "delegated" in the macro name refers to the **subtype → parent** direction specifically: each subtype delegates *up* to the parent for shared attributes. `account_id` lives on `entries`, so without the up-delegate, callers would walk `.entry.account` manually.
+The "delegated" in the macro name refers to the **subtype → parent** direction specifically. Each subtype delegates *up* to the parent for shared attributes. `account_id` lives on `entries`, so without the up-delegate, callers would walk `.entry.account` manually.
 
 ```ruby
 message.account          # works via delegate :account, to: :entry
 message.entry.account    # same thing, explicit
 ```
 
-The delegate is pure ergonomics — the data path is unchanged. Whether you write it or not, the row lookup goes Message → entry row → account_id either way. Skip the delegate and the path leaks into every caller; add it and the surface looks uniform.
+The delegate is pure ergonomics. The data path is unchanged. Whether you write it or not, the row lookup goes Message → entry row → account_id either way. Skip the delegate and the path leaks into every caller. Add it and the surface looks uniform.
 
-**Mnemonic: the macro is more accurately named `polymorphic_parent_with_creators`.** It does *not* auto-forward methods. Hang the delegations on the scaffolding yourself, in whichever direction matches the call sites you have.
+**Mnemonic. The macro is more accurately named `polymorphic_parent_with_creators`.** It does *not* auto-forward methods. Write the delegations on the scaffolding yourself. Choose whichever direction matches the call sites you have.
 
 ## Design Rule: Where Attributes Live
 
-- **Parent (`entries`)** — anything you want to query, sort, filter, or index across all variants. `account_id`, `created_at`, `title`, soft-delete flags.
-- **Subtype (`messages`, `comments`)** — variant-specific payload. `subject`, `body`, `parent_comment_id`.
+- **Parent (`entries`)**: anything you want to query, sort, filter, or index across all variants. `account_id`, `created_at`, `title`, soft-delete flags.
+- **Subtype (`messages`, `comments`)**: variant-specific payload (e.g., `subject`, `body`, `parent_comment_id`).
 
 This is what makes `Entry.where(account_id: 5).order(created_at: :desc)` a single indexed query across all variants. Polymorphic-only would require UNIONs across subtype tables.
 
@@ -189,8 +189,8 @@ This is what makes `Entry.where(account_id: 5).order(created_at: :desc)` a singl
 | Cross-variant queries dominate                 | Same                                           |
 | You want one class hierarchy                   | You want separate models with a shared parent  |
 
-Classic STI fit: `User` → `Admin`, `Moderator`, `Guest` (same columns, different methods).
-Classic delegated-type fit: `Entry` → `Message`, `Comment`, `Post` (different payload columns, shared metadata).
+STI fits `User` → `Admin`, `Moderator`, `Guest` naturally (same columns, different methods).
+Delegated type fits `Entry` → `Message`, `Comment`, `Post` naturally (different payload columns, shared metadata).
 
 ## N+1 Gotcha
 
@@ -206,9 +206,9 @@ current_account.entries.includes(:entryable).limit(50)
 
 `includes(:entryable)` groups by `entryable_type` and issues one query per subtype table, regardless of row count.
 
-**Limit of polymorphic includes:** `includes(entryable: :author)` only works if *every* variant has an `author` association with that exact name. If variants have different nested associations, you have to preload per-type (separate queries per variant) or narrow the collection to a single type first (`entries.messages.includes(entryable: :author)`).
+**Limit of polymorphic includes.** `includes(entryable: :author)` only works if *every* variant has an `author` association with that exact name. If variants have different nested associations, you have to preload per-type (separate queries per variant) or narrow the collection to a single type first (`entries.messages.includes(entryable: :author)`).
 
-**Narrow-then-preload — only loading one variant's payload.** When you only care about one variant, filter with the type scope first, then preload:
+**Narrow-then-preload: only loading one variant's payload.** When you only care about one variant, filter with the type scope first. Then preload:
 
 ```ruby
 # Only message-typed entries, with their Message payloads — 2 queries, no comments table touched
@@ -219,8 +219,8 @@ account.entries.messages.includes(:entryable)
 
 Compare to the unfiltered preload, which fires one query per *distinct* `entryable_type` in the result (entries + messages + comments).
 
-**Scope vs association — why `includes(:messages)` doesn't work.** `Entry.messages` is a class-level **scope** generated by `delegated_type`; it's a SQL filter (`where entryable_type = 'Message'`). `includes` only accepts **association names** declared via `belongs_to` / `has_many` / `has_one`. `:messages` is neither — it's a relation factory. Passing it to `includes` raises `AssociationNotFoundError`. The polymorphic association name on `Entry` is `:entryable` (singular) — that's what `includes` consumes; the type scopes are for filtering the relation itself.
+**Scope vs association. Why `includes(:messages)` doesn't work.** `Entry.messages` is a class-level **scope** generated by `delegated_type`. It's a SQL filter (`where entryable_type = 'Message'`). `includes` only accepts **association names** declared via `belongs_to` / `has_many` / `has_one`. `:messages` is neither. It's a relation factory. Passing it to `includes` raises `AssociationNotFoundError`. The polymorphic association name on `Entry` is `:entryable` (singular). That's what `includes` consumes. The type scopes are for filtering the relation itself.
 
 ## Related Concepts
 
-None yet in this wiki — polymorphic associations and STI are natural neighbors worth adding separately.
+None yet in this wiki. Polymorphic associations and STI are natural neighbors worth adding separately.

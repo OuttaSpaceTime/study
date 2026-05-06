@@ -66,8 +66,49 @@ Content...
 
 ## Related Concepts
 
-- [[folder/page-name]] — brief explanation of relationship
+- [[folder/page-name]]: brief explanation of relationship
 ```
+
+## Headings as SRS Prompts
+
+H2 headings become `probe_sections` — the quiz question at review time. Write them specific enough to self-grade without re-reading the page.
+
+- ❌ `## When to Use` → ✅ `## When to reach for pick over pluck`
+- ❌ `## Gotchas` → ✅ `## nil on no match and chaining behavior`
+- ❌ `## Overview` → ✅ `## What HSTS is and why the first visit is still vulnerable`
+
+If the heading doesn't tell you what to recall, rename it before setting `probe_sections`.
+
+## Writing Style
+
+Write short, concrete sentences in active voice. If a sentence feels long, cut it in half.
+
+**Common patterns to avoid:**
+
+- **em dash connector**: ❌ `X validates the token — it raises if invalid` → ✅ `X validates the token. It raises if invalid.`
+- **in order to**: ❌ `Call this in order to parse the response` → ✅ `Call this to parse the response`
+- **it's worth noting / it should be noted**: ❌ `It's worth noting that indexes speed up reads` → ✅ `Indexes speed up reads`
+- **utilize**: ❌ `The client utilizes a connection pool` → ✅ `The client uses a connection pool`
+- **leverage (verb)**: ❌ `Rails leverages the database for locking` → ✅ `Rails uses the database for locking`
+- **seamlessly**: ❌ `It integrates seamlessly with Rack` → ✅ `It integrates with Rack via the standard middleware interface`
+- **in conclusion / additionally**: ❌ `Additionally, the cache is invalidated on write` → ✅ `The cache is invalidated on write`
+- **is able to**: ❌ `The worker is able to process multiple queues` → ✅ `The worker can process multiple queues`
+
+**Before / after (full sentences):**
+
+❌ `It is worth noting that in order to utilize the connection pool, you need to configure the pool size — this is done in database.yml.`
+
+✅ `To use the connection pool, set the pool size in database.yml.`
+
+---
+
+❌ `ActiveRecord leverages lazy evaluation seamlessly, meaning the query is not executed until the results are needed — this is known as deferred execution.`
+
+✅ `ActiveRecord defers query execution until results are needed. This is called lazy evaluation.`
+
+---
+
+When in doubt, cut the sentence in half.
 
 ### Step 4: Generate Aliases
 

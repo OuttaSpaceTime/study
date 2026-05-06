@@ -22,18 +22,18 @@ next_review: '2026-05-14'
 review_interval: 15
 probe_sections:
 - The SSL Stripping Attack
-- The Header
+- "The HSTS header fields: max-age, includeSubDomains, preload"
 - TOFU Problem (Trust On First Use)
 - Preload
 - Cross-Host Redirects
 - Full Defense Stack
-- Header in Practice
+- "What the HSTS header looks like on a real site"
 - Browser Storage
 last_probed:
-- Header in Practice
+- "What the HSTS header looks like on a real site"
 - Browser Storage
 - The SSL Stripping Attack
-- The Header
+- "The HSTS header fields: max-age, includeSubDomains, preload"
 - TOFU Problem (Trust On First Use)
 - Preload
 - Cross-Host Redirects
@@ -42,7 +42,7 @@ last_probed:
 
 # HSTS (HTTP Strict-Transport-Security)
 
-HSTS is a response header that tells browsers to **never send HTTP requests** to a domain — convert them to HTTPS internally before any network traffic. It defends against SSL stripping attacks where an attacker intercepts the first plaintext HTTP request.
+HSTS is a response header that tells browsers to **never send HTTP requests** to a domain. Convert them to HTTPS internally before any network traffic. It defends against SSL stripping attacks where an attacker intercepts the first plaintext HTTP request.
 
 ## The SSL Stripping Attack
 
@@ -55,29 +55,29 @@ Without HSTS, typing `example.com` sends a plaintext `GET http://example.com`. A
 
 The server's 301 redirect to HTTPS never reaches the victim.
 
-## The Header
+## The HSTS header fields: max-age, includeSubDomains, preload
 
 ```
 Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
 ```
 
-- **`max-age`** — how long (in seconds) the browser remembers the rule. Recommended: 2 years (63072000s).
-- **`includeSubDomains`** — applies HSTS to all subdomains.
-- **`preload`** — opts into the browser preload list.
+- **`max-age`**: how long (in seconds) the browser remembers the rule. Recommended: 2 years (63072000s).
+- **`includeSubDomains`**: applies HSTS to all subdomains.
+- **`preload`**: opts into the browser preload list.
 
-The header **must be served over HTTPS** — browsers ignore it over HTTP (otherwise an attacker could forge it).
+The header **must be served over HTTPS**. Browsers ignore it over HTTP (otherwise an attacker could forge it).
 
 ## TOFU Problem (Trust On First Use)
 
-HSTS only protects after the browser has seen the header once. The very first visit is still vulnerable — the browser doesn't yet know to upgrade. This gap is the TOFU problem.
+HSTS only protects after the browser has seen the header once. The very first visit is still vulnerable. The browser doesn't yet know to upgrade. This gap is the TOFU problem.
 
-Other TOFU examples: SSH host fingerprints are trusted blindly on first connection.
+Other TOFU examples. SSH host fingerprints are trusted blindly on first connection.
 
 ## Preload
 
 Adding `preload` and submitting the domain to the HSTS preload list solves TOFU. The list is **hardcoded into browser binaries** (Chrome, Firefox, Safari share one). The browser enforces HTTPS before ever visiting the site.
 
-**Tradeoff:** preload is effectively permanent. Removal takes months (submit request → wait for processing → wait for browser releases → wait for user updates). Every subdomain must support HTTPS — any subdomain without a valid TLS certificate becomes completely inaccessible (hard browser error, no workaround).
+**Tradeoff:** preload is effectively permanent. Removal takes months (submit request → wait for processing → wait for browser releases → wait for user updates). Every subdomain must support HTTPS. Any subdomain without a valid TLS certificate becomes completely inaccessible (hard browser error, no workaround).
 
 ## Cross-Host Redirects
 
@@ -85,9 +85,9 @@ Adding `preload` and submitting the domain to the HSTS preload list solves TOFU.
 http://example.com → https://www.example.com    ← BROKEN
 ```
 
-The HSTS header from `www.example.com` only protects `www.example.com`. The bare domain `example.com` never served HSTS over HTTPS, so `http://example.com` remains vulnerable on **every** visit — not just the first.
+The HSTS header from `www.example.com` only protects `www.example.com`. The bare domain `example.com` never served HSTS over HTTPS, so `http://example.com` remains vulnerable on **every** visit. Not just the first.
 
-**Fix — redirect same-host first:**
+**Fix. Redirect same-host first:**
 
 ```
 http://example.com → https://example.com → https://www.example.com
@@ -97,20 +97,20 @@ The middle hop lets `example.com` serve its own HSTS header. This reduces the vu
 
 ## Full Defense Stack
 
-1. **Same-host HTTPS redirect** — each domain serves its own HSTS header
-2. **HSTS with `max-age` + `includeSubDomains`** — protects returning visitors
-3. **`preload`** — protects first-time visitors
+1. **Same-host HTTPS redirect**. Each domain serves its own HSTS header
+2. **HSTS with `max-age` + `includeSubDomains`**. Protects returning visitors
+3. **`preload`**. Protects first-time visitors
 
-## Header in Practice
+## What the HSTS header looks like on a real site
 
-The header is just a plain response header on an HTTPS response — no middleware magic at the protocol level. Inspecting a real site:
+The header is just a plain response header on an HTTPS response. No middleware magic at the protocol level. Inspecting a real site:
 
 ```bash
 $ curl -sI https://github.com | grep -i strict-transport-security
 strict-transport-security: max-age=31536000; includeSubdomains; preload
 ```
 
-GitHub uses `max-age=31536000` (1 year), not the 2-year wiki recommendation — a deliberate tradeoff to limit blast radius if a subdomain ever needs to drop HTTPS.
+GitHub uses `max-age=31536000` (1 year), not the 2-year wiki recommendation. A deliberate tradeoff to limit blast radius if a subdomain ever needs to drop HTTPS.
 
 **Setting it in Rails** (via `ActionDispatch::SSL` middleware):
 
@@ -126,7 +126,7 @@ config.ssl_options = {
 }
 ```
 
-`force_ssl = true` does two things: redirects HTTP→HTTPS **and** adds the `Strict-Transport-Security` header on HTTPS responses.
+`force_ssl = true` does two things. Redirects HTTP→HTTPS **and** adds the `Strict-Transport-Security` header on HTTPS responses.
 
 **Raw equivalent** (any framework):
 
@@ -134,26 +134,26 @@ config.ssl_options = {
 response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains; preload'
 ```
 
-The security does not come from the header itself — it comes from (a) browser persistence of the rule and (b) TLS authenticating the header's origin on the HTTPS response it arrived on.
+The security does not come from the header itself. It comes from (a) browser persistence of the rule and (b) TLS authenticating the header's origin on the HTTPS response it arrived on.
 
 ## Browser Storage
 
-Browsers maintain a persistent **HSTS store** per user profile — a local database of `(host, expiry, includeSubDomains)` tuples.
+Browsers maintain a persistent **HSTS store** per user profile. A local database of `(host, expiry, includeSubDomains)` tuples.
 
 **On receiving the header** (over HTTPS only):
 - Parse `max-age` + directives, stamp `received_at`, write or update the entry.
-- Every subsequent HTTPS response refreshes `max-age` — a sliding window.
+- Every subsequent HTTPS response refreshes `max-age`: a sliding window.
 - `max-age=0` **deletes** the entry (the spec's opt-out mechanism).
 
 **On every navigation, before DNS/TCP:**
 1. Check the **static preload list** (baked into the browser binary, e.g. Chromium's `transport_security_state_static.json`). Hit → upgrade to HTTPS.
-2. Else check the **dynamic store** — match the host directly, or any parent with `includeSubDomains`. Hit and not expired → upgrade.
+2. Else check the **dynamic store**. Match the host directly, or any parent with `includeSubDomains`. Hit and not expired → upgrade.
 3. Otherwise fall through to normal resolution.
 
-The "upgrade" rewrites `http://` to `https://` in-memory before any packet leaves the machine. DevTools shows it as an internal `307 Internal Redirect` — zero network round trip, zero MitM opportunity.
+The "upgrade" rewrites `http://` to `https://` in-memory before any packet leaves the machine. DevTools shows it as an internal `307 Internal Redirect`. Zero network round trip, zero MitM opportunity.
 
 **Where it lives on disk:**
 - Chrome: `~/.config/google-chrome/<Profile>/TransportSecurity` (JSON)
 - Firefox: `~/.mozilla/firefox/<profile>/SiteSecurityServiceState.txt`
 
-Chrome also exposes `chrome://net-internals/#hsts` for inspecting, adding, or deleting entries in the dynamic store — useful when debugging a site you accidentally pinned.
+Chrome also exposes `chrome://net-internals/#hsts` for inspecting, adding, or deleting entries in the dynamic store. Useful when debugging a site you accidentally pinned.

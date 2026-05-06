@@ -13,7 +13,7 @@ updated: '2026-04-17'
 source_skill: study-walkthrough
 depth: 1
 probe_sections:
-- The intuition
+- "What transform_values does and why it preserves keys"
 - vs map on a hash
 - The block receives only the value
 - Bang variant
@@ -26,7 +26,7 @@ last_probed: []
 
 ## TL;DR
 
-`transform_values` applies a block to each value of a hash, **keeps keys untouched**, and returns a **new Hash** of the same shape. It is the dedicated verb for "keep keys, change values" — a structure-preserving map that stays in Hash-land.
+`transform_values` applies a block to each value of a hash, **keeps keys untouched**, and returns a **new Hash** of the same shape. It is the dedicated verb for "keep keys, change values". A structure-preserving map that stays in Hash-land.
 
 ```ruby
 { apple: 100, pear: 200 }.transform_values { |v| v * 1.1 }
@@ -35,15 +35,15 @@ last_probed: []
 
 Added in Ruby 2.4.
 
-## The intuition
+## What transform_values does and why it preserves keys
 
 A hash is a set of `key => value` pairs. Most hash operations want one of:
 
-1. Change the values, keep the keys → `transform_values`
-2. Change the keys, keep the values → `transform_keys`
-3. Change both, or change the shape (to Array, etc.) → `map`
+1. Change the values, keep the keys: `transform_values`
+2. Change the keys, keep the values: `transform_keys`
+3. Change both, or change the shape (to Array, etc.): `map`
 
-`transform_values` exists because "keep keys, change values" is extremely common, and the alternatives (`each_with_object`, `map` + `to_h`) mix concerns — you end up writing code about *rebuilding a hash* instead of code about *transforming values*.
+`transform_values` exists because "keep keys, change values" is extremely common, and the alternatives (`each_with_object`, `map` + `to_h`) mix concerns. You end up writing code about *rebuilding a hash* instead of code about *transforming values*.
 
 ## vs map on a hash
 
@@ -66,7 +66,7 @@ The `map { ... }.to_h` pattern was the pre-2.4 workaround. `transform_values` re
 
 ## The block receives only the value
 
-The block yields **just the value** — not the key:
+The block yields **just the value**. Not the key:
 
 ```ruby
 # correct
@@ -118,4 +118,4 @@ h.transform_keys(&:to_s).transform_values { |v| v * 2 }
 
 ## Related Concepts
 
-- [[rails/activerecord-pick]] — another "dedicated verb" pattern that replaces a verbose combination (`pluck(...).first`) with a single intention-revealing call
+- [[rails/activerecord-pick]]: another "dedicated verb" pattern that replaces a verbose combination (`pluck(...).first`) with a single intention-revealing call

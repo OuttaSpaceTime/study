@@ -16,15 +16,15 @@ next_review: '2026-05-07'
 review_interval: 10
 probe_sections:
 - The Decision Table
-- Syntax
+- "Declaring collection and member routes"
 - Routing to a Different Controller
 - Param Naming Rules
-- When to Use What
+- "When to use collection vs member"
 last_probed:
 - Param Naming Rules
-- When to Use What
+- "When to use collection vs member"
 - The Decision Table
-- Syntax
+- "Declaring collection and member routes"
 - Routing to a Different Controller
 ---
 
@@ -40,9 +40,9 @@ last_probed:
 | `collection` | All records | No | `/posts/search` |
 | nested `resources` | Sub-resource | Parent + child IDs | `/posts/:post_id/comments/:id` |
 
-Rule of thumb: if the URL doesn't need a specific record's ID, it's a collection route.
+Rule of thumb. If the URL doesn't need a specific record's ID, it's a collection route.
 
-## Syntax
+## Declaring collection and member routes
 
 ```ruby
 resources :posts do
@@ -100,7 +100,7 @@ resources :posts do
 end
 ```
 
-## When to Use What
+## When to use collection vs member
 
 - **One-off action on a single record** (archive, publish, flag) -> `member`
 - **Action across the collection** (search, export CSV, bulk delete) -> `collection`

@@ -18,12 +18,12 @@ probe_sections:
 - Renaming with `as:`
 - The `_index` Suffix
 - 'Fix: Set `as:` Explicitly'
-- Verifying
+- "How to verify path helper names at the console"
 last_probed:
 - Renaming with `as:`
 - The `_index` Suffix
 - 'Fix: Set `as:` Explicitly'
-- Verifying
+- "How to verify path helper names at the console"
 ---
 
 # Path Helper Naming
@@ -70,7 +70,7 @@ resources(
 )
 ```
 
-Helper generated: `api_v2_inbox_items_read_marker_index_path`
+This generates `api_v2_inbox_items_read_marker_index_path`.
 
 Rails sees an inflection ambiguity on `inbox_items_read_markers` and guards against a future collision with a member helper by suffixing the collection helper with `_index`.
 
@@ -86,9 +86,9 @@ resources(
 )
 ```
 
-Helper becomes: `api_v2_inbox_items_read_markers_path`.
+With `as:` set, the helper is `api_v2_inbox_items_read_markers_path`.
 
-## Verifying
+## How to verify path helper names at the console
 
 Always check with:
 

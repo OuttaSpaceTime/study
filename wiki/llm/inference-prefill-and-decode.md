@@ -21,6 +21,7 @@ probe_sections:
 - Decode - N passes, sequential
 - Why output length dominates
 - num_predict as the circuit breaker
+- "Rules of thumb for controlling prefill and decode cost"
 last_probed:
 - Inference vs training
 - The two phases at a glance
@@ -28,17 +29,18 @@ last_probed:
 - Decode - N passes, sequential
 - Why output length dominates
 - num_predict as the circuit breaker
+- "Rules of thumb for controlling prefill and decode cost"
 ---
 
 # Inference - Prefill and Decode
 
 ## TL;DR
 
-A single LLM API call runs in two phases. **Prefill** processes the entire input prompt in one parallel GPU pass. **Decode** then generates output tokens one at a time, sequentially, each requiring its own forward pass through the model. Wall-clock time is dominated by decode, not prefill, because decode is N sequential passes where N is the number of output tokens. This is why output length matters more than prompt length for latency, and why `num_predict` (the output cap) is mandatory in production — it bounds the slow phase.
+A single LLM API call runs in two phases. **Prefill** processes the entire input prompt in one parallel GPU pass. **Decode** then generates output tokens one at a time, sequentially, each requiring its own forward pass through the model. Wall-clock time is dominated by decode, not prefill, because decode is N sequential passes where N is the number of output tokens. This is why output length matters more than prompt length for latency, and why `num_predict` (the output cap) is mandatory in production. It bounds the slow phase.
 
 ## Inference vs training
 
-**Inference** is the general ML term for "running a trained model to produce output." Training is everything that happens during model development — feeding examples, computing gradients, updating weights. Inference is everything that happens after — every API call, every chat completion, every embedding lookup. When you `curl` an LLM endpoint, you're invoking an inference server. The model weights are frozen; you're just pushing tokens through them.
+**Inference** is the general ML term for "running a trained model to produce output." Training is everything that happens during model development. Feeding examples, computing gradients, updating weights. Inference is everything that happens after. Every API call, every chat completion, every embedding lookup. When you `curl` an LLM endpoint, you're invoking an inference server. The model weights are frozen; you're just pushing tokens through them.
 
 Inference is the phase that runs in production and the phase that costs money in operation.
 
@@ -59,16 +61,16 @@ Two phases. Two very different cost shapes. Most production gotchas come from co
 
 ## Prefill - one pass, parallel
 
-Prefill takes all input tokens and runs them through the model **once**, in parallel. "Parallel" here means: the GPU processes all input tokens together in a single forward pass, in roughly the same wall-clock time it would take to process one token (give or take attention's quadratic-in-length cost inside that pass).
+Prefill takes all input tokens and runs them through the model **once**, in parallel. "Parallel" here means the GPU processes all input tokens together in a single forward pass, in roughly the same wall-clock time it would take to process one token (give or take attention's quadratic-in-length cost inside that pass).
 
 What prefill produces:
 
-1. A **probability distribution over the next token** — the model's prediction for what should follow the prompt.
+1. A **probability distribution over the next token**. The model's prediction for what should follow the prompt.
 2. The **KV cache for every input token**, stored in VRAM, used by every subsequent decode step. (See [[llm/kv-cache]].)
 
 Prefill cost scales with prompt length, but the work happens in one batched compute. So a 5,000-token prompt is more expensive than a 50-token prompt, but it's still **one** GPU pass, not 5,000.
 
-A useful mental image: prefill is a chef *reading the entire ticket* — eyes scan it all at once, taking it in.
+A useful mental image. Prefill is a chef *reading the entire ticket*. Eyes scan it all at once, taking it in.
 
 ## Decode - N passes, sequential
 
@@ -80,9 +82,9 @@ Decode is the loop that produces output. It runs **one forward pass per output t
 4. Run a forward pass producing the distribution for the next token.
 5. Repeat until a stop token is sampled or `num_predict` is hit.
 
-Each step is sequential — you cannot start step N+1 before step N has actually produced its token, because that token *is* the input to step N+1. There is no parallelism within a single response.
+Each step is sequential. You cannot start step N+1 before step N has actually produced its token, because that token *is* the input to step N+1. There is no parallelism within a single response.
 
-Mental image: decode is a chef *plating one dish at a time, in order*. They cannot start dish 2 until dish 1 is on the counter.
+Mental image. Decode is a chef *plating one dish at a time, in order*. They cannot start dish 2 until dish 1 is on the counter.
 
 ## Why output length dominates
 
@@ -101,8 +103,8 @@ The summarizer has 100× the input but is **6× faster** than the writer. **Outp
 
 This asymmetry shapes a number of production decisions:
 
-- "Shorten the prompt to make it faster" is mostly false — it helps a little.
-- "Shorten the output to make it faster" is mostly true — it helps a lot.
+- "Shorten the prompt to make it faster" is mostly false: it helps a little.
+- "Shorten the output to make it faster" is mostly true: it helps a lot.
 - "Streaming" exists because decode is so slow that the user wants partial results as soon as they're available.
 
 ## num_predict as the circuit breaker
@@ -112,17 +114,17 @@ Decode is bounded only by:
 1. The model emitting a stop token.
 2. The runtime's internal hard limit (often the model's max context length).
 
-Both are dangerous as upper bounds. A model that gets stuck in a degenerate loop (repeating itself, hallucinating endlessly, drifting off-distribution from a bad sample at high temperature) will burn decode time until it runs out of context — that can be **thousands of tokens of useless output**, taking tens of seconds.
+Both are dangerous as upper bounds. A model that gets stuck in a degenerate loop (repeating itself, hallucinating endlessly, drifting off-distribution from a bad sample at high temperature) will burn decode time until it runs out of context. That can be **thousands of tokens of useless output**, taking tens of seconds.
 
-`num_predict` is the explicit cap: "no matter what the model wants, stop after N output tokens." It directly bounds the worst-case wall-clock time of decode.
+`num_predict` is the explicit cap. No matter what the model wants, stop after N output tokens. It directly bounds the worst-case wall-clock time of decode.
 
 Practical guidance:
 
 - **Always set `num_predict`.** Defaulting to "unlimited" is a footgun.
-- **Cap to the smallest value the use case can tolerate.** JSON extraction: 512–1024. Short summary: 256–512. Long-form: 2048–4096. "Why so generous?" — the model rarely uses the full budget; the cap is a safety net, not a target.
+- **Cap to the smallest value the use case can tolerate.** JSON extraction: 512–1024. Short summary: 256–512. Long-form: 2048–4096. "Why so generous?": the model rarely uses the full budget; the cap is a safety net, not a target.
 - **A hung extraction job is almost always missing `num_predict`.** A 30-second hang on a 200-token expected output is the textbook symptom.
 
-## Practical heuristics
+## Rules of thumb for controlling prefill and decode cost
 
 - **Latency budgets should be modeled in decode tokens, not prompt tokens.** Engineering effort to compress prompts pays back ~40× less than equivalent effort to compress outputs.
 - **Streaming is a UX patch on a fundamental cost shape, not a free optimization.** It hides the slowness rather than removing it.
@@ -130,7 +132,7 @@ Practical guidance:
 
 ## Related Concepts
 
-- [[llm/kv-cache]] — the state structure produced by prefill and grown by decode, and why decode-with-cache is O(N) instead of O(N²).
-- [[llm/sampling-knobs]] — the per-step controls that govern what each decode step samples.
-- [[llm/serving-runtime-and-vram]] — what gets allocated when the model loads, before any inference happens.
-- [[llm/embeddings-vs-embedding-layer]] — embedding-model calls have prefill but no decode loop, which is why they're cheap.
+- [[llm/kv-cache]]: the state structure produced by prefill and grown by decode, and why decode-with-cache is O(N) instead of O(N²).
+- [[llm/sampling-knobs]]: the per-step controls that govern what each decode step samples.
+- [[llm/serving-runtime-and-vram]]: what gets allocated when the model loads, before any inference happens.
+- [[llm/embeddings-vs-embedding-layer]]: embedding-model calls have prefill but no decode loop, which is why they're cheap.

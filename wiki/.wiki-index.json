@@ -10,7 +10,6 @@
       "git",
       "version-control"
     ],
-    "category": "work",
     "sections": [
       "Targets: --worktree and --staged",
       "--source: Restoring from Any Commit",
@@ -33,7 +32,7 @@
       "cmne7xy9k02d90mso2ibigeht"
     ],
     "created": "2026-04-09",
-    "updated": "2026-05-02",
+    "updated": "2026-05-06",
     "next_review": "2026-05-27",
     "review_interval": 25,
     "probe_sections": [
@@ -70,31 +69,30 @@
       "activerecord",
       "sql"
     ],
-    "category": "work",
     "sections": [
       "TL;DR",
-      "Behavior",
+      "What pick returns and when it stops scanning",
       "vs pluck",
       "Raw SQL expressions",
       "Multiple aggregates in one query",
-      "Gotchas"
+      "nil on no match and chaining with scopes"
     ],
     "flashcard_ids": [],
     "created": "2026-04-09",
-    "updated": "2026-04-29",
+    "updated": "2026-05-06",
     "next_review": "2026-05-11",
     "review_interval": 12,
     "probe_sections": [
-      "Behavior",
+      "What pick returns and when it stops scanning",
       "vs pluck",
       "Raw SQL expressions",
       "Multiple aggregates in one query",
-      "Gotchas"
+      "nil on no match and chaining with scopes"
     ],
     "last_probed": [
       "Multiple aggregates in one query",
-      "Gotchas",
-      "Behavior",
+      "nil on no match and chaining with scopes",
+      "What pick returns and when it stops scanning",
       "vs pluck",
       "Raw SQL expressions"
     ]
@@ -113,7 +111,6 @@
       "json-schema",
       "api-design"
     ],
-    "category": "work",
     "sections": [
       "anyOf vs oneOf",
       "The oneOf Shared-Field Trap",
@@ -123,7 +120,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-09",
-    "updated": "2026-05-02",
+    "updated": "2026-05-06",
     "next_review": "2026-05-08",
     "review_interval": 6,
     "probe_sections": [
@@ -154,7 +151,6 @@
       "active-support",
       "enumerable"
     ],
-    "category": "work",
     "sections": [
       "Fixed Value vs Block",
       "index_with vs index_by",
@@ -164,7 +160,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-10",
-    "updated": "2026-05-02",
+    "updated": "2026-05-06",
     "next_review": "2026-05-14",
     "review_interval": 12,
     "probe_sections": [
@@ -193,15 +189,14 @@
       "https",
       "web"
     ],
-    "category": "work",
     "sections": [
       "The SSL Stripping Attack",
-      "The Header",
+      "The HSTS header fields: max-age, includeSubDomains, preload",
       "TOFU Problem (Trust On First Use)",
       "Preload",
       "Cross-Host Redirects",
       "Full Defense Stack",
-      "Header in Practice",
+      "What the HSTS header looks like on a real site",
       "Browser Storage"
     ],
     "flashcard_ids": [
@@ -212,24 +207,24 @@
       "cmne7xwri02050mso5k9tqzu4"
     ],
     "created": "2026-04-10",
-    "updated": "2026-04-29",
+    "updated": "2026-05-06",
     "next_review": "2026-05-14",
     "review_interval": 15,
     "probe_sections": [
       "The SSL Stripping Attack",
-      "The Header",
+      "The HSTS header fields: max-age, includeSubDomains, preload",
       "TOFU Problem (Trust On First Use)",
       "Preload",
       "Cross-Host Redirects",
       "Full Defense Stack",
-      "Header in Practice",
+      "What the HSTS header looks like on a real site",
       "Browser Storage"
     ],
     "last_probed": [
-      "Header in Practice",
+      "What the HSTS header looks like on a real site",
       "Browser Storage",
       "The SSL Stripping Attack",
-      "The Header",
+      "The HSTS header fields: max-age, includeSubDomains, preload",
       "TOFU Problem (Trust On First Use)",
       "Preload",
       "Cross-Host Redirects",
@@ -248,24 +243,23 @@
       "rails",
       "routing"
     ],
-    "category": "work",
     "sections": [
       "6 Routes, Not 7",
       "Controller Is Still Plural",
-      "When to Use",
+      "When to declare a singular resource",
       "How Identity Is Resolved",
       "Nesting Works the Same",
       "Related Concepts"
     ],
     "flashcard_ids": [],
     "created": "2026-04-13",
-    "updated": "2026-04-25",
+    "updated": "2026-05-06",
     "next_review": "2026-05-15",
     "review_interval": 20,
     "probe_sections": [
       "6 Routes, Not 7",
       "Controller Is Still Plural",
-      "When to Use",
+      "When to declare a singular resource",
       "How Identity Is Resolved",
       "Nesting Works the Same"
     ],
@@ -274,7 +268,7 @@
       "How Identity Is Resolved",
       "Nesting Works the Same",
       "Controller Is Still Plural",
-      "When to Use"
+      "When to declare a singular resource"
     ]
   },
   "rails/scope-vs-namespace": {
@@ -290,19 +284,18 @@
       "rails",
       "routing"
     ],
-    "category": "work",
     "sections": [
       "The Three Knobs",
       "Scope Picks and Chooses",
       "Module Path Format",
       "Per-Resource Options",
       "The controller: Option",
-      "When to Use What",
+      "When to use scope vs namespace vs module",
       "Related Concepts"
     ],
     "flashcard_ids": [],
     "created": "2026-04-13",
-    "updated": "2026-04-29",
+    "updated": "2026-05-06",
     "next_review": "2026-05-29",
     "review_interval": 30,
     "probe_sections": [
@@ -311,12 +304,12 @@
       "Module Path Format",
       "Per-Resource Options",
       "The controller: Option",
-      "When to Use What"
+      "When to use scope vs namespace vs module"
     ],
     "last_probed": [
       "Per-Resource Options",
       "The controller: Option",
-      "When to Use What",
+      "When to use scope vs namespace vs module",
       "The Three Knobs",
       "Scope Picks and Chooses",
       "Module Path Format"
@@ -334,9 +327,8 @@
       "rails",
       "routing"
     ],
-    "category": "work",
     "sections": [
-      "The Split",
+      "How shallow routing splits member vs collection routes",
       "Why This Split",
       "Named Helpers Change Too",
       "Applying to All Nested Resources",
@@ -344,18 +336,18 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-13",
-    "updated": "2026-04-25",
+    "updated": "2026-05-06",
     "next_review": "2026-05-15",
     "review_interval": 20,
     "probe_sections": [
-      "The Split",
+      "How shallow routing splits member vs collection routes",
       "Why This Split",
       "Named Helpers Change Too",
       "Applying to All Nested Resources"
     ],
     "last_probed": [
       "Applying to All Nested Resources",
-      "The Split",
+      "How shallow routing splits member vs collection routes",
       "Why This Split",
       "Named Helpers Change Too"
     ]
@@ -372,28 +364,27 @@
       "rails",
       "routing"
     ],
-    "category": "work",
     "sections": [
-      "The Problem",
+      "The problem: duplicated route blocks across resources",
       "Extract a Concern",
       "Multiple Concerns",
-      "When to Use",
+      "When to extract a routing concern",
       "Related Concepts"
     ],
     "flashcard_ids": [],
     "created": "2026-04-13",
-    "updated": "2026-04-29",
+    "updated": "2026-05-06",
     "next_review": "2026-06-16",
     "review_interval": 48,
     "probe_sections": [
-      "The Problem",
+      "The problem: duplicated route blocks across resources",
       "Extract a Concern",
       "Multiple Concerns",
-      "When to Use"
+      "When to extract a routing concern"
     ],
     "last_probed": [
-      "When to Use",
-      "The Problem",
+      "When to extract a routing concern",
+      "The problem: duplicated route blocks across resources",
       "Extract a Concern",
       "Multiple Concerns"
     ]
@@ -411,7 +402,6 @@
       "rails",
       "routing"
     ],
-    "category": "work",
     "sections": [
       "draw -- Split Routes into Files",
       "defaults -- Set Shared Parameters",
@@ -419,7 +409,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-13",
-    "updated": "2026-04-29",
+    "updated": "2026-05-06",
     "next_review": "2026-05-13",
     "review_interval": 14,
     "probe_sections": [
@@ -444,32 +434,31 @@
       "rails",
       "routing"
     ],
-    "category": "work",
     "sections": [
       "The Decision Table",
-      "Syntax",
+      "Declaring collection and member routes",
       "Routing to a Different Controller",
       "Param Naming Rules",
-      "When to Use What",
+      "When to use collection vs member",
       "Related Concepts"
     ],
     "flashcard_ids": [],
     "created": "2026-04-14",
-    "updated": "2026-04-27",
+    "updated": "2026-05-06",
     "next_review": "2026-05-07",
     "review_interval": 10,
     "probe_sections": [
       "The Decision Table",
-      "Syntax",
+      "Declaring collection and member routes",
       "Routing to a Different Controller",
       "Param Naming Rules",
-      "When to Use What"
+      "When to use collection vs member"
     ],
     "last_probed": [
       "Param Naming Rules",
-      "When to Use What",
+      "When to use collection vs member",
       "The Decision Table",
-      "Syntax",
+      "Declaring collection and member routes",
       "Routing to a Different Controller"
     ]
   },
@@ -486,30 +475,29 @@
       "rails",
       "routing"
     ],
-    "category": "work",
     "sections": [
       "Renaming with `as:`",
       "The `_index` Suffix",
       "Fix: Set `as:` Explicitly",
-      "Verifying",
+      "How to verify path helper names at the console",
       "Related Concepts"
     ],
     "flashcard_ids": [],
     "created": "2026-04-14",
-    "updated": "2026-05-02",
+    "updated": "2026-05-06",
     "next_review": "2026-05-14",
     "review_interval": 12,
     "probe_sections": [
       "Renaming with `as:`",
       "The `_index` Suffix",
       "Fix: Set `as:` Explicitly",
-      "Verifying"
+      "How to verify path helper names at the console"
     ],
     "last_probed": [
       "Renaming with `as:`",
       "The `_index` Suffix",
       "Fix: Set `as:` Explicitly",
-      "Verifying"
+      "How to verify path helper names at the console"
     ]
   },
   "ruby/transform-values": {
@@ -525,10 +513,9 @@
       "hash",
       "enumerable"
     ],
-    "category": "work",
     "sections": [
       "TL;DR",
-      "The intuition",
+      "What transform_values does and why it preserves keys",
       "vs map on a hash",
       "The block receives only the value",
       "Bang variant",
@@ -538,11 +525,11 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-17",
-    "updated": "2026-04-20",
+    "updated": "2026-05-06",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
-      "The intuition",
+      "What transform_values does and why it preserves keys",
       "vs map on a hash",
       "The block receives only the value",
       "Bang variant",
@@ -564,10 +551,9 @@
       "postgres",
       "aggregate"
     ],
-    "category": "work",
     "sections": [
       "TL;DR",
-      "The intuition",
+      "What array_agg collects and the implicit single-group rule",
       "No GROUP BY means one implicit group",
       "Ordering is non-deterministic by default",
       "NULLs are included by default",
@@ -579,11 +565,11 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-17",
-    "updated": "2026-04-20",
+    "updated": "2026-05-06",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
-      "The intuition",
+      "What array_agg collects and the implicit single-group rule",
       "No GROUP BY means one implicit group",
       "Ordering is non-deterministic by default",
       "NULLs are included by default",
@@ -608,11 +594,10 @@
       "activerecord",
       "polymorphism"
     ],
-    "category": "work",
     "sections": [
       "The Problem It Solves",
       "Schema Shape",
-      "The Declaration",
+      "What the delegated_type declaration generates",
       "What `delegated_type` Expands To",
       "Direction of Delegation",
       "Design Rule: Where Attributes Live",
@@ -628,7 +613,7 @@
     "probe_sections": [
       "The Problem It Solves",
       "Schema Shape",
-      "The Declaration",
+      "What the delegated_type declaration generates",
       "What `delegated_type` Expands To",
       "Direction of Delegation",
       "Design Rule: Where Attributes Live",
@@ -638,7 +623,7 @@
     "last_probed": [
       "Schema Shape",
       "What `delegated_type` Expands To",
-      "The Declaration",
+      "What the delegated_type declaration generates",
       "Direction of Delegation",
       "Design Rule: Where Attributes Live",
       "STI vs Delegated Type",
@@ -823,7 +808,6 @@
       "background-jobs",
       "ops"
     ],
-    "category": "work",
     "sections": [
       "Clearing a queue",
       "The batching gotcha",
@@ -833,7 +817,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-23",
-    "updated": "2026-04-23",
+    "updated": "2026-05-06",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -861,7 +845,6 @@
       "web",
       "browser"
     ],
-    "category": "work",
     "sections": [
       "TL;DR",
       "What an Origin Is",
@@ -873,7 +856,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-29",
-    "updated": "2026-05-04",
+    "updated": "2026-05-06",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -907,13 +890,12 @@
       "http",
       "dns"
     ],
-    "category": "work",
     "sections": [
       "TL;DR",
       "URL anatomy at a glance",
       "Scheme vs protocol",
       "Host - subdomain, SLD, TLD",
-      "Port",
+      "Port: default ports and when the URL includes one",
       "Path and query",
       "DNS resolution",
       "DNS caching, TTL, and safe migrations",
@@ -924,14 +906,14 @@
       "cmoqrprzu0000ld0mfbwqly5v"
     ],
     "created": "2026-05-04",
-    "updated": "2026-05-04",
+    "updated": "2026-05-06",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
       "URL anatomy at a glance",
       "Scheme vs protocol",
       "Host - subdomain, SLD, TLD",
-      "Port",
+      "Port: default ports and when the URL includes one",
       "Path and query",
       "DNS resolution",
       "DNS caching, TTL, and safe migrations",
@@ -941,7 +923,7 @@
       "URL anatomy at a glance",
       "Scheme vs protocol",
       "Host - subdomain, SLD, TLD",
-      "Port",
+      "Port: default ports and when the URL includes one",
       "Path and query",
       "DNS resolution",
       "DNS caching, TTL, and safe migrations",
@@ -993,31 +975,30 @@
       "bytecode",
       "jit"
     ],
-    "category": "work",
     "sections": [
       "TL;DR",
-      "Compiler vs interpreter — roles, not languages",
-      "Two orthogonal axes — type checking ⊥ compile target",
+      "Compiler vs interpreter: roles, not languages",
+      "Two orthogonal axes: type checking ⊥ compile target",
       "Case study: the CPython chain",
-      "JIT — when bytecode becomes machine code at runtime",
+      "JIT: when bytecode becomes machine code at runtime",
       "Related Concepts"
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-05",
+    "updated": "2026-05-06",
     "next_review": "2026-05-08",
     "review_interval": 3,
     "probe_sections": [
-      "Compiler vs interpreter — roles, not languages",
-      "Two orthogonal axes — type checking ⊥ compile target",
+      "Compiler vs interpreter: roles, not languages",
+      "Two orthogonal axes: type checking ⊥ compile target",
       "Case study: the CPython chain",
-      "JIT — when bytecode becomes machine code at runtime"
+      "JIT: when bytecode becomes machine code at runtime"
     ],
     "last_probed": [
-      "Compiler vs interpreter — roles, not languages",
-      "Two orthogonal axes — type checking ⊥ compile target",
+      "Compiler vs interpreter: roles, not languages",
+      "Two orthogonal axes: type checking ⊥ compile target",
       "Case study: the CPython chain",
-      "JIT — when bytecode becomes machine code at runtime"
+      "JIT: when bytecode becomes machine code at runtime"
     ]
   },
   "programming-languages/programming-languages-index": {
@@ -1090,7 +1071,6 @@
       "gpu",
       "infrastructure"
     ],
-    "category": "work",
     "sections": [
       "TL;DR",
       "The model is a file",
@@ -1098,12 +1078,12 @@
       "KEEP_ALIVE and the cold-start tax",
       "Multi-tenancy - what is shared, what is per-slot",
       "Same model, different num_ctx, two instances",
-      "Practical heuristics",
+      "Sizing VRAM and choosing KEEP_ALIVE strategy",
       "Related Concepts"
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-05",
+    "updated": "2026-05-06",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -1111,14 +1091,16 @@
       "VRAM and why GPUs",
       "KEEP_ALIVE and the cold-start tax",
       "Multi-tenancy - what is shared, what is per-slot",
-      "Same model, different num_ctx, two instances"
+      "Same model, different num_ctx, two instances",
+      "Sizing VRAM and choosing KEEP_ALIVE strategy"
     ],
     "last_probed": [
       "The model is a file",
       "VRAM and why GPUs",
       "KEEP_ALIVE and the cold-start tax",
       "Multi-tenancy - what is shared, what is per-slot",
-      "Same model, different num_ctx, two instances"
+      "Same model, different num_ctx, two instances",
+      "Sizing VRAM and choosing KEEP_ALIVE strategy"
     ]
   },
   "llm/inference-prefill-and-decode": {
@@ -1136,7 +1118,6 @@
       "inference",
       "performance"
     ],
-    "category": "work",
     "sections": [
       "TL;DR",
       "Inference vs training",
@@ -1145,12 +1126,12 @@
       "Decode - N passes, sequential",
       "Why output length dominates",
       "num_predict as the circuit breaker",
-      "Practical heuristics",
+      "Rules of thumb for controlling prefill and decode cost",
       "Related Concepts"
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-05",
+    "updated": "2026-05-06",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -1159,7 +1140,8 @@
       "Prefill - one pass, parallel",
       "Decode - N passes, sequential",
       "Why output length dominates",
-      "num_predict as the circuit breaker"
+      "num_predict as the circuit breaker",
+      "Rules of thumb for controlling prefill and decode cost"
     ],
     "last_probed": [
       "Inference vs training",
@@ -1167,7 +1149,8 @@
       "Prefill - one pass, parallel",
       "Decode - N passes, sequential",
       "Why output length dominates",
-      "num_predict as the circuit breaker"
+      "num_predict as the circuit breaker",
+      "Rules of thumb for controlling prefill and decode cost"
     ]
   },
   "llm/kv-cache": {
@@ -1186,7 +1169,6 @@
       "attention",
       "transformer"
     ],
-    "category": "work",
     "sections": [
       "TL;DR",
       "What attention is doing - Q, K, V",
@@ -1201,7 +1183,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-05",
+    "updated": "2026-05-06",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -1239,7 +1221,6 @@
       "sampling",
       "ollama"
     ],
-    "category": "work",
     "sections": [
       "TL;DR",
       "The decode loop has a sampler",
@@ -1251,7 +1232,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-05",
+    "updated": "2026-05-06",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -1286,7 +1267,6 @@
       "rag",
       "retrieval"
     ],
-    "category": "work",
     "sections": [
       "TL;DR",
       "The two meanings, untangled",
@@ -1295,12 +1275,12 @@
       "Cost asymmetry vs generative LLMs",
       "The RAG data flow",
       "Why retrieval is necessary, not optional",
-      "Practical heuristics",
+      "Choosing between embedding layer and embedding model",
       "Related Concepts"
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-05",
+    "updated": "2026-05-06",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -1309,7 +1289,8 @@
       "Meaning 2 - embedding models",
       "Cost asymmetry vs generative LLMs",
       "The RAG data flow",
-      "Why retrieval is necessary, not optional"
+      "Why retrieval is necessary, not optional",
+      "Choosing between embedding layer and embedding model"
     ],
     "last_probed": [
       "The two meanings, untangled",
@@ -1317,7 +1298,8 @@
       "Meaning 2 - embedding models",
       "Cost asymmetry vs generative LLMs",
       "The RAG data flow",
-      "Why retrieval is necessary, not optional"
+      "Why retrieval is necessary, not optional",
+      "Choosing between embedding layer and embedding model"
     ]
   },
   "rails/activerecord-preloading": {
@@ -1336,13 +1318,12 @@
       "performance",
       "n-plus-one"
     ],
-    "category": "work",
     "sections": [
       "TL;DR",
       "The four methods",
       "How includes auto-switches",
-      "Cost model — when JOIN multiplies rows",
-      "Decision guide",
+      "Cost model: when JOIN multiplies rows",
+      "Choosing between joins, preload, eager_load, and includes",
       "Polymorphic associations",
       "Related Concepts"
     ],
@@ -1351,21 +1332,21 @@
       "cmosqd3r80001h30mwd2tbpht"
     ],
     "created": "2026-05-05",
-    "updated": "2026-05-05",
+    "updated": "2026-05-06",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
       "The four methods",
       "How includes auto-switches",
-      "Cost model — when JOIN multiplies rows",
-      "Decision guide",
+      "Cost model: when JOIN multiplies rows",
+      "Choosing between joins, preload, eager_load, and includes",
       "Polymorphic associations"
     ],
     "last_probed": [
       "The four methods",
       "How includes auto-switches",
-      "Cost model — when JOIN multiplies rows",
-      "Decision guide",
+      "Cost model: when JOIN multiplies rows",
+      "Choosing between joins, preload, eager_load, and includes",
       "Polymorphic associations"
     ]
   },
@@ -1386,7 +1367,6 @@
       "data-modeling",
       null
     ],
-    "category": "work",
     "sections": [
       "TL;DR",
       "Three-valued logic is the root cause",
@@ -1401,7 +1381,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-05",
+    "updated": "2026-05-06",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [

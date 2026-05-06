@@ -49,7 +49,7 @@ last_probed:
 
 ## Targets: --worktree and --staged
 
-`git restore` takes one or more **targets** — what to overwrite:
+`git restore` takes one or more **targets**: what to overwrite:
 
 - `--worktree` (default): overwrites the file on disk from the index
 - `--staged`: overwrites the index from HEAD
@@ -61,7 +61,7 @@ git restore --staged file.txt         # index ← HEAD
 git restore --staged --worktree file.txt  # both ← HEAD
 ```
 
-The pipeline is: `HEAD → index → worktree`. Each flag copies one step leftward.
+The pipeline is `HEAD → index → worktree`. Each flag copies one step leftward.
 
 ## --source: Restoring from Any Commit
 
@@ -88,11 +88,11 @@ git restore --theirs -- utils.ts  # keep incoming branch version
 git add utils.ts                  # mark as resolved
 ```
 
-**In a rebase**, the sides flip — because git replays your commits onto the new base:
+**In a rebase**, the sides flip. Because git replays your commits onto the new base:
 - `--ours`: the branch being rebased **onto** (new base)
 - `--theirs`: the commits being replayed (your original branch)
 
-**After resolution** (no active conflict): `--ours` falls back to HEAD. `--theirs` restores the unresolved incoming version from the index.
+**After resolution** (no active conflict), `--ours` falls back to HEAD and `--theirs` restores the unresolved incoming version from the index.
 
 ## --merge: Recreate Conflict State
 
@@ -104,7 +104,7 @@ Recreates conflict markers in a resolved file. Useful when you want to re-approa
 
 ## Conflicts from `git stash pop`
 
-`git stash pop` applies the stash as a 3-way merge: HEAD is **ours**, the stash is **theirs**. Semantics match a normal merge — **not** inverted like rebase.
+`git stash pop` applies the stash as a 3-way merge. HEAD is **ours**, the stash is **theirs**. Semantics match a normal merge. **Not** inverted like rebase.
 
 ```bash
 git stash pop                         # conflict in utils.ts
@@ -114,7 +114,7 @@ git add utils.ts
 git stash drop                        # pop leaves the stash on failure — drop manually
 ```
 
-The `git stash drop` is the stash-specific trap: a successful pop auto-drops, but a **conflicted** pop does not. Without it, the stash stays on the stack and you'll re-apply the same conflict next time.
+The `git stash drop` is the stash-specific trap. A successful pop auto-drops, but a **conflicted** pop does not. Without it, the stash stays on the stack and you'll re-apply the same conflict next time.
 
 ## --ignore-unmerged
 
@@ -122,7 +122,7 @@ The `git stash drop` is the stash-specific trap: a successful pop auto-drops, bu
 git restore --ignore-unmerged
 ```
 
-Skips unmerged paths during a restore — other files are restored normally.
+Skips unmerged paths during a restore. Other files are restored normally.
 
 ## Interactive: -p
 

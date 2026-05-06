@@ -33,7 +33,7 @@ last_probed:
 - SOP is a **browser-enforced** rule that blocks JavaScript from **reading** cross-origin responses. It does not block the browser from **loading** cross-origin resources.
 - The threat it stops: a malicious page using the user's ambient session cookies to read data from another site they are logged into.
 - SOP is always on. There is no off switch. Servers opt **in** to relaxation via CORS headers (`Access-Control-Allow-Origin`, etc.).
-- Server-to-server requests have no concept of SOP — there is no browser, no ambient credentials, nothing to enforce.
+- Server-to-server requests have no concept of SOP: there is no browser, no ambient credentials, nothing to enforce.
 
 ## What an Origin Is
 
@@ -50,10 +50,10 @@ Subdomains are **different origins**. `app.example.com` and `api.example.com` ca
 
 ## What SOP Actually Blocks
 
-The critical distinction: **loading vs. reading**.
+The critical distinction is **loading vs. reading**.
 
-- **Loading** a cross-origin resource is allowed. The browser fetches and uses it (executes a script, renders an image, applies a stylesheet, displays an iframe). Your JS never gets to inspect the raw bytes — there is no API to read what was loaded — so there is nothing to protect.
-- **Reading** a cross-origin response from JS is blocked. `fetch()`, `XMLHttpRequest`, reading pixels from a tainted `<canvas>`, accessing the DOM of a cross-origin iframe — all blocked.
+- **Loading** a cross-origin resource is allowed. The browser fetches and uses it (executes a script, renders an image, applies a stylesheet, displays an iframe). Your JS never gets to inspect the raw bytes: there is no API to read what was loaded: so there is nothing to protect.
+- **Reading** a cross-origin response from JS is blocked. `fetch()`, `XMLHttpRequest`, reading pixels from a tainted `<canvas>`, accessing the DOM of a cross-origin iframe: all blocked.
 
 ```html
 <!-- allowed: browser loads and runs jQuery -->
@@ -84,19 +84,19 @@ Without SOP:
 1. User logs into `bank.com`. Browser stores a session cookie for `bank.com`.
 2. User visits `evil.com`.
 3. JS on `evil.com` runs `fetch("https://bank.com/account-balance").then(r => r.text())`.
-4. Browser attaches the user's `bank.com` cookie automatically — the request is fully authenticated.
+4. Browser attaches the user's `bank.com` cookie automatically. The request is fully authenticated.
 5. `bank.com` returns the user's real balance.
 6. `evil.com`'s JS reads the response and exfiltrates it.
 
-SOP cuts step 6: the response reaches the browser, but the browser refuses to hand the body to `evil.com`'s JS.
+SOP cuts step 6. The response reaches the browser, but the browser refuses to hand the body to `evil.com`'s JS.
 
-> [Note] SOP does not stop the request being **sent**. It stops the response from being **read**. Side effects (like a state-changing POST) can still happen — that is what CSRF tokens defend against, not SOP.
+> [Note] SOP does not stop the request being **sent**. It stops the response from being **read**. Side effects (like a state-changing POST) can still happen: that is what CSRF tokens defend against, not SOP.
 
 ## SOP Is Not Configurable
 
 There is no server header, browser flag, or runtime API that disables SOP for production users. It is the default lock baked into every browser.
 
-What you **can** configure is CORS (Cross-Origin Resource Sharing) — the opt-in relaxation. The server adds:
+What you **can** configure is CORS (Cross-Origin Resource Sharing): the opt-in relaxation. The server adds:
 
 ```
 Access-Control-Allow-Origin: https://trusted-app.com
@@ -104,20 +104,20 @@ Access-Control-Allow-Origin: https://trusted-app.com
 
 The browser reads this header and, for that specific origin, allows the JS read that SOP would otherwise block. CORS is the key the server hands out; SOP is the lock the browser refuses to remove.
 
-A common confusion: developers say "I'll disable SOP on my server." That sentence is meaningless — SOP is not on the server. The server can only **opt origins in** via CORS, never **opt SOP out**.
+A common confusion. Developers say "I'll disable SOP on my server." That sentence is meaningless. SOP is not on the server. The server can only **opt origins in** via CORS, never **opt SOP out**.
 
 ## Server-to-Server Requests
 
 SOP only exists in browsers. A Node.js, Ruby, or Go process calling `https://bank.com/api` runs no SOP check, because:
 
 - There is no browser in the loop.
-- There is no ambient user session — the server uses its own explicitly-attached credentials (API key, service token).
+- There is no ambient user session: the server uses its own explicitly-attached credentials (API key, service token).
 - There is no cross-origin JS context to protect.
 
-This is also why the threat model is narrow: SOP defends against **a browser page abusing the user's session**. Server-side abuse is a different problem (API authentication, rate limiting, IP allowlists), not an SOP concern.
+This is also why the threat model is narrow. SOP defends against **a browser page abusing the user's session**. Server-side abuse is a different problem (API authentication, rate limiting, IP allowlists), not an SOP concern.
 
 ## Related Concepts
 
-- [[security/hsts]] — forces HTTPS, eliminating the `http`/`https` scheme-mismatch downgrade path
-- CORS — the opt-in mechanism servers use to relax SOP for specific origins (not yet a wiki page)
-- CSRF — defends against cross-origin **state-changing requests**; SOP only restricts reads (not yet a wiki page)
+- [[security/hsts]]: forces HTTPS, eliminating the `http`/`https` scheme-mismatch downgrade path
+- CORS: the opt-in mechanism servers use to relax SOP for specific origins (not yet a wiki page)
+- CSRF: defends against cross-origin **state-changing requests**; SOP only restricts reads (not yet a wiki page)

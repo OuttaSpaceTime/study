@@ -13,7 +13,7 @@ updated: '2026-04-17'
 source_skill: study-walkthrough
 depth: 1
 probe_sections:
-- The intuition
+- "What array_agg collects and the implicit single-group rule"
 - No GROUP BY means one implicit group
 - Ordering is non-deterministic by default
 - NULLs are included by default
@@ -28,7 +28,7 @@ last_probed: []
 
 ## TL;DR
 
-`array_agg(col)` is the aggregate function that collapses a group of rows into an **array of values** instead of a scalar. Where `COUNT(col)` gives *how many*, `array_agg(col)` gives *which ones* — without discarding the individual values.
+`array_agg(col)` is the aggregate function that collapses a group of rows into an **array of values** instead of a scalar. Where `COUNT(col)` gives *how many*, `array_agg(col)` gives *which ones*. Without discarding the individual values.
 
 ```sql
 SELECT user_id, array_agg(product) AS products
@@ -41,9 +41,9 @@ GROUP BY user_id;
 --  2       | {apple}
 ```
 
-## The intuition
+## What array_agg collects and the implicit single-group rule
 
-Aggregates collapse N rows into 1 row per group. `SUM`, `AVG`, `COUNT` collapse to a scalar. `array_agg` collapses to a **collection** — it is the aggregate that *doesn't throw away the individual values*.
+Aggregates collapse N rows into 1 row per group. `SUM`, `AVG`, `COUNT` collapse to a scalar. `array_agg` collapses to a **collection**. It is the aggregate that *doesn't throw away the individual values*.
 
 This lets a single query return both "the group" and "its members" without a second round-trip or client-side grouping.
 
@@ -58,7 +58,7 @@ SELECT array_agg(product) FROM orders;
 
 ## Ordering is non-deterministic by default
 
-The array reflects whatever order the executor happened to emit rows in. That order can shift with query plan changes (new index, updated stats), parallel scan chunking, version upgrades, or primary vs. replica — so an ordering that looks fine locally can flip in production.
+The array reflects whatever order the executor happened to emit rows in. That order can shift with query plan changes (new index, updated stats), parallel scan chunking, version upgrades, or primary vs. replica. So an ordering that looks fine locally can flip in production.
 
 If any consumer cares about the order (cache keys, snapshot tests, `arr[1]` as "the first"), make it explicit with `ORDER BY` **inside** the aggregate:
 
@@ -84,7 +84,7 @@ array_agg(product) FILTER (WHERE product IS NOT NULL)
 
 ## Empty input returns NULL, not {}
 
-> [Warning] When an aggregate receives zero input rows (empty group, or everything filtered out), it returns **`NULL`** — not an empty array. `COUNT` is the only aggregate that returns `0` on empty input.
+> [Warning] When an aggregate receives zero input rows (empty group, or everything filtered out), it returns **`NULL`**. Not an empty array. `COUNT` is the only aggregate that returns `0` on empty input.
 
 This matters because consumer code that does `result.length` or iterates will behave differently on `NULL` vs. `{}`. Defaulting to empty is usually the safer contract:
 
@@ -95,7 +95,7 @@ COALESCE(
 )
 ```
 
-The explicit `::text[]` cast is required — Postgres cannot infer the element type of a bare `ARRAY[]`.
+The explicit `::text[]` cast is required. Postgres cannot infer the element type of a bare `ARRAY[]`.
 
 ## DISTINCT + ORDER BY must share the expression
 
@@ -109,7 +109,7 @@ array_agg(DISTINCT product ORDER BY product)
 array_agg(DISTINCT product ORDER BY created_at)
 ```
 
-Intuition: with `DISTINCT`, the aggregate dedupes first; the dedup key has to equal the sort key for the result to be well-defined. To order distinct values by a *different* column, dedupe upstream with `SELECT DISTINCT ON (...)` in a subquery and aggregate over that.
+Intuition. With `DISTINCT`, the aggregate dedupes first; the dedup key has to equal the sort key for the result to be well-defined. To order distinct values by a *different* column, dedupe upstream with `SELECT DISTINCT ON (...)` in a subquery and aggregate over that.
 
 ## array_agg vs jsonb_agg
 
@@ -147,4 +147,4 @@ GROUP BY user_id;
 
 ## Related Concepts
 
-- [[rails/activerecord-pick]] — another "collapse many rows into one value in a single round-trip" pattern, at the ActiveRecord layer
+- [[rails/activerecord-pick]]: another "collapse many rows into one value in a single round-trip" pattern, at the ActiveRecord layer

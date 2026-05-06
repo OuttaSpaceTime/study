@@ -27,7 +27,38 @@ REQUIRED_FIELDS = {
 }
 
 _FENCED_CODE_RE = re.compile(r"```.*?```", re.DOTALL)
-_INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
+_INLINE_CODE_RE = re.compile(r"``[^`\n]+``|`[^`\n]+`")
+_QUOTED_STR_RE = re.compile(r'"[^"\n]*"|\'[^\'\n]*\'')
+_SENT_SPLIT_RE = re.compile(r"(?<=[.!?])\s+")
+_MD_SYNTAX_RE = re.compile(r"[*_`\[\]()|#!]+")
+
+_PROSE_PATTERNS: list[tuple[str, str, str]] = [
+    # (regex, label, fix)
+    (r"\bin order to\b", "in-order-to", "use 'to'"),
+    (r"\bit(?:'s| is) worth noting\b", "its-worth-noting", "delete; state it directly"),
+    (r"\bit should be noted\b", "it-should-be-noted", "delete"),
+    (r"\bdue to the fact that\b", "due-to-the-fact-that", "use 'because'"),
+    (r"(?i)^furthermore,", "furthermore", "cut or restructure"),
+    (r"(?i)^moreover,", "moreover", "cut or restructure"),
+    (r"(?i)^additionally,", "additionally", "cut the filler"),
+    (r"\bin conclusion\b", "in-conclusion", "cut"),
+    (r"\bseamlessly\b", "seamlessly", "delete or be specific"),
+    (r"\butilize[sd]?\b", "utilize", "use 'use'"),
+    (r"\bdelve\b", "delve", "use 'explore' or 'read'"),
+    (r"—", "em-dash", "split into two sentences"),
+    (r"\bis able to\b", "is-able-to", "use 'can'"),
+    (r"\bhas the ability to\b", "has-the-ability-to", "use 'can'"),
+    (r"\bleverage[sd]?\b", "leverage-verb", "use 'use'"),
+    (r"\bthat being said\b", "that-being-said", "cut"),
+    (r"\bit goes without saying\b", "it-goes-without-saying", "cut"),
+    (r"(?i)^notably,", "notably", "cut or state why it matters"),
+    (r"(?i)^essentially,", "essentially", "cut or be specific"),
+    (r"\brobust\b", "robust", "name the actual property"),
+    (r"\bcomprehensive\b", "comprehensive", "cut or be specific"),
+    (r"\bholistic\b", "holistic", "be specific"),
+    (r"\bcutting.edge\b", "cutting-edge", "name the technology"),
+    (r"\bharness(?:es|ed|ing)?\b", "harness-verb", "use 'use'"),
+]
 # Wikilink not preceded by `!` (image embed). Captures target before any `|display`.
 _WIKILINK_RE = re.compile(r"(?<!!)\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|[^\]]*)?\]\]")
 
@@ -77,6 +108,9 @@ def lint_wiki(wiki_dir: Path) -> tuple[list[str], list[str]]:
     errors.extend(_check_flashcard_ids(pages, index))
     errors.extend(_check_probe_sections(wiki_dir, pages, index))
     warnings.extend(_check_moc_coverage(wiki_dir, pages))
+    warnings.extend(_check_prose_quality(pages))
+    warnings.extend(_check_sentence_fragments(pages))
+    warnings.extend(_check_colon_connectors(pages))
 
     return errors, warnings
 
@@ -120,6 +154,165 @@ def _strip_code(body: str) -> str:
     body = _FENCED_CODE_RE.sub("", body)
     body = _INLINE_CODE_RE.sub("", body)
     return body
+
+
+def _check_prose_quality(pages: list[ParsedPage]) -> list[str]:
+    """Warn on common weak prose patterns in wiki body text.
+
+    Operates on p.body (after frontmatter is stripped) and strips code blocks
+    before scanning so patterns inside code are not flagged.
+    """
+    warnings: list[str] = []
+    for p in pages:
+        prose = _strip_code(p.body)
+        for pattern, label, fix in _PROSE_PATTERNS:
+            matches = re.findall(pattern, prose, re.MULTILINE)
+            if matches:
+                n = len(matches)
+                warnings.append(
+                    f"prose-quality: {p.rel} [{label}] ({n}x) — {fix}"
+                )
+    return warnings
+
+
+def _word_count_prose(text: str) -> int:
+    """Count words in a prose fragment after stripping markdown inline syntax."""
+    clean = _MD_SYNTAX_RE.sub(" ", text)
+    return len(clean.split())
+
+
+_ABBREV_ENDS_RE = re.compile(r"\b(vs|e\.g|i\.e|etc|cf|no|pp|vol|ed|fig|approx)\.?\s*$", re.IGNORECASE)
+
+
+def _check_sentence_fragments(pages: list[ParsedPage]) -> list[str]:
+    """Warn on ≤3-word sentences immediately followed by a lowercase continuation.
+
+    This targets the specific bad pattern left by mechanical colon removal:
+        "The practical takeaway. **for long-context requests..."
+    Valid short sentences like "Both are needed. An id alone..." are not flagged
+    because their continuation starts with an uppercase letter.
+    """
+    warnings = []
+    for p in pages:
+        lines = p.body.split("\n")
+        in_code = False
+        hits = 0
+        for raw_line in lines:
+            if re.match(r"\s*```", raw_line):
+                in_code = not in_code
+                continue
+            if in_code:
+                continue
+            # Replace inline code with "X" to preserve case of surrounding text
+            line = _INLINE_CODE_RE.sub("X", raw_line)
+            line = _QUOTED_STR_RE.sub("X", line)
+            s = line.lstrip()
+            if not s:
+                continue
+            if s[0] == "#":
+                continue
+            if re.match(r"^[-*]\s", s) or re.match(r"^\d+\.\s", s):
+                continue
+            if s.startswith(">") or s.startswith("|"):
+                continue
+            parts = _SENT_SPLIT_RE.split(s)
+            for part, nxt in zip(parts[:-1], parts[1:]):
+                if _word_count_prose(part) > 3:
+                    continue
+                if _ABBREV_ENDS_RE.search(part):
+                    continue
+                nxt_clean = _MD_SYNTAX_RE.sub("", nxt).lstrip()
+                if nxt_clean and nxt_clean[0].islower():
+                    hits += 1
+        if hits:
+            warnings.append(
+                f"sentence-fragment: {p.rel} ({hits}x) — short sentence (≤3 words) followed by lowercase; likely a prose fragment"
+            )
+    return warnings
+
+
+# Lines that legitimately follow an end-of-line colon
+_EOL_COLON_OK = re.compile(r"^(```|>\s|[-*]\s|\d+\.\s|!\[\[|\|)")
+
+
+def _check_colon_connectors(pages: list[ParsedPage]) -> list[str]:
+    """Warn on colons used as prose clause connectors.
+
+    Acceptable: heading (## ...), list-item term separator (- term: desc),
+    end-of-line colon introducing a code fence / blockquote / list / table / image.
+    Not acceptable: colon connecting two prose clauses on the same line,
+    or end-of-line colon followed by a plain prose continuation.
+
+    Uses a line-by-line state machine instead of pre-stripping the body so that
+    EOL-colon lookahead always reads the *original* next line. Pre-stripping
+    removes code blocks, which makes whatever comes *after* the block appear to
+    immediately follow the colon — a common source of false positives.
+    """
+    warnings = []
+    for p in pages:
+        lines = p.body.split("\n")
+        in_code = False
+        hits = 0
+
+        for i, raw_line in enumerate(lines):
+            # Track fenced code block state; skip all content inside blocks.
+            if re.match(r"\s*```", raw_line):
+                in_code = not in_code
+                continue
+            if in_code:
+                continue
+
+            # Per-line: strip inline code and quoted strings before checking.
+            line = _INLINE_CODE_RE.sub("X", raw_line)
+            line = _QUOTED_STR_RE.sub("X", line)
+            s = line.lstrip()
+
+            if not s:
+                continue
+            if s[0] == "#":  # heading
+                continue
+            if re.match(r"^[-*]\s", s) or re.match(r"^\d+\.\s", s):  # list items
+                continue
+            if s.startswith(">") or s.startswith("|"):  # blockquote / table
+                continue
+
+            # End-of-line colon: walk forward in the *original* lines, tracking
+            # code block state, to find what actually follows the colon.
+            if s.rstrip().endswith(":"):
+                next_s = ""
+                inner_code = False
+                for j in range(i + 1, len(lines)):
+                    jl = lines[j]
+                    if re.match(r"\s*```", jl):
+                        inner_code = not inner_code
+                        if inner_code:
+                            # An opening fence means a code block follows — colon is fine.
+                            next_s = jl.lstrip()
+                            break
+                        continue
+                    if inner_code:
+                        continue
+                    if jl.strip():
+                        nxt = _INLINE_CODE_RE.sub("X", jl.lstrip())
+                        nxt = _QUOTED_STR_RE.sub("X", nxt)
+                        next_s = nxt
+                        break
+                if next_s and not _EOL_COLON_OK.match(next_s):
+                    hits += 1
+                continue
+
+            # Mid-line ': ' — prose connector.
+            if ": " in s:
+                if "://" in s and ": " not in re.sub(r"https?://\S+", "", s):
+                    continue
+                hits += 1
+
+        if hits:
+            warnings.append(
+                f"prose-colon: {p.rel} ({hits}x) — split into sentences; "
+                "colon only before code/quote/list/table/image"
+            )
+    return warnings
 
 
 def _check_frontmatter(pages: list[ParsedPage]) -> list[str]:

@@ -221,7 +221,7 @@ If any of these are missing or vague, return to the relevant concept and discuss
 1. Present the full draft wiki page with frontmatter, wikilinks, and all sections
 2. For each section: ask the developer to explain it in their own words. If they cannot, discuss until they can.
 3. Adjust the page based on gaps surfaced during review
-4. **Probe sections:** Default `probe_sections` to all H2 headings except `Related Concepts`, `References`, `See also`, and `TL;DR`. Offer the developer a chance to mark any remaining sections as reference-only — but default-all is usually correct. Write `probe_sections` in frontmatter and seed `last_probed` with the same list (keeps the queue invariant `set(last_probed) == set(probe_sections)` true from day one; first review rotates as if fresh).
+4. **Probe sections:** Default `probe_sections` to all H2 headings except `Related Concepts`, `References`, `See also`, and `TL;DR`. Offer the developer a chance to mark any remaining sections as reference-only — but default-all is usually correct. Write `probe_sections` in frontmatter and seed `last_probed` with the same list (keeps the queue invariant `set(last_probed) == set(probe_sections)` true from day one; first review rotates as if fresh). **Heading quality gate:** before finalizing probe_sections, check each heading — if it doesn't tell you what to recall without re-reading the section, rename it first. `## Gotchas` is a weak prompt; `## nil on no match and chaining behavior` is a strong one.
 5. Follow `references/wiki-write-protocol.md` for the full write flow
 6. Log the session
 

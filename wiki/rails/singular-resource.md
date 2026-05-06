@@ -16,7 +16,7 @@ review_interval: 20
 probe_sections:
 - 6 Routes, Not 7
 - Controller Is Still Plural
-- When to Use
+- "When to declare a singular resource"
 - How Identity Is Resolved
 - Nesting Works the Same
 last_probed:
@@ -24,7 +24,7 @@ last_probed:
 - How Identity Is Resolved
 - Nesting Works the Same
 - Controller Is Still Plural
-- When to Use
+- "When to declare a singular resource"
 ---
 
 # Singular Resource
@@ -52,9 +52,9 @@ No `index` -- there's only one. No `:id` in any URL -- identity comes from conte
 
 ## Controller Is Still Plural
 
-`resource :profile` routes to `ProfilesController`, not `ProfileController`. Rails convention: controllers are always plural regardless of route singularity.
+`resource :profile` routes to `ProfilesController`, not `ProfileController`. Rails convention. Controllers are always plural regardless of route singularity.
 
-## When to Use
+## When to declare a singular resource
 
 Use `resource` when the current user (or current context) implies which record:
 

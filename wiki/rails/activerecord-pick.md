@@ -14,15 +14,15 @@ source_skill: study-card
 next_review: '2026-05-11'
 review_interval: 12
 probe_sections:
-- Behavior
+- "What pick returns and when it stops scanning"
 - vs pluck
 - Raw SQL expressions
 - Multiple aggregates in one query
-- Gotchas
+- "nil on no match and chaining with scopes"
 last_probed:
 - Multiple aggregates in one query
-- Gotchas
-- Behavior
+- "nil on no match and chaining with scopes"
+- "What pick returns and when it stops scanning"
 - vs pluck
 - Raw SQL expressions
 ---
@@ -34,7 +34,7 @@ last_probed:
 `pick(*columns)` fetches column values from the **first matching row** with `LIMIT 1`.
 Returns a scalar (one column) or flat array (multiple columns). Returns `nil` on no match.
 
-## Behavior
+## What pick returns and when it stops scanning
 
 ```ruby
 # single column → scalar
@@ -58,7 +58,7 @@ User.where(active: false).pick(:email)
 | returns | scalar or flat array | array of all results |
 | no match | `nil` | `[]` |
 
-`pick` is equivalent to `pluck(...).first` but more efficient — the database stops after one row rather than fetching all matching rows into Ruby.
+`pick` is equivalent to `pluck(...).first` but more efficient. The database stops after one row rather than fetching all matching rows into Ruby.
 
 ## Raw SQL expressions
 
@@ -71,7 +71,7 @@ user_scope.pick(Arel.sql("SUM(points)"))
 
 Without `Arel.sql`, Rails quotes the string as a column name (`SELECT "SUM(points)" FROM users`), producing an invalid query. `Arel.sql` marks the string as already-safe SQL, bypassing quoting.
 
-Prefer built-in AR methods over `Arel.sql` when they exist — `pick(Arel.sql("COUNT(*)"))` is redundant since `scope.count` is cleaner and equivalent.
+Prefer built-in AR methods over `Arel.sql` when they exist. `pick(Arel.sql("COUNT(*)"))` is redundant since `scope.count` is cleaner and equivalent.
 
 ## Multiple aggregates in one query
 
@@ -83,7 +83,7 @@ message_count, unread_count = inbox_scope.pick(
 )
 ```
 
-The alternatives are worse: two separate queries hit the DB twice, and `select` returns a relation of AR objects requiring `.first` to extract the row:
+The alternatives are worse. Two separate queries hit the DB twice, and `select` returns a relation of AR objects requiring `.first` to extract the row:
 
 ```ruby
 # two queries
@@ -98,8 +98,8 @@ message_count = row["message_count"]
 unread_count  = row["unread_count"]
 ```
 
-## Gotchas
+## nil on no match and chaining with scopes
 
-- Returns `nil` on no match — guard before calling methods on the result
-- Chainable with scopes, `where`, `order` — `LIMIT 1` appends to the full query
+- Returns `nil` on no match: guard before calling methods on the result
+- Chainable with scopes, `where`, `order`: `LIMIT 1` appends to the full query
 - `LIMIT 1` is always added even when redundant (e.g. `COUNT(*)` already returns one row)

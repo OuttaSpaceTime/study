@@ -29,12 +29,12 @@ last_probed:
 
 # index_with
 
-Active Support method on `Enumerable` that builds a hash where **keys are the original elements** and **values come from a block or fixed argument**. The inverse of `index_by`, which lets the block control the keys.
+Active Support method on `Enumerable` that builds a hash where **keys are the original elements** and **values come from a block or fixed argument**. It's the inverse of `index_by`, which lets the block control the keys.
 
 ## Fixed Value vs Block
 
 ```ruby
-# Fixed value — every key gets the same value
+# Fixed value: every key gets the same value
 [:read, :write, :admin].index_with(false)
 # => { read: false, write: false, admin: false }
 
@@ -47,8 +47,8 @@ Active Support method on `Enumerable` that builds a hash where **keys are the or
 
 The block controls different sides of the hash:
 
-- **`index_by`** — block picks the **key**, value is the original element
-- **`index_with`** — element is the **key**, block picks the value
+- **`index_by`**: block picks the **key**, value is the original element
+- **`index_with`**: element is the **key**, block picks the value
 
 ```ruby
 users.index_by(&:email)
@@ -80,4 +80,4 @@ Hash keys are unique. Thus duplicates are silently overwritten. Use `index_with`
 
 ## Related Concepts
 
-- [[rails/activerecord-pick]] — another concise ActiveRecord/ActiveSupport query method
+- [[rails/activerecord-pick]]: another concise ActiveRecord/ActiveSupport query method

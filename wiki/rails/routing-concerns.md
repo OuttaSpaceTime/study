@@ -14,13 +14,13 @@ depth: 1
 next_review: '2026-06-16'
 review_interval: 48
 probe_sections:
-- The Problem
+- "The problem: duplicated route blocks across resources"
 - Extract a Concern
 - Multiple Concerns
-- When to Use
+- "When to extract a routing concern"
 last_probed:
-- When to Use
-- The Problem
+- "When to extract a routing concern"
+- "The problem: duplicated route blocks across resources"
 - Extract a Concern
 - Multiple Concerns
 ---
@@ -29,7 +29,7 @@ last_probed:
 
 A concern extracts a reusable block of route definitions. It's purely DRY -- the generated routes are identical to writing them inline.
 
-## The Problem
+## The problem: duplicated route blocks across resources
 
 Multiple resources sharing the same nested structure:
 
@@ -85,7 +85,7 @@ resources :posts, concerns: [:social, :taggable]
 resources :articles, concerns: [:social]
 ```
 
-## When to Use
+## When to extract a routing concern
 
 Worth it when 3+ resources share the same nested structure. For just 2, the duplication is tolerable and easier to read.
 
