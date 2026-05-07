@@ -445,8 +445,8 @@
     "flashcard_ids": [],
     "created": "2026-04-14",
     "updated": "2026-05-07",
-    "next_review": "2026-05-07",
-    "review_interval": 10,
+    "next_review": "2026-05-19",
+    "review_interval": 12,
     "probe_sections": [
       "The Decision Table",
       "Declaring collection and member routes",
@@ -455,11 +455,11 @@
       "When to use collection vs member"
     ],
     "last_probed": [
+      "Declaring collection and member routes",
+      "Routing to a Different Controller",
       "Param Naming Rules",
       "When to use collection vs member",
-      "The Decision Table",
-      "Declaring collection and member routes",
-      "Routing to a Different Controller"
+      "The Decision Table"
     ]
   },
   "rails/path-helper-naming": {
@@ -1446,7 +1446,8 @@
       "The click-event caveat: when semi-local CD collapses",
       "toSignal(): observable-to-signal bridge and what it buys",
       "Signals vs async pipe: when to use which",
-      "Related Concepts"
+      "Related Concepts",
+      "References"
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
@@ -1491,7 +1492,8 @@
       "Mutation on @Input: why the child's view goes stale",
       "setTimeout and manual subscribe silently miss OnPush",
       "markForCheck vs detectChanges",
-      "Related Concepts"
+      "Related Concepts",
+      "References"
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
@@ -1513,6 +1515,50 @@
       "Mutation on @Input: why the child's view goes stale",
       "setTimeout and manual subscribe silently miss OnPush",
       "markForCheck vs detectChanges"
+    ]
+  },
+  "security/csrf": {
+    "file": "security/csrf.md",
+    "title": "CSRF",
+    "aliases": [
+      "csrf",
+      "cross-site request forgery",
+      "xsrf"
+    ],
+    "tags": [
+      "security",
+      "web"
+    ],
+    "sections": [
+      "Why the browser makes CSRF possible",
+      "Three preconditions for a successful CSRF attack",
+      "Why SameSite=Lax doesn't fully protect against subdomain attacks",
+      "Synchronizer token vs. signed double-submit cookie",
+      "Why CSRF tokens don't stop XSS",
+      "Login CSRF and the pre-session token fix",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-07",
+    "updated": "2026-05-07",
+    "next_review": "2026-05-10",
+    "review_interval": 3,
+    "probe_sections": [
+      "Why the browser makes CSRF possible",
+      "Three preconditions for a successful CSRF attack",
+      "Why SameSite=Lax doesn't fully protect against subdomain attacks",
+      "Synchronizer token vs. signed double-submit cookie",
+      "Why CSRF tokens don't stop XSS",
+      "Login CSRF and the pre-session token fix"
+    ],
+    "last_probed": [
+      "Why the browser makes CSRF possible",
+      "Three preconditions for a successful CSRF attack",
+      "Why SameSite=Lax doesn't fully protect against subdomain attacks",
+      "Synchronizer token vs. signed double-submit cookie",
+      "Why CSRF tokens don't stop XSS",
+      "Login CSRF and the pre-session token fix"
     ]
   }
 }

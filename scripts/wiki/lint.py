@@ -35,6 +35,9 @@ _INLINE_CODE_RE = re.compile(r"``[^`\n]+``|`[^`\n]+`")
 _QUOTED_STR_RE = re.compile(r'"[^"\n]*"|\'[^\'\n]*\'')
 _SENT_SPLIT_RE = re.compile(r"(?<=[.!?])\s+")
 _MD_SYNTAX_RE = re.compile(r"[*_`\[\]()|#!]+")
+# Matches markdown/wikilinks with an optional following colon: [[target]]:, [text](url):, [text].
+# Stripping these before the prose-colon check allows colons inside or after link brackets.
+_LINK_COLON_RE = re.compile(r"(?:\[\[[^\]]*\]\]|\[[^\]]*\]\([^)]*\)|\[[^\]]*\])(?:\s*:\s*)?")
 
 _PROSE_PATTERNS: list[tuple[str, str, str]] = [
     # (regex, label, fix)
@@ -310,6 +313,9 @@ def _check_colon_connectors(pages: list[ParsedPage]) -> list[str]:
             # Mid-line ': ' — prose connector.
             if ": " in s:
                 if "://" in s and ": " not in re.sub(r"https?://\S+", "", s):
+                    continue
+                # Allow colon immediately following a closing bracket (link/wikilink descriptor).
+                if ": " not in _LINK_COLON_RE.sub("", s):
                     continue
                 hits += 1
 

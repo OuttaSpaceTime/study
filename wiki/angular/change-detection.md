@@ -117,3 +117,9 @@ Both are methods on `ChangeDetectorRef`:
 ## Related Concepts
 
 - [[angular/signals-and-change-detection]]: signals replace Zone.js as the CD trigger with semi-local, fine-grained updates
+
+## References
+
+- [Angular: Skipping component subtrees](https://angular.dev/best-practices/skipping-subtrees): official guide on OnPush strategy and when Angular skips subtrees during CD
+- [Angular: Zone pollution](https://angular.dev/best-practices/zone-pollution): explains Zone.js mechanics and how to prevent unnecessary CD triggers
+- [Angular: ChangeDetectorRef API](https://angular.dev/api/core/ChangeDetectorRef): reference for `markForCheck()`, `detectChanges()`, `detach()`, and related methods

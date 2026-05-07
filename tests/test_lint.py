@@ -1412,6 +1412,81 @@ Pass ``content_type: application/json`` in the header.
         colon_warns = [w for w in warnings if "prose-colon" in w]
         assert colon_warns == [], f"colon in backtick code should not warn: {warnings}"
 
+    def test_colon_inside_link_brackets_not_flagged(self, wiki_dir: Path):
+        """': ' inside [link text: something] → not flagged."""
+        _write_page(wiki_dir, "git/link-colon-inside.md", """\
+---
+title: "link colon inside"
+aliases: []
+tags: [git]
+created: 2026-04-09
+updated: 2026-04-09
+source_skill: study-walkthrough
+probe_sections: [Section One]
+allow_orphan: true
+---
+
+# link colon inside
+
+## Section One
+
+See [OWAS: asdfasdsf] for details.
+""")
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        colon_warns = [w for w in warnings if "prose-colon" in w]
+        assert colon_warns == [], f"colon inside link brackets should not warn: {warnings}"
+
+    def test_colon_after_wikilink_not_flagged(self, wiki_dir: Path):
+        """'[[target]]: description' in prose → not flagged."""
+        _write_page(wiki_dir, "git/wikilink-colon.md", """\
+---
+title: "wikilink colon"
+aliases: []
+tags: [git]
+created: 2026-04-09
+updated: 2026-04-09
+source_skill: study-walkthrough
+probe_sections: [Section One]
+allow_orphan: true
+---
+
+# wikilink colon
+
+## Section One
+
+[[git/git-restore]]: restores working tree files without touching the index.
+""")
+        _write_index(wiki_dir, {"git/git-restore": {"file": "git/git-restore.md", "title": "git restore", "aliases": [], "sections": [], "tags": [], "flashcard_ids": [], "probe_sections": [], "last_probed": [], "created": "2026-04-09", "updated": "2026-04-09"}})
+        _, warnings = lint_wiki(wiki_dir)
+        colon_warns = [w for w in warnings if "prose-colon" in w]
+        assert colon_warns == [], f"colon after wikilink should not warn: {warnings}"
+
+    def test_colon_after_md_link_not_flagged(self, wiki_dir: Path):
+        """'[text](url): description' in prose → not flagged."""
+        _write_page(wiki_dir, "git/mdlink-colon.md", """\
+---
+title: "mdlink colon"
+aliases: []
+tags: [git]
+created: 2026-04-09
+updated: 2026-04-09
+source_skill: study-walkthrough
+probe_sections: [Section One]
+allow_orphan: true
+---
+
+# mdlink colon
+
+## Section One
+
+[OWASP CSRF Cheat Sheet](https://owasp.org/csrf): canonical defense taxonomy.
+""")
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        colon_warns = [w for w in warnings if "prose-colon" in w]
+        assert colon_warns == [], f"colon after markdown link should not warn: {warnings}"
+
 
 class TestSentenceFragments:
     def test_short_sentence_mid_line_flagged(self, wiki_dir: Path):

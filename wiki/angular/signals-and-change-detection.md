@@ -104,3 +104,9 @@ Signals and RxJS are complementary. Use signals for state (component fields, der
 ## Related Concepts
 
 - [[angular/change-detection]]: Zone.js mechanics, Default vs OnPush strategies, the four dirty triggers
+
+## References
+
+- [Angular: Signals overview](https://angular.dev/guide/signals): covers signal primitives, computed, effects, and their role in reactivity and CD
+- [Angular: toSignal() API](https://angular.dev/api/core/rxjs-interop/toSignal): reference for the observable-to-signal bridge (stable as of v20)
+- [Angular: Zoneless guide](https://angular.dev/guide/zoneless): explains `provideZonelessChangeDetection`, the semi-local CD model, and migration path

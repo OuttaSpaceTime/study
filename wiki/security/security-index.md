@@ -7,7 +7,7 @@ tags:
 - moc
 - security
 created: '2026-04-20'
-updated: '2026-04-29'
+updated: '2026-05-07'
 source_skill: manual
 probe_sections:
 - Pages
@@ -23,6 +23,7 @@ Map of content for the `security/` wiki folder. Auto-maintained by `scripts/wiki
 
 ## Pages
 
+- [[security/csrf]]
 - [[security/hsts]]
 - [[security/same-origin-policy]]
 
