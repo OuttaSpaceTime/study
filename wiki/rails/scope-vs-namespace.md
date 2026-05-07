@@ -20,14 +20,15 @@ probe_sections:
 - Module Path Format
 - Per-Resource Options
 - 'The controller: Option'
-- "When to use scope vs namespace vs module"
+- When to use scope vs namespace vs module
 last_probed:
 - Per-Resource Options
 - 'The controller: Option'
-- "When to use scope vs namespace vs module"
+- When to use scope vs namespace vs module
 - The Three Knobs
 - Scope Picks and Chooses
 - Module Path Format
+flashcard_ids: []
 ---
 
 # Scope vs Namespace

@@ -21,7 +21,7 @@ probe_sections:
 - URL anatomy at a glance
 - Scheme vs protocol
 - Host - subdomain, SLD, TLD
-- "Port: default ports and when the URL includes one"
+- 'Port: default ports and when the URL includes one'
 - Path and query
 - DNS resolution
 - DNS caching, TTL, and safe migrations
@@ -30,11 +30,13 @@ last_probed:
 - URL anatomy at a glance
 - Scheme vs protocol
 - Host - subdomain, SLD, TLD
-- "Port: default ports and when the URL includes one"
+- 'Port: default ports and when the URL includes one'
 - Path and query
 - DNS resolution
 - DNS caching, TTL, and safe migrations
 - Host header and virtual hosts
+review_interval: 14
+next_review: '2026-05-21'
 ---
 
 # URL Anatomy

@@ -27,6 +27,9 @@ last_probed:
 - num_predict - the output cap
 - Thinking mode - reasoning preamble
 - Choosing knobs by task shape
+review_interval: 8
+next_review: '2026-05-15'
+flashcard_ids: []
 ---
 
 # Sampling Knobs

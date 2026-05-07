@@ -21,14 +21,17 @@ probe_sections:
 - KEEP_ALIVE and the cold-start tax
 - Multi-tenancy - what is shared, what is per-slot
 - Same model, different num_ctx, two instances
-- "Sizing VRAM and choosing KEEP_ALIVE strategy"
+- Sizing VRAM and choosing KEEP_ALIVE strategy
 last_probed:
 - The model is a file
 - VRAM and why GPUs
 - KEEP_ALIVE and the cold-start tax
 - Multi-tenancy - what is shared, what is per-slot
 - Same model, different num_ctx, two instances
-- "Sizing VRAM and choosing KEEP_ALIVE strategy"
+- Sizing VRAM and choosing KEEP_ALIVE strategy
+review_interval: 11
+next_review: '2026-05-18'
+flashcard_ids: []
 ---
 
 # Serving Runtime and VRAM

@@ -18,12 +18,13 @@ probe_sections:
 - Renaming with `as:`
 - The `_index` Suffix
 - 'Fix: Set `as:` Explicitly'
-- "How to verify path helper names at the console"
+- How to verify path helper names at the console
 last_probed:
 - Renaming with `as:`
 - The `_index` Suffix
 - 'Fix: Set `as:` Explicitly'
-- "How to verify path helper names at the console"
+- How to verify path helper names at the console
+flashcard_ids: []
 ---
 
 # Path Helper Naming

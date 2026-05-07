@@ -14,15 +14,16 @@ depth: 1
 next_review: '2026-05-15'
 review_interval: 20
 probe_sections:
-- "How shallow routing splits member vs collection routes"
+- How shallow routing splits member vs collection routes
 - Why This Split
 - Named Helpers Change Too
 - Applying to All Nested Resources
 last_probed:
 - Applying to All Nested Resources
-- "How shallow routing splits member vs collection routes"
+- How shallow routing splits member vs collection routes
 - Why This Split
 - Named Helpers Change Too
+flashcard_ids: []
 ---
 
 # Shallow Routing

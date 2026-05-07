@@ -7,13 +7,42 @@ import json
 import shutil
 import subprocess
 import sys
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 from scripts.wiki.embed import update_embeddings
 from scripts.wiki.frontmatter import dump_page, parse_frontmatter
 from scripts.wiki.index import iter_wiki_pages, load_index, save_index, update_entry
 from scripts.wiki.lint import lint_wiki
+
+
+_DEFAULT_REVIEW_INTERVAL = 3
+
+
+def _fill_defaults(page_path: Path, meta: dict) -> bool:
+    """Add default values for any missing required fields. Mutates meta; returns True iff changed."""
+    changed = False
+
+    if "flashcard_ids" not in meta:
+        meta["flashcard_ids"] = []
+        changed = True
+
+    if page_path.stem.endswith("-index"):
+        return changed
+
+    if "depth" not in meta:
+        meta["depth"] = 1
+        changed = True
+
+    if "review_interval" not in meta:
+        meta["review_interval"] = _DEFAULT_REVIEW_INTERVAL
+        changed = True
+
+    if "next_review" not in meta:
+        meta["next_review"] = (date.today() + timedelta(days=_DEFAULT_REVIEW_INTERVAL)).isoformat()
+        changed = True
+
+    return changed
 
 
 def _moc_path(wiki_dir: Path, folder: str) -> Path:
@@ -65,7 +94,12 @@ def wiki_write(page_path: Path, wiki_dir: Path = Path("wiki")) -> dict:
     if not page_path.exists():
         return {"status": "error", "message": f"File not found: {page_path}"}
 
-    # Step 1: Parse frontmatter and update index
+    # Step 1: Fill missing-field defaults, then update index
+    meta, body = parse_frontmatter(page_path.read_text())
+    if _fill_defaults(page_path, meta):
+        page_path.write_text(dump_page(meta, body))
+        print(f"Defaults filled: {page_path.relative_to(wiki_dir)}", file=sys.stderr)
+
     index = load_index(index_path)
     index = update_entry(index, wiki_dir, page_path)
     save_index(index_path, index)

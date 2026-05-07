@@ -31,6 +31,9 @@ last_probed:
 - Cost formula
 - Without the cache - O(N²)
 - num_ctx is the cache buffer size
+review_interval: 6
+next_review: '2026-05-13'
+flashcard_ids: []
 ---
 
 # KV Cache

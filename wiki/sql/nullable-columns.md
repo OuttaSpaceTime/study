@@ -34,6 +34,9 @@ last_probed:
 - Migrating to NOT NULL is expensive
 - When NULL is the right choice
 - Sentinels masquerading as values
+review_interval: 4
+next_review: '2026-05-11'
+flashcard_ids: []
 ---
 
 # Nullable Columns

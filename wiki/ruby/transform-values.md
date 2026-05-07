@@ -13,13 +13,16 @@ updated: '2026-04-17'
 source_skill: study-walkthrough
 depth: 1
 probe_sections:
-- "What transform_values does and why it preserves keys"
+- What transform_values does and why it preserves keys
 - vs map on a hash
 - The block receives only the value
 - Bang variant
 - with_index for positional info
 - When not to use it
 last_probed: []
+review_interval: 28
+next_review: '2026-06-04'
+flashcard_ids: []
 ---
 
 # transform_values

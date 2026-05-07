@@ -16,7 +16,7 @@ review_interval: 20
 probe_sections:
 - 6 Routes, Not 7
 - Controller Is Still Plural
-- "When to declare a singular resource"
+- When to declare a singular resource
 - How Identity Is Resolved
 - Nesting Works the Same
 last_probed:
@@ -24,7 +24,8 @@ last_probed:
 - How Identity Is Resolved
 - Nesting Works the Same
 - Controller Is Still Plural
-- "When to declare a singular resource"
+- When to declare a singular resource
+flashcard_ids: []
 ---
 
 # Singular Resource

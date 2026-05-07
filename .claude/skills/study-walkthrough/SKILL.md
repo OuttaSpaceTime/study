@@ -54,6 +54,38 @@ The footer is a single line, rendered verbatim, at the very bottom of the messag
 
 This skill uses the `flashcard-mcp` MCP server for flashcard lookup. Tools used: `find_similar_cards`, `search_cards`, `get_card`.
 
+## Research Grounding
+
+The walkthrough must not rely solely on model-internal knowledge. At Phase 1 Step 1, spawn a **background research subagent** (`run_in_background: true`) in parallel with the wiki/index lookups. It fetches authoritative sources (official docs, RFCs, source code, canonical references) and returns structured findings the main thread uses to ground Phase 2 explanations and Phase 4 wiki references.
+
+**Subagent prompt (general topic):**
+
+> Research `<topic>` for a developer walkthrough. Find 2-4 authoritative sources — prefer official docs, RFCs, source code, or canonical references over blog posts. Use `WebSearch` to locate them, `WebFetch` to read the most authoritative one or two. Return:
+> 1. **Sources** — URL + one-line "what this is" for each (max 4)
+> 2. **Load-bearing facts** — 3-6 facts the walkthrough should anchor on, each tagged with which source supports it
+> 3. **Misconceptions / version gotchas** — anywhere common explanations diverge from the canonical source, or where behavior differs across versions
+> 4. **Confidence** — `high` (multiple sources agree), `medium` (one authoritative source), `low` (sparse coverage — walk carefully)
+>
+> Under 400 words. No prose preamble, just the four sections.
+
+**Variants:**
+
+- `--from <url>` or pasted text: include the source in the prompt and ask the subagent to **cross-check** that source's claims against 1-2 other authoritative references. Flag any divergence.
+- Refresh cadence on `depth >= 3` pages: narrow the prompt to "verify this page's load-bearing claims are still current; flag deprecations or version drift since `last_deepened`."
+- Concise cadence: still run, but the result only needs to confirm-or-correct the one-pass restatement.
+
+**Using the findings:**
+
+- **Phase 2 grounding:** lead each concept with the canonical framing from the sources. If a source contradicts what you would have said from memory, use the source phrasing and surface the divergence inline ("the spec actually says X, not Y as I'd have guessed — here's why that matters"). When the developer's prediction is wrong, cite the source URL in the correction so they have somewhere to look further.
+- **Phase 4 wiki write:** add a `## References` section listing the authoritative URLs (max 4) with one-line descriptions. Inline-link specific claims (`[per the RFC](url)`) when the claim is version-specific or non-obvious.
+- **Confidence handling:** `low` confidence means push extra probes in Phase 2 and add a `> [Note] Sources sparse — verify before relying on this page` callout in Phase 4.
+
+**Silent execution.** The subagent runs in the background — do not narrate "spawning research subagent" or echo its output. When it returns, fold the findings into the next phase message. If it errors or times out, note one line ("research unavailable — proceeding from model knowledge, flagged in Phase 4 references") and continue — do not block the developer.
+
+**Skip research only when:** the topic is repository-internal (a codebase pattern, an internal script, a project decision) where no public authoritative source exists. Note the skip in the session log under a `Research:` field so the pattern is visible across sessions.
+
+**Probes are exempt.** Research grounds *explanations*; probes ground via direct execution. When a probe is run (developer types a command, pastes the output), the probe output IS the authoritative source for that point — do not second-guess a probe with research, do not ask the developer to re-verify a probed result against docs, and do not require a probe-derived claim to carry a `## References` URL. If a probe contradicts the research findings, that's a finding worth surfacing ("the docs say X but your run shows Y — let's dig into why"), but the probe wins for the immediate question. Persisted probes under `probes/<topic-slug>/` are not subject to research-grounding either.
+
 ## Invocation
 
 ```
@@ -116,12 +148,13 @@ Follow `references/srs-pressure-check.md` exactly. Summary:
 
 (Preflight must be complete and — if warn/pause — explicitly acknowledged by the developer before starting this phase.)
 
-**Step 1 -- Find what exists:**
+**Step 1 -- Find what exists (and start research in parallel):**
 
 1. Read `wiki/.wiki-index.json` for the topic
 2. Run `treesearch search --query "<topic>" --index_dir wiki/indexes` for keyword matches
 3. Run `scripts/wiki-search "<topic>"` for semantic matches (if Ollama running)
 4. Call `find_similar_cards` from MCP to find related flashcards
+5. **Spawn the research subagent in the background** per the "Research Grounding" section above. Do this at the same time as steps 1-4 — it should be running while calibration happens, so findings are ready by Phase 2. Skip only for repo-internal topics (note the skip in the session log).
 
 **Step 2 -- Present existing knowledge:**
 
@@ -184,6 +217,7 @@ Based on calibration results, the walkthrough adapts:
 - Frequent checks: "What would happen if...?" "Why does this matter?"
 
 **Walkthrough techniques:**
+- **Ground claims in research (probes exempt).** Lead each *explanatory* concept with the canonical framing from the Phase 1 research findings — not the model's first-pass paraphrase. When your memory phrasing diverges from the sources, use the source phrasing and surface the divergence ("I'd have said X, but the docs say Y — and that distinction matters because…"). Cite source URLs inline when a claim is version-specific or non-obvious. If the research subagent returned `low` confidence or hasn't returned yet by the time a load-bearing claim comes up, flag it in chat and push a probe instead of asserting. **Probes themselves are not grounded in research** — the probe's actual output is the ground truth for whatever it demonstrates. If a probe contradicts research, surface the contradiction but trust the probe for the immediate point.
 - Show concrete codebase code, never abstract examples
 - Ask predictions before revealing answers
 - **Probe when possible.** For code-shaped concepts (git, Python, shell, SQL, API behavior, algorithms), ask the developer to actually run a minimal snippet and paste the output — `uv run python -c`, a repl one-liner, a `git` command, `curl | jq`, a unit test. Compare the output against the prediction they made in the concrete challenge step. Probes turn Assumed understanding into Known and catch the "I thought I knew this" failure mode that pure discussion misses. Skip probes for theory-only concepts where no small snippet would demonstrate the point.
@@ -248,6 +282,8 @@ When writing a wiki page, follow this structure:
   - **Pattern/Technique**: Jump into the pattern with descriptive H2/H3 headings
   - **Feature/Tool Overview**: What is possible, then H2 sections per feature
 - Always include: `## Related Concepts` with `[[absolute/path]]` wikilinks
+- **Always include: `## References`** with up to 4 authoritative URLs from the Phase 1 research findings (one-line "what this is" per URL). Inline-link specific claims in the body (`[per RFC 6797 §7.2](url)`) when the claim is version-specific, contested, or non-obvious. If research was skipped (repo-internal topic) or unavailable, write `## References\n\n_None — repo-internal topic._` or `_Research unavailable at write time; verify before relying on this page._` so the gap is visible.
+  - **`References` MUST NOT appear in `probe_sections` or `last_probed`.** It's a citation list, not study material — the probe-section default already excludes `Related Concepts`, `References`, `See also`, `TL;DR`. When extending an existing page with new H2s, include new study-worthy headings only — never add `References` to the queue.
 
 **Session log** -- always append to `logs/YYYY-MM-DD.md`:
 
@@ -261,6 +297,7 @@ When writing a wiki page, follow this structure:
 - **Gaps filled:** projections (re-walked, now solid)
 - **Wiki updates:** [[architecture/event-sourcing]] extended with 2 new sections (depth: 2 -> 3)
 - **Flashcards:** 2 created for event versioning
+- **Research:** 3 sources fetched (Greg Young's CQRS doc, EventStore docs, Martin Fowler's bliki) — confidence: high. Cited 2 inline in wiki page.
 - **Surprising:** upcasting was expected to be a compile-time transform; it's runtime-per-event
 - **Heuristic:** any change to a persisted event shape needs an upcaster, not a migration
 - **Next-time unblocker:** a small probe script that replays one serialized event through the upcaster chain
@@ -291,7 +328,12 @@ Structure depends on the page type chosen in Phase 1.
 ### 5. Related Concepts (H2)
 - `[[absolute/path]]` wikilinks with brief relationship descriptions
 
-### 6. Warnings/Notes
+### 6. References (H2)
+- Authoritative URLs (max 4) from Phase 1 research, each with a one-line "what this is"
+- Prefer official docs, RFCs, source code, canonical references over blog posts
+- Inline-link specific version-specific or non-obvious claims in the body in addition to listing here
+
+### 7. Warnings/Notes
 - Short warnings: bold inline. Standalone callouts: `> [Warning]` / `> [Note]`
 
 ## Writing Style
@@ -316,6 +358,7 @@ Structure depends on the page type chosen in Phase 1.
 
 **Always:**
 - Check wiki and flashcards before starting -- never start blind
+- **Spawn the research subagent at Phase 1** for any externally-knowable topic — explanations must be grounded in authoritative sources, not just model memory. Probes are the exception: they ground themselves via execution.
 - Calibrate before teaching -- never assume the developer's level
 - Loop on failed recall -- never skip past a gap
 - Use concrete codebase code, not abstract examples
@@ -324,6 +367,8 @@ Structure depends on the page type chosen in Phase 1.
 
 **Never:**
 - Skip calibration when existing material exists
+- Walk through an externally-knowable topic on model memory alone — research first, probe second, model paraphrase last
+- "Verify" a probe-derived result with research — the probe is the ground truth for what it demonstrates
 - Move past a concept the developer can't explain back
 - Dump information without checking understanding
 - Auto-write to wiki without developer requesting it (deepen-focused mode)

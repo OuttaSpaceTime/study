@@ -23,6 +23,9 @@ last_probed:
 - The Threat Model
 - SOP Is Not Configurable
 - Server-to-Server Requests
+review_interval: 35
+next_review: '2026-06-11'
+flashcard_ids: []
 ---
 
 # Same-Origin Policy

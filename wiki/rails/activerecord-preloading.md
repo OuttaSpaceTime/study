@@ -21,15 +21,17 @@ flashcard_ids:
 probe_sections:
 - The four methods
 - How includes auto-switches
-- "Cost model: when JOIN multiplies rows"
-- "Choosing between joins, preload, eager_load, and includes"
+- 'Cost model: when JOIN multiplies rows'
+- Choosing between joins, preload, eager_load, and includes
 - Polymorphic associations
 last_probed:
 - The four methods
 - How includes auto-switches
-- "Cost model: when JOIN multiplies rows"
-- "Choosing between joins, preload, eager_load, and includes"
+- 'Cost model: when JOIN multiplies rows'
+- Choosing between joins, preload, eager_load, and includes
 - Polymorphic associations
+review_interval: 18
+next_review: '2026-05-25'
 ---
 
 # ActiveRecord preloading: joins, preload, eager_load, includes

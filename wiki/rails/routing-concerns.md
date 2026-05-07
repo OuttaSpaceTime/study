@@ -14,15 +14,16 @@ depth: 1
 next_review: '2026-06-16'
 review_interval: 48
 probe_sections:
-- "The problem: duplicated route blocks across resources"
+- 'The problem: duplicated route blocks across resources'
 - Extract a Concern
 - Multiple Concerns
-- "When to extract a routing concern"
+- When to extract a routing concern
 last_probed:
-- "When to extract a routing concern"
-- "The problem: duplicated route blocks across resources"
+- When to extract a routing concern
+- 'The problem: duplicated route blocks across resources'
 - Extract a Concern
 - Multiple Concerns
+flashcard_ids: []
 ---
 
 # Routing Concerns

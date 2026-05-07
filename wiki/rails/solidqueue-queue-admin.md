@@ -1,12 +1,32 @@
 ---
-title: "SolidQueue Queue Admin"
-aliases: [solid_queue clear queue, solid queue drain, solid_queue delete jobs, solid_queue purge]
-tags: [rails, solid-queue, background-jobs, ops]
-created: 2026-04-23
-updated: 2026-04-23
+title: SolidQueue Queue Admin
+aliases:
+- solid_queue clear queue
+- solid queue drain
+- solid_queue delete jobs
+- solid_queue purge
+tags:
+- rails
+- solid-queue
+- background-jobs
+- ops
+created: '2026-04-23'
+updated: '2026-04-23'
 source_skill: study-walkthrough
-probe_sections: [Clearing a queue, The batching gotcha, Nuclear path for large queues, discard vs delete_all]
-last_probed: [Clearing a queue, The batching gotcha, Nuclear path for large queues, discard vs delete_all]
+probe_sections:
+- Clearing a queue
+- The batching gotcha
+- Nuclear path for large queues
+- discard vs delete_all
+last_probed:
+- Clearing a queue
+- The batching gotcha
+- Nuclear path for large queues
+- discard vs delete_all
+review_interval: 22
+next_review: '2026-05-29'
+flashcard_ids: []
+depth: 1
 ---
 
 # SolidQueue Queue Admin

@@ -16,16 +16,17 @@ next_review: '2026-05-07'
 review_interval: 10
 probe_sections:
 - The Decision Table
-- "Declaring collection and member routes"
+- Declaring collection and member routes
 - Routing to a Different Controller
 - Param Naming Rules
-- "When to use collection vs member"
+- When to use collection vs member
 last_probed:
 - Param Naming Rules
-- "When to use collection vs member"
+- When to use collection vs member
 - The Decision Table
-- "Declaring collection and member routes"
+- Declaring collection and member routes
 - Routing to a Different Controller
+flashcard_ids: []
 ---
 
 # Collection and Member Routes

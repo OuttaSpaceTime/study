@@ -24,7 +24,11 @@ REQUIRED_FIELDS = {
     "created",
     "updated",
     "source_skill",
+    "flashcard_ids",
 }
+
+# Fields required on content pages only (not on *-index.md MOC files)
+CONTENT_REQUIRED_FIELDS = {"next_review", "review_interval", "depth"}
 
 _FENCED_CODE_RE = re.compile(r"```.*?```", re.DOTALL)
 _INLINE_CODE_RE = re.compile(r"``[^`\n]+``|`[^`\n]+`")
@@ -324,6 +328,10 @@ def _check_frontmatter(pages: list[ParsedPage]) -> list[str]:
         for field in REQUIRED_FIELDS:
             if field not in p.meta:
                 errors.append(f"missing-field: {p.rel} missing frontmatter field '{field}'")
+        if not p.path.stem.endswith("-index"):
+            for field in CONTENT_REQUIRED_FIELDS:
+                if field not in p.meta:
+                    errors.append(f"missing-field: {p.rel} missing frontmatter field '{field}'")
     return errors
 
 

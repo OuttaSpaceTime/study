@@ -13,7 +13,7 @@ updated: '2026-04-17'
 source_skill: study-walkthrough
 depth: 1
 probe_sections:
-- "What array_agg collects and the implicit single-group rule"
+- What array_agg collects and the implicit single-group rule
 - No GROUP BY means one implicit group
 - Ordering is non-deterministic by default
 - NULLs are included by default
@@ -22,6 +22,9 @@ probe_sections:
 - array_agg vs jsonb_agg
 - Canonical shape for "safe" usage
 last_probed: []
+review_interval: 2
+next_review: '2026-05-09'
+flashcard_ids: []
 ---
 
 # array_agg

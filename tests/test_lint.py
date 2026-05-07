@@ -27,6 +27,10 @@ MINIMAL_PAGE = """\
     created: 2026-04-09
     updated: 2026-04-09
     source_skill: study-walkthrough
+    flashcard_ids: []
+    depth: 1
+    next_review: '2026-05-01'
+    review_interval: 3
     probe_sections: [Section One]
     ---
 
@@ -49,6 +53,7 @@ class TestCleanWiki:
             created: 2026-04-09
             updated: 2026-04-09
             source_skill: manual
+            flashcard_ids: []
             probe_sections: [Pages]
             last_probed: [Pages]
             allow_orphan: true
@@ -142,6 +147,138 @@ class TestFrontmatter:
         _write_index(wiki_dir, {})
         errors, _ = lint_wiki(wiki_dir)
         assert any("missing-field" in e and "source_skill" in e for e in errors)
+
+    def test_missing_flashcard_ids_is_error(self, wiki_dir: Path):
+        """flashcard_ids is required on all pages (even index)."""
+        _write_page(wiki_dir, "git/git-index.md", """\
+            ---
+            title: "Git Index"
+            aliases: [git-moc]
+            tags: [moc, git]
+            created: 2026-04-09
+            updated: 2026-04-09
+            source_skill: manual
+            probe_sections: [Pages]
+            last_probed: [Pages]
+            allow_orphan: true
+            ---
+
+            # Git Index
+
+            ## Pages
+        """)
+        _write_index(wiki_dir, {})
+        errors, _ = lint_wiki(wiki_dir)
+        assert any("missing-field" in e and "flashcard_ids" in e for e in errors)
+
+    def test_missing_next_review_on_content_page_is_error(self, wiki_dir: Path):
+        """next_review is required on non-index content pages."""
+        _write_page(wiki_dir, "git/some-page.md", """\
+            ---
+            title: "some page"
+            aliases: []
+            tags: [git]
+            created: 2026-04-09
+            updated: 2026-04-09
+            source_skill: study-walkthrough
+            flashcard_ids: []
+            depth: 1
+            review_interval: 3
+            probe_sections: [Section One]
+            allow_orphan: true
+            ---
+
+            # some page
+
+            ## Section One
+
+            Content.
+        """)
+        _write_index(wiki_dir, {})
+        errors, _ = lint_wiki(wiki_dir)
+        assert any("missing-field" in e and "next_review" in e for e in errors)
+
+    def test_missing_next_review_on_index_page_not_error(self, wiki_dir: Path):
+        """next_review, review_interval, depth are not required on *-index.md pages."""
+        _write_page(wiki_dir, "git/git-index.md", """\
+            ---
+            title: "Git Index"
+            aliases: [git-moc]
+            tags: [moc, git]
+            created: 2026-04-09
+            updated: 2026-04-09
+            source_skill: manual
+            flashcard_ids: []
+            probe_sections: [Pages]
+            last_probed: [Pages]
+            allow_orphan: true
+            ---
+
+            # Git Index
+
+            ## Pages
+        """)
+        _write_index(wiki_dir, {})
+        errors, _ = lint_wiki(wiki_dir)
+        content_field_errors = [
+            e for e in errors
+            if any(f in e for f in ("next_review", "review_interval", "depth"))
+        ]
+        assert content_field_errors == [], f"index page should not require content fields: {content_field_errors}"
+
+    def test_missing_depth_on_content_page_is_error(self, wiki_dir: Path):
+        """depth is required on non-index content pages."""
+        _write_page(wiki_dir, "git/some-page.md", """\
+            ---
+            title: "some page"
+            aliases: []
+            tags: [git]
+            created: 2026-04-09
+            updated: 2026-04-09
+            source_skill: study-walkthrough
+            flashcard_ids: []
+            next_review: '2026-05-01'
+            review_interval: 3
+            probe_sections: [Section One]
+            allow_orphan: true
+            ---
+
+            # some page
+
+            ## Section One
+
+            Content.
+        """)
+        _write_index(wiki_dir, {})
+        errors, _ = lint_wiki(wiki_dir)
+        assert any("missing-field" in e and "depth" in e for e in errors)
+
+    def test_missing_review_interval_on_content_page_is_error(self, wiki_dir: Path):
+        """review_interval is required on non-index content pages."""
+        _write_page(wiki_dir, "git/some-page.md", """\
+            ---
+            title: "some page"
+            aliases: []
+            tags: [git]
+            created: 2026-04-09
+            updated: 2026-04-09
+            source_skill: study-walkthrough
+            flashcard_ids: []
+            depth: 1
+            next_review: '2026-05-01'
+            probe_sections: [Section One]
+            allow_orphan: true
+            ---
+
+            # some page
+
+            ## Section One
+
+            Content.
+        """)
+        _write_index(wiki_dir, {})
+        errors, _ = lint_wiki(wiki_dir)
+        assert any("missing-field" in e and "review_interval" in e for e in errors)
 
 
 class TestWikilinks:

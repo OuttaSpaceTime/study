@@ -19,7 +19,7 @@ review_interval: 8
 probe_sections:
 - The Problem It Solves
 - Schema Shape
-- "What the delegated_type declaration generates"
+- What the delegated_type declaration generates
 - What `delegated_type` Expands To
 - Direction of Delegation
 - 'Design Rule: Where Attributes Live'
@@ -28,12 +28,13 @@ probe_sections:
 last_probed:
 - Schema Shape
 - What `delegated_type` Expands To
-- "What the delegated_type declaration generates"
+- What the delegated_type declaration generates
 - Direction of Delegation
 - 'Design Rule: Where Attributes Live'
 - STI vs Delegated Type
 - N+1 Gotcha
 - The Problem It Solves
+flashcard_ids: []
 ---
 
 # Delegated Type

@@ -1,25 +1,37 @@
 ---
-title: "Compilers and Interpreters"
-aliases: [compiler, interpreter, bytecode, JIT, virtual machine, Python execution model]
-tags: [compilers, programming-languages, interpreters, bytecode, jit]
-created: 2026-05-05
-updated: 2026-05-05
+title: Compilers and Interpreters
+aliases:
+- compiler
+- interpreter
+- bytecode
+- JIT
+- virtual machine
+- Python execution model
+tags:
+- compilers
+- programming-languages
+- interpreters
+- bytecode
+- jit
+created: '2026-05-05'
+updated: '2026-05-05'
 source_skill: study-walkthrough
 depth: 1
-last_deepened: 2026-05-05
+last_deepened: '2026-05-05'
 review_interval: 3
-next_review: 2026-05-08
+next_review: '2026-05-08'
 probe_sections:
-  - "Compiler vs interpreter: roles, not languages"
-  - "Two orthogonal axes: type checking ⊥ compile target"
-  - "Case study: the CPython chain"
-  - "JIT: when bytecode becomes machine code at runtime"
+- 'Compiler vs interpreter: roles, not languages'
+- 'Two orthogonal axes: type checking ⊥ compile target'
+- 'Case study: the CPython chain'
+- 'JIT: when bytecode becomes machine code at runtime'
 last_probed:
-  - "Compiler vs interpreter: roles, not languages"
-  - "Two orthogonal axes: type checking ⊥ compile target"
-  - "Case study: the CPython chain"
-  - "JIT: when bytecode becomes machine code at runtime"
+- 'Compiler vs interpreter: roles, not languages'
+- 'Two orthogonal axes: type checking ⊥ compile target'
+- 'Case study: the CPython chain'
+- 'JIT: when bytecode becomes machine code at runtime'
 allow_orphan: true
+flashcard_ids: []
 ---
 
 # Compilers and Interpreters

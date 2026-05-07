@@ -32,7 +32,7 @@
       "cmne7xy9k02d90mso2ibigeht"
     ],
     "created": "2026-04-09",
-    "updated": "2026-05-06",
+    "updated": "2026-05-07",
     "next_review": "2026-05-27",
     "review_interval": 25,
     "probe_sections": [
@@ -79,7 +79,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-09",
-    "updated": "2026-05-06",
+    "updated": "2026-05-07",
     "next_review": "2026-05-11",
     "review_interval": 12,
     "probe_sections": [
@@ -120,7 +120,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-09",
-    "updated": "2026-05-06",
+    "updated": "2026-05-07",
     "next_review": "2026-05-08",
     "review_interval": 6,
     "probe_sections": [
@@ -160,7 +160,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-10",
-    "updated": "2026-05-06",
+    "updated": "2026-05-07",
     "next_review": "2026-05-14",
     "review_interval": 12,
     "probe_sections": [
@@ -207,7 +207,7 @@
       "cmne7xwri02050mso5k9tqzu4"
     ],
     "created": "2026-04-10",
-    "updated": "2026-05-06",
+    "updated": "2026-05-07",
     "next_review": "2026-05-14",
     "review_interval": 15,
     "probe_sections": [
@@ -253,7 +253,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-13",
-    "updated": "2026-05-06",
+    "updated": "2026-05-07",
     "next_review": "2026-05-15",
     "review_interval": 20,
     "probe_sections": [
@@ -295,7 +295,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-13",
-    "updated": "2026-05-06",
+    "updated": "2026-05-07",
     "next_review": "2026-05-29",
     "review_interval": 30,
     "probe_sections": [
@@ -336,7 +336,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-13",
-    "updated": "2026-05-06",
+    "updated": "2026-05-07",
     "next_review": "2026-05-15",
     "review_interval": 20,
     "probe_sections": [
@@ -373,7 +373,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-13",
-    "updated": "2026-05-06",
+    "updated": "2026-05-07",
     "next_review": "2026-06-16",
     "review_interval": 48,
     "probe_sections": [
@@ -409,7 +409,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-13",
-    "updated": "2026-05-06",
+    "updated": "2026-05-07",
     "next_review": "2026-05-13",
     "review_interval": 14,
     "probe_sections": [
@@ -444,7 +444,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-14",
-    "updated": "2026-05-06",
+    "updated": "2026-05-07",
     "next_review": "2026-05-07",
     "review_interval": 10,
     "probe_sections": [
@@ -484,7 +484,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-14",
-    "updated": "2026-05-06",
+    "updated": "2026-05-07",
     "next_review": "2026-05-14",
     "review_interval": 12,
     "probe_sections": [
@@ -525,9 +525,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-17",
-    "updated": "2026-05-06",
-    "next_review": "",
-    "review_interval": null,
+    "updated": "2026-05-07",
+    "next_review": "2026-06-04",
+    "review_interval": 28,
     "probe_sections": [
       "What transform_values does and why it preserves keys",
       "vs map on a hash",
@@ -565,9 +565,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-17",
-    "updated": "2026-05-06",
-    "next_review": "",
-    "review_interval": null,
+    "updated": "2026-05-07",
+    "next_review": "2026-05-09",
+    "review_interval": 2,
     "probe_sections": [
       "What array_agg collects and the implicit single-group rule",
       "No GROUP BY means one implicit group",
@@ -607,7 +607,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-17",
-    "updated": "2026-05-06",
+    "updated": "2026-05-07",
     "next_review": "2026-05-14",
     "review_interval": 8,
     "probe_sections": [
@@ -642,13 +642,12 @@
       "moc",
       "git"
     ],
-    "category": "work",
     "sections": [
       "Pages"
     ],
     "flashcard_ids": [],
     "created": "2026-04-20",
-    "updated": "2026-04-20",
+    "updated": "2026-05-07",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -669,13 +668,12 @@
       "moc",
       "openapi"
     ],
-    "category": "work",
     "sections": [
       "Pages"
     ],
     "flashcard_ids": [],
     "created": "2026-04-20",
-    "updated": "2026-04-20",
+    "updated": "2026-05-07",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -696,13 +694,12 @@
       "moc",
       "rails"
     ],
-    "category": "work",
     "sections": [
       "Pages"
     ],
     "flashcard_ids": [],
     "created": "2026-04-20",
-    "updated": "2026-05-05",
+    "updated": "2026-05-07",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -723,13 +720,12 @@
       "moc",
       "ruby"
     ],
-    "category": "work",
     "sections": [
       "Pages"
     ],
     "flashcard_ids": [],
     "created": "2026-04-20",
-    "updated": "2026-04-20",
+    "updated": "2026-05-07",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -750,13 +746,12 @@
       "moc",
       "security"
     ],
-    "category": "work",
     "sections": [
       "Pages"
     ],
     "flashcard_ids": [],
     "created": "2026-04-20",
-    "updated": "2026-04-29",
+    "updated": "2026-05-07",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -777,13 +772,12 @@
       "moc",
       "sql"
     ],
-    "category": "work",
     "sections": [
       "Pages"
     ],
     "flashcard_ids": [],
     "created": "2026-04-20",
-    "updated": "2026-05-05",
+    "updated": "2026-05-07",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -817,9 +811,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-23",
-    "updated": "2026-05-06",
-    "next_review": "",
-    "review_interval": null,
+    "updated": "2026-05-07",
+    "next_review": "2026-05-29",
+    "review_interval": 22,
     "probe_sections": [
       "Clearing a queue",
       "The batching gotcha",
@@ -856,9 +850,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-29",
-    "updated": "2026-05-06",
-    "next_review": "",
-    "review_interval": null,
+    "updated": "2026-05-07",
+    "next_review": "2026-06-11",
+    "review_interval": 35,
     "probe_sections": [
       "What an Origin Is",
       "What SOP Actually Blocks",
@@ -906,9 +900,9 @@
       "cmoqrprzu0000ld0mfbwqly5v"
     ],
     "created": "2026-05-04",
-    "updated": "2026-05-06",
-    "next_review": "",
-    "review_interval": null,
+    "updated": "2026-05-07",
+    "next_review": "2026-05-21",
+    "review_interval": 14,
     "probe_sections": [
       "URL anatomy at a glance",
       "Scheme vs protocol",
@@ -941,13 +935,12 @@
       "moc",
       "networking"
     ],
-    "category": "work",
     "sections": [
       "Pages"
     ],
     "flashcard_ids": [],
     "created": "2026-05-04",
-    "updated": "2026-05-04",
+    "updated": "2026-05-07",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -985,7 +978,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-06",
+    "updated": "2026-05-07",
     "next_review": "2026-05-08",
     "review_interval": 3,
     "probe_sections": [
@@ -1012,13 +1005,12 @@
       "moc",
       "programming-languages"
     ],
-    "category": "work",
     "sections": [
       "Pages"
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-05",
+    "updated": "2026-05-07",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -1039,13 +1031,12 @@
       "moc",
       "llm"
     ],
-    "category": "work",
     "sections": [
       "Pages"
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-05",
+    "updated": "2026-05-07",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -1083,9 +1074,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-06",
-    "next_review": "",
-    "review_interval": null,
+    "updated": "2026-05-07",
+    "next_review": "2026-05-18",
+    "review_interval": 11,
     "probe_sections": [
       "The model is a file",
       "VRAM and why GPUs",
@@ -1131,9 +1122,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-06",
-    "next_review": "",
-    "review_interval": null,
+    "updated": "2026-05-07",
+    "next_review": "2026-05-11",
+    "review_interval": 4,
     "probe_sections": [
       "Inference vs training",
       "The two phases at a glance",
@@ -1183,9 +1174,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-06",
-    "next_review": "",
-    "review_interval": null,
+    "updated": "2026-05-07",
+    "next_review": "2026-05-13",
+    "review_interval": 6,
     "probe_sections": [
       "What attention is doing - Q, K, V",
       "Why two vectors per token, not one",
@@ -1232,9 +1223,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-06",
-    "next_review": "",
-    "review_interval": null,
+    "updated": "2026-05-07",
+    "next_review": "2026-05-15",
+    "review_interval": 8,
     "probe_sections": [
       "The decode loop has a sampler",
       "Temperature - how peaked the distribution is",
@@ -1280,9 +1271,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-06",
-    "next_review": "",
-    "review_interval": null,
+    "updated": "2026-05-07",
+    "next_review": "2026-05-09",
+    "review_interval": 2,
     "probe_sections": [
       "The two meanings, untangled",
       "Meaning 1 - the embedding layer",
@@ -1332,9 +1323,9 @@
       "cmosqd3r80001h30mwd2tbpht"
     ],
     "created": "2026-05-05",
-    "updated": "2026-05-06",
-    "next_review": "",
-    "review_interval": null,
+    "updated": "2026-05-07",
+    "next_review": "2026-05-25",
+    "review_interval": 18,
     "probe_sections": [
       "The four methods",
       "How includes auto-switches",
@@ -1381,9 +1372,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-06",
-    "next_review": "",
-    "review_interval": null,
+    "updated": "2026-05-07",
+    "next_review": "2026-05-11",
+    "review_interval": 4,
     "probe_sections": [
       "Three-valued logic is the root cause",
       "The NOT IN trap",
@@ -1403,6 +1394,125 @@
       "Migrating to NOT NULL is expensive",
       "When NULL is the right choice",
       "Sentinels masquerading as values"
+    ]
+  },
+  "angular/angular-index": {
+    "file": "angular/angular-index.md",
+    "title": "Angular Index",
+    "aliases": [
+      "angular-moc",
+      "angular map"
+    ],
+    "tags": [
+      "moc",
+      "angular"
+    ],
+    "sections": [
+      "Pages"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-07",
+    "updated": "2026-05-07",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Pages"
+    ],
+    "last_probed": [
+      "Pages"
+    ]
+  },
+  "angular/signals-and-change-detection": {
+    "file": "angular/signals-and-change-detection.md",
+    "title": "Signals and Change Detection",
+    "aliases": [
+      "angular signals CD",
+      "angular signals change detection",
+      "toSignal",
+      "semi-local change detection",
+      "zoneless angular"
+    ],
+    "tags": [
+      "angular",
+      "frontend",
+      "change-detection",
+      "signals",
+      "rxjs"
+    ],
+    "sections": [
+      "Signals push-pull model vs Zone.js passive patching",
+      "How signal writes mark ancestors: traversal flag vs dirty flag",
+      "Semi-local CD: which nodes are traversed vs which re-evaluate bindings",
+      "The click-event caveat: when semi-local CD collapses",
+      "toSignal(): observable-to-signal bridge and what it buys",
+      "Signals vs async pipe: when to use which",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-07",
+    "updated": "2026-05-07",
+    "next_review": "2026-05-10",
+    "review_interval": 3,
+    "probe_sections": [
+      "Signals push-pull model vs Zone.js passive patching",
+      "How signal writes mark ancestors: traversal flag vs dirty flag",
+      "Semi-local CD: which nodes are traversed vs which re-evaluate bindings",
+      "The click-event caveat: when semi-local CD collapses",
+      "toSignal(): observable-to-signal bridge and what it buys",
+      "Signals vs async pipe: when to use which"
+    ],
+    "last_probed": [
+      "Signals push-pull model vs Zone.js passive patching",
+      "How signal writes mark ancestors: traversal flag vs dirty flag",
+      "Semi-local CD: which nodes are traversed vs which re-evaluate bindings",
+      "The click-event caveat: when semi-local CD collapses",
+      "toSignal(): observable-to-signal bridge and what it buys",
+      "Signals vs async pipe: when to use which"
+    ]
+  },
+  "angular/change-detection": {
+    "file": "angular/change-detection.md",
+    "title": "Change Detection",
+    "aliases": [
+      "angular CD",
+      "OnPush change detection",
+      "ChangeDetectionStrategy",
+      "angular change detection strategy"
+    ],
+    "tags": [
+      "angular",
+      "frontend",
+      "change-detection"
+    ],
+    "sections": [
+      "Zone.js: what triggers CD and what it cannot know",
+      "Default strategy: full DFS tree walk every cycle",
+      "OnPush: four conditions that dirty a component",
+      "Mutation on @Input: why the child's view goes stale",
+      "setTimeout and manual subscribe silently miss OnPush",
+      "markForCheck vs detectChanges",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-07",
+    "updated": "2026-05-07",
+    "next_review": "2026-05-10",
+    "review_interval": 3,
+    "probe_sections": [
+      "Zone.js: what triggers CD and what it cannot know",
+      "Default strategy: full DFS tree walk every cycle",
+      "OnPush: four conditions that dirty a component",
+      "Mutation on @Input: why the child's view goes stale",
+      "setTimeout and manual subscribe silently miss OnPush",
+      "markForCheck vs detectChanges"
+    ],
+    "last_probed": [
+      "Zone.js: what triggers CD and what it cannot know",
+      "Default strategy: full DFS tree walk every cycle",
+      "OnPush: four conditions that dirty a component",
+      "Mutation on @Input: why the child's view goes stale",
+      "setTimeout and manual subscribe silently miss OnPush",
+      "markForCheck vs detectChanges"
     ]
   }
 }
