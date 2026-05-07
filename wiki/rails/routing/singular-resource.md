@@ -92,5 +92,5 @@ end
 
 ## Related Concepts
 
-- [[rails/scope-vs-namespace]] -- controlling URL prefix, module, and helper names
-- [[rails/shallow-routing]] -- flattening nested resource URLs
+- [[rails/routing/scope-vs-namespace]] -- controlling URL prefix, module, and helper names
+- [[rails/routing/shallow-routing]] -- flattening nested resource URLs

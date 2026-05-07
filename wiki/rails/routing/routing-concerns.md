@@ -92,5 +92,5 @@ Worth it when 3+ resources share the same nested structure. For just 2, the dupl
 
 ## Related Concepts
 
-- [[rails/scope-vs-namespace]] -- another route organization tool
-- [[rails/route-organization]] -- splitting routes into files with `draw`
+- [[rails/routing/scope-vs-namespace]] -- another route organization tool
+- [[rails/routing/route-organization]] -- splitting routes into files with `draw`

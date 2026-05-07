@@ -32,7 +32,7 @@
       "query": "path:wiki/ruby/",
       "color": {
         "a": 1,
-        "rgb": 15158332
+        "rgb": 15778236
       }
     },
     {
@@ -78,10 +78,17 @@
       }
     },
     {
-      "query": "",
+      "query": "path:wiki/reactive/ ",
       "color": {
         "a": 1,
         "rgb": 14069084
+      }
+    },
+    {
+      "query": "",
+      "color": {
+        "a": 1,
+        "rgb": 11392604
       }
     }
   ],
@@ -95,6 +102,6 @@
   "repelStrength": 15,
   "linkStrength": 1,
   "linkDistance": 150,
-  "scale": 0.3156275541478436,
+  "scale": 0.21041836943189574,
   "close": false
 }

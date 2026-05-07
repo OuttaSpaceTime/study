@@ -109,8 +109,8 @@ end
 
 ## Related Concepts
 
-- [[rails/path-helper-naming]] -- renaming generated helpers with `as:`, and the `_index` suffix
-- [[rails/shallow-routing]] -- flattens nested resource URLs once the child ID is known
-- [[rails/singular-resource]] -- `resource` (singular) for resources without IDs
-- [[rails/scope-vs-namespace]] -- controlling URL prefix and controller module
-- [[rails/routing-concerns]] -- extracting shared route patterns into reusable blocks
+- [[rails/routing/path-helper-naming]] -- renaming generated helpers with `as:`, and the `_index` suffix
+- [[rails/routing/shallow-routing]] -- flattens nested resource URLs once the child ID is known
+- [[rails/routing/singular-resource]] -- `resource` (singular) for resources without IDs
+- [[rails/routing/scope-vs-namespace]] -- controlling URL prefix and controller module
+- [[rails/routing/routing-concerns]] -- extracting shared route patterns into reusable blocks

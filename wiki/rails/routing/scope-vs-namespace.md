@@ -139,5 +139,5 @@ Common real-world case for `scope module:`. Refactoring `PostsController` into `
 
 ## Related Concepts
 
-- [[rails/singular-resource]] -- `resource` for single-instance routes
-- [[rails/routing-concerns]] -- extracting reusable route patterns
+- [[rails/routing/singular-resource]] -- `resource` for single-instance routes
+- [[rails/routing/routing-concerns]] -- extracting reusable route patterns

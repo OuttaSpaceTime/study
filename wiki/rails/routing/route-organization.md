@@ -81,5 +81,5 @@ resources :posts, defaults: { format: :json }
 
 ## Related Concepts
 
-- [[rails/scope-vs-namespace]] -- `namespace` and `scope` for URL/module/helper prefixing
-- [[rails/routing-concerns]] -- DRY route extraction within a single file
+- [[rails/routing/scope-vs-namespace]] -- `namespace` and `scope` for URL/module/helper prefixing
+- [[rails/routing/routing-concerns]] -- DRY route extraction within a single file

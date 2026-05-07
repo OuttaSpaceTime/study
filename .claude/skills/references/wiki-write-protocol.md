@@ -130,7 +130,8 @@ All wikilinks MUST use absolute paths: `[[architecture/cqrs]]` not `[[cqrs]]`.
 
 Infer the folder from tags and existing wiki structure:
 - Check existing top-level folders in `wiki/`
-- Propose: "I'd put this in `wiki/architecture/`. OK?"
+- **If a top-level match exists, also check for a matching sub-MOC**: for each tag on the new page, test whether `wiki/<folder>/<tag>/<tag>-index.md` exists. If it does, propose the sub-folder (`wiki/rails/routing/`) instead of the top-level (`wiki/rails/`).
+- Propose: "I'd put this in `wiki/architecture/`. OK?" (or `wiki/rails/routing/` when a sub-MOC matches)
 - Developer confirms or overrides
 - Create the folder if it doesn't exist: `mkdir -p wiki/<folder>/`
 - If the proposed folder has no `<folder>-index.md` yet, offer to create the MOC page in the same step (see "MOC Pages" below).
@@ -197,9 +198,20 @@ Every top-level wiki folder has a **MOC (Map of Content) page** — a hub that w
 
 ### Convention
 
-- One MOC per top-level folder: `wiki/<folder>/<folder>-index.md` (e.g. `wiki/git/git-index.md`)
+- One MOC per folder: `wiki/<folder>/<folder>-index.md` (e.g. `wiki/git/git-index.md`)
 - Title: `"<Folder> Index"`, slug = `<folder>-index`, wikilink: `[[<folder>/<folder>-index]]`
-- Only top-level folders get MOCs — nested folders do not.
+- One level of nesting is supported: `wiki/<folder>/<sub>/<sub>-index.md` (e.g. `wiki/rails/routing/routing-index.md`). Two levels deep is the maximum.
+- A top-level MOC's `## Pages` section lists sub-MOCs first (sorted), then loose top-level pages (sorted). A sub-MOC lists only its direct children. `scripts/wiki-write` rebuilds both when a page in a sub-folder is written.
+
+### When to split into a sub-MOC
+
+Lint emits a `moc-split-suggestion` warning when **all three** hold:
+
+1. The top-level folder has **≥ 8** pages.
+2. A non-folder, non-`moc` tag is shared by **≥ 4** pages in that folder.
+3. No sub-MOC for that tag already exists.
+
+The suggestion is informational. Acting on it means: create `wiki/<folder>/<tag>/<tag>-index.md`, `git mv` the clustered pages into the sub-folder, rewrite their `[[<folder>/<slug>]]` wikilinks to `[[<folder>/<tag>/<slug>]]` everywhere, then re-run `scripts/wiki-write` on each page (or rebuild the index).
 
 ### MOC frontmatter template
 
@@ -225,13 +237,15 @@ Map of content for the `git/` wiki folder. Auto-maintained by `scripts/wiki-writ
 - [[git/git-restore]]
 ```
 
+For a **sub-MOC** (`wiki/<folder>/<sub>/<sub>-index.md`), use the same template but **omit `allow_orphan: true`** — the parent MOC links the sub-MOC, so the orphan check enforces parent linkage for free.
+
 ### Rules for MOC pages
 
 All four are enforced by `scripts/lint`:
 
-- **Must include `tags: [moc, <folder>]`** — the `moc` tag is the exclusion marker; `scripts/wiki-due` and study-selection skips any entry tagged `moc`. Lint codes: `moc-tag-missing`, `moc-folder-tag-missing`.
+- **Must include `tags: [moc, <folder>]`** — the `moc` tag is the exclusion marker; `scripts/wiki-due` and study-selection skips any entry tagged `moc`. Lint codes: `moc-tag-missing`, `moc-folder-tag-missing`. For sub-MOCs, `<folder>` is the sub-folder name (e.g. `routing`).
 - **Must NOT include `next_review` / `review_interval` / `depth`** — MOCs are hubs, not studyable content. Lint code: `moc-forbidden-field`.
-- **Must include `allow_orphan: true`** — MOCs have no inbound links by design. Lint code: `moc-allow-orphan-missing`.
+- **Top-level MOCs must include `allow_orphan: true`** — they have no inbound links by design. Sub-MOCs must NOT set `allow_orphan` — they are linked from their parent MOC, and the orphan check enforces that link. Lint code: `moc-allow-orphan-missing` (top-level only).
 - **Must NOT be created as flashcard sources** — do not pass them to `/study-flashcard`.
 
 ### Auto-maintenance

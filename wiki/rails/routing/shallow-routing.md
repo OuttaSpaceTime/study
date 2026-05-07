@@ -83,5 +83,5 @@ end
 
 ## Related Concepts
 
-- [[rails/singular-resource]] -- another way to simplify route URLs
-- [[rails/scope-vs-namespace]] -- controlling URL structure with scope
+- [[rails/routing/singular-resource]] -- another way to simplify route URLs
+- [[rails/routing/scope-vs-namespace]] -- controlling URL structure with scope

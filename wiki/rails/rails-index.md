@@ -7,7 +7,7 @@ tags:
 - moc
 - rails
 created: '2026-04-20'
-updated: '2026-05-05'
+updated: '2026-05-07'
 source_skill: manual
 probe_sections:
 - Pages
@@ -23,16 +23,10 @@ Map of content for the `rails/` wiki folder. Auto-maintained by `scripts/wiki-wr
 
 ## Pages
 
+- [[rails/routing/routing-index]]
 - [[rails/activerecord-pick]]
 - [[rails/activerecord-preloading]]
-- [[rails/collection-and-member-routes]]
 - [[rails/delegated-type]]
 - [[rails/index-with]]
-- [[rails/path-helper-naming]]
-- [[rails/route-organization]]
-- [[rails/routing-concerns]]
-- [[rails/scope-vs-namespace]]
-- [[rails/shallow-routing]]
-- [[rails/singular-resource]]
 - [[rails/solidqueue-queue-admin]]
 

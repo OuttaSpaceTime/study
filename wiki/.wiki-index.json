@@ -1,4 +1,151 @@
 {
+  "angular/angular-index": {
+    "file": "angular/angular-index.md",
+    "title": "Angular Index",
+    "aliases": [
+      "angular-moc",
+      "angular map"
+    ],
+    "tags": [
+      "moc",
+      "angular"
+    ],
+    "sections": [
+      "Pages"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-07",
+    "updated": "2026-05-07",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Pages"
+    ],
+    "last_probed": [
+      "Pages"
+    ]
+  },
+  "angular/change-detection": {
+    "file": "angular/change-detection.md",
+    "title": "Change Detection",
+    "aliases": [
+      "angular CD",
+      "OnPush change detection",
+      "ChangeDetectionStrategy",
+      "angular change detection strategy"
+    ],
+    "tags": [
+      "angular",
+      "frontend",
+      "change-detection"
+    ],
+    "sections": [
+      "Zone.js: what triggers CD and what it cannot know",
+      "Default strategy: full DFS tree walk every cycle",
+      "OnPush: four conditions that dirty a component",
+      "Mutation on @Input: why the child's view goes stale",
+      "setTimeout and manual subscribe silently miss OnPush",
+      "markForCheck vs detectChanges",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-07",
+    "updated": "2026-05-07",
+    "next_review": "2026-05-10",
+    "review_interval": 3,
+    "probe_sections": [
+      "Zone.js: what triggers CD and what it cannot know",
+      "Default strategy: full DFS tree walk every cycle",
+      "OnPush: four conditions that dirty a component",
+      "Mutation on @Input: why the child's view goes stale",
+      "setTimeout and manual subscribe silently miss OnPush",
+      "markForCheck vs detectChanges"
+    ],
+    "last_probed": [
+      "Zone.js: what triggers CD and what it cannot know",
+      "Default strategy: full DFS tree walk every cycle",
+      "OnPush: four conditions that dirty a component",
+      "Mutation on @Input: why the child's view goes stale",
+      "setTimeout and manual subscribe silently miss OnPush",
+      "markForCheck vs detectChanges"
+    ]
+  },
+  "angular/signals-and-change-detection": {
+    "file": "angular/signals-and-change-detection.md",
+    "title": "Signals and Change Detection",
+    "aliases": [
+      "angular signals CD",
+      "angular signals change detection",
+      "toSignal",
+      "semi-local change detection",
+      "zoneless angular"
+    ],
+    "tags": [
+      "angular",
+      "frontend",
+      "change-detection",
+      "signals",
+      "rxjs"
+    ],
+    "sections": [
+      "Signals push-pull model vs Zone.js passive patching",
+      "How signal writes mark ancestors: traversal flag vs dirty flag",
+      "Semi-local CD: which nodes are traversed vs which re-evaluate bindings",
+      "The click-event caveat: when semi-local CD collapses",
+      "toSignal(): observable-to-signal bridge and what it buys",
+      "Signals vs async pipe: when to use which",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-07",
+    "updated": "2026-05-07",
+    "next_review": "2026-05-10",
+    "review_interval": 3,
+    "probe_sections": [
+      "Signals push-pull model vs Zone.js passive patching",
+      "How signal writes mark ancestors: traversal flag vs dirty flag",
+      "Semi-local CD: which nodes are traversed vs which re-evaluate bindings",
+      "The click-event caveat: when semi-local CD collapses",
+      "toSignal(): observable-to-signal bridge and what it buys",
+      "Signals vs async pipe: when to use which"
+    ],
+    "last_probed": [
+      "Signals push-pull model vs Zone.js passive patching",
+      "How signal writes mark ancestors: traversal flag vs dirty flag",
+      "Semi-local CD: which nodes are traversed vs which re-evaluate bindings",
+      "The click-event caveat: when semi-local CD collapses",
+      "toSignal(): observable-to-signal bridge and what it buys",
+      "Signals vs async pipe: when to use which"
+    ]
+  },
+  "git/git-index": {
+    "file": "git/git-index.md",
+    "title": "Git Index",
+    "aliases": [
+      "git-moc",
+      "git map"
+    ],
+    "tags": [
+      "moc",
+      "git"
+    ],
+    "sections": [
+      "Pages"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-20",
+    "updated": "2026-05-07",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Pages"
+    ],
+    "last_probed": [
+      "Pages"
+    ]
+  },
   "git/git-restore": {
     "file": "git/git-restore.md",
     "title": "git restore",
@@ -56,1042 +203,56 @@
       "--ignore-unmerged"
     ]
   },
-  "rails/activerecord-pick": {
-    "file": "rails/activerecord-pick.md",
-    "title": "ActiveRecord pick",
+  "llm/embeddings-vs-embedding-layer": {
+    "file": "llm/embeddings-vs-embedding-layer.md",
+    "title": "Embeddings vs Embedding Layer",
     "aliases": [
-      "pick",
-      "pick vs pluck",
-      "rails pick"
+      "embedding model",
+      "embedding layer",
+      "semantic search",
+      "RAG flow",
+      "two meanings of embedding",
+      "nomic-embed-text"
     ],
     "tags": [
-      "rails",
-      "activerecord",
-      "sql"
+      "llm",
+      "embeddings",
+      "rag",
+      "retrieval"
     ],
     "sections": [
       "TL;DR",
-      "What pick returns and when it stops scanning",
-      "vs pluck",
-      "Raw SQL expressions",
-      "Multiple aggregates in one query",
-      "nil on no match and chaining with scopes"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-09",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-11",
-    "review_interval": 12,
-    "probe_sections": [
-      "What pick returns and when it stops scanning",
-      "vs pluck",
-      "Raw SQL expressions",
-      "Multiple aggregates in one query",
-      "nil on no match and chaining with scopes"
-    ],
-    "last_probed": [
-      "Multiple aggregates in one query",
-      "nil on no match and chaining with scopes",
-      "What pick returns and when it stops scanning",
-      "vs pluck",
-      "Raw SQL expressions"
-    ]
-  },
-  "openapi/schema-composition": {
-    "file": "openapi/schema-composition.md",
-    "title": "Schema Composition",
-    "aliases": [
-      "allOf anyOf oneOf",
-      "JSON Schema combiners",
-      "schema composition keywords",
-      "OpenAPI polymorphism"
-    ],
-    "tags": [
-      "openapi",
-      "json-schema",
-      "api-design"
-    ],
-    "sections": [
-      "anyOf vs oneOf",
-      "The oneOf Shared-Field Trap",
-      "allOf Is Not Inheritance",
-      "The additionalProperties Trap",
-      "not as a Filter"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-09",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-08",
-    "review_interval": 6,
-    "probe_sections": [
-      "anyOf vs oneOf",
-      "The oneOf Shared-Field Trap",
-      "allOf Is Not Inheritance",
-      "The additionalProperties Trap",
-      "not as a Filter"
-    ],
-    "last_probed": [
-      "allOf Is Not Inheritance",
-      "The additionalProperties Trap",
-      "not as a Filter",
-      "anyOf vs oneOf",
-      "The oneOf Shared-Field Trap"
-    ]
-  },
-  "rails/index-with": {
-    "file": "rails/index-with.md",
-    "title": "index_with",
-    "aliases": [
-      "Enumerable index_with",
-      "ActiveSupport index_with"
-    ],
-    "tags": [
-      "ruby",
-      "rails",
-      "active-support",
-      "enumerable"
-    ],
-    "sections": [
-      "Fixed Value vs Block",
-      "index_with vs index_by",
-      "index_with vs to_h",
-      "Duplicate Keys",
+      "The two meanings, untangled",
+      "Meaning 1 - the embedding layer",
+      "Meaning 2 - embedding models",
+      "Cost asymmetry vs generative LLMs",
+      "The RAG data flow",
+      "Why retrieval is necessary, not optional",
+      "Choosing between embedding layer and embedding model",
       "Related Concepts"
     ],
     "flashcard_ids": [],
-    "created": "2026-04-10",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-14",
-    "review_interval": 12,
-    "probe_sections": [
-      "Fixed Value vs Block",
-      "index_with vs index_by",
-      "index_with vs to_h",
-      "Duplicate Keys"
-    ],
-    "last_probed": [
-      "index_with vs to_h",
-      "Duplicate Keys",
-      "Fixed Value vs Block",
-      "index_with vs index_by"
-    ]
-  },
-  "security/hsts": {
-    "file": "security/hsts.md",
-    "title": "HSTS",
-    "aliases": [
-      "HTTP Strict Transport Security",
-      "Strict-Transport-Security header",
-      "HSTS preload"
-    ],
-    "tags": [
-      "security",
-      "https",
-      "web"
-    ],
-    "sections": [
-      "The SSL Stripping Attack",
-      "The HSTS header fields: max-age, includeSubDomains, preload",
-      "TOFU Problem (Trust On First Use)",
-      "Preload",
-      "Cross-Host Redirects",
-      "Full Defense Stack",
-      "What the HSTS header looks like on a real site",
-      "Browser Storage"
-    ],
-    "flashcard_ids": [
-      "cmne7xvvx01sd0mso4nghg03i",
-      "cmne7xw1v01u10msoxw2b49vt",
-      "cmne7xw2401u30msofm43aa2a",
-      "cmne7xvym01t50msou805xi7h",
-      "cmne7xwri02050mso5k9tqzu4"
-    ],
-    "created": "2026-04-10",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-14",
-    "review_interval": 15,
-    "probe_sections": [
-      "The SSL Stripping Attack",
-      "The HSTS header fields: max-age, includeSubDomains, preload",
-      "TOFU Problem (Trust On First Use)",
-      "Preload",
-      "Cross-Host Redirects",
-      "Full Defense Stack",
-      "What the HSTS header looks like on a real site",
-      "Browser Storage"
-    ],
-    "last_probed": [
-      "What the HSTS header looks like on a real site",
-      "Browser Storage",
-      "The SSL Stripping Attack",
-      "The HSTS header fields: max-age, includeSubDomains, preload",
-      "TOFU Problem (Trust On First Use)",
-      "Preload",
-      "Cross-Host Redirects",
-      "Full Defense Stack"
-    ]
-  },
-  "rails/singular-resource": {
-    "file": "rails/singular-resource.md",
-    "title": "Singular Resource",
-    "aliases": [
-      "resource singular",
-      "resource vs resources",
-      "singular route"
-    ],
-    "tags": [
-      "rails",
-      "routing"
-    ],
-    "sections": [
-      "6 Routes, Not 7",
-      "Controller Is Still Plural",
-      "When to declare a singular resource",
-      "How Identity Is Resolved",
-      "Nesting Works the Same",
-      "Related Concepts"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-13",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-15",
-    "review_interval": 20,
-    "probe_sections": [
-      "6 Routes, Not 7",
-      "Controller Is Still Plural",
-      "When to declare a singular resource",
-      "How Identity Is Resolved",
-      "Nesting Works the Same"
-    ],
-    "last_probed": [
-      "6 Routes, Not 7",
-      "How Identity Is Resolved",
-      "Nesting Works the Same",
-      "Controller Is Still Plural",
-      "When to declare a singular resource"
-    ]
-  },
-  "rails/scope-vs-namespace": {
-    "file": "rails/scope-vs-namespace.md",
-    "title": "Scope vs Namespace",
-    "aliases": [
-      "rails scope",
-      "rails namespace",
-      "scope vs namespace routing",
-      "route scope"
-    ],
-    "tags": [
-      "rails",
-      "routing"
-    ],
-    "sections": [
-      "The Three Knobs",
-      "Scope Picks and Chooses",
-      "Module Path Format",
-      "Per-Resource Options",
-      "The controller: Option",
-      "When to use scope vs namespace vs module",
-      "Related Concepts"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-13",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-29",
-    "review_interval": 30,
-    "probe_sections": [
-      "The Three Knobs",
-      "Scope Picks and Chooses",
-      "Module Path Format",
-      "Per-Resource Options",
-      "The controller: Option",
-      "When to use scope vs namespace vs module"
-    ],
-    "last_probed": [
-      "Per-Resource Options",
-      "The controller: Option",
-      "When to use scope vs namespace vs module",
-      "The Three Knobs",
-      "Scope Picks and Chooses",
-      "Module Path Format"
-    ]
-  },
-  "rails/shallow-routing": {
-    "file": "rails/shallow-routing.md",
-    "title": "Shallow Routing",
-    "aliases": [
-      "shallow nesting",
-      "shallow routes",
-      "shallow true"
-    ],
-    "tags": [
-      "rails",
-      "routing"
-    ],
-    "sections": [
-      "How shallow routing splits member vs collection routes",
-      "Why This Split",
-      "Named Helpers Change Too",
-      "Applying to All Nested Resources",
-      "Related Concepts"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-13",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-15",
-    "review_interval": 20,
-    "probe_sections": [
-      "How shallow routing splits member vs collection routes",
-      "Why This Split",
-      "Named Helpers Change Too",
-      "Applying to All Nested Resources"
-    ],
-    "last_probed": [
-      "Applying to All Nested Resources",
-      "How shallow routing splits member vs collection routes",
-      "Why This Split",
-      "Named Helpers Change Too"
-    ]
-  },
-  "rails/routing-concerns": {
-    "file": "rails/routing-concerns.md",
-    "title": "Routing Concerns",
-    "aliases": [
-      "rails concern",
-      "route concerns",
-      "routing concern"
-    ],
-    "tags": [
-      "rails",
-      "routing"
-    ],
-    "sections": [
-      "The problem: duplicated route blocks across resources",
-      "Extract a Concern",
-      "Multiple Concerns",
-      "When to extract a routing concern",
-      "Related Concepts"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-13",
-    "updated": "2026-05-07",
-    "next_review": "2026-06-16",
-    "review_interval": 48,
-    "probe_sections": [
-      "The problem: duplicated route blocks across resources",
-      "Extract a Concern",
-      "Multiple Concerns",
-      "When to extract a routing concern"
-    ],
-    "last_probed": [
-      "When to extract a routing concern",
-      "The problem: duplicated route blocks across resources",
-      "Extract a Concern",
-      "Multiple Concerns"
-    ]
-  },
-  "rails/route-organization": {
-    "file": "rails/route-organization.md",
-    "title": "Route Organization",
-    "aliases": [
-      "rails draw",
-      "route files",
-      "routes draw",
-      "rails defaults"
-    ],
-    "tags": [
-      "rails",
-      "routing"
-    ],
-    "sections": [
-      "draw -- Split Routes into Files",
-      "defaults -- Set Shared Parameters",
-      "Related Concepts"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-13",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-13",
-    "review_interval": 14,
-    "probe_sections": [
-      "draw -- Split Routes into Files",
-      "defaults -- Set Shared Parameters"
-    ],
-    "last_probed": [
-      "draw -- Split Routes into Files",
-      "defaults -- Set Shared Parameters"
-    ]
-  },
-  "rails/collection-and-member-routes": {
-    "file": "rails/collection-and-member-routes.md",
-    "title": "Collection and Member Routes",
-    "aliases": [
-      "collection route",
-      "member route",
-      "collection vs member",
-      "custom resource routes"
-    ],
-    "tags": [
-      "rails",
-      "routing"
-    ],
-    "sections": [
-      "The Decision Table",
-      "Declaring collection and member routes",
-      "Routing to a Different Controller",
-      "Param Naming Rules",
-      "When to use collection vs member",
-      "Related Concepts"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-14",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-19",
-    "review_interval": 12,
-    "probe_sections": [
-      "The Decision Table",
-      "Declaring collection and member routes",
-      "Routing to a Different Controller",
-      "Param Naming Rules",
-      "When to use collection vs member"
-    ],
-    "last_probed": [
-      "Declaring collection and member routes",
-      "Routing to a Different Controller",
-      "Param Naming Rules",
-      "When to use collection vs member",
-      "The Decision Table"
-    ]
-  },
-  "rails/path-helper-naming": {
-    "file": "rails/path-helper-naming.md",
-    "title": "Path Helper Naming",
-    "aliases": [
-      "rename path helper",
-      "as option routes",
-      "path helper as",
-      "_index suffix"
-    ],
-    "tags": [
-      "rails",
-      "routing"
-    ],
-    "sections": [
-      "Renaming with `as:`",
-      "The `_index` Suffix",
-      "Fix: Set `as:` Explicitly",
-      "How to verify path helper names at the console",
-      "Related Concepts"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-14",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-14",
-    "review_interval": 12,
-    "probe_sections": [
-      "Renaming with `as:`",
-      "The `_index` Suffix",
-      "Fix: Set `as:` Explicitly",
-      "How to verify path helper names at the console"
-    ],
-    "last_probed": [
-      "Renaming with `as:`",
-      "The `_index` Suffix",
-      "Fix: Set `as:` Explicitly",
-      "How to verify path helper names at the console"
-    ]
-  },
-  "ruby/transform-values": {
-    "file": "ruby/transform-values.md",
-    "title": "transform_values",
-    "aliases": [
-      "transform_values",
-      "ruby transform_values",
-      "hash transform values"
-    ],
-    "tags": [
-      "ruby",
-      "hash",
-      "enumerable"
-    ],
-    "sections": [
-      "TL;DR",
-      "What transform_values does and why it preserves keys",
-      "vs map on a hash",
-      "The block receives only the value",
-      "Bang variant",
-      "with_index for positional info",
-      "When not to use it",
-      "Related Concepts"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-17",
-    "updated": "2026-05-07",
-    "next_review": "2026-06-04",
-    "review_interval": 28,
-    "probe_sections": [
-      "What transform_values does and why it preserves keys",
-      "vs map on a hash",
-      "The block receives only the value",
-      "Bang variant",
-      "with_index for positional info",
-      "When not to use it"
-    ],
-    "last_probed": []
-  },
-  "sql/array-agg": {
-    "file": "sql/array-agg.md",
-    "title": "array_agg",
-    "aliases": [
-      "array_agg",
-      "postgres array_agg",
-      "sql array aggregate"
-    ],
-    "tags": [
-      "sql",
-      "postgres",
-      "aggregate"
-    ],
-    "sections": [
-      "TL;DR",
-      "What array_agg collects and the implicit single-group rule",
-      "No GROUP BY means one implicit group",
-      "Ordering is non-deterministic by default",
-      "NULLs are included by default",
-      "Empty input returns NULL, not {}",
-      "DISTINCT + ORDER BY must share the expression",
-      "array_agg vs jsonb_agg",
-      "Canonical shape for \"safe\" usage",
-      "Related Concepts"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-17",
+    "created": "2026-05-05",
     "updated": "2026-05-07",
     "next_review": "2026-05-09",
     "review_interval": 2,
     "probe_sections": [
-      "What array_agg collects and the implicit single-group rule",
-      "No GROUP BY means one implicit group",
-      "Ordering is non-deterministic by default",
-      "NULLs are included by default",
-      "Empty input returns NULL, not {}",
-      "DISTINCT + ORDER BY must share the expression",
-      "array_agg vs jsonb_agg",
-      "Canonical shape for \"safe\" usage"
-    ],
-    "last_probed": []
-  },
-  "rails/delegated-type": {
-    "file": "rails/delegated-type.md",
-    "title": "Delegated Type",
-    "aliases": [
-      "delegated_type",
-      "delegated types",
-      "delegated_type macro",
-      "Rails delegated type"
-    ],
-    "tags": [
-      "rails",
-      "activerecord",
-      "polymorphism"
-    ],
-    "sections": [
-      "The Problem It Solves",
-      "Schema Shape",
-      "What the delegated_type declaration generates",
-      "What `delegated_type` Expands To",
-      "Direction of Delegation",
-      "Design Rule: Where Attributes Live",
-      "STI vs Delegated Type",
-      "N+1 Gotcha",
-      "Related Concepts"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-17",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-14",
-    "review_interval": 8,
-    "probe_sections": [
-      "The Problem It Solves",
-      "Schema Shape",
-      "What the delegated_type declaration generates",
-      "What `delegated_type` Expands To",
-      "Direction of Delegation",
-      "Design Rule: Where Attributes Live",
-      "STI vs Delegated Type",
-      "N+1 Gotcha"
+      "The two meanings, untangled",
+      "Meaning 1 - the embedding layer",
+      "Meaning 2 - embedding models",
+      "Cost asymmetry vs generative LLMs",
+      "The RAG data flow",
+      "Why retrieval is necessary, not optional",
+      "Choosing between embedding layer and embedding model"
     ],
     "last_probed": [
-      "Schema Shape",
-      "What `delegated_type` Expands To",
-      "What the delegated_type declaration generates",
-      "Direction of Delegation",
-      "Design Rule: Where Attributes Live",
-      "STI vs Delegated Type",
-      "N+1 Gotcha",
-      "The Problem It Solves"
-    ]
-  },
-  "git/git-index": {
-    "file": "git/git-index.md",
-    "title": "Git Index",
-    "aliases": [
-      "git-moc",
-      "git map"
-    ],
-    "tags": [
-      "moc",
-      "git"
-    ],
-    "sections": [
-      "Pages"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-20",
-    "updated": "2026-05-07",
-    "next_review": "",
-    "review_interval": null,
-    "probe_sections": [
-      "Pages"
-    ],
-    "last_probed": [
-      "Pages"
-    ]
-  },
-  "openapi/openapi-index": {
-    "file": "openapi/openapi-index.md",
-    "title": "OpenAPI Index",
-    "aliases": [
-      "openapi-moc",
-      "openapi map"
-    ],
-    "tags": [
-      "moc",
-      "openapi"
-    ],
-    "sections": [
-      "Pages"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-20",
-    "updated": "2026-05-07",
-    "next_review": "",
-    "review_interval": null,
-    "probe_sections": [
-      "Pages"
-    ],
-    "last_probed": [
-      "Pages"
-    ]
-  },
-  "rails/rails-index": {
-    "file": "rails/rails-index.md",
-    "title": "Rails Index",
-    "aliases": [
-      "rails-moc",
-      "rails map"
-    ],
-    "tags": [
-      "moc",
-      "rails"
-    ],
-    "sections": [
-      "Pages"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-20",
-    "updated": "2026-05-07",
-    "next_review": "",
-    "review_interval": null,
-    "probe_sections": [
-      "Pages"
-    ],
-    "last_probed": [
-      "Pages"
-    ]
-  },
-  "ruby/ruby-index": {
-    "file": "ruby/ruby-index.md",
-    "title": "Ruby Index",
-    "aliases": [
-      "ruby-moc",
-      "ruby map"
-    ],
-    "tags": [
-      "moc",
-      "ruby"
-    ],
-    "sections": [
-      "Pages"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-20",
-    "updated": "2026-05-07",
-    "next_review": "",
-    "review_interval": null,
-    "probe_sections": [
-      "Pages"
-    ],
-    "last_probed": [
-      "Pages"
-    ]
-  },
-  "security/security-index": {
-    "file": "security/security-index.md",
-    "title": "Security Index",
-    "aliases": [
-      "security-moc",
-      "security map"
-    ],
-    "tags": [
-      "moc",
-      "security"
-    ],
-    "sections": [
-      "Pages"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-20",
-    "updated": "2026-05-07",
-    "next_review": "",
-    "review_interval": null,
-    "probe_sections": [
-      "Pages"
-    ],
-    "last_probed": [
-      "Pages"
-    ]
-  },
-  "sql/sql-index": {
-    "file": "sql/sql-index.md",
-    "title": "SQL Index",
-    "aliases": [
-      "sql-moc",
-      "sql map"
-    ],
-    "tags": [
-      "moc",
-      "sql"
-    ],
-    "sections": [
-      "Pages"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-20",
-    "updated": "2026-05-07",
-    "next_review": "",
-    "review_interval": null,
-    "probe_sections": [
-      "Pages"
-    ],
-    "last_probed": [
-      "Pages"
-    ]
-  },
-  "rails/solidqueue-queue-admin": {
-    "file": "rails/solidqueue-queue-admin.md",
-    "title": "SolidQueue Queue Admin",
-    "aliases": [
-      "solid_queue clear queue",
-      "solid queue drain",
-      "solid_queue delete jobs",
-      "solid_queue purge"
-    ],
-    "tags": [
-      "rails",
-      "solid-queue",
-      "background-jobs",
-      "ops"
-    ],
-    "sections": [
-      "Clearing a queue",
-      "The batching gotcha",
-      "Nuclear path for large queues",
-      "discard vs delete_all",
-      "Sources"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-23",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-29",
-    "review_interval": 22,
-    "probe_sections": [
-      "Clearing a queue",
-      "The batching gotcha",
-      "Nuclear path for large queues",
-      "discard vs delete_all"
-    ],
-    "last_probed": [
-      "Clearing a queue",
-      "The batching gotcha",
-      "Nuclear path for large queues",
-      "discard vs delete_all"
-    ]
-  },
-  "security/same-origin-policy": {
-    "file": "security/same-origin-policy.md",
-    "title": "Same-Origin Policy",
-    "aliases": [
-      "SOP",
-      "same origin policy"
-    ],
-    "tags": [
-      "security",
-      "web",
-      "browser"
-    ],
-    "sections": [
-      "TL;DR",
-      "What an Origin Is",
-      "What SOP Actually Blocks",
-      "The Threat Model",
-      "SOP Is Not Configurable",
-      "Server-to-Server Requests",
-      "Related Concepts"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-29",
-    "updated": "2026-05-07",
-    "next_review": "2026-06-11",
-    "review_interval": 35,
-    "probe_sections": [
-      "What an Origin Is",
-      "What SOP Actually Blocks",
-      "The Threat Model",
-      "SOP Is Not Configurable",
-      "Server-to-Server Requests"
-    ],
-    "last_probed": [
-      "What an Origin Is",
-      "What SOP Actually Blocks",
-      "The Threat Model",
-      "SOP Is Not Configurable",
-      "Server-to-Server Requests"
-    ]
-  },
-  "networking/url-anatomy": {
-    "file": "networking/url-anatomy.md",
-    "title": "URL Anatomy",
-    "aliases": [
-      "URL parts",
-      "URL structure",
-      "scheme host port path",
-      "domain vs host",
-      "subdomain SLD TLD"
-    ],
-    "tags": [
-      "networking",
-      "web",
-      "http",
-      "dns"
-    ],
-    "sections": [
-      "TL;DR",
-      "URL anatomy at a glance",
-      "Scheme vs protocol",
-      "Host - subdomain, SLD, TLD",
-      "Port: default ports and when the URL includes one",
-      "Path and query",
-      "DNS resolution",
-      "DNS caching, TTL, and safe migrations",
-      "Host header and virtual hosts",
-      "Related Concepts"
-    ],
-    "flashcard_ids": [
-      "cmoqrprzu0000ld0mfbwqly5v"
-    ],
-    "created": "2026-05-04",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-21",
-    "review_interval": 14,
-    "probe_sections": [
-      "URL anatomy at a glance",
-      "Scheme vs protocol",
-      "Host - subdomain, SLD, TLD",
-      "Port: default ports and when the URL includes one",
-      "Path and query",
-      "DNS resolution",
-      "DNS caching, TTL, and safe migrations",
-      "Host header and virtual hosts"
-    ],
-    "last_probed": [
-      "URL anatomy at a glance",
-      "Scheme vs protocol",
-      "Host - subdomain, SLD, TLD",
-      "Port: default ports and when the URL includes one",
-      "Path and query",
-      "DNS resolution",
-      "DNS caching, TTL, and safe migrations",
-      "Host header and virtual hosts"
-    ]
-  },
-  "networking/networking-index": {
-    "file": "networking/networking-index.md",
-    "title": "Networking Index",
-    "aliases": [
-      "networking-moc",
-      "networking map"
-    ],
-    "tags": [
-      "moc",
-      "networking"
-    ],
-    "sections": [
-      "Pages"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-05-04",
-    "updated": "2026-05-07",
-    "next_review": "",
-    "review_interval": null,
-    "probe_sections": [
-      "Pages"
-    ],
-    "last_probed": [
-      "Pages"
-    ]
-  },
-  "programming-languages/compilers-and-interpreters": {
-    "file": "programming-languages/compilers-and-interpreters.md",
-    "title": "Compilers and Interpreters",
-    "aliases": [
-      "compiler",
-      "interpreter",
-      "bytecode",
-      "JIT",
-      "virtual machine",
-      "Python execution model"
-    ],
-    "tags": [
-      "compilers",
-      "programming-languages",
-      "interpreters",
-      "bytecode",
-      "jit"
-    ],
-    "sections": [
-      "TL;DR",
-      "Compiler vs interpreter: roles, not languages",
-      "Two orthogonal axes: type checking ⊥ compile target",
-      "Case study: the CPython chain",
-      "JIT: when bytecode becomes machine code at runtime",
-      "Related Concepts"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-05-05",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-08",
-    "review_interval": 3,
-    "probe_sections": [
-      "Compiler vs interpreter: roles, not languages",
-      "Two orthogonal axes: type checking ⊥ compile target",
-      "Case study: the CPython chain",
-      "JIT: when bytecode becomes machine code at runtime"
-    ],
-    "last_probed": [
-      "Compiler vs interpreter: roles, not languages",
-      "Two orthogonal axes: type checking ⊥ compile target",
-      "Case study: the CPython chain",
-      "JIT: when bytecode becomes machine code at runtime"
-    ]
-  },
-  "programming-languages/programming-languages-index": {
-    "file": "programming-languages/programming-languages-index.md",
-    "title": "Programming Languages Index",
-    "aliases": [
-      "programming-languages-moc",
-      "programming languages map"
-    ],
-    "tags": [
-      "moc",
-      "programming-languages"
-    ],
-    "sections": [
-      "Pages"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-05-05",
-    "updated": "2026-05-07",
-    "next_review": "",
-    "review_interval": null,
-    "probe_sections": [
-      "Pages"
-    ],
-    "last_probed": [
-      "Pages"
-    ]
-  },
-  "llm/llm-index": {
-    "file": "llm/llm-index.md",
-    "title": "LLM Index",
-    "aliases": [
-      "llm-moc",
-      "llm map"
-    ],
-    "tags": [
-      "moc",
-      "llm"
-    ],
-    "sections": [
-      "Pages"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-05-05",
-    "updated": "2026-05-07",
-    "next_review": "",
-    "review_interval": null,
-    "probe_sections": [
-      "Pages"
-    ],
-    "last_probed": [
-      "Pages"
-    ]
-  },
-  "llm/serving-runtime-and-vram": {
-    "file": "llm/serving-runtime-and-vram.md",
-    "title": "Serving Runtime and VRAM",
-    "aliases": [
-      "LLM serving",
-      "Ollama VRAM",
-      "LLM model loading",
-      "KEEP_ALIVE",
-      "VRAM budget for LLMs"
-    ],
-    "tags": [
-      "llm",
-      "ollama",
-      "gpu",
-      "infrastructure"
-    ],
-    "sections": [
-      "TL;DR",
-      "The model is a file",
-      "VRAM and why GPUs",
-      "KEEP_ALIVE and the cold-start tax",
-      "Multi-tenancy - what is shared, what is per-slot",
-      "Same model, different num_ctx, two instances",
-      "Sizing VRAM and choosing KEEP_ALIVE strategy",
-      "Related Concepts"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-05-05",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-18",
-    "review_interval": 11,
-    "probe_sections": [
-      "The model is a file",
-      "VRAM and why GPUs",
-      "KEEP_ALIVE and the cold-start tax",
-      "Multi-tenancy - what is shared, what is per-slot",
-      "Same model, different num_ctx, two instances",
-      "Sizing VRAM and choosing KEEP_ALIVE strategy"
-    ],
-    "last_probed": [
-      "The model is a file",
-      "VRAM and why GPUs",
-      "KEEP_ALIVE and the cold-start tax",
-      "Multi-tenancy - what is shared, what is per-slot",
-      "Same model, different num_ctx, two instances",
-      "Sizing VRAM and choosing KEEP_ALIVE strategy"
+      "The two meanings, untangled",
+      "Meaning 1 - the embedding layer",
+      "Meaning 2 - embedding models",
+      "Cost asymmetry vs generative LLMs",
+      "The RAG data flow",
+      "Why retrieval is necessary, not optional",
+      "Choosing between embedding layer and embedding model"
     ]
   },
   "llm/inference-prefill-and-decode": {
@@ -1196,6 +357,32 @@
       "num_ctx is the cache buffer size"
     ]
   },
+  "llm/llm-index": {
+    "file": "llm/llm-index.md",
+    "title": "LLM Index",
+    "aliases": [
+      "llm-moc",
+      "llm map"
+    ],
+    "tags": [
+      "moc",
+      "llm"
+    ],
+    "sections": [
+      "Pages"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-05",
+    "updated": "2026-05-07",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Pages"
+    ],
+    "last_probed": [
+      "Pages"
+    ]
+  },
   "llm/sampling-knobs": {
     "file": "llm/sampling-knobs.md",
     "title": "Sampling Knobs",
@@ -1241,56 +428,338 @@
       "Choosing knobs by task shape"
     ]
   },
-  "llm/embeddings-vs-embedding-layer": {
-    "file": "llm/embeddings-vs-embedding-layer.md",
-    "title": "Embeddings vs Embedding Layer",
+  "llm/serving-runtime-and-vram": {
+    "file": "llm/serving-runtime-and-vram.md",
+    "title": "Serving Runtime and VRAM",
     "aliases": [
-      "embedding model",
-      "embedding layer",
-      "semantic search",
-      "RAG flow",
-      "two meanings of embedding",
-      "nomic-embed-text"
+      "LLM serving",
+      "Ollama VRAM",
+      "LLM model loading",
+      "KEEP_ALIVE",
+      "VRAM budget for LLMs"
     ],
     "tags": [
       "llm",
-      "embeddings",
-      "rag",
-      "retrieval"
+      "ollama",
+      "gpu",
+      "infrastructure"
     ],
     "sections": [
       "TL;DR",
-      "The two meanings, untangled",
-      "Meaning 1 - the embedding layer",
-      "Meaning 2 - embedding models",
-      "Cost asymmetry vs generative LLMs",
-      "The RAG data flow",
-      "Why retrieval is necessary, not optional",
-      "Choosing between embedding layer and embedding model",
+      "The model is a file",
+      "VRAM and why GPUs",
+      "KEEP_ALIVE and the cold-start tax",
+      "Multi-tenancy - what is shared, what is per-slot",
+      "Same model, different num_ctx, two instances",
+      "Sizing VRAM and choosing KEEP_ALIVE strategy",
       "Related Concepts"
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
     "updated": "2026-05-07",
-    "next_review": "2026-05-09",
-    "review_interval": 2,
+    "next_review": "2026-05-18",
+    "review_interval": 11,
     "probe_sections": [
-      "The two meanings, untangled",
-      "Meaning 1 - the embedding layer",
-      "Meaning 2 - embedding models",
-      "Cost asymmetry vs generative LLMs",
-      "The RAG data flow",
-      "Why retrieval is necessary, not optional",
-      "Choosing between embedding layer and embedding model"
+      "The model is a file",
+      "VRAM and why GPUs",
+      "KEEP_ALIVE and the cold-start tax",
+      "Multi-tenancy - what is shared, what is per-slot",
+      "Same model, different num_ctx, two instances",
+      "Sizing VRAM and choosing KEEP_ALIVE strategy"
     ],
     "last_probed": [
-      "The two meanings, untangled",
-      "Meaning 1 - the embedding layer",
-      "Meaning 2 - embedding models",
-      "Cost asymmetry vs generative LLMs",
-      "The RAG data flow",
-      "Why retrieval is necessary, not optional",
-      "Choosing between embedding layer and embedding model"
+      "The model is a file",
+      "VRAM and why GPUs",
+      "KEEP_ALIVE and the cold-start tax",
+      "Multi-tenancy - what is shared, what is per-slot",
+      "Same model, different num_ctx, two instances",
+      "Sizing VRAM and choosing KEEP_ALIVE strategy"
+    ]
+  },
+  "networking/networking-index": {
+    "file": "networking/networking-index.md",
+    "title": "Networking Index",
+    "aliases": [
+      "networking-moc",
+      "networking map"
+    ],
+    "tags": [
+      "moc",
+      "networking"
+    ],
+    "sections": [
+      "Pages"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-04",
+    "updated": "2026-05-07",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Pages"
+    ],
+    "last_probed": [
+      "Pages"
+    ]
+  },
+  "networking/url-anatomy": {
+    "file": "networking/url-anatomy.md",
+    "title": "URL Anatomy",
+    "aliases": [
+      "URL parts",
+      "URL structure",
+      "scheme host port path",
+      "domain vs host",
+      "subdomain SLD TLD"
+    ],
+    "tags": [
+      "networking",
+      "web",
+      "http",
+      "dns"
+    ],
+    "sections": [
+      "TL;DR",
+      "URL anatomy at a glance",
+      "Scheme vs protocol",
+      "Host - subdomain, SLD, TLD",
+      "Port: default ports and when the URL includes one",
+      "Path and query",
+      "DNS resolution",
+      "DNS caching, TTL, and safe migrations",
+      "Host header and virtual hosts",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [
+      "cmoqrprzu0000ld0mfbwqly5v"
+    ],
+    "created": "2026-05-04",
+    "updated": "2026-05-07",
+    "next_review": "2026-05-21",
+    "review_interval": 14,
+    "probe_sections": [
+      "URL anatomy at a glance",
+      "Scheme vs protocol",
+      "Host - subdomain, SLD, TLD",
+      "Port: default ports and when the URL includes one",
+      "Path and query",
+      "DNS resolution",
+      "DNS caching, TTL, and safe migrations",
+      "Host header and virtual hosts"
+    ],
+    "last_probed": [
+      "URL anatomy at a glance",
+      "Scheme vs protocol",
+      "Host - subdomain, SLD, TLD",
+      "Port: default ports and when the URL includes one",
+      "Path and query",
+      "DNS resolution",
+      "DNS caching, TTL, and safe migrations",
+      "Host header and virtual hosts"
+    ]
+  },
+  "openapi/openapi-index": {
+    "file": "openapi/openapi-index.md",
+    "title": "OpenAPI Index",
+    "aliases": [
+      "openapi-moc",
+      "openapi map"
+    ],
+    "tags": [
+      "moc",
+      "openapi"
+    ],
+    "sections": [
+      "Pages"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-20",
+    "updated": "2026-05-07",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Pages"
+    ],
+    "last_probed": [
+      "Pages"
+    ]
+  },
+  "openapi/schema-composition": {
+    "file": "openapi/schema-composition.md",
+    "title": "Schema Composition",
+    "aliases": [
+      "allOf anyOf oneOf",
+      "JSON Schema combiners",
+      "schema composition keywords",
+      "OpenAPI polymorphism"
+    ],
+    "tags": [
+      "openapi",
+      "json-schema",
+      "api-design"
+    ],
+    "sections": [
+      "anyOf vs oneOf",
+      "The oneOf Shared-Field Trap",
+      "allOf Is Not Inheritance",
+      "The additionalProperties Trap",
+      "not as a Filter"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-09",
+    "updated": "2026-05-07",
+    "next_review": "2026-05-08",
+    "review_interval": 6,
+    "probe_sections": [
+      "anyOf vs oneOf",
+      "The oneOf Shared-Field Trap",
+      "allOf Is Not Inheritance",
+      "The additionalProperties Trap",
+      "not as a Filter"
+    ],
+    "last_probed": [
+      "allOf Is Not Inheritance",
+      "The additionalProperties Trap",
+      "not as a Filter",
+      "anyOf vs oneOf",
+      "The oneOf Shared-Field Trap"
+    ]
+  },
+  "programming-languages/compilers-and-interpreters": {
+    "file": "programming-languages/compilers-and-interpreters.md",
+    "title": "Compilers and Interpreters",
+    "aliases": [
+      "compiler",
+      "interpreter",
+      "bytecode",
+      "JIT",
+      "virtual machine",
+      "Python execution model"
+    ],
+    "tags": [
+      "compilers",
+      "programming-languages",
+      "interpreters",
+      "bytecode",
+      "jit"
+    ],
+    "sections": [
+      "TL;DR",
+      "Compiler vs interpreter: roles, not languages",
+      "Two orthogonal axes: type checking ⊥ compile target",
+      "Case study: the CPython chain",
+      "JIT: when bytecode becomes machine code at runtime",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-05",
+    "updated": "2026-05-07",
+    "next_review": "2026-05-08",
+    "review_interval": 3,
+    "probe_sections": [
+      "Compiler vs interpreter: roles, not languages",
+      "Two orthogonal axes: type checking ⊥ compile target",
+      "Case study: the CPython chain",
+      "JIT: when bytecode becomes machine code at runtime"
+    ],
+    "last_probed": [
+      "Compiler vs interpreter: roles, not languages",
+      "Two orthogonal axes: type checking ⊥ compile target",
+      "Case study: the CPython chain",
+      "JIT: when bytecode becomes machine code at runtime"
+    ]
+  },
+  "programming-languages/programming-languages-index": {
+    "file": "programming-languages/programming-languages-index.md",
+    "title": "Programming Languages Index",
+    "aliases": [
+      "programming-languages-moc",
+      "programming languages map"
+    ],
+    "tags": [
+      "moc",
+      "programming-languages"
+    ],
+    "sections": [
+      "Pages"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-05",
+    "updated": "2026-05-07",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Pages"
+    ],
+    "last_probed": [
+      "Pages"
+    ]
+  },
+  "rails/activerecord-pick": {
+    "file": "rails/activerecord-pick.md",
+    "title": "ActiveRecord pick",
+    "aliases": [
+      "pick",
+      "pick vs pluck",
+      "rails pick"
+    ],
+    "tags": [
+      "rails",
+      "activerecord",
+      "sql"
+    ],
+    "sections": [
+      "TL;DR",
+      "What pick returns and when it stops scanning",
+      "vs pluck",
+      "Raw SQL expressions",
+      "Multiple aggregates in one query",
+      "nil on no match and chaining with scopes"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-09",
+    "updated": "2026-05-07",
+    "next_review": "2026-05-11",
+    "review_interval": 12,
+    "probe_sections": [
+      "What pick returns and when it stops scanning",
+      "vs pluck",
+      "Raw SQL expressions",
+      "Multiple aggregates in one query",
+      "nil on no match and chaining with scopes"
+    ],
+    "last_probed": [
+      "Multiple aggregates in one query",
+      "nil on no match and chaining with scopes",
+      "What pick returns and when it stops scanning",
+      "vs pluck",
+      "Raw SQL expressions"
+    ]
+  },
+  "rails/rails-index": {
+    "file": "rails/rails-index.md",
+    "title": "Rails Index",
+    "aliases": [
+      "rails-moc",
+      "rails map"
+    ],
+    "tags": [
+      "moc",
+      "rails"
+    ],
+    "sections": [
+      "Pages"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-20",
+    "updated": "2026-05-07",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Pages"
+    ],
+    "last_probed": [
+      "Pages"
     ]
   },
   "rails/activerecord-preloading": {
@@ -1340,6 +809,853 @@
       "Choosing between joins, preload, eager_load, and includes",
       "Polymorphic associations"
     ]
+  },
+  "rails/delegated-type": {
+    "file": "rails/delegated-type.md",
+    "title": "Delegated Type",
+    "aliases": [
+      "delegated_type",
+      "delegated types",
+      "delegated_type macro",
+      "Rails delegated type"
+    ],
+    "tags": [
+      "rails",
+      "activerecord",
+      "polymorphism"
+    ],
+    "sections": [
+      "The Problem It Solves",
+      "Schema Shape",
+      "What the delegated_type declaration generates",
+      "What `delegated_type` Expands To",
+      "Direction of Delegation",
+      "Design Rule: Where Attributes Live",
+      "STI vs Delegated Type",
+      "N+1 Gotcha",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-17",
+    "updated": "2026-05-07",
+    "next_review": "2026-05-14",
+    "review_interval": 8,
+    "probe_sections": [
+      "The Problem It Solves",
+      "Schema Shape",
+      "What the delegated_type declaration generates",
+      "What `delegated_type` Expands To",
+      "Direction of Delegation",
+      "Design Rule: Where Attributes Live",
+      "STI vs Delegated Type",
+      "N+1 Gotcha"
+    ],
+    "last_probed": [
+      "Schema Shape",
+      "What `delegated_type` Expands To",
+      "What the delegated_type declaration generates",
+      "Direction of Delegation",
+      "Design Rule: Where Attributes Live",
+      "STI vs Delegated Type",
+      "N+1 Gotcha",
+      "The Problem It Solves"
+    ]
+  },
+  "rails/index-with": {
+    "file": "rails/index-with.md",
+    "title": "index_with",
+    "aliases": [
+      "Enumerable index_with",
+      "ActiveSupport index_with"
+    ],
+    "tags": [
+      "ruby",
+      "rails",
+      "active-support",
+      "enumerable"
+    ],
+    "sections": [
+      "Fixed Value vs Block",
+      "index_with vs index_by",
+      "index_with vs to_h",
+      "Duplicate Keys",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-10",
+    "updated": "2026-05-07",
+    "next_review": "2026-05-14",
+    "review_interval": 12,
+    "probe_sections": [
+      "Fixed Value vs Block",
+      "index_with vs index_by",
+      "index_with vs to_h",
+      "Duplicate Keys"
+    ],
+    "last_probed": [
+      "index_with vs to_h",
+      "Duplicate Keys",
+      "Fixed Value vs Block",
+      "index_with vs index_by"
+    ]
+  },
+  "rails/routing/collection-and-member-routes": {
+    "file": "rails/routing/collection-and-member-routes.md",
+    "title": "Collection and Member Routes",
+    "aliases": [
+      "collection route",
+      "member route",
+      "collection vs member",
+      "custom resource routes"
+    ],
+    "tags": [
+      "rails",
+      "routing"
+    ],
+    "sections": [
+      "The Decision Table",
+      "Declaring collection and member routes",
+      "Routing to a Different Controller",
+      "Param Naming Rules",
+      "When to use collection vs member",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-14",
+    "updated": "2026-05-07",
+    "next_review": "2026-05-19",
+    "review_interval": 12,
+    "probe_sections": [
+      "The Decision Table",
+      "Declaring collection and member routes",
+      "Routing to a Different Controller",
+      "Param Naming Rules",
+      "When to use collection vs member"
+    ],
+    "last_probed": [
+      "Declaring collection and member routes",
+      "Routing to a Different Controller",
+      "Param Naming Rules",
+      "When to use collection vs member",
+      "The Decision Table"
+    ]
+  },
+  "rails/routing/routing-index": {
+    "file": "rails/routing/routing-index.md",
+    "title": "Routing Index",
+    "aliases": [
+      "rails-routing-moc",
+      "rails routing map"
+    ],
+    "tags": [
+      "moc",
+      "routing"
+    ],
+    "sections": [
+      "Pages"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-07",
+    "updated": "2026-05-07",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Pages"
+    ],
+    "last_probed": [
+      "Pages"
+    ]
+  },
+  "rails/routing/path-helper-naming": {
+    "file": "rails/routing/path-helper-naming.md",
+    "title": "Path Helper Naming",
+    "aliases": [
+      "rename path helper",
+      "as option routes",
+      "path helper as",
+      "_index suffix"
+    ],
+    "tags": [
+      "rails",
+      "routing"
+    ],
+    "sections": [
+      "Renaming with `as:`",
+      "The `_index` Suffix",
+      "Fix: Set `as:` Explicitly",
+      "How to verify path helper names at the console",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-14",
+    "updated": "2026-05-07",
+    "next_review": "2026-05-14",
+    "review_interval": 12,
+    "probe_sections": [
+      "Renaming with `as:`",
+      "The `_index` Suffix",
+      "Fix: Set `as:` Explicitly",
+      "How to verify path helper names at the console"
+    ],
+    "last_probed": [
+      "Renaming with `as:`",
+      "The `_index` Suffix",
+      "Fix: Set `as:` Explicitly",
+      "How to verify path helper names at the console"
+    ]
+  },
+  "rails/routing/route-organization": {
+    "file": "rails/routing/route-organization.md",
+    "title": "Route Organization",
+    "aliases": [
+      "rails draw",
+      "route files",
+      "routes draw",
+      "rails defaults"
+    ],
+    "tags": [
+      "rails",
+      "routing"
+    ],
+    "sections": [
+      "draw -- Split Routes into Files",
+      "defaults -- Set Shared Parameters",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-13",
+    "updated": "2026-05-07",
+    "next_review": "2026-05-13",
+    "review_interval": 14,
+    "probe_sections": [
+      "draw -- Split Routes into Files",
+      "defaults -- Set Shared Parameters"
+    ],
+    "last_probed": [
+      "draw -- Split Routes into Files",
+      "defaults -- Set Shared Parameters"
+    ]
+  },
+  "rails/routing/routing-concerns": {
+    "file": "rails/routing/routing-concerns.md",
+    "title": "Routing Concerns",
+    "aliases": [
+      "rails concern",
+      "route concerns",
+      "routing concern"
+    ],
+    "tags": [
+      "rails",
+      "routing"
+    ],
+    "sections": [
+      "The problem: duplicated route blocks across resources",
+      "Extract a Concern",
+      "Multiple Concerns",
+      "When to extract a routing concern",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-13",
+    "updated": "2026-05-07",
+    "next_review": "2026-06-16",
+    "review_interval": 48,
+    "probe_sections": [
+      "The problem: duplicated route blocks across resources",
+      "Extract a Concern",
+      "Multiple Concerns",
+      "When to extract a routing concern"
+    ],
+    "last_probed": [
+      "When to extract a routing concern",
+      "The problem: duplicated route blocks across resources",
+      "Extract a Concern",
+      "Multiple Concerns"
+    ]
+  },
+  "rails/routing/scope-vs-namespace": {
+    "file": "rails/routing/scope-vs-namespace.md",
+    "title": "Scope vs Namespace",
+    "aliases": [
+      "rails scope",
+      "rails namespace",
+      "scope vs namespace routing",
+      "route scope"
+    ],
+    "tags": [
+      "rails",
+      "routing"
+    ],
+    "sections": [
+      "The Three Knobs",
+      "Scope Picks and Chooses",
+      "Module Path Format",
+      "Per-Resource Options",
+      "The controller: Option",
+      "When to use scope vs namespace vs module",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-13",
+    "updated": "2026-05-07",
+    "next_review": "2026-05-29",
+    "review_interval": 30,
+    "probe_sections": [
+      "The Three Knobs",
+      "Scope Picks and Chooses",
+      "Module Path Format",
+      "Per-Resource Options",
+      "The controller: Option",
+      "When to use scope vs namespace vs module"
+    ],
+    "last_probed": [
+      "Per-Resource Options",
+      "The controller: Option",
+      "When to use scope vs namespace vs module",
+      "The Three Knobs",
+      "Scope Picks and Chooses",
+      "Module Path Format"
+    ]
+  },
+  "rails/routing/shallow-routing": {
+    "file": "rails/routing/shallow-routing.md",
+    "title": "Shallow Routing",
+    "aliases": [
+      "shallow nesting",
+      "shallow routes",
+      "shallow true"
+    ],
+    "tags": [
+      "rails",
+      "routing"
+    ],
+    "sections": [
+      "How shallow routing splits member vs collection routes",
+      "Why This Split",
+      "Named Helpers Change Too",
+      "Applying to All Nested Resources",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-13",
+    "updated": "2026-05-07",
+    "next_review": "2026-05-15",
+    "review_interval": 20,
+    "probe_sections": [
+      "How shallow routing splits member vs collection routes",
+      "Why This Split",
+      "Named Helpers Change Too",
+      "Applying to All Nested Resources"
+    ],
+    "last_probed": [
+      "Applying to All Nested Resources",
+      "How shallow routing splits member vs collection routes",
+      "Why This Split",
+      "Named Helpers Change Too"
+    ]
+  },
+  "rails/routing/singular-resource": {
+    "file": "rails/routing/singular-resource.md",
+    "title": "Singular Resource",
+    "aliases": [
+      "resource singular",
+      "resource vs resources",
+      "singular route"
+    ],
+    "tags": [
+      "rails",
+      "routing"
+    ],
+    "sections": [
+      "6 Routes, Not 7",
+      "Controller Is Still Plural",
+      "When to declare a singular resource",
+      "How Identity Is Resolved",
+      "Nesting Works the Same",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-13",
+    "updated": "2026-05-07",
+    "next_review": "2026-05-15",
+    "review_interval": 20,
+    "probe_sections": [
+      "6 Routes, Not 7",
+      "Controller Is Still Plural",
+      "When to declare a singular resource",
+      "How Identity Is Resolved",
+      "Nesting Works the Same"
+    ],
+    "last_probed": [
+      "6 Routes, Not 7",
+      "How Identity Is Resolved",
+      "Nesting Works the Same",
+      "Controller Is Still Plural",
+      "When to declare a singular resource"
+    ]
+  },
+  "rails/solidqueue-queue-admin": {
+    "file": "rails/solidqueue-queue-admin.md",
+    "title": "SolidQueue Queue Admin",
+    "aliases": [
+      "solid_queue clear queue",
+      "solid queue drain",
+      "solid_queue delete jobs",
+      "solid_queue purge"
+    ],
+    "tags": [
+      "rails",
+      "solid-queue",
+      "background-jobs",
+      "ops"
+    ],
+    "sections": [
+      "Clearing a queue",
+      "The batching gotcha",
+      "Nuclear path for large queues",
+      "discard vs delete_all",
+      "Sources"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-23",
+    "updated": "2026-05-07",
+    "next_review": "2026-05-29",
+    "review_interval": 22,
+    "probe_sections": [
+      "Clearing a queue",
+      "The batching gotcha",
+      "Nuclear path for large queues",
+      "discard vs delete_all"
+    ],
+    "last_probed": [
+      "Clearing a queue",
+      "The batching gotcha",
+      "Nuclear path for large queues",
+      "discard vs delete_all"
+    ]
+  },
+  "reactive/observable-error-handling": {
+    "file": "reactive/observable-error-handling.md",
+    "title": "Observable Error Handling",
+    "aliases": [
+      "RxJS error handling",
+      "catchError",
+      "retry observable",
+      "observable errors",
+      "onError observable"
+    ],
+    "tags": [
+      "reactive",
+      "rxjs",
+      "error-handling"
+    ],
+    "sections": [
+      "How error terminates a stream: subscription state after onError",
+      "catchError: signature, recovery pattern, and re-throw",
+      "retry vs retryWhen: immediate resubscription vs conditional backoff",
+      "Error in inner vs outer observable (flatMap/switchMap)",
+      "Dead subscriber trap: subscribing after a subject has errored",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-07",
+    "updated": "2026-05-07",
+    "next_review": "2026-05-10",
+    "review_interval": 3,
+    "probe_sections": [
+      "How error terminates a stream: subscription state after onError",
+      "catchError: signature, recovery pattern, and re-throw",
+      "retry vs retryWhen: immediate resubscription vs conditional backoff",
+      "Error in inner vs outer observable (flatMap/switchMap)",
+      "Dead subscriber trap: subscribing after a subject has errored"
+    ],
+    "last_probed": [
+      "How error terminates a stream: subscription state after onError",
+      "catchError: signature, recovery pattern, and re-throw",
+      "retry vs retryWhen: immediate resubscription vs conditional backoff",
+      "Error in inner vs outer observable (flatMap/switchMap)",
+      "Dead subscriber trap: subscribing after a subject has errored"
+    ]
+  },
+  "reactive/observables": {
+    "file": "reactive/observables.md",
+    "title": "Observables",
+    "aliases": [
+      "Observable",
+      "RxJS observable",
+      "cold observable",
+      "hot observable",
+      "subscribe observable"
+    ],
+    "tags": [
+      "reactive",
+      "rxjs",
+      "observables"
+    ],
+    "sections": [
+      "Why observables are lazy and what subscribe triggers",
+      "The Observable Contract: grammar and serial delivery rule",
+      "Cold vs hot observables: independent vs shared execution",
+      "Subscription lifecycle: what subscribe returns and how teardown works",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-07",
+    "updated": "2026-05-07",
+    "next_review": "2026-05-10",
+    "review_interval": 3,
+    "probe_sections": [
+      "Why observables are lazy and what subscribe triggers",
+      "The Observable Contract: grammar and serial delivery rule",
+      "Cold vs hot observables: independent vs shared execution",
+      "Subscription lifecycle: what subscribe returns and how teardown works"
+    ],
+    "last_probed": [
+      "Why observables are lazy and what subscribe triggers",
+      "The Observable Contract: grammar and serial delivery rule",
+      "Cold vs hot observables: independent vs shared execution",
+      "Subscription lifecycle: what subscribe returns and how teardown works"
+    ]
+  },
+  "reactive/reactive-index": {
+    "file": "reactive/reactive-index.md",
+    "title": "Reactive Index",
+    "aliases": [
+      "reactive-moc",
+      "reactive map"
+    ],
+    "tags": [
+      "moc",
+      "reactive"
+    ],
+    "sections": [
+      "Pages"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-07",
+    "updated": "2026-05-07",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Pages"
+    ],
+    "last_probed": [
+      "Pages"
+    ]
+  },
+  "reactive/reactive-programming": {
+    "file": "reactive/reactive-programming.md",
+    "title": "Reactive Programming",
+    "aliases": [
+      "reactive programming paradigm",
+      "reactive extensions paradigm",
+      "streams programming",
+      "reactive data streams"
+    ],
+    "tags": [
+      "reactive",
+      "rxjs",
+      "streams"
+    ],
+    "sections": [
+      "Reactive programming definition: streams as first-class values",
+      "Stream anatomy: values, errors, and completion over time",
+      "Core operator categories: transform, filter, combine, flatten",
+      "flatMap/mergeMap: collapsing a stream of streams",
+      "Mental model shift from imperative to reactive",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-07",
+    "updated": "2026-05-07",
+    "next_review": "2026-05-10",
+    "review_interval": 3,
+    "probe_sections": [
+      "Reactive programming definition: streams as first-class values",
+      "Stream anatomy: values, errors, and completion over time",
+      "Core operator categories: transform, filter, combine, flatten",
+      "flatMap/mergeMap: collapsing a stream of streams",
+      "Mental model shift from imperative to reactive"
+    ],
+    "last_probed": [
+      "Reactive programming definition: streams as first-class values",
+      "Stream anatomy: values, errors, and completion over time",
+      "Core operator categories: transform, filter, combine, flatten",
+      "flatMap/mergeMap: collapsing a stream of streams",
+      "Mental model shift from imperative to reactive"
+    ]
+  },
+  "ruby/ruby-index": {
+    "file": "ruby/ruby-index.md",
+    "title": "Ruby Index",
+    "aliases": [
+      "ruby-moc",
+      "ruby map"
+    ],
+    "tags": [
+      "moc",
+      "ruby"
+    ],
+    "sections": [
+      "Pages"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-20",
+    "updated": "2026-05-07",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Pages"
+    ],
+    "last_probed": [
+      "Pages"
+    ]
+  },
+  "ruby/transform-values": {
+    "file": "ruby/transform-values.md",
+    "title": "transform_values",
+    "aliases": [
+      "transform_values",
+      "ruby transform_values",
+      "hash transform values"
+    ],
+    "tags": [
+      "ruby",
+      "hash",
+      "enumerable"
+    ],
+    "sections": [
+      "TL;DR",
+      "What transform_values does and why it preserves keys",
+      "vs map on a hash",
+      "The block receives only the value",
+      "Bang variant",
+      "with_index for positional info",
+      "When not to use it",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-17",
+    "updated": "2026-05-07",
+    "next_review": "2026-06-04",
+    "review_interval": 28,
+    "probe_sections": [
+      "What transform_values does and why it preserves keys",
+      "vs map on a hash",
+      "The block receives only the value",
+      "Bang variant",
+      "with_index for positional info",
+      "When not to use it"
+    ],
+    "last_probed": []
+  },
+  "security/csrf": {
+    "file": "security/csrf.md",
+    "title": "CSRF",
+    "aliases": [
+      "csrf",
+      "cross-site request forgery",
+      "xsrf"
+    ],
+    "tags": [
+      "security",
+      "web"
+    ],
+    "sections": [
+      "Why the browser makes CSRF possible",
+      "Three preconditions for a successful CSRF attack",
+      "Why SameSite=Lax doesn't fully protect against subdomain attacks",
+      "Synchronizer token vs. signed double-submit cookie",
+      "Why CSRF tokens don't stop XSS",
+      "Login CSRF and the pre-session token fix",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-07",
+    "updated": "2026-05-07",
+    "next_review": "2026-05-10",
+    "review_interval": 3,
+    "probe_sections": [
+      "Why the browser makes CSRF possible",
+      "Three preconditions for a successful CSRF attack",
+      "Why SameSite=Lax doesn't fully protect against subdomain attacks",
+      "Synchronizer token vs. signed double-submit cookie",
+      "Why CSRF tokens don't stop XSS",
+      "Login CSRF and the pre-session token fix"
+    ],
+    "last_probed": [
+      "Why the browser makes CSRF possible",
+      "Three preconditions for a successful CSRF attack",
+      "Why SameSite=Lax doesn't fully protect against subdomain attacks",
+      "Synchronizer token vs. signed double-submit cookie",
+      "Why CSRF tokens don't stop XSS",
+      "Login CSRF and the pre-session token fix"
+    ]
+  },
+  "security/hsts": {
+    "file": "security/hsts.md",
+    "title": "HSTS",
+    "aliases": [
+      "HTTP Strict Transport Security",
+      "Strict-Transport-Security header",
+      "HSTS preload"
+    ],
+    "tags": [
+      "security",
+      "https",
+      "web"
+    ],
+    "sections": [
+      "The SSL Stripping Attack",
+      "The HSTS header fields: max-age, includeSubDomains, preload",
+      "TOFU Problem (Trust On First Use)",
+      "Preload",
+      "Cross-Host Redirects",
+      "Full Defense Stack",
+      "What the HSTS header looks like on a real site",
+      "Browser Storage"
+    ],
+    "flashcard_ids": [
+      "cmne7xvvx01sd0mso4nghg03i",
+      "cmne7xw1v01u10msoxw2b49vt",
+      "cmne7xw2401u30msofm43aa2a",
+      "cmne7xvym01t50msou805xi7h",
+      "cmne7xwri02050mso5k9tqzu4"
+    ],
+    "created": "2026-04-10",
+    "updated": "2026-05-07",
+    "next_review": "2026-05-14",
+    "review_interval": 15,
+    "probe_sections": [
+      "The SSL Stripping Attack",
+      "The HSTS header fields: max-age, includeSubDomains, preload",
+      "TOFU Problem (Trust On First Use)",
+      "Preload",
+      "Cross-Host Redirects",
+      "Full Defense Stack",
+      "What the HSTS header looks like on a real site",
+      "Browser Storage"
+    ],
+    "last_probed": [
+      "What the HSTS header looks like on a real site",
+      "Browser Storage",
+      "The SSL Stripping Attack",
+      "The HSTS header fields: max-age, includeSubDomains, preload",
+      "TOFU Problem (Trust On First Use)",
+      "Preload",
+      "Cross-Host Redirects",
+      "Full Defense Stack"
+    ]
+  },
+  "security/same-origin-policy": {
+    "file": "security/same-origin-policy.md",
+    "title": "Same-Origin Policy",
+    "aliases": [
+      "SOP",
+      "same origin policy"
+    ],
+    "tags": [
+      "security",
+      "web",
+      "browser"
+    ],
+    "sections": [
+      "TL;DR",
+      "What an Origin Is",
+      "What SOP Actually Blocks",
+      "The Threat Model",
+      "SOP Is Not Configurable",
+      "Server-to-Server Requests",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-29",
+    "updated": "2026-05-07",
+    "next_review": "2026-06-11",
+    "review_interval": 35,
+    "probe_sections": [
+      "What an Origin Is",
+      "What SOP Actually Blocks",
+      "The Threat Model",
+      "SOP Is Not Configurable",
+      "Server-to-Server Requests"
+    ],
+    "last_probed": [
+      "What an Origin Is",
+      "What SOP Actually Blocks",
+      "The Threat Model",
+      "SOP Is Not Configurable",
+      "Server-to-Server Requests"
+    ]
+  },
+  "security/security-index": {
+    "file": "security/security-index.md",
+    "title": "Security Index",
+    "aliases": [
+      "security-moc",
+      "security map"
+    ],
+    "tags": [
+      "moc",
+      "security"
+    ],
+    "sections": [
+      "Pages"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-20",
+    "updated": "2026-05-07",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Pages"
+    ],
+    "last_probed": [
+      "Pages"
+    ]
+  },
+  "sql/array-agg": {
+    "file": "sql/array-agg.md",
+    "title": "array_agg",
+    "aliases": [
+      "array_agg",
+      "postgres array_agg",
+      "sql array aggregate"
+    ],
+    "tags": [
+      "sql",
+      "postgres",
+      "aggregate"
+    ],
+    "sections": [
+      "TL;DR",
+      "What array_agg collects and the implicit single-group rule",
+      "No GROUP BY means one implicit group",
+      "Ordering is non-deterministic by default",
+      "NULLs are included by default",
+      "Empty input returns NULL, not {}",
+      "DISTINCT + ORDER BY must share the expression",
+      "array_agg vs jsonb_agg",
+      "Canonical shape for \"safe\" usage",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-17",
+    "updated": "2026-05-07",
+    "next_review": "2026-05-09",
+    "review_interval": 2,
+    "probe_sections": [
+      "What array_agg collects and the implicit single-group rule",
+      "No GROUP BY means one implicit group",
+      "Ordering is non-deterministic by default",
+      "NULLs are included by default",
+      "Empty input returns NULL, not {}",
+      "DISTINCT + ORDER BY must share the expression",
+      "array_agg vs jsonb_agg",
+      "Canonical shape for \"safe\" usage"
+    ],
+    "last_probed": []
   },
   "sql/nullable-columns": {
     "file": "sql/nullable-columns.md",
@@ -1396,22 +1712,22 @@
       "Sentinels masquerading as values"
     ]
   },
-  "angular/angular-index": {
-    "file": "angular/angular-index.md",
-    "title": "Angular Index",
+  "sql/sql-index": {
+    "file": "sql/sql-index.md",
+    "title": "SQL Index",
     "aliases": [
-      "angular-moc",
-      "angular map"
+      "sql-moc",
+      "sql map"
     ],
     "tags": [
       "moc",
-      "angular"
+      "sql"
     ],
     "sections": [
       "Pages"
     ],
     "flashcard_ids": [],
-    "created": "2026-05-07",
+    "created": "2026-04-20",
     "updated": "2026-05-07",
     "next_review": "",
     "review_interval": null,
@@ -1420,145 +1736,6 @@
     ],
     "last_probed": [
       "Pages"
-    ]
-  },
-  "angular/signals-and-change-detection": {
-    "file": "angular/signals-and-change-detection.md",
-    "title": "Signals and Change Detection",
-    "aliases": [
-      "angular signals CD",
-      "angular signals change detection",
-      "toSignal",
-      "semi-local change detection",
-      "zoneless angular"
-    ],
-    "tags": [
-      "angular",
-      "frontend",
-      "change-detection",
-      "signals",
-      "rxjs"
-    ],
-    "sections": [
-      "Signals push-pull model vs Zone.js passive patching",
-      "How signal writes mark ancestors: traversal flag vs dirty flag",
-      "Semi-local CD: which nodes are traversed vs which re-evaluate bindings",
-      "The click-event caveat: when semi-local CD collapses",
-      "toSignal(): observable-to-signal bridge and what it buys",
-      "Signals vs async pipe: when to use which",
-      "Related Concepts",
-      "References"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-05-07",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-10",
-    "review_interval": 3,
-    "probe_sections": [
-      "Signals push-pull model vs Zone.js passive patching",
-      "How signal writes mark ancestors: traversal flag vs dirty flag",
-      "Semi-local CD: which nodes are traversed vs which re-evaluate bindings",
-      "The click-event caveat: when semi-local CD collapses",
-      "toSignal(): observable-to-signal bridge and what it buys",
-      "Signals vs async pipe: when to use which"
-    ],
-    "last_probed": [
-      "Signals push-pull model vs Zone.js passive patching",
-      "How signal writes mark ancestors: traversal flag vs dirty flag",
-      "Semi-local CD: which nodes are traversed vs which re-evaluate bindings",
-      "The click-event caveat: when semi-local CD collapses",
-      "toSignal(): observable-to-signal bridge and what it buys",
-      "Signals vs async pipe: when to use which"
-    ]
-  },
-  "angular/change-detection": {
-    "file": "angular/change-detection.md",
-    "title": "Change Detection",
-    "aliases": [
-      "angular CD",
-      "OnPush change detection",
-      "ChangeDetectionStrategy",
-      "angular change detection strategy"
-    ],
-    "tags": [
-      "angular",
-      "frontend",
-      "change-detection"
-    ],
-    "sections": [
-      "Zone.js: what triggers CD and what it cannot know",
-      "Default strategy: full DFS tree walk every cycle",
-      "OnPush: four conditions that dirty a component",
-      "Mutation on @Input: why the child's view goes stale",
-      "setTimeout and manual subscribe silently miss OnPush",
-      "markForCheck vs detectChanges",
-      "Related Concepts",
-      "References"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-05-07",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-10",
-    "review_interval": 3,
-    "probe_sections": [
-      "Zone.js: what triggers CD and what it cannot know",
-      "Default strategy: full DFS tree walk every cycle",
-      "OnPush: four conditions that dirty a component",
-      "Mutation on @Input: why the child's view goes stale",
-      "setTimeout and manual subscribe silently miss OnPush",
-      "markForCheck vs detectChanges"
-    ],
-    "last_probed": [
-      "Zone.js: what triggers CD and what it cannot know",
-      "Default strategy: full DFS tree walk every cycle",
-      "OnPush: four conditions that dirty a component",
-      "Mutation on @Input: why the child's view goes stale",
-      "setTimeout and manual subscribe silently miss OnPush",
-      "markForCheck vs detectChanges"
-    ]
-  },
-  "security/csrf": {
-    "file": "security/csrf.md",
-    "title": "CSRF",
-    "aliases": [
-      "csrf",
-      "cross-site request forgery",
-      "xsrf"
-    ],
-    "tags": [
-      "security",
-      "web"
-    ],
-    "sections": [
-      "Why the browser makes CSRF possible",
-      "Three preconditions for a successful CSRF attack",
-      "Why SameSite=Lax doesn't fully protect against subdomain attacks",
-      "Synchronizer token vs. signed double-submit cookie",
-      "Why CSRF tokens don't stop XSS",
-      "Login CSRF and the pre-session token fix",
-      "Related Concepts",
-      "References"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-05-07",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-10",
-    "review_interval": 3,
-    "probe_sections": [
-      "Why the browser makes CSRF possible",
-      "Three preconditions for a successful CSRF attack",
-      "Why SameSite=Lax doesn't fully protect against subdomain attacks",
-      "Synchronizer token vs. signed double-submit cookie",
-      "Why CSRF tokens don't stop XSS",
-      "Login CSRF and the pre-session token fix"
-    ],
-    "last_probed": [
-      "Why the browser makes CSRF possible",
-      "Three preconditions for a successful CSRF attack",
-      "Why SameSite=Lax doesn't fully protect against subdomain attacks",
-      "Synchronizer token vs. signed double-submit cookie",
-      "Why CSRF tokens don't stop XSS",
-      "Login CSRF and the pre-session token fix"
     ]
   }
 }

@@ -117,6 +117,7 @@ def lint_wiki(wiki_dir: Path) -> tuple[list[str], list[str]]:
     errors.extend(_check_flashcard_ids(pages, index))
     errors.extend(_check_probe_sections(wiki_dir, pages, index))
     warnings.extend(_check_moc_coverage(wiki_dir, pages))
+    warnings.extend(_check_moc_split_suggestion(wiki_dir, pages))
     warnings.extend(_check_prose_quality(pages))
     warnings.extend(_check_sentence_fragments(pages))
     warnings.extend(_check_colon_connectors(pages))
@@ -127,34 +128,116 @@ def lint_wiki(wiki_dir: Path) -> tuple[list[str], list[str]]:
 def _check_moc_coverage(wiki_dir: Path, pages: list[ParsedPage]) -> list[str]:
     """Warn when MOCs and folders drift out of sync.
 
-    - moc-missing: folder has pages but no <folder>-index.md
-    - moc-drift:   folder has a MOC but some non-MOC page isn't listed in it
+    Supports one level of nesting (top-level + sub-folders).
+
+    - moc-missing: folder/sub-folder has pages but no <name>-index.md
+    - moc-drift:   page not listed in its DIRECT parent folder's MOC.
+                   Top-level MOC must list loose top-level pages AND each
+                   sub-folder's MOC link. Sub-MOCs list only their direct children.
     """
     warnings: list[str] = []
-    by_folder: dict[str, list[ParsedPage]] = {}
+
+    # Group pages by relative parent path so each folder is checked independently.
+    by_dir: dict[Path, list[ParsedPage]] = {}
     for p in pages:
         parent = p.path.parent
-        if parent.parent != wiki_dir:
+        try:
+            rel_parent = parent.relative_to(wiki_dir)
+        except ValueError:
             continue
-        by_folder.setdefault(parent.name, []).append(p)
+        # Only support depth 1 and 2 (top-level folders and one level of nesting).
+        if len(rel_parent.parts) not in (1, 2):
+            continue
+        by_dir.setdefault(parent, []).append(p)
 
-    for folder, folder_pages in by_folder.items():
-        moc_name = f"{folder}-index.md"
+    # Map of folder path → set of subfolder names that have a MOC (used by parent drift).
+    subfolder_mocs: dict[Path, set[str]] = {}
+    for folder_path, folder_pages in by_dir.items():
+        rel_parts = folder_path.relative_to(wiki_dir).parts
+        if len(rel_parts) != 2:
+            continue
+        sub = rel_parts[1]
+        moc_name = f"{sub}-index.md"
+        if any(p.path.name == moc_name for p in folder_pages):
+            subfolder_mocs.setdefault(folder_path.parent, set()).add(sub)
+
+    for folder_path, folder_pages in by_dir.items():
+        rel_parts = folder_path.relative_to(wiki_dir).parts
+        folder_name = rel_parts[-1]
+        moc_name = f"{folder_name}-index.md"
         moc = next((p for p in folder_pages if p.path.name == moc_name), None)
         siblings = [p for p in folder_pages if p.path.name != moc_name]
+        rel_folder = "/".join(rel_parts)
+
         if moc is None:
             if siblings:
                 warnings.append(
-                    f"moc-missing: folder '{folder}' has {len(siblings)} page(s) but no {moc_name}"
+                    f"moc-missing: folder '{rel_folder}' has {len(siblings)} page(s) but no {moc_name}"
                 )
             continue
+
         listed = set(_WIKILINK_RE.findall(_strip_code(moc.body)))
+
+        # Direct-child pages (loose pages in this folder) must be listed.
         for sib in siblings:
-            expected = f"{folder}/{sib.path.stem}"
+            expected = f"{rel_folder}/{sib.path.stem}"
             if expected not in listed:
                 warnings.append(
-                    f"moc-drift: {sib.rel} not listed in {folder}/{moc_name}"
+                    f"moc-drift: {sib.rel} not listed in {rel_folder}/{moc_name}"
                 )
+
+        # Top-level MOC: each subfolder MOC must also be listed.
+        if len(rel_parts) == 1:
+            for sub in subfolder_mocs.get(folder_path, set()):
+                expected = f"{rel_folder}/{sub}/{sub}-index"
+                if expected not in listed:
+                    warnings.append(
+                        f"moc-drift: sub-MOC {rel_folder}/{sub}/{sub}-index.md not listed in {rel_folder}/{moc_name}"
+                    )
+    return warnings
+
+
+def _check_moc_split_suggestion(wiki_dir: Path, pages: list[ParsedPage]) -> list[str]:
+    """Suggest a sub-MOC when a top-level folder has ≥8 pages and a tag clusters ≥4 of them.
+
+    Suppressed when a sub-MOC for that tag already exists (wiki/<folder>/<tag>/<tag>-index.md).
+    Tags 'moc' and the folder name itself are excluded from cluster candidates.
+    """
+    warnings: list[str] = []
+    # Group non-MOC pages by top-level folder name.
+    by_top: dict[str, list[ParsedPage]] = {}
+    for p in pages:
+        try:
+            rel_parts = p.path.relative_to(wiki_dir).parts
+        except ValueError:
+            continue
+        if len(rel_parts) != 2:
+            continue
+        if p.path.stem.endswith("-index"):
+            continue
+        by_top.setdefault(rel_parts[0], []).append(p)
+
+    for folder, folder_pages in by_top.items():
+        if len(folder_pages) < 8:
+            continue
+        tag_counts: dict[str, int] = {}
+        for p in folder_pages:
+            for t in p.meta.get("tags") or []:
+                if not isinstance(t, str):
+                    continue
+                if t == "moc" or t == folder:
+                    continue
+                tag_counts[t] = tag_counts.get(t, 0) + 1
+        for tag, count in sorted(tag_counts.items()):
+            if count < 4:
+                continue
+            existing_sub_moc = wiki_dir / folder / tag / f"{tag}-index.md"
+            if existing_sub_moc.exists():
+                continue
+            warnings.append(
+                f"moc-split-suggestion: folder '{folder}' has {len(folder_pages)} pages; "
+                f"tag '{tag}' clusters {count} — consider wiki/{folder}/{tag}/{tag}-index.md"
+            )
     return warnings
 
 
@@ -358,15 +441,23 @@ def _check_moc_frontmatter(wiki_dir: Path, pages: list[ParsedPage]) -> list[str]
     for p in pages:
         if not p.path.stem.endswith("-index"):
             continue
-        if p.path.parent.parent != wiki_dir:
+        try:
+            rel_parts = p.path.relative_to(wiki_dir).parts
+        except ValueError:
+            continue
+        # Top-level MOC: wiki/<folder>/<folder>-index.md (depth 2)
+        # Sub-MOC:        wiki/<folder>/<sub>/<sub>-index.md  (depth 3)
+        if len(rel_parts) not in (2, 3):
             continue
         folder = p.path.parent.name
+        is_sub_moc = len(rel_parts) == 3
         tags = p.meta.get("tags") or []
         if "moc" not in tags:
             errors.append(f"moc-tag-missing: {p.rel} must include 'moc' in tags")
         if folder not in tags:
             errors.append(f"moc-folder-tag-missing: {p.rel} must include '{folder}' in tags")
-        if p.meta.get("allow_orphan") is not True:
+        # Top-level MOCs are orphans by design; sub-MOCs are linked from their parent MOC.
+        if not is_sub_moc and p.meta.get("allow_orphan") is not True:
             errors.append(f"moc-allow-orphan-missing: {p.rel} must declare allow_orphan: true")
         for field in _MOC_FORBIDDEN_FIELDS:
             if field in p.meta:

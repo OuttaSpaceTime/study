@@ -101,6 +101,6 @@ Path helpers are the contract between routes and views/controllers -- a rename a
 
 ## Related Concepts
 
-- [[rails/collection-and-member-routes]] -- where `as:` applies to custom actions
-- [[rails/scope-vs-namespace]] -- `as:` on scope/namespace controls prefix on all nested helpers
-- [[rails/shallow-routing]] -- shallow mode changes helper names by dropping the parent prefix
+- [[rails/routing/collection-and-member-routes]] -- where `as:` applies to custom actions
+- [[rails/routing/scope-vs-namespace]] -- `as:` on scope/namespace controls prefix on all nested helpers
+- [[rails/routing/shallow-routing]] -- shallow mode changes helper names by dropping the parent prefix
