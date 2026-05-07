@@ -113,6 +113,10 @@
     "explore-solutions": "off",
     "insights-focus": "user-invocable-only",
     "research": "off",
-    "scope-first": "off"
+    "scope-first": "off",
+    "code-review": "off",
+    "forge": "off",
+    "ml-inbox-audit": "user-invocable-only",
+    "solveit-nvim": "off"
   }
 }

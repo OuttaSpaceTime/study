@@ -898,6 +898,167 @@ class TestProbeSections:
         )
 
 
+class TestMocFrontmatter:
+    """MOC pages have stricter frontmatter rules than content pages."""
+
+    def _moc(self, body_extra_meta: str = "", body: str = "## Pages\n") -> str:
+        return textwrap.dedent(f"""\
+            ---
+            title: "Git Index"
+            aliases: [git-moc]
+            tags: [moc, git]
+            created: 2026-04-09
+            updated: 2026-04-09
+            source_skill: manual
+            flashcard_ids: []
+            probe_sections: [Pages]
+            last_probed: [Pages]
+            allow_orphan: true
+            {body_extra_meta}---
+
+            # Git Index
+
+            {body}
+        """)
+
+    def test_clean_moc_passes(self, wiki_dir: Path):
+        _write_page(wiki_dir, "git/git-index.md", self._moc())
+        _write_index(wiki_dir, {})
+        errors, _ = lint_wiki(wiki_dir)
+        moc_errors = [e for e in errors if "moc-" in e]
+        assert moc_errors == [], f"clean MOC should pass: {moc_errors}"
+
+    def test_missing_moc_tag_is_error(self, wiki_dir: Path):
+        page = textwrap.dedent("""\
+            ---
+            title: "Git Index"
+            aliases: [git-moc]
+            tags: [git]
+            created: 2026-04-09
+            updated: 2026-04-09
+            source_skill: manual
+            flashcard_ids: []
+            probe_sections: [Pages]
+            last_probed: [Pages]
+            allow_orphan: true
+            ---
+
+            # Git Index
+
+            ## Pages
+        """)
+        _write_page(wiki_dir, "git/git-index.md", page)
+        _write_index(wiki_dir, {})
+        errors, _ = lint_wiki(wiki_dir)
+        assert any("moc-tag-missing" in e for e in errors), errors
+
+    def test_missing_folder_tag_is_error(self, wiki_dir: Path):
+        page = textwrap.dedent("""\
+            ---
+            title: "Git Index"
+            aliases: [git-moc]
+            tags: [moc]
+            created: 2026-04-09
+            updated: 2026-04-09
+            source_skill: manual
+            flashcard_ids: []
+            probe_sections: [Pages]
+            last_probed: [Pages]
+            allow_orphan: true
+            ---
+
+            # Git Index
+
+            ## Pages
+        """)
+        _write_page(wiki_dir, "git/git-index.md", page)
+        _write_index(wiki_dir, {})
+        errors, _ = lint_wiki(wiki_dir)
+        assert any("moc-folder-tag-missing" in e for e in errors), errors
+
+    def test_missing_allow_orphan_is_error(self, wiki_dir: Path):
+        page = textwrap.dedent("""\
+            ---
+            title: "Git Index"
+            aliases: [git-moc]
+            tags: [moc, git]
+            created: 2026-04-09
+            updated: 2026-04-09
+            source_skill: manual
+            flashcard_ids: []
+            probe_sections: [Pages]
+            last_probed: [Pages]
+            ---
+
+            # Git Index
+
+            ## Pages
+        """)
+        _write_page(wiki_dir, "git/git-index.md", page)
+        _write_index(wiki_dir, {})
+        errors, _ = lint_wiki(wiki_dir)
+        assert any("moc-allow-orphan-missing" in e for e in errors), errors
+
+    def test_review_field_on_moc_is_error(self, wiki_dir: Path):
+        page = textwrap.dedent("""\
+            ---
+            title: "Git Index"
+            aliases: [git-moc]
+            tags: [moc, git]
+            created: 2026-04-09
+            updated: 2026-04-09
+            source_skill: manual
+            flashcard_ids: []
+            probe_sections: [Pages]
+            last_probed: [Pages]
+            allow_orphan: true
+            next_review: 2026-05-01
+            review_interval: 3
+            depth: 1
+            ---
+
+            # Git Index
+
+            ## Pages
+        """)
+        _write_page(wiki_dir, "git/git-index.md", page)
+        _write_index(wiki_dir, {})
+        errors, _ = lint_wiki(wiki_dir)
+        for field in ("next_review", "review_interval", "depth"):
+            assert any("moc-forbidden-field" in e and field in e for e in errors), (
+                f"expected moc-forbidden-field for {field}: {errors}"
+            )
+
+
+class TestAliases:
+    def test_single_letter_alias_is_error(self, wiki_dir: Path):
+        _write_page(wiki_dir, "git/test-page.md", textwrap.dedent("""\
+            ---
+            title: "test page"
+            aliases: ["x"]
+            tags: [git]
+            created: 2026-04-09
+            updated: 2026-04-09
+            source_skill: study-walkthrough
+            flashcard_ids: []
+            depth: 1
+            next_review: 2026-05-01
+            review_interval: 3
+            probe_sections: [Section One]
+            allow_orphan: true
+            ---
+
+            # test page
+
+            ## Section One
+
+            Content.
+        """))
+        _write_index(wiki_dir, {})
+        errors, _ = lint_wiki(wiki_dir)
+        assert any("alias-too-short" in e for e in errors), errors
+
+
 class TestFlashcardMismatch:
     def test_mismatch_detected(self, wiki_dir: Path):
         _write_page(wiki_dir, "git/test-page.md", """\

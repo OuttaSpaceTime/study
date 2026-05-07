@@ -104,6 +104,8 @@ def lint_wiki(wiki_dir: Path) -> tuple[list[str], list[str]]:
     warnings: list[str] = []
 
     errors.extend(_check_frontmatter(pages))
+    errors.extend(_check_moc_frontmatter(wiki_dir, pages))
+    errors.extend(_check_aliases(pages))
     link_errors, inbound = _check_wikilinks(wiki_dir, pages)
     errors.extend(link_errors)
     warnings.extend(_check_orphans(pages, inbound))
@@ -220,7 +222,7 @@ def _check_sentence_fragments(pages: list[ParsedPage]) -> list[str]:
             if s.startswith(">") or s.startswith("|"):
                 continue
             parts = _SENT_SPLIT_RE.split(s)
-            for part, nxt in zip(parts[:-1], parts[1:]):
+            for part, nxt in zip(parts[:-1], parts[1:], strict=False):
                 if _word_count_prose(part) > 3:
                     continue
                 if _ABBREV_ENDS_RE.search(part):
@@ -332,6 +334,51 @@ def _check_frontmatter(pages: list[ParsedPage]) -> list[str]:
             for field in CONTENT_REQUIRED_FIELDS:
                 if field not in p.meta:
                     errors.append(f"missing-field: {p.rel} missing frontmatter field '{field}'")
+    return errors
+
+
+_MOC_FORBIDDEN_FIELDS = ("next_review", "review_interval", "depth")
+
+
+def _check_moc_frontmatter(wiki_dir: Path, pages: list[ParsedPage]) -> list[str]:
+    """MOC pages (`<folder>/<folder>-index.md`) have stricter rules than content pages.
+
+    - moc-tag-missing: tags must include 'moc' (the exclusion marker for study-selection).
+    - moc-folder-tag-missing: tags must include the parent folder name.
+    - moc-allow-orphan-missing: must declare allow_orphan: true (MOCs have no inbound links by design).
+    - moc-forbidden-field: must not include next_review / review_interval / depth (MOCs are not studyable).
+    """
+    errors: list[str] = []
+    for p in pages:
+        if not p.path.stem.endswith("-index"):
+            continue
+        if p.path.parent.parent != wiki_dir:
+            continue
+        folder = p.path.parent.name
+        tags = p.meta.get("tags") or []
+        if "moc" not in tags:
+            errors.append(f"moc-tag-missing: {p.rel} must include 'moc' in tags")
+        if folder not in tags:
+            errors.append(f"moc-folder-tag-missing: {p.rel} must include '{folder}' in tags")
+        if p.meta.get("allow_orphan") is not True:
+            errors.append(f"moc-allow-orphan-missing: {p.rel} must declare allow_orphan: true")
+        for field in _MOC_FORBIDDEN_FIELDS:
+            if field in p.meta:
+                errors.append(
+                    f"moc-forbidden-field: {p.rel} must not include '{field}' (MOCs are not studyable)"
+                )
+    return errors
+
+
+def _check_aliases(pages: list[ParsedPage]) -> list[str]:
+    """Aliases must not be single-letter abbreviations (per wiki-write-protocol)."""
+    errors: list[str] = []
+    for p in pages:
+        for alias in p.meta.get("aliases") or []:
+            if isinstance(alias, str) and len(alias.strip()) == 1:
+                errors.append(
+                    f"alias-too-short: {p.rel} alias '{alias}' is a single character; use a longer alias"
+                )
     return errors
 
 

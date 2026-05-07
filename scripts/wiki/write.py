@@ -15,7 +15,6 @@ from scripts.wiki.frontmatter import dump_page, parse_frontmatter
 from scripts.wiki.index import iter_wiki_pages, load_index, save_index, update_entry
 from scripts.wiki.lint import lint_wiki
 
-
 _DEFAULT_REVIEW_INTERVAL = 3
 
 
@@ -25,6 +24,9 @@ def _fill_defaults(page_path: Path, meta: dict) -> bool:
 
     if "flashcard_ids" not in meta:
         meta["flashcard_ids"] = []
+        changed = True
+
+    if _seed_last_probed(meta):
         changed = True
 
     if page_path.stem.endswith("-index"):
@@ -43,6 +45,17 @@ def _fill_defaults(page_path: Path, meta: dict) -> bool:
         changed = True
 
     return changed
+
+
+def _seed_last_probed(meta: dict) -> bool:
+    """Seed last_probed from probe_sections when missing. Mutates meta; returns True iff changed."""
+    if "last_probed" in meta:
+        return False
+    probe_sections = meta.get("probe_sections")
+    if not probe_sections:
+        return False
+    meta["last_probed"] = list(probe_sections)
+    return True
 
 
 def _moc_path(wiki_dir: Path, folder: str) -> Path:
