@@ -7,7 +7,7 @@ tags:
 - moc
 - openapi
 created: '2026-04-20'
-updated: '2026-04-20'
+updated: '2026-05-08'
 source_skill: manual
 probe_sections:
 - Pages
@@ -23,5 +23,7 @@ Map of content for the `openapi/` wiki folder. Auto-maintained by `scripts/wiki-
 
 ## Pages
 
+- [[openapi/openapi-overview]]
 - [[openapi/schema-composition]]
+- [[openapi/spec-layers]]
 

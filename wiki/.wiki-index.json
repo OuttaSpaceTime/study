@@ -574,7 +574,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-20",
-    "updated": "2026-05-07",
+    "updated": "2026-05-08",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -607,9 +607,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-09",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-08",
-    "review_interval": 6,
+    "updated": "2026-05-08",
+    "next_review": "2026-05-15",
+    "review_interval": 7,
     "probe_sections": [
       "anyOf vs oneOf",
       "The oneOf Shared-Field Trap",
@@ -618,11 +618,11 @@
       "not as a Filter"
     ],
     "last_probed": [
+      "anyOf vs oneOf",
+      "The oneOf Shared-Field Trap",
       "allOf Is Not Inheritance",
       "The additionalProperties Trap",
-      "not as a Filter",
-      "anyOf vs oneOf",
-      "The oneOf Shared-Field Trap"
+      "not as a Filter"
     ]
   },
   "programming-languages/compilers-and-interpreters": {
@@ -653,9 +653,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-08",
-    "review_interval": 3,
+    "updated": "2026-05-08",
+    "next_review": "2026-05-12",
+    "review_interval": 4,
     "probe_sections": [
       "Compiler vs interpreter: roles, not languages",
       "Two orthogonal axes: type checking ⊥ compile target",
@@ -664,9 +664,9 @@
     ],
     "last_probed": [
       "Compiler vs interpreter: roles, not languages",
+      "JIT: when bytecode becomes machine code at runtime",
       "Two orthogonal axes: type checking ⊥ compile target",
-      "Case study: the CPython chain",
-      "JIT: when bytecode becomes machine code at runtime"
+      "Case study: the CPython chain"
     ]
   },
   "programming-languages/programming-languages-index": {
@@ -1736,6 +1736,383 @@
     ],
     "last_probed": [
       "Pages"
+    ]
+  },
+  "json-api/document-structure": {
+    "file": "json-api/document-structure.md",
+    "title": "Document structure",
+    "aliases": [
+      "JSON:API document",
+      "JSON:API envelope",
+      "JSON:API resource object",
+      "relationships vs included"
+    ],
+    "tags": [
+      "api-design",
+      "json-api",
+      "rest"
+    ],
+    "sections": [
+      "TL;DR",
+      "Top-level keys and their mutual exclusions",
+      "Resource object shape",
+      "relationships hold pointers, included holds payloads",
+      "Compound documents and the full-linkage rule",
+      "Every node on an include path is included",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-08",
+    "updated": "2026-05-08",
+    "next_review": "2026-05-11",
+    "review_interval": 3,
+    "probe_sections": [
+      "Top-level keys and their mutual exclusions",
+      "Resource object shape",
+      "relationships hold pointers, included holds payloads",
+      "Compound documents and the full-linkage rule",
+      "Every node on an include path is included"
+    ],
+    "last_probed": [
+      "Top-level keys and their mutual exclusions",
+      "Resource object shape",
+      "relationships hold pointers, included holds payloads",
+      "Compound documents and the full-linkage rule",
+      "Every node on an include path is included"
+    ]
+  },
+  "json-api/json-api-index": {
+    "file": "json-api/json-api-index.md",
+    "title": "JSON:API Index",
+    "aliases": [
+      "json-api-moc",
+      "JSON:API map",
+      "JSON:API mental model"
+    ],
+    "tags": [
+      "moc",
+      "json-api",
+      "api-design",
+      "rest"
+    ],
+    "sections": [
+      "The mental model, graph protocol wearing REST clothes",
+      "The envelope-vs-strategy throughline",
+      "When to reach for JSON:API vs GraphQL vs plain REST",
+      "Pages",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-08",
+    "updated": "2026-05-08",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "The mental model, graph protocol wearing REST clothes",
+      "The envelope-vs-strategy throughline",
+      "When to reach for JSON:API vs GraphQL vs plain REST",
+      "Pages"
+    ],
+    "last_probed": [
+      "The mental model, graph protocol wearing REST clothes",
+      "The envelope-vs-strategy throughline",
+      "When to reach for JSON:API vs GraphQL vs plain REST",
+      "Pages"
+    ]
+  },
+  "json-api/query-conventions": {
+    "file": "json-api/query-conventions.md",
+    "title": "Query conventions",
+    "aliases": [
+      "JSON:API sparse fieldsets",
+      "JSON:API pagination",
+      "JSON:API filter",
+      "JSON:API sort",
+      "fields[type]"
+    ],
+    "tags": [
+      "api-design",
+      "json-api",
+      "rest",
+      "pagination"
+    ],
+    "sections": [
+      "TL;DR",
+      "The envelope-vs-strategy split",
+      "Sparse fieldsets are per-type, not per-path",
+      "Pagination URLs are opaque to the client",
+      "Cursor vs offset under concurrent inserts",
+      "Sort is precise, filter is deliberately undefined",
+      "Custom query parameters need a non-alpha character",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-08",
+    "updated": "2026-05-08",
+    "next_review": "2026-05-11",
+    "review_interval": 3,
+    "probe_sections": [
+      "The envelope-vs-strategy split",
+      "Sparse fieldsets are per-type, not per-path",
+      "Pagination URLs are opaque to the client",
+      "Cursor vs offset under concurrent inserts",
+      "Sort is precise, filter is deliberately undefined",
+      "Custom query parameters need a non-alpha character"
+    ],
+    "last_probed": [
+      "The envelope-vs-strategy split",
+      "Sparse fieldsets are per-type, not per-path",
+      "Pagination URLs are opaque to the client",
+      "Cursor vs offset under concurrent inserts",
+      "Sort is precise, filter is deliberately undefined",
+      "Custom query parameters need a non-alpha character"
+    ]
+  },
+  "json-api/meta-vs-resource": {
+    "file": "json-api/meta-vs-resource.md",
+    "title": "meta vs resource",
+    "aliases": [
+      "JSON:API meta",
+      "when to use meta vs resource",
+      "identity test for API design"
+    ],
+    "tags": [
+      "api-design",
+      "json-api",
+      "rest"
+    ],
+    "sections": [
+      "TL;DR",
+      "The identity test",
+      "meta is safe to ignore",
+      "Anti-patterns that should be resources",
+      "Authorization is not a serialisation concern",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-08",
+    "updated": "2026-05-08",
+    "next_review": "2026-05-11",
+    "review_interval": 3,
+    "probe_sections": [
+      "The identity test",
+      "meta is safe to ignore",
+      "Anti-patterns that should be resources",
+      "Authorization is not a serialisation concern"
+    ],
+    "last_probed": [
+      "The identity test",
+      "meta is safe to ignore",
+      "Anti-patterns that should be resources",
+      "Authorization is not a serialisation concern"
+    ]
+  },
+  "json-api/content-type-and-errors": {
+    "file": "json-api/content-type-and-errors.md",
+    "title": "Content type and errors",
+    "aliases": [
+      "application/vnd.api+json",
+      "JSON:API content negotiation",
+      "JSON:API error object",
+      "JSON:API source.pointer"
+    ],
+    "tags": [
+      "api-design",
+      "json-api",
+      "rest",
+      "http"
+    ],
+    "sections": [
+      "TL;DR",
+      "The content type and what 415 vs 406 mean",
+      "Error object shape and the string status quirk",
+      "source.pointer maps errors back to request fields",
+      "Multiple errors per response",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-08",
+    "updated": "2026-05-08",
+    "next_review": "2026-05-11",
+    "review_interval": 3,
+    "probe_sections": [
+      "The content type and what 415 vs 406 mean",
+      "Error object shape and the string status quirk",
+      "source.pointer maps errors back to request fields",
+      "Multiple errors per response"
+    ],
+    "last_probed": [
+      "The content type and what 415 vs 406 mean",
+      "Error object shape and the string status quirk",
+      "source.pointer maps errors back to request fields",
+      "Multiple errors per response"
+    ]
+  },
+  "json-schema/json-schema-index": {
+    "file": "json-schema/json-schema-index.md",
+    "title": "JSON Schema Index",
+    "aliases": [
+      "json-schema-moc",
+      "json-schema map"
+    ],
+    "tags": [
+      "moc",
+      "json-schema"
+    ],
+    "sections": [
+      "Pages"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-08",
+    "updated": "2026-05-08",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Pages"
+    ],
+    "last_probed": [
+      "Pages"
+    ]
+  },
+  "json-schema/json-schema-overview": {
+    "file": "json-schema/json-schema-overview.md",
+    "title": "JSON Schema overview",
+    "aliases": [
+      "json-schema basics",
+      "what is JSON Schema",
+      "json-schema vocabulary"
+    ],
+    "tags": [
+      "json-schema",
+      "api-design",
+      "validation"
+    ],
+    "sections": [
+      "TL;DR",
+      "A predicate vocabulary, not a type definition",
+      "What JSON Schema does not describe",
+      "Drafts and dialect drift",
+      "Null via type lists and keyword type-relativity",
+      "Where it shows up beyond APIs",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-08",
+    "updated": "2026-05-08",
+    "next_review": "2026-05-11",
+    "review_interval": 3,
+    "probe_sections": [
+      "A predicate vocabulary, not a type definition",
+      "What JSON Schema does not describe",
+      "Drafts and dialect drift",
+      "Null via type lists and keyword type-relativity",
+      "Where it shows up beyond APIs"
+    ],
+    "last_probed": [
+      "A predicate vocabulary, not a type definition",
+      "What JSON Schema does not describe",
+      "Drafts and dialect drift",
+      "Null via type lists and keyword type-relativity",
+      "Where it shows up beyond APIs"
+    ]
+  },
+  "openapi/openapi-overview": {
+    "file": "openapi/openapi-overview.md",
+    "title": "OpenAPI overview",
+    "aliases": [
+      "what is OpenAPI",
+      "OpenAPI Specification",
+      "OAS overview"
+    ],
+    "tags": [
+      "openapi",
+      "api-design"
+    ],
+    "sections": [
+      "TL;DR",
+      "An OpenAPI document describes an HTTP API",
+      "Top-level keys (paths, components, security)",
+      "Schema Object equals JSON Schema 2020-12 plus OAS overlay",
+      "The OAS overlay (discriminator, xml, example, externalDocs)",
+      "OpenAPI 3.0 to 3.1 drift",
+      "Naming history (Swagger vs OpenAPI)",
+      "Tooling roles (author, render, generate, validate)",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-08",
+    "updated": "2026-05-08",
+    "next_review": "2026-05-11",
+    "review_interval": 3,
+    "probe_sections": [
+      "An OpenAPI document describes an HTTP API",
+      "Top-level keys (paths, components, security)",
+      "Schema Object equals JSON Schema 2020-12 plus OAS overlay",
+      "The OAS overlay (discriminator, xml, example, externalDocs)",
+      "OpenAPI 3.0 to 3.1 drift",
+      "Naming history (Swagger vs OpenAPI)",
+      "Tooling roles (author, render, generate, validate)"
+    ],
+    "last_probed": [
+      "An OpenAPI document describes an HTTP API",
+      "Top-level keys (paths, components, security)",
+      "Schema Object equals JSON Schema 2020-12 plus OAS overlay",
+      "The OAS overlay (discriminator, xml, example, externalDocs)",
+      "OpenAPI 3.0 to 3.1 drift",
+      "Naming history (Swagger vs OpenAPI)",
+      "Tooling roles (author, render, generate, validate)"
+    ]
+  },
+  "openapi/spec-layers": {
+    "file": "openapi/spec-layers.md",
+    "title": "Spec layers",
+    "aliases": [
+      "API spec layers",
+      "JSON Schema vs OpenAPI vs JSON:API",
+      "API specification stack",
+      "three-layer mental model"
+    ],
+    "tags": [
+      "openapi",
+      "json-schema",
+      "json-api",
+      "api-design"
+    ],
+    "sections": [
+      "TL;DR",
+      "The three layers at a glance",
+      "JSON Schema is contained in OpenAPI",
+      "JSON:API is orthogonal to OpenAPI",
+      "When teams ask whether they need both",
+      "Common confusions",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-08",
+    "updated": "2026-05-08",
+    "next_review": "2026-05-11",
+    "review_interval": 3,
+    "probe_sections": [
+      "The three layers at a glance",
+      "JSON Schema is contained in OpenAPI",
+      "JSON:API is orthogonal to OpenAPI",
+      "When teams ask whether they need both",
+      "Common confusions"
+    ],
+    "last_probed": [
+      "The three layers at a glance",
+      "JSON Schema is contained in OpenAPI",
+      "JSON:API is orthogonal to OpenAPI",
+      "When teams ask whether they need both",
+      "Common confusions"
     ]
   }
 }

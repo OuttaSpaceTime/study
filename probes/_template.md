@@ -1,7 +1,7 @@
 ---
 topic: <topic-slug>
 session: YYYY-MM-DD-walkthrough
-wiki: <path/from/wiki/root or blank>
+wiki: <path/from/wiki/root>  # required — leaving blank orphans the probe from `scripts/wiki-probes`
 created: YYYY-MM-DD HH:MM
 ---
 

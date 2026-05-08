@@ -18,8 +18,8 @@ updated: '2026-05-05'
 source_skill: study-walkthrough
 depth: 1
 last_deepened: '2026-05-05'
-review_interval: 3
-next_review: '2026-05-08'
+review_interval: 4
+next_review: '2026-05-12'
 probe_sections:
 - 'Compiler vs interpreter: roles, not languages'
 - 'Two orthogonal axes: type checking ⊥ compile target'
@@ -27,9 +27,9 @@ probe_sections:
 - 'JIT: when bytecode becomes machine code at runtime'
 last_probed:
 - 'Compiler vs interpreter: roles, not languages'
+- 'JIT: when bytecode becomes machine code at runtime'
 - 'Two orthogonal axes: type checking ⊥ compile target'
 - 'Case study: the CPython chain'
-- 'JIT: when bytecode becomes machine code at runtime'
 allow_orphan: true
 flashcard_ids: []
 ---

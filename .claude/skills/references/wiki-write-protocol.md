@@ -85,18 +85,60 @@ If the heading doesn't tell you what to recall, rename it before setting `probe_
 
 Write short, concrete sentences in active voice. If a sentence feels long, cut it in half.
 
-**Common patterns to avoid:**
+These rules are enforced by `scripts/lint`. **Internalize them before drafting** — fixing prose after the fact takes multiple passes touching every page. The lint catches all em-dashes (including in headings, link text, and list-item descriptions) and most prose-colons.
 
-- **em dash connector**: ❌ `X validates the token — it raises if invalid` → ✅ `X validates the token. It raises if invalid.`
-- **in order to**: ❌ `Call this in order to parse the response` → ✅ `Call this to parse the response`
-- **it's worth noting / it should be noted**: ❌ `It's worth noting that indexes speed up reads` → ✅ `Indexes speed up reads`
-- **utilize**: ❌ `The client utilizes a connection pool` → ✅ `The client uses a connection pool`
-- **leverage (verb)**: ❌ `Rails leverages the database for locking` → ✅ `Rails uses the database for locking`
-- **seamlessly**: ❌ `It integrates seamlessly with Rack` → ✅ `It integrates with Rack via the standard middleware interface`
-- **in conclusion / additionally**: ❌ `Additionally, the cache is invalidated on write` → ✅ `The cache is invalidated on write`
-- **is able to**: ❌ `The worker is able to process multiple queues` → ✅ `The worker can process multiple queues`
+### The two rules that cause the most cleanup churn
 
-**Before / after (full sentences):**
+**No em-dashes anywhere.** Not in prose, not in headings, not in link text, not in list-item descriptions, not in table cells. The lint regex is plain `—` and only strips fenced code blocks before scanning.
+
+| ❌ wrong                              | ✅ right                                            | Why                                  |
+| ------------------------------------- | --------------------------------------------------- | ------------------------------------ |
+| `X validates the token — it raises`   | `X validates the token. It raises`                  | Split into sentences                 |
+| `relationships hold pointers — `{type, id}` pairs` | `relationships hold pointers, i.e. `{type, id}` pairs` | Use comma + connector for asides     |
+| `[[link]] — short description`        | `[[link]]: short description`                       | List-item: colon after link is OK    |
+| `[md](url) — what this is`            | `[md](url): what this is`                           | Same: colon after markdown link OK   |
+| `**bold term** — explanation`         | `**bold term**. Explanation`                        | Split, capitalize the next word      |
+| `## Heading — qualifier`              | `## Heading: qualifier` or `## Heading, qualifier`  | Headings flagged like prose          |
+| `[v1.1 — Errors](url)`                | `[v1.1, Errors](url)` or `[v1.1 spec, Errors](url)` | Em-dash inside link text is flagged  |
+
+**No prose-colons as clause connectors.** A colon may introduce a code fence, list, table, blockquote, or image. A colon after a wikilink, markdown link, bold term, or inline-code term at the start of a list item is allowed (the lint strips these before scanning). Anywhere else, split into two sentences.
+
+| ❌ wrong                                          | ✅ right                                          |
+| ------------------------------------------------- | ------------------------------------------------- |
+| `These together mean: clients reconstruct the graph` | `These together mean clients reconstruct the graph` |
+| `The trap: in one document, you cannot say X`     | `The trap. In one document, you cannot say X.`    |
+| `The general principle: operations belong in...`  | `The general principle. Operations belong in...`  |
+| `The litmus test: a generic client must work`     | `The litmus test. A generic client must work.`    |
+| `A common temptation: "this should hide X"`       | `Consider this temptation. "This should hide X"`  |
+| `Ask: does this have identity?`                   | `Ask whether the data has identity.`              |
+
+**Allowed colon patterns (no flag):**
+
+- `- [[wiki/page]]: description` (list item, colon after wikilink)
+- `- [Title](url): description` (list item, colon after markdown link)
+- `- **Term**: definition` (list item, colon after bold term)
+- `- `code`: description` (list item, colon after inline code)
+- End of line, before a fenced code block / list / table / blockquote / image
+- Heading text: not flagged for colons (em-dashes still are)
+
+### Other banned patterns (full list)
+
+- **in order to** → `to`
+- **it's worth noting / it should be noted** → delete; state directly
+- **due to the fact that** → `because`
+- **furthermore / moreover / additionally / notably / essentially** (line-leading) → cut or restructure
+- **in conclusion** → cut
+- **utilize / utilizes / utilized** → `use`
+- **leverage(s|d) (verb)** → `use`
+- **delve** → `explore` or `read`
+- **is able to / has the ability to** → `can`
+- **seamlessly** → delete or be specific
+- **robust / comprehensive / holistic** → name the actual property
+- **cutting-edge** → name the technology
+- **harness (verb)** → `use`
+- **that being said / it goes without saying** → cut
+
+### Before / after (full sentences)
 
 ❌ `It is worth noting that in order to utilize the connection pool, you need to configure the pool size — this is done in database.yml.`
 
@@ -111,6 +153,15 @@ Write short, concrete sentences in active voice. If a sentence feels long, cut i
 ---
 
 When in doubt, cut the sentence in half.
+
+### Bulk prose cleanup (when it slips through)
+
+If lint flags many em-dashes or prose-colons after writing, do the cleanup in **one tool only**. The `Edit` tool errors with "File has been modified since read" if a Python script touched the file in the same session. Pick one path:
+
+- **Python script** (preferred for >5 replacements across multiple files): one pass with all replacements, then re-run `scripts/wiki-write` to refresh embeddings.
+- **Edit tool** (preferred for ≤5 replacements in one file): use `replace_all=true` for repeated patterns.
+
+Do not intermix.
 
 ### Step 4: Generate Aliases
 
@@ -139,6 +190,19 @@ Infer the folder from tags and existing wiki structure:
 ### Step 7: Write File
 
 Write to `wiki/<folder>/<slug>.md` where slug is the slugified title (lowercase, hyphens, no special chars).
+
+**Filename MUST equal `slugify(title)` exactly.** This is a lint error (`slug-mismatch`), not a warning. The slugify rule lowercases, replaces non-alphanumeric runs with hyphens, and strips leading/trailing hyphens.
+
+| Title                                          | Required filename                                  |
+| ---------------------------------------------- | -------------------------------------------------- |
+| `Document structure`                           | `document-structure.md`                            |
+| `JSON:API document structure`                  | `json-api-document-structure.md` ← note the prefix |
+| `meta vs resource`                             | `meta-vs-resource.md`                              |
+| `meta vs resource — what belongs where`        | `meta-vs-resource-what-belongs-where.md` (also: drop the em-dash from titles) |
+
+**Picking a title when the folder name disambiguates:** when the page lives in `wiki/json-api/`, the title does not need to repeat `JSON:API` — `Document structure` is sufficient and produces the cleaner filename. Repeat the topic in the title only when the page might be encountered without folder context (e.g., a deeply linked page or one that may move).
+
+**Scaffold from the filename, not the other way around.** Decide the filename first (e.g., `query-conventions.md`), then set the title to a phrase that slugifies back to it (`Query conventions`).
 
 ### Step 8: Run Write Script
 

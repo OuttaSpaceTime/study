@@ -14,8 +14,8 @@ updated: '2026-04-09'
 source_skill: study-walkthrough
 flashcard_ids: []
 depth: 1
-next_review: '2026-05-08'
-review_interval: 6
+next_review: '2026-05-15'
+review_interval: 7
 probe_sections:
 - anyOf vs oneOf
 - The oneOf Shared-Field Trap
@@ -23,11 +23,11 @@ probe_sections:
 - The additionalProperties Trap
 - not as a Filter
 last_probed:
+- anyOf vs oneOf
+- The oneOf Shared-Field Trap
 - allOf Is Not Inheritance
 - The additionalProperties Trap
 - not as a Filter
-- anyOf vs oneOf
-- The oneOf Shared-Field Trap
 ---
 
 # Schema Composition
@@ -105,7 +105,23 @@ allOf:
 
 When `additionalProperties` is set to `false`, it's evaluated per-schema, not on the merged result. The first schema sees `name` as an additional property and rejects it. Even though it's defined in the second schema.
 
-Fix. Apply `additionalProperties` (set to `false`) only on the final composed schema, not inside individual `allOf` members.
+Fix. Lift `additionalProperties: false` out of the inner schemas and onto the composed wrapper, so the constraint applies to the merged shape:
+
+```yaml
+type: object
+additionalProperties: false
+allOf:
+  - type: object
+    properties:
+      id:
+        type: string
+  - type: object
+    properties:
+      name:
+        type: string
+```
+
+Now `{ "id": "abc", "name": "widget" }` validates, and unknown keys still get rejected. The `false` gate evaluates against the union of declared properties, not against each fragment in isolation.
 
 ## not as a Filter
 

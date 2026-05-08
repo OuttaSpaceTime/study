@@ -85,10 +85,17 @@
       }
     },
     {
-      "query": "",
+      "query": "path:wiki/json-api/ ",
       "color": {
         "a": 1,
         "rgb": 11392604
+      }
+    },
+    {
+      "query": "",
+      "color": {
+        "a": 1,
+        "rgb": 6084188
       }
     }
   ],
@@ -102,6 +109,6 @@
   "repelStrength": 15,
   "linkStrength": 1,
   "linkDistance": 150,
-  "scale": 0.21041836943189574,
+  "scale": 0.3156275541478435,
   "close": false
 }

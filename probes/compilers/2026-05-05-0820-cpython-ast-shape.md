@@ -1,7 +1,7 @@
 ---
 topic: compilers
 session: 2026-05-05-walkthrough
-wiki:
+wiki: programming-languages/compilers-and-interpreters
 created: 2026-05-05 08:20
 ---
 

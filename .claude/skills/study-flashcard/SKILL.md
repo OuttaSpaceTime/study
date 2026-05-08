@@ -140,10 +140,11 @@ For each card draft:
 4. Report results
 5. **Offer "write wiki"**: "Want to save a companion wiki page for these concepts?"
    - If yes, follow the full flow from `references/wiki-write-protocol.md`:
-     - Draft a wiki page that goes beyond a thin summary — include context, examples, and the developer's own explanations from the walkthrough
+     - **Before drafting**, internalize the "Writing Style" section: no em-dashes anywhere (use period/comma/parens, or `: ` after links/code/bold in list items), no prose-colons as clause connectors. Filename must equal `slugify(title)` exactly. Writing clean prose first time avoids multi-pass cleanup.
+     - Draft a wiki page that goes beyond a thin summary, including context, examples, and the developer's own explanations from the walkthrough.
      - **Headings as prompts:** H2 headings become `probe_sections`. Write them specific enough to self-grade: `## nil return on no match and chaining` beats `## Gotchas`. See "Headings as SRS Prompts" in the write protocol.
      - Include `flashcard_ids` in frontmatter with the IDs of created cards
-     - **Required:** link to at least 2 related wiki pages via `[[absolute/path]]` — search the index for connections. Companion pages must not be leaf nodes in the graph.
+     - **Required:** link to at least 2 related wiki pages via `[[absolute/path]]`. Search the index for connections. Companion pages must not be leaf nodes in the graph.
      - Resolve links, propose folder, write file, run `scripts/wiki-write`, append session log
    - If no, just log the session
 

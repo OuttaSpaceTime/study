@@ -250,6 +250,15 @@ If any of these are missing or vague, return to the relevant concept and discuss
 
 ### Phase 4/4: Write & Chain
 
+**Before drafting anything**, internalize the prose conventions from `references/wiki-write-protocol.md` "Writing Style" section. The two highest-cost-to-fix-after-the-fact rules:
+
+1. **No em-dashes** anywhere — not in prose, not in headings, not in link text, not in list-item descriptions, not in table cells. Use period, comma, parentheses, or `: ` after a wikilink/markdown-link/bold-term/code in list items.
+2. **No prose-colons** as clause connectors. `The trap: in one document...` is flagged. Split into two sentences (`The trap. In one document...`) or rephrase.
+
+A single page with 15+ em-dashes and 3+ prose-colons forces a multi-pass cleanup touching every line — write clean from the first draft.
+
+**Filename = slugified title** (lint error, not warning). When the folder name disambiguates (e.g., `wiki/json-api/`), the title does not need to repeat the topic — `Document structure` is a cleaner title than `JSON:API document structure` because its slug equals the filename `document-structure.md`. Pick the filename first, then choose a title that slugifies back to it.
+
 **Write-focused mode** -- proceed directly to wiki write:
 
 1. Present the full draft wiki page with frontmatter, wikilinks, and all sections

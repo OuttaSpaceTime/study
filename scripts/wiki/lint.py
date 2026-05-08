@@ -16,6 +16,7 @@ from scripts.wiki.frontmatter import (
     slugify,
 )
 from scripts.wiki.index import get_wiki_key, iter_wiki_pages, load_index
+from scripts.wiki.probes import scan_probes
 
 REQUIRED_FIELDS = {
     "title",
@@ -89,12 +90,16 @@ def _parse_pages(wiki_dir: Path, md_files: list[Path]) -> list[ParsedPage]:
     return pages
 
 
-def lint_wiki(wiki_dir: Path) -> tuple[list[str], list[str]]:
+def lint_wiki(wiki_dir: Path, probes_dir: Path | None = None) -> tuple[list[str], list[str]]:
     """Run all lint checks.
 
     Returns (errors, warnings). Errors should block CI; warnings are informational.
+
+    `probes_dir` defaults to `<wiki_dir>/../probes`.
     """
     wiki_dir = Path(wiki_dir)
+    if probes_dir is None:
+        probes_dir = wiki_dir.parent / "probes"
     md_files = iter_wiki_pages(wiki_dir)
 
     if not md_files:
@@ -116,6 +121,7 @@ def lint_wiki(wiki_dir: Path) -> tuple[list[str], list[str]]:
     errors.extend(_check_slugs(pages))
     errors.extend(_check_flashcard_ids(pages, index))
     errors.extend(_check_probe_sections(wiki_dir, pages, index))
+    errors.extend(_check_probe_files(probes_dir, wiki_dir, pages))
     warnings.extend(_check_moc_coverage(wiki_dir, pages))
     warnings.extend(_check_moc_split_suggestion(wiki_dir, pages))
     warnings.extend(_check_prose_quality(pages))
@@ -593,6 +599,31 @@ def _check_probe_sections(
         if entry is not None and norm_set(entry.get("probe_sections", [])) != ps_norms:
             errors.append(
                 f"probe-index-drift: {p.rel} frontmatter probe_sections differs from index"
+            )
+
+    return errors
+
+
+def _check_probe_files(
+    probes_dir: Path, wiki_dir: Path, pages: list[ParsedPage]
+) -> list[str]:
+    """Rules:
+    - probe-wiki-missing: probe must declare a non-empty `wiki:` field.
+    - probe-wiki-unresolved: `wiki:` field must point to an existing wiki page.
+    """
+    valid_keys = {get_wiki_key(wiki_dir, p.path) for p in pages}
+
+    errors: list[str] = []
+    for probe in scan_probes(probes_dir):
+        rel = Path(probe["path"]).relative_to(probes_dir.parent)
+        wiki_ref = probe.get("wiki")
+        if not wiki_ref:
+            errors.append(f"probe-wiki-missing: {rel} has empty or missing `wiki:` field")
+            continue
+
+        if str(wiki_ref) not in valid_keys:
+            errors.append(
+                f"probe-wiki-unresolved: {rel} `wiki: {wiki_ref}` does not match any wiki page"
             )
 
     return errors
