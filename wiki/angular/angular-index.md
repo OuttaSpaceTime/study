@@ -7,7 +7,7 @@ tags:
 - moc
 - angular
 created: '2026-05-07'
-updated: '2026-05-07'
+updated: '2026-05-08'
 source_skill: manual
 probe_sections:
 - Pages
@@ -24,5 +24,6 @@ Map of content for the `angular/` wiki folder. Auto-maintained by `scripts/wiki-
 ## Pages
 
 - [[angular/change-detection]]
+- [[angular/component-lifecycle]]
 - [[angular/signals-and-change-detection]]
 

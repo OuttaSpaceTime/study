@@ -21,9 +21,17 @@ probe_sections:
 - DISTINCT + ORDER BY must share the expression
 - array_agg vs jsonb_agg
 - Canonical shape for "safe" usage
-last_probed: []
-review_interval: 2
-next_review: '2026-05-09'
+last_probed:
+- NULLs are included by default
+- Empty input returns NULL, not {}
+- DISTINCT + ORDER BY must share the expression
+- array_agg vs jsonb_agg
+- Canonical shape for "safe" usage
+- What array_agg collects and the implicit single-group rule
+- No GROUP BY means one implicit group
+- Ordering is non-deterministic by default
+review_interval: 3
+next_review: '2026-05-13'
 flashcard_ids: []
 ---
 

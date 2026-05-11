@@ -15,7 +15,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-05-07",
+    "updated": "2026-05-08",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -51,9 +51,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-10",
-    "review_interval": 3,
+    "updated": "2026-05-11",
+    "next_review": "2026-05-19",
+    "review_interval": 8,
     "probe_sections": [
       "Zone.js: what triggers CD and what it cannot know",
       "Default strategy: full DFS tree walk every cycle",
@@ -63,12 +63,12 @@
       "markForCheck vs detectChanges"
     ],
     "last_probed": [
-      "Zone.js: what triggers CD and what it cannot know",
-      "Default strategy: full DFS tree walk every cycle",
-      "OnPush: four conditions that dirty a component",
       "Mutation on @Input: why the child's view goes stale",
       "setTimeout and manual subscribe silently miss OnPush",
-      "markForCheck vs detectChanges"
+      "markForCheck vs detectChanges",
+      "Zone.js: what triggers CD and what it cannot know",
+      "Default strategy: full DFS tree walk every cycle",
+      "OnPush: four conditions that dirty a component"
     ]
   },
   "angular/signals-and-change-detection": {
@@ -100,9 +100,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-10",
-    "review_interval": 3,
+    "updated": "2026-05-11",
+    "next_review": "2026-05-15",
+    "review_interval": 4,
     "probe_sections": [
       "Signals push-pull model vs Zone.js passive patching",
       "How signal writes mark ancestors: traversal flag vs dirty flag",
@@ -112,12 +112,12 @@
       "Signals vs async pipe: when to use which"
     ],
     "last_probed": [
-      "Signals push-pull model vs Zone.js passive patching",
-      "How signal writes mark ancestors: traversal flag vs dirty flag",
-      "Semi-local CD: which nodes are traversed vs which re-evaluate bindings",
       "The click-event caveat: when semi-local CD collapses",
       "toSignal(): observable-to-signal bridge and what it buys",
-      "Signals vs async pipe: when to use which"
+      "Signals vs async pipe: when to use which",
+      "Signals push-pull model vs Zone.js passive patching",
+      "How signal writes mark ancestors: traversal flag vs dirty flag",
+      "Semi-local CD: which nodes are traversed vs which re-evaluate bindings"
     ]
   },
   "git/git-index": {
@@ -233,9 +233,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-09",
-    "review_interval": 2,
+    "updated": "2026-05-10",
+    "next_review": "2026-05-13",
+    "review_interval": 3,
     "probe_sections": [
       "The two meanings, untangled",
       "Meaning 1 - the embedding layer",
@@ -247,12 +247,12 @@
     ],
     "last_probed": [
       "The two meanings, untangled",
-      "Meaning 1 - the embedding layer",
-      "Meaning 2 - embedding models",
       "Cost asymmetry vs generative LLMs",
       "The RAG data flow",
       "Why retrieval is necessary, not optional",
-      "Choosing between embedding layer and embedding model"
+      "Choosing between embedding layer and embedding model",
+      "Meaning 1 - the embedding layer",
+      "Meaning 2 - embedding models"
     ]
   },
   "llm/inference-prefill-and-decode": {
@@ -1642,9 +1642,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-17",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-09",
-    "review_interval": 2,
+    "updated": "2026-05-10",
+    "next_review": "2026-05-13",
+    "review_interval": 3,
     "probe_sections": [
       "What array_agg collects and the implicit single-group rule",
       "No GROUP BY means one implicit group",
@@ -1655,7 +1655,16 @@
       "array_agg vs jsonb_agg",
       "Canonical shape for \"safe\" usage"
     ],
-    "last_probed": []
+    "last_probed": [
+      "NULLs are included by default",
+      "Empty input returns NULL, not {}",
+      "DISTINCT + ORDER BY must share the expression",
+      "array_agg vs jsonb_agg",
+      "Canonical shape for \"safe\" usage",
+      "What array_agg collects and the implicit single-group rule",
+      "No GROUP BY means one implicit group",
+      "Ordering is non-deterministic by default"
+    ]
   },
   "sql/nullable-columns": {
     "file": "sql/nullable-columns.md",
@@ -2113,6 +2122,54 @@
       "JSON:API is orthogonal to OpenAPI",
       "When teams ask whether they need both",
       "Common confusions"
+    ]
+  },
+  "angular/component-lifecycle": {
+    "file": "angular/component-lifecycle.md",
+    "title": "Component lifecycle",
+    "aliases": [
+      "angular lifecycle hooks",
+      "ngOnInit vs constructor",
+      "afterNextRender",
+      "angular injection context"
+    ],
+    "tags": [
+      "angular",
+      "frontend",
+      "lifecycle",
+      "dependency-injection"
+    ],
+    "sections": [
+      "TL;DR",
+      "Init order: depth-first post-order across the tree",
+      "constructor vs ngOnInit: why @Input is undefined in the constructor",
+      "ngOnChanges: fires on first render and batches all input changes",
+      "Content vs View hooks: which decorator becomes available where",
+      "Injection context: where inject() is valid and where it throws NG0203",
+      "afterNextRender vs ngAfterViewInit: post-paint vs pre-paint timing",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-08",
+    "updated": "2026-05-08",
+    "next_review": "2026-05-11",
+    "review_interval": 3,
+    "probe_sections": [
+      "Init order: depth-first post-order across the tree",
+      "constructor vs ngOnInit: why @Input is undefined in the constructor",
+      "ngOnChanges: fires on first render and batches all input changes",
+      "Content vs View hooks: which decorator becomes available where",
+      "Injection context: where inject() is valid and where it throws NG0203",
+      "afterNextRender vs ngAfterViewInit: post-paint vs pre-paint timing"
+    ],
+    "last_probed": [
+      "Init order: depth-first post-order across the tree",
+      "constructor vs ngOnInit: why @Input is undefined in the constructor",
+      "ngOnChanges: fires on first render and batches all input changes",
+      "Content vs View hooks: which decorator becomes available where",
+      "Injection context: where inject() is valid and where it throws NG0203",
+      "afterNextRender vs ngAfterViewInit: post-paint vs pre-paint timing"
     ]
   }
 }
