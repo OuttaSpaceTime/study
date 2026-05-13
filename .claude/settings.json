@@ -1,1 +1,15 @@
-{}
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /home/felix/Code/Misc/study/.claude/hooks/session-log-check.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

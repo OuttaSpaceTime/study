@@ -23,15 +23,15 @@ probe_sections:
 - num_predict as the circuit breaker
 - Rules of thumb for controlling prefill and decode cost
 last_probed:
-- Inference vs training
-- The two phases at a glance
 - Prefill - one pass, parallel
 - Decode - N passes, sequential
 - Why output length dominates
 - num_predict as the circuit breaker
 - Rules of thumb for controlling prefill and decode cost
-review_interval: 4
-next_review: '2026-05-11'
+- Inference vs training
+- The two phases at a glance
+review_interval: 5
+next_review: '2026-05-18'
 flashcard_ids: []
 ---
 

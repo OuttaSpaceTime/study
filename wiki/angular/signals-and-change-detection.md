@@ -36,6 +36,7 @@ last_probed:
 flashcard_ids: []
 ---
 
+
 # Signals and Change Detection
 
 Signals give Angular a data-driven CD trigger. Instead of Zone.js watching the browser for any async task, signal writes notify Angular exactly which components need updating.

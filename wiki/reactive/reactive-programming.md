@@ -21,13 +21,13 @@ probe_sections:
 - 'flatMap/mergeMap: collapsing a stream of streams'
 - Mental model shift from imperative to reactive
 last_probed:
-- 'Reactive programming definition: streams as first-class values'
 - 'Stream anatomy: values, errors, and completion over time'
 - 'Core operator categories: transform, filter, combine, flatten'
 - 'flatMap/mergeMap: collapsing a stream of streams'
 - Mental model shift from imperative to reactive
-review_interval: 3
-next_review: '2026-05-10'
+- 'Reactive programming definition: streams as first-class values'
+review_interval: 8
+next_review: '2026-05-20'
 ---
 
 # Reactive Programming

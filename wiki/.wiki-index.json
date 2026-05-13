@@ -283,9 +283,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-11",
-    "review_interval": 4,
+    "updated": "2026-05-13",
+    "next_review": "2026-05-18",
+    "review_interval": 5,
     "probe_sections": [
       "Inference vs training",
       "The two phases at a glance",
@@ -296,13 +296,13 @@
       "Rules of thumb for controlling prefill and decode cost"
     ],
     "last_probed": [
-      "Inference vs training",
-      "The two phases at a glance",
       "Prefill - one pass, parallel",
       "Decode - N passes, sequential",
       "Why output length dominates",
       "num_predict as the circuit breaker",
-      "Rules of thumb for controlling prefill and decode cost"
+      "Rules of thumb for controlling prefill and decode cost",
+      "Inference vs training",
+      "The two phases at a glance"
     ]
   },
   "llm/kv-cache": {
@@ -1259,9 +1259,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-10",
-    "review_interval": 3,
+    "updated": "2026-05-12",
+    "next_review": "2026-05-16",
+    "review_interval": 4,
     "probe_sections": [
       "How error terminates a stream: subscription state after onError",
       "catchError: signature, recovery pattern, and re-throw",
@@ -1270,11 +1270,11 @@
       "Dead subscriber trap: subscribing after a subject has errored"
     ],
     "last_probed": [
-      "How error terminates a stream: subscription state after onError",
       "catchError: signature, recovery pattern, and re-throw",
-      "retry vs retryWhen: immediate resubscription vs conditional backoff",
       "Error in inner vs outer observable (flatMap/switchMap)",
-      "Dead subscriber trap: subscribing after a subject has errored"
+      "Dead subscriber trap: subscribing after a subject has errored",
+      "How error terminates a stream: subscription state after onError",
+      "retry vs retryWhen: immediate resubscription vs conditional backoff"
     ]
   },
   "reactive/observables": {
@@ -1301,9 +1301,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-10",
-    "review_interval": 3,
+    "updated": "2026-05-12",
+    "next_review": "2026-05-20",
+    "review_interval": 8,
     "probe_sections": [
       "Why observables are lazy and what subscribe triggers",
       "The Observable Contract: grammar and serial delivery rule",
@@ -1311,10 +1311,10 @@
       "Subscription lifecycle: what subscribe returns and how teardown works"
     ],
     "last_probed": [
+      "Subscription lifecycle: what subscribe returns and how teardown works",
       "Why observables are lazy and what subscribe triggers",
       "The Observable Contract: grammar and serial delivery rule",
-      "Cold vs hot observables: independent vs shared execution",
-      "Subscription lifecycle: what subscribe returns and how teardown works"
+      "Cold vs hot observables: independent vs shared execution"
     ]
   },
   "reactive/reactive-index": {
@@ -1367,9 +1367,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-10",
-    "review_interval": 3,
+    "updated": "2026-05-12",
+    "next_review": "2026-05-20",
+    "review_interval": 8,
     "probe_sections": [
       "Reactive programming definition: streams as first-class values",
       "Stream anatomy: values, errors, and completion over time",
@@ -1378,11 +1378,11 @@
       "Mental model shift from imperative to reactive"
     ],
     "last_probed": [
-      "Reactive programming definition: streams as first-class values",
       "Stream anatomy: values, errors, and completion over time",
       "Core operator categories: transform, filter, combine, flatten",
       "flatMap/mergeMap: collapsing a stream of streams",
-      "Mental model shift from imperative to reactive"
+      "Mental model shift from imperative to reactive",
+      "Reactive programming definition: streams as first-class values"
     ]
   },
   "ruby/ruby-index": {
@@ -1473,9 +1473,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-10",
-    "review_interval": 3,
+    "updated": "2026-05-12",
+    "next_review": "2026-05-16",
+    "review_interval": 4,
     "probe_sections": [
       "Why the browser makes CSRF possible",
       "Three preconditions for a successful CSRF attack",
@@ -1485,12 +1485,12 @@
       "Login CSRF and the pre-session token fix"
     ],
     "last_probed": [
-      "Why the browser makes CSRF possible",
-      "Three preconditions for a successful CSRF attack",
-      "Why SameSite=Lax doesn't fully protect against subdomain attacks",
       "Synchronizer token vs. signed double-submit cookie",
       "Why CSRF tokens don't stop XSS",
-      "Login CSRF and the pre-session token fix"
+      "Login CSRF and the pre-session token fix",
+      "Why the browser makes CSRF possible",
+      "Three preconditions for a successful CSRF attack",
+      "Why SameSite=Lax doesn't fully protect against subdomain attacks"
     ]
   },
   "security/hsts": {
