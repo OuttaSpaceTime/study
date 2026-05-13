@@ -23,7 +23,5 @@ Map of content for the `openapi/` wiki folder. Auto-maintained by `scripts/wiki-
 
 ## Pages
 
-- [[openapi/openapi-overview]]
 - [[openapi/schema-composition]]
-- [[openapi/spec-layers]]
 

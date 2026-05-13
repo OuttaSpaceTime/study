@@ -26,16 +26,16 @@ probe_sections:
 - When NULL is the right choice
 - Sentinels masquerading as values
 last_probed:
-- Three-valued logic is the root cause
-- The NOT IN trap
-- UNIQUE does not constrain NULLs
 - Partial unique indexes
 - Nullable foreign keys
 - Migrating to NOT NULL is expensive
 - When NULL is the right choice
 - Sentinels masquerading as values
-review_interval: 4
-next_review: '2026-05-11'
+- Three-valued logic is the root cause
+- The NOT IN trap
+- UNIQUE does not constrain NULLs
+review_interval: 10
+next_review: '2026-05-23'
 flashcard_ids: []
 ---
 

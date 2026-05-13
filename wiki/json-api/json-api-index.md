@@ -83,9 +83,7 @@ This split is deliberate. Uniformity buys generic tooling where it pays off (res
 
 ## Pages
 
-- [[json-api/content-type-and-errors]]
 - [[json-api/document-structure]]
-- [[json-api/meta-vs-resource]]
 - [[json-api/query-conventions]]
 
 ## Related Concepts

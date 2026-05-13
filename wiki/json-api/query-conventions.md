@@ -23,15 +23,15 @@ probe_sections:
 - Sort is precise, filter is deliberately undefined
 - Custom query parameters need a non-alpha character
 last_probed:
-- The envelope-vs-strategy split
 - Sparse fieldsets are per-type, not per-path
-- Pagination URLs are opaque to the client
 - Cursor vs offset under concurrent inserts
 - Sort is precise, filter is deliberately undefined
 - Custom query parameters need a non-alpha character
+- The envelope-vs-strategy split
+- Pagination URLs are opaque to the client
 depth: 1
-review_interval: 3
-next_review: '2026-05-11'
+review_interval: 4
+next_review: '2026-05-17'
 ---
 
 # JSON:API query conventions
@@ -149,8 +149,6 @@ The general principle. **Operations belong in the reserved query family they sem
 
 - [[json-api/json-api-index]]: graph-protocol mental model
 - [[json-api/document-structure]]: envelope, resources, relationships, included
-- [[json-api/meta-vs-resource]]: identity test for what becomes a resource
-- [[json-api/content-type-and-errors]]: content negotiation and error shape
 
 ## References
 

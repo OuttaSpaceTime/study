@@ -20,14 +20,14 @@ probe_sections:
 - Compound documents and the full-linkage rule
 - Every node on an include path is included
 last_probed:
-- Top-level keys and their mutual exclusions
-- Resource object shape
 - relationships hold pointers, included holds payloads
 - Compound documents and the full-linkage rule
 - Every node on an include path is included
+- Top-level keys and their mutual exclusions
+- Resource object shape
 depth: 1
-review_interval: 3
-next_review: '2026-05-11'
+review_interval: 4
+next_review: '2026-05-17'
 ---
 
 # JSON:API document structure
@@ -145,8 +145,6 @@ This is the silent-payload-inflation trap. A long include chain (`?include=organ
 
 - [[json-api/json-api-index]]: graph-protocol mental model
 - [[json-api/query-conventions]]: sparse fieldsets, pagination, filter, sort
-- [[json-api/meta-vs-resource]]: identity test for what belongs where
-- [[json-api/content-type-and-errors]]: operational details
 
 ## References
 

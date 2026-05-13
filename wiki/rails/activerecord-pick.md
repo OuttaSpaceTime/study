@@ -11,8 +11,8 @@ tags:
 created: '2026-04-09'
 updated: '2026-04-09'
 source_skill: study-card
-next_review: '2026-05-11'
-review_interval: 12
+next_review: '2026-06-12'
+review_interval: 30
 probe_sections:
 - What pick returns and when it stops scanning
 - vs pluck
@@ -20,11 +20,11 @@ probe_sections:
 - Multiple aggregates in one query
 - nil on no match and chaining with scopes
 last_probed:
+- vs pluck
+- Raw SQL expressions
 - Multiple aggregates in one query
 - nil on no match and chaining with scopes
 - What pick returns and when it stops scanning
-- vs pluck
-- Raw SQL expressions
 flashcard_ids: []
 depth: 1
 ---
