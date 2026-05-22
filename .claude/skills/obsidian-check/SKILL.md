@@ -20,12 +20,12 @@ Launch Obsidian, run the full CLI lint suite, and report wiki health. Can also o
 
 ### Step 1: Launch Obsidian GUI
 
-Check if Obsidian is already running. Only launch if it's not:
+Check if Obsidian is already running by testing for its CLI socket. Only launch if it's not connected:
 ```bash
-pgrep -f "obsidian" >/dev/null 2>&1 || (snap run obsidian &>/dev/null & disown && sleep 3)
+test -S "${XDG_RUNTIME_DIR:-$HOME}/.obsidian-cli.sock" || (snap run obsidian &>/dev/null & disown && sleep 3)
 ```
 
-If already running, skip the launch and go straight to opening the page or running checks.
+If the socket exists, Obsidian is running and the CLI can connect — skip launch. Do not use `pgrep -f "obsidian"`: it self-matches the shell eval context and gives false positives.
 
 ### Step 2: Run Health Checks
 

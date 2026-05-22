@@ -752,7 +752,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-20",
-    "updated": "2026-05-07",
+    "updated": "2026-05-20",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -859,44 +859,6 @@
       "STI vs Delegated Type",
       "N+1 Gotcha",
       "The Problem It Solves"
-    ]
-  },
-  "rails/index-with": {
-    "file": "rails/index-with.md",
-    "title": "index_with",
-    "aliases": [
-      "Enumerable index_with",
-      "ActiveSupport index_with"
-    ],
-    "tags": [
-      "ruby",
-      "rails",
-      "active-support",
-      "enumerable"
-    ],
-    "sections": [
-      "Fixed Value vs Block",
-      "index_with vs index_by",
-      "index_with vs to_h",
-      "Duplicate Keys",
-      "Related Concepts"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-10",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-14",
-    "review_interval": 12,
-    "probe_sections": [
-      "Fixed Value vs Block",
-      "index_with vs index_by",
-      "index_with vs to_h",
-      "Duplicate Keys"
-    ],
-    "last_probed": [
-      "index_with vs to_h",
-      "Duplicate Keys",
-      "Fixed Value vs Block",
-      "index_with vs index_by"
     ]
   },
   "rails/routing/collection-and-member-routes": {
@@ -1747,50 +1709,6 @@
       "Pages"
     ]
   },
-  "json-api/document-structure": {
-    "file": "json-api/document-structure.md",
-    "title": "Document structure",
-    "aliases": [
-      "JSON:API document",
-      "JSON:API envelope",
-      "JSON:API resource object",
-      "relationships vs included"
-    ],
-    "tags": [
-      "api-design",
-      "json-api",
-      "rest"
-    ],
-    "sections": [
-      "TL;DR",
-      "Top-level keys and their mutual exclusions",
-      "Resource object shape",
-      "relationships hold pointers, included holds payloads",
-      "Compound documents and the full-linkage rule",
-      "Every node on an include path is included",
-      "Related Concepts",
-      "References"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-05-08",
-    "updated": "2026-05-13",
-    "next_review": "2026-05-17",
-    "review_interval": 4,
-    "probe_sections": [
-      "Top-level keys and their mutual exclusions",
-      "Resource object shape",
-      "relationships hold pointers, included holds payloads",
-      "Compound documents and the full-linkage rule",
-      "Every node on an include path is included"
-    ],
-    "last_probed": [
-      "relationships hold pointers, included holds payloads",
-      "Compound documents and the full-linkage rule",
-      "Every node on an include path is included",
-      "Top-level keys and their mutual exclusions",
-      "Resource object shape"
-    ]
-  },
   "json-api/json-api-index": {
     "file": "json-api/json-api-index.md",
     "title": "JSON:API Index",
@@ -1815,7 +1733,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-08",
-    "updated": "2026-05-13",
+    "updated": "2026-05-20",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -1829,55 +1747,6 @@
       "The envelope-vs-strategy throughline",
       "When to reach for JSON:API vs GraphQL vs plain REST",
       "Pages"
-    ]
-  },
-  "json-api/query-conventions": {
-    "file": "json-api/query-conventions.md",
-    "title": "Query conventions",
-    "aliases": [
-      "JSON:API sparse fieldsets",
-      "JSON:API pagination",
-      "JSON:API filter",
-      "JSON:API sort",
-      "fields[type]"
-    ],
-    "tags": [
-      "api-design",
-      "json-api",
-      "rest",
-      "pagination"
-    ],
-    "sections": [
-      "TL;DR",
-      "The envelope-vs-strategy split",
-      "Sparse fieldsets are per-type, not per-path",
-      "Pagination URLs are opaque to the client",
-      "Cursor vs offset under concurrent inserts",
-      "Sort is precise, filter is deliberately undefined",
-      "Custom query parameters need a non-alpha character",
-      "Related Concepts",
-      "References"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-05-08",
-    "updated": "2026-05-13",
-    "next_review": "2026-05-17",
-    "review_interval": 4,
-    "probe_sections": [
-      "The envelope-vs-strategy split",
-      "Sparse fieldsets are per-type, not per-path",
-      "Pagination URLs are opaque to the client",
-      "Cursor vs offset under concurrent inserts",
-      "Sort is precise, filter is deliberately undefined",
-      "Custom query parameters need a non-alpha character"
-    ],
-    "last_probed": [
-      "Sparse fieldsets are per-type, not per-path",
-      "Cursor vs offset under concurrent inserts",
-      "Sort is precise, filter is deliberately undefined",
-      "Custom query parameters need a non-alpha character",
-      "The envelope-vs-strategy split",
-      "Pagination URLs are opaque to the client"
     ]
   },
   "angular/component-lifecycle": {
@@ -1908,9 +1777,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-08",
-    "updated": "2026-05-08",
-    "next_review": "2026-05-11",
-    "review_interval": 3,
+    "updated": "2026-05-20",
+    "next_review": "2026-05-24",
+    "review_interval": 4,
     "probe_sections": [
       "Init order: depth-first post-order across the tree",
       "constructor vs ngOnInit: why @Input is undefined in the constructor",
@@ -1920,12 +1789,12 @@
       "afterNextRender vs ngAfterViewInit: post-paint vs pre-paint timing"
     ],
     "last_probed": [
-      "Init order: depth-first post-order across the tree",
-      "constructor vs ngOnInit: why @Input is undefined in the constructor",
-      "ngOnChanges: fires on first render and batches all input changes",
       "Content vs View hooks: which decorator becomes available where",
       "Injection context: where inject() is valid and where it throws NG0203",
-      "afterNextRender vs ngAfterViewInit: post-paint vs pre-paint timing"
+      "afterNextRender vs ngAfterViewInit: post-paint vs pre-paint timing",
+      "Init order: depth-first post-order across the tree",
+      "constructor vs ngOnInit: why @Input is undefined in the constructor",
+      "ngOnChanges: fires on first render and batches all input changes"
     ]
   }
 }

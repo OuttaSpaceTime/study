@@ -261,7 +261,8 @@ A single page with 15+ em-dashes and 3+ prose-colons forces a multi-pass cleanup
 
 **Write-focused mode** -- proceed directly to wiki write:
 
-1. Present the full draft wiki page with frontmatter, wikilinks, and all sections
+1. **Present a brief outline first:** title, proposed H2 sections with a one-line description each. Wait for the developer to confirm or adjust before writing the full draft. Then start writing from the top.
+2. Present the full draft wiki page with frontmatter, wikilinks, and all sections
 2. For each section: ask the developer to explain it in their own words. If they cannot, discuss until they can.
 3. Adjust the page based on gaps surfaced during review
 4. **Probe sections:** Default `probe_sections` to all H2 headings except `Related Concepts`, `References`, `See also`, and `TL;DR`. Offer the developer a chance to mark any remaining sections as reference-only — but default-all is usually correct. Write `probe_sections` in frontmatter and seed `last_probed` with the same list (keeps the queue invariant `set(last_probed) == set(probe_sections)` true from day one; first review rotates as if fresh). **Heading quality gate:** before finalizing probe_sections, check each heading — if it doesn't tell you what to recall without re-reading the section, rename it first. `## Gotchas` is a weak prompt; `## nil on no match and chaining behavior` is a strong one.
@@ -270,13 +271,14 @@ A single page with 15+ em-dashes and 3+ prose-colons forces a multi-pass cleanup
 
 **Deepen-focused mode** -- offer choices:
 
-1. **"write wiki"** -- Follow `references/wiki-write-protocol.md`. (Preflight was already run up front — no re-run needed.)
+1. **"add flashcard"** -- Chain to `/study-flashcard` for concepts that need SRS reinforcement, especially the ones that were initially failed during calibration
+
+2. **"write wiki"** -- Follow `references/wiki-write-protocol.md`. (Preflight was already run up front — no re-run needed.)
+   - **Before drafting:** present a brief outline of what the page will cover — title, proposed H2 sections, one-line description of each section. Wait for the developer to confirm or adjust before writing the full draft. This is the wiki entry preview; start writing from the top only after the outline is approved.
    - If extending an existing page: add new sections for the deeper material, increment `depth` frontmatter (e.g., depth 1 -> 2), set `last_deepened` to today. If any new H2 sections were added, extend `probe_sections` to include them (excluding `Related Concepts`, `References`, `See also`, `TL;DR`) **and reset `last_probed` to match the new `probe_sections`** so the queue invariant holds (avoids a persistent `probe-rotation-drift` lint error between now and the next review).
    - If creating new: draft a full page with `depth: 1` and everything covered. Set `probe_sections` to all H2s except the reference-only set; seed `last_probed` with the same list.
    - Include `flashcard_ids` for any related cards
    - Run `scripts/wiki-write`, append session log
-
-2. **"add flashcard"** -- Chain to `/study-flashcard` for concepts that need SRS reinforcement, especially the ones that were initially failed during calibration
 
 3. **"done"** -- Just log the session, no writes
 

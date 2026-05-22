@@ -74,10 +74,12 @@ Python code is linted with ruff: `uv run ruff check scripts/ tests/`. Config liv
 At any point during any skill, the developer can say "show in Obsidian" to launch the app and open the relevant page. Check if Obsidian is already running before launching — only start it if not:
 
 ```bash
-pgrep -f "obsidian" >/dev/null 2>&1 || (snap run obsidian &>/dev/null & disown && sleep 3)
+test -S "${XDG_RUNTIME_DIR:-$HOME}/.obsidian-cli.sock" || (snap run obsidian &>/dev/null & disown && sleep 3)
 ```
 
 Then open pages with `obsidian open vault="study" file="<slug>"` (use bare slug, not path — `path=` does not work). Never run `snap run obsidian` unconditionally — it breaks when Obsidian is already open.
+
+The socket check (`~/.obsidian-cli.sock`) is the reliable indicator that Obsidian is running and the CLI can connect. Do not use `pgrep -f "obsidian"` — it self-matches the shell process that evaluates the check and produces false positives.
 
 ## Probes
 

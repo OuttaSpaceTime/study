@@ -21,16 +21,16 @@ probe_sections:
 - 'Injection context: where inject() is valid and where it throws NG0203'
 - 'afterNextRender vs ngAfterViewInit: post-paint vs pre-paint timing'
 last_probed:
-- 'Init order: depth-first post-order across the tree'
-- 'constructor vs ngOnInit: why @Input is undefined in the constructor'
-- 'ngOnChanges: fires on first render and batches all input changes'
 - 'Content vs View hooks: which decorator becomes available where'
 - 'Injection context: where inject() is valid and where it throws NG0203'
 - 'afterNextRender vs ngAfterViewInit: post-paint vs pre-paint timing'
+- 'Init order: depth-first post-order across the tree'
+- 'constructor vs ngOnInit: why @Input is undefined in the constructor'
+- 'ngOnChanges: fires on first render and batches all input changes'
 flashcard_ids: []
 depth: 1
-review_interval: 3
-next_review: '2026-05-11'
+review_interval: 4
+next_review: '2026-05-24'
 ---
 
 # Component lifecycle

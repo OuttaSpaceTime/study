@@ -27,6 +27,5 @@ Map of content for the `rails/` wiki folder. Auto-maintained by `scripts/wiki-wr
 - [[rails/activerecord-pick]]
 - [[rails/activerecord-preloading]]
 - [[rails/delegated-type]]
-- [[rails/index-with]]
 - [[rails/solidqueue-queue-admin]]
 
