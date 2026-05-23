@@ -59,125 +59,31 @@ This skill requires the `flashcard-mcp` MCP server running from `~/Code/Misc/fla
 
 ### Phase 1: Pressure Check & Status (1 message)
 
-**Burdened-state preflight — always first.** Run `scripts/srs-pressure --human` and surface its verdict as the opening line of the first message. State explicitly whether the developer is within a burdened state or not before anything else. The script is the **single source of truth** for due counts and per-deck breakdown — it fetches accurate counts via the flashcard-mcp CLI.
+**Two script calls, nothing else.** Run `scripts/srs-pressure --human` and `scripts/wiki-due` — these are the only lookups in Phase 1. No log reads, no index reads, no extra Bash calls.
 
-Do **not** call `mcp__flashcard-mcp__get_due_cards` for pressure counts — it caps at 30 and underreports. The script's per-deck breakdown replaces a separate `list_decks` call for status purposes. You may still call `get_stats` for streak/recent-sessions context, and `list_decks` is fine only if you later need deck IDs for `start_session`.
+`scripts/srs-pressure --human` is the **single source of truth** for flashcard due counts and the pressure verdict. Do **not** call `mcp__flashcard-mcp__get_due_cards` for pressure counts — it caps at 30 and underreports.
 
-Run `scripts/wiki-due --count` to get the number of wiki entries due for review.
+`scripts/wiki-due --human` returns the full formatted list of due wiki entries. Print it directly in the opening message — this is informational only, wiki review happens after flashcards (Phase 3).
 
-**Read `logs/` for analysis, never tail into chat.** You may read recent log entries to compute macro analytics (weekly accuracy, lapse trends, repeated-lapse topics) and use them to shape recommendations (e.g., suggest a walkthrough for a repeatedly-lapsed topic). But do **not** print log excerpts, weekly stats dumps, or lapse tables into the chat. Surface only a single-line takeaway when it drives a concrete suggestion — otherwise stay silent. The pressure-check verdict remains the only load signal shown at the top of Phase 1.
+Emit one opening message with the pressure verdict, the wiki due list, then **immediately start Phase 2 (flashcard loop)** — no confirmation gate, no "ready?", no "say open N".
 
-**Wiki revisit check:** Read `wiki/.wiki-index.json`, find pages where `last_deepened` is >30 days ago or `depth` is 1. If any exist, surface 1-2:
-> Wiki page [[architecture/event-sourcing]] hasn't been revisited in 45 days (depth: 1). Consider `/study-walkthrough` to deepen it.
+Example when burdened:
 
-Present the pressure verdict as a single opening line, then **proceed directly into Phase 2 (Wiki Review) in the same message** — do not ask "Ready?" and do not wait for confirmation. The preflight verdict is the only preamble; wiki review starts immediately after it.
-
-> **Pressure:** not burdened (42 due, within capacity). 2 wiki entries due, 8 cards due. Starting with wiki.
+> **Pressure:** burdened — 48 flashcards due, 23 wiki pages due. `maxNewCards: 0`.
 >
-> **Wiki review:** 2 entries due.
-> 1. [[git/git-restore]] — …
-> 2. [[architecture/event-sourcing]] — …
+> **Wiki due (23):**
+> 1. [[programming-languages/compilers-and-interpreters]] — due 2026-05-12 (interval: 4d)
+> 2. [[llm/kv-cache]] — due 2026-05-13 (interval: 6d)
+> …
 >
-> Say "open 1" to start, or "skip wiki" to go straight to flashcards.
+> Starting flashcard session.
 
-If no wiki entries are due, state that in the opening line and go straight into Phase 3 (flashcard loop) — still no confirmation gate.
+Example when nothing is due:
 
-If nothing is due anywhere:
+> **Pressure:** clear — nothing due today. You're all caught up!
+> Want to: add new cards, revisit a wiki page with /study-walkthrough, or call it a day?
 
-> No cards or wiki entries due today — you're all caught up!
-> Want to: add new cards, revisit a stale wiki page with /study-walkthrough, or call it a day?
-
-### Phase 2: Wiki Review
-
-Run `scripts/wiki-due` to get the full list of due wiki entries. This runs as part of the Phase 1 message — the numbered list (shown in Phase 1) is the entry point into this phase. If no wiki entries are due, skip silently to Phase 3.
-
-Listing format (emitted from Phase 1):
-
-> **Wiki review:** 2 entries due.
-> 1. [[git/git-restore]] — git, version-control (due: 2026-04-12, interval: 3d)
-> 2. [[architecture/event-sourcing]] — architecture (due: 2026-04-07, interval: 7d)
->
-> Say "open 1" to start, or "skip wiki" to go straight to flashcards.
-
-**Review loop for each entry:**
-
-1. Developer says "open 1" (or "open git-restore", or "next")
-2. Read the wiki page. Present a brief summary: title, sections, depth, when created, current interval — but do NOT open Obsidian yet.
-2a. **Surface linked probes (if any):** Run `scripts/wiki-probes <wiki-path>` (e.g. `scripts/wiki-probes architecture/event-sourcing`). If probes exist, list them with path and Takeaway one-liner. Offer: "Want to re-run one as a recall check before I ask the section questions?" A probe the developer can no longer predict the output of is a real gap. Skip silently if the script returns an empty list.
-3. **Pick sections to probe — rotation via `last_probed`:**
-
-   Read `probe_sections` and `last_probed` from the page's YAML frontmatter (already loaded in step 2 — do not re-parse the index). `last_probed` is an ordered queue (oldest first); on the very first review it may be empty, treat as `probe_sections` order.
-
-   Choose `n = min(len(probe_sections), 3)` sections. Pick the first `n` from the queue — these are the longest-unprobed. Ask **one focused question per picked section** — do NOT ask multiple questions per section. This keeps the total at 1-3 questions regardless of page size.
-
-   **Pick the question shape based on page content:**
-   - **Code-heavy section:** predict output, fix a broken snippet, write a function that does X, trace execution order
-   - **Concept section:** compare/contrast with alternative ("when X over Y?"), explain consequences of skipping, apply to a scenario, define in own words
-   - **List/reference section:** recall key items, explain rationale behind an item, identify which item applies to a scenario
-
-   **Ground the question in a concrete scenario with code, not an abstract concept prompt.** Don't ask "what is the difference between X and Y?" — show a real snippet (or a plausible setup the developer would encounter at work) and ask what happens, what changes, what breaks, what the output is, or how to modify it. The developer's recall is sharper when the prompt looks like a thing they'd see in a PR or a console, not a textbook entry. Compare:
-
-   - Weak (abstract): *"What's the difference between `index_by` and `index_with`?"*
-   - Strong (grounded): *"Given `users = User.where(active: true).limit(3)` returning users with ids 7, 12, 19 and emails alice@/bob@/carol@. What's the shape of `users.index_by(&:id)` vs `users.index_with(&:email)`? Pick one and write it out."*
-
-   - Weak (abstract): *"How do you fix the polymorphic-includes limit?"*
-   - Strong (grounded): *"You have `Entry.includes(entryable: :author)` but `Comment` has `:commenter` instead of `:author`. What error fires, and what's the rewrite?"*
-
-   - Weak (abstract): *"What does `not` do in JSON Schema?"*
-   - Strong (grounded): *"You have an `Animal` schema and want to accept only animals that don't require a `wings` property. Sketch the YAML."*
-
-   Use real-looking values, real method names, real error text where you can. The setup does the framing; the question itself can stay short.
-
-   **When the question expects a code answer, anchor the expected shape in the question itself.** State explicitly that a rough outline is fine and give a one-line example of the shape you'd accept. The developer is demonstrating recall, not writing teaching material — a structurally correct sketch is a complete answer. Examples of how to phrase the shape hint:
-   - "Sketch the YAML — `key: value` / `key: { nested }` form is enough, no need for full schemas."
-   - "Show the call shape — something like `Model.scope.includes(:assoc)` is plenty."
-   - "One-line outline of the method call and its key argument — e.g. `method_name(arg)` — no need to write the full block."
-   - "Sketch the columns per table — `users: id, name, email` form is enough."
-
-   This anchoring prevents the developer from over-investing in literal-perfect code and lets you evaluate against the structural elements that actually matter (method name, dispatch form, key vs value placement, association vs scope, etc.).
-
-   **Tune difficulty based on the page's last rating (from frontmatter `review_interval`):**
-   - **Short interval (1-3 days) — recent lapse:** gentle recall. "What is X?" / "What does this command do?"
-   - **Medium interval (4-14 days):** standard application question. "When would you use X?" / "What happens if you omit this?"
-   - **Long interval (15+ days) — strong recall history:** harder applied question. "Given this scenario, how would you combine X and Y?" / "Teach this back to me — what's the mental model?"
-
-   Never turn this into a quiz — one question per probed section, cap 3.
-
-4. **Wait for the developer's answer to each question in turn.** Ask one, wait, evaluate, then move to the next probed section.
-5. **Evaluate each answer** with brief feedback (1-2 sentences) and a per-section rating (1-4). After all picked sections are answered, **assign the page rating = rounded mean of the per-section evaluations** (round half-down toward the weaker rating — e.g. Good+Hard → Hard, Good+Good+Hard → Good). This surfaces a reasonable middle ground rather than letting one shaky section drop the whole page.
-
-   **For code-shaped answers, score on structural correctness, not literal completeness.** If the developer's outline contains the load-bearing pieces (correct method name, correct dispatch form, correct argument shape, correct relationship direction), rate Good even if the answer is a one-line sketch. Reserve Hard/Again for genuine conceptual gaps — wrong direction, wrong dispatch, missing pieces — not for terseness or skipped `# =>` comments. When you spell out a fuller example in the recap, that's you adding teaching value, not raising the bar the answer needed to clear.
-6. State the computed rating with the per-section breakdown, then apply it directly — do not ask the developer to confirm or override:
-   > Section A: Good · Section B: Hard · Section C: Good → page rated **Good (3)**. Applying.
-7. Run `scripts/wiki-reschedule wiki/<path>.md <rating> --probed "<Section A>,<Section B>"` (e.g. `scripts/wiki-reschedule wiki/git/git-restore.md 2 --probed "..."`) — computes the new interval, rewrites frontmatter (including rotating `last_probed`), and re-indexes. The path is filesystem-relative with the `wiki/` prefix and `.md` suffix — unlike `scripts/wiki-probes`, which takes the bare wiki-root path. Pass the exact section headings you probed, comma-separated.
-8. Confirm rating and next review date: `Rated **Hard (2)** — next review in 3 days (2026-04-22)`
-9. **Open Obsidian at the end:** Open the page in Obsidian using the "Show in Obsidian" flow from `references/wiki-write-protocol.md`. Never display the page content in chat — the developer reads it in Obsidian. Then say:
-   > Opened in Obsidian — take your time reading. Say "next" / "go on to next wiki" when done, or "discuss" / "walkthrough" to dig in.
-10. **Wait for the developer to finish reading.** Do NOT auto-advance. Only proceed after the developer explicitly says "next", "go on to next wiki", or similar. This is a hard pause — never assume they're done just because time has passed or because the previous tool call returned. Follow-up questions, discussion, or a deeper walkthrough are all valid uses of this pause.
-11. After all entries reviewed (or developer says "done with wiki"), proceed to Phase 3
-
-**Wiki scheduling algorithm** is implemented in `scripts/wiki-reschedule` (source: `scripts/wiki/reschedule.py`). The rating-to-interval mapping:
-
-| Rating | Formula | Min |
-|--------|---------|-----|
-| Again (1) | reset to 1 | — |
-| Hard (2) | interval × 1.2 | 3 |
-| Good (3) | interval × 2.5 | — |
-| Easy (4) | interval × 4.0 | — |
-
-Initial values are set when a wiki page is created: `review_interval: 3`, `next_review: created + 3 days`.
-
-**Mid-review actions:**
-- "go on to next wiki" / "next wiki" / "next" — Advance to the next wiki entry (required after each rated entry)
-- "discuss" / "tell me more" — Explain the wiki page content in depth
-- "walkthrough" / "go deeper" — Chain into `/study-walkthrough` on this topic, then return to wiki review
-- "skip" — Skip this entry without rating (next_review unchanged)
-- "skip wiki" / "done with wiki" — End wiki review, proceed to flashcards
-
-**Track wiki review data** internally for the session log:
-- Wiki entries reviewed, ratings given, entries skipped
-
-### Phase 3: Study Loop (1 card per message)
+### Phase 2: Flashcard Study Loop (1 card per message)
 
 **`start_session` config — derive `maxNewCards` from the Phase 1 pressure verdict.**
 
@@ -189,7 +95,7 @@ Initial values are set when a wiki page is created: `review_interval: 3`, `next_
 
 The warn-threshold cap exists because over-adding under load is the recurring failure mode (see `feedback_srs_over_adding`). The pressure script's `flashcards due` count is the trigger — not the wiki/new-today axes. The developer can override explicitly ("include new cards anyway") — pass their requested number and note the override in the session log.
 
-**Surface the cap in the opening line of Phase 3** so the developer never wonders where the new cards went. Example:
+**Surface the cap in the opening line of Phase 2** so the developer never wonders where the new cards went. Example:
 
 > Starting session — 4 due (3 relearning + 1 review), 18 new held back (pressure: warn). `maxNewCards: 0`.
 
@@ -197,7 +103,7 @@ If cards span multiple decks, **interleave** them — don't exhaust one deck bef
 
 Then loop:
 
-1. **Call `get_next_card`** — if null, go to Phase 4
+1. **Call `get_next_card`** — if null, go to Phase 3 (Wiki Review)
 2. **Present the card front**, followed by a small italic footer listing mid-session actions:
    > *(discuss · edit · split · delete · reschedule · show in Obsidian)*
 3. **Wait for the developer's answer**
@@ -226,6 +132,68 @@ Then loop:
 
 **Track session data** internally for the log:
 - Cards reviewed, ratings given, lapses (Again ratings), start time
+
+### Phase 3: Wiki Review (after flashcards)
+
+When the flashcard queue is exhausted, offer wiki review using the list already shown in Phase 1:
+
+> **Flashcards done.** 23 wiki pages are due — want to review some? Say "open 1" (or a number), "open <slug>", or "skip wiki" to go straight to the summary.
+
+If the developer says "skip wiki" or there were no due wiki entries, go to Phase 4.
+
+**Review loop for each entry:**
+
+1. Developer says "open 1" (or "open git-restore", or "next")
+2. Read the wiki page. Present a brief summary: title, sections, depth, current interval — but do NOT open Obsidian yet.
+2a. **Surface linked probes (if any):** Run `scripts/wiki-probes <wiki-path>`. If probes exist, list them with path and Takeaway one-liner. Offer: "Want to re-run one as a recall check before I ask the section questions?" Skip silently if none.
+3. **Pick sections to probe — rotation via `last_probed`:**
+
+   Read `probe_sections` and `last_probed` from the page's YAML frontmatter. `last_probed` is an ordered queue (oldest first); treat as `probe_sections` order if empty.
+
+   Choose `n = min(len(probe_sections), 3)` sections — the first `n` from the queue. Ask **one focused question per section**, cap 3 total.
+
+   **Pick the question shape based on page content:**
+   - **Code-heavy section:** predict output, fix a broken snippet, trace execution order
+   - **Concept section:** compare/contrast, explain consequences of skipping, apply to a scenario
+   - **List/reference section:** recall key items, explain rationale, identify which item applies
+
+   **Ground the question in a concrete scenario with code, not an abstract prompt.** Show a real snippet or plausible work scenario and ask what happens, what changes, what breaks, or what the output is. Example contrast:
+   - Weak: *"What's the difference between `index_by` and `index_with`?"*
+   - Strong: *"Given `users = User.where(active: true).limit(3)` with ids 7, 12, 19 — what's the shape of `users.index_by(&:id)`? Write it out."*
+
+   **When the question expects a code answer, anchor the expected shape:** state explicitly that a rough outline is fine and give a one-line example of the shape you'd accept (e.g., "Sketch the YAML — `key: value` form is enough.").
+
+   **Tune difficulty by `review_interval`:** short (1-3d) → gentle recall; medium (4-14d) → standard application; long (15+d) → harder applied or "teach it back".
+
+4. **Wait for the developer's answer to each question in turn.**
+5. **Evaluate each answer** with 1-2 sentences of feedback and a per-section rating (1-4). Assign page rating = rounded mean (round half-down). Score code answers on structural correctness, not literal completeness.
+6. State rating breakdown and apply:
+   > Section A: Good · Section B: Hard → page rated **Hard (2)**. Applying.
+7. Run `scripts/wiki-reschedule wiki/<path>.md <rating> --probed "<Section A>,<Section B>"`.
+8. Confirm: `Rated **Hard (2)** — next review in 3 days (2026-04-22)`
+9. **Open Obsidian** using the "Show in Obsidian" flow from `references/wiki-write-protocol.md`. Say:
+   > Opened in Obsidian — take your time reading. Say "next" when done, or "discuss" / "walkthrough" to dig in.
+10. **Wait for explicit "next" / "done" before advancing.** Hard pause — do not auto-advance.
+11. After all entries reviewed (or "done with wiki"), go to Phase 4.
+
+**Wiki scheduling algorithm** (`scripts/wiki-reschedule`, source `scripts/wiki/reschedule.py`):**
+
+| Rating | Formula | Min |
+|--------|---------|-----|
+| Again (1) | reset to 1 | — |
+| Hard (2) | interval × 1.2 | 3 |
+| Good (3) | interval × 2.5 | — |
+| Easy (4) | interval × 4.0 | — |
+
+**Mid-review actions:**
+- "next" / "next wiki" — Advance to the next entry
+- "discuss" / "tell me more" — Explain in depth
+- "walkthrough" / "go deeper" — Chain into `/study-walkthrough`, then return
+- "skip" — Skip without rating
+- "done with wiki" / "skip wiki" — End wiki review, go to Phase 4
+
+**Track wiki review data** internally for the session log:
+- Wiki entries reviewed, ratings given, entries skipped
 
 ### Phase 4: Session Summary (1 message)
 
@@ -265,7 +233,7 @@ Omit the **Wiki reviewed** line if no wiki entries were reviewed in this session
 - `/study-walkthrough <topic>` for struggling areas — "You had 2 lapses on event sourcing. Want to deepen that with /study-walkthrough?"
 - `/study-flashcard` to create cards for gaps discovered during session
 - `/study-walkthrough --write <topic>` to create a reference page for a topic you struggled with
-- Revisit a stale wiki page (surfaced in Phase 1) with `/study-walkthrough`
+- Revisit a due wiki page from Phase 1's list with `/study-walkthrough`
 
 ---
 

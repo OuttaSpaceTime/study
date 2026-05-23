@@ -26,13 +26,13 @@ probe_sections:
 last_probed:
 - What attention is doing - Q, K, V
 - Why two vectors per token, not one
-- Why K and V are cached but not Q
 - The cache grows by one entry per decode step
 - Cost formula
 - Without the cache - O(N²)
 - num_ctx is the cache buffer size
-review_interval: 6
-next_review: '2026-05-13'
+- Why K and V are cached but not Q
+review_interval: 7
+next_review: '2026-05-30'
 flashcard_ids: []
 ---
 

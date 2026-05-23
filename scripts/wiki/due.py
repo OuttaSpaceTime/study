@@ -45,6 +45,7 @@ def get_due_entries(
 def main() -> None:
     parser = argparse.ArgumentParser(description="Query wiki entries due for review")
     parser.add_argument("--count", action="store_true", help="Print count only")
+    parser.add_argument("--human", action="store_true", help="Human-readable numbered list")
     parser.add_argument("--wiki-dir", default="wiki", help="Wiki directory")
     args = parser.parse_args()
 
@@ -54,6 +55,11 @@ def main() -> None:
 
     if args.count:
         print(len(due))
+    elif args.human:
+        for i, entry in enumerate(due, 1):
+            interval = entry.get("review_interval", "?")
+            due_date = entry.get("next_review", "?")
+            print(f"{i}. [[{entry['key']}]] — due {due_date} (interval: {interval}d)")
     else:
         print(json.dumps(due, indent=2, ensure_ascii=False))
 

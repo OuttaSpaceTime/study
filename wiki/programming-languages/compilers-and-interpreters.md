@@ -18,8 +18,8 @@ updated: '2026-05-05'
 source_skill: study-walkthrough
 depth: 1
 last_deepened: '2026-05-05'
-review_interval: 4
-next_review: '2026-05-12'
+review_interval: 5
+next_review: '2026-05-28'
 probe_sections:
 - 'Compiler vs interpreter: roles, not languages'
 - 'Two orthogonal axes: type checking ⊥ compile target'
@@ -27,9 +27,9 @@ probe_sections:
 - 'JIT: when bytecode becomes machine code at runtime'
 last_probed:
 - 'Compiler vs interpreter: roles, not languages'
+- 'Case study: the CPython chain'
 - 'JIT: when bytecode becomes machine code at runtime'
 - 'Two orthogonal axes: type checking ⊥ compile target'
-- 'Case study: the CPython chain'
 allow_orphan: true
 flashcard_ids: []
 ---
@@ -61,9 +61,9 @@ The "compiler" card kept lapsing because the back said *"converts a programming 
 
 Two unrelated language design decisions get conflated all the time:
 
-| Axis | What it answers | Choices |
-|---|---|---|
-| **Type checking time** | When are types verified? | Static (at compile time) · Dynamic (at runtime) |
+| Axis                     | What it answers                               | Choices                                                                              |
+| ------------------------ | --------------------------------------------- | ------------------------------------------------------------------------------------ |
+| **Type checking time**   | When are types verified?                      | Static (at compile time) · Dynamic (at runtime)                                      |
 | **Translation strategy** | How is source turned into something runnable? | AOT to machine code · AOT to bytecode (then interpreted) · Pure interpretation · JIT |
 
 These mix freely:

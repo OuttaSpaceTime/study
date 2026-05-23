@@ -26,14 +26,14 @@ probe_sections:
 - Choosing between embedding layer and embedding model
 last_probed:
 - The two meanings, untangled
-- Cost asymmetry vs generative LLMs
-- The RAG data flow
 - Why retrieval is necessary, not optional
 - Choosing between embedding layer and embedding model
 - Meaning 1 - the embedding layer
 - Meaning 2 - embedding models
-review_interval: 3
-next_review: '2026-05-13'
+- Cost asymmetry vs generative LLMs
+- The RAG data flow
+review_interval: 8
+next_review: '2026-05-31'
 flashcard_ids: []
 ---
 
