@@ -1,0 +1,27 @@
+/* Hide selected non-wiki folders and repo files from the Obsidian file explorer.
+ *
+ * The vault root is the whole `study` repo. `userIgnoreFilters` in app.json
+ * keeps these out of search/graph, but Obsidian's core "Excluded files" only
+ * DIMS explorer entries — it never removes them. This snippet removes them.
+ *
+ * Kept visible on purpose: wiki/, logs/, AGENTS.md, todo.md.
+ * Dotfolders (.claude/, .git/, .venv/) are already hidden by Obsidian.
+ * Keep this list in sync with `userIgnoreFilters` in app.json.
+ */
+
+/* Whole folders (hide the title + its children via :has on the parent) */
+.nav-folder:has(> .nav-folder-title[data-path="probes"]),
+.nav-folder:has(> .nav-folder-title[data-path="scripts"]),
+.nav-folder:has(> .nav-folder-title[data-path="tests"]),
+/* Individual root files */
+.nav-file:has(> .nav-file-title[data-path="CLAUDE.md"]) {
+  display: none !important;
+}
+
+/* Fallback for older engines without :has() — hides at least the title row */
+.nav-folder-title[data-path="probes"],
+.nav-folder-title[data-path="scripts"],
+.nav-folder-title[data-path="tests"],
+.nav-file-title[data-path="CLAUDE.md"] {
+  display: none !important;
+}

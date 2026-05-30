@@ -223,7 +223,7 @@ Parse the JSON output:
 
 ### Step 9: Append Session Log
 
-Append to `logs/YYYY-MM-DD.md` (create if doesn't exist):
+Append to `logs/<MM>/<YYYY-MM-DD>.md` (zero-padded month folder; create if doesn't exist):
 
 ```markdown
 ## Session N — <Skill Name> (HH:MM)
@@ -237,22 +237,23 @@ Append to `logs/YYYY-MM-DD.md` (create if doesn't exist):
 
 Tell the developer:
 > Written `[[architecture/event-sourcing]]` with 3 links. Lint: clean.
-> Session logged to `logs/2026-04-09.md`.
+> Session logged to `logs/04/2026-04-09.md`.
 
 ## "Show in Obsidian" Flow
 
 At any point during any skill, the developer can say "show in Obsidian", "open in Obsidian", or "present in Obsidian". The skill should:
 
-1. **Launch Obsidian** (only if not already running):
+1. **Launch Obsidian** (only if the official CLI socket is absent):
    ```bash
-   pgrep -f "obsidian" >/dev/null 2>&1 || (snap run obsidian &>/dev/null & disown && sleep 3)
+   test -S "${XDG_RUNTIME_DIR:-$HOME}/.obsidian-cli.sock" || { setsid -f /opt/Obsidian/obsidian >/dev/null 2>&1 < /dev/null; sleep 3; }
    ```
+   Obsidian is the Debian package at `/opt/Obsidian/obsidian` (no `snap` on this machine). The socket is the reliable connected-indicator; do not use `pgrep -f "obsidian"` (it self-matches the shell).
 
 2. **Open the relevant page by slug:**
    ```bash
    obsidian open vault="study" file="<slug>"
    ```
-   Use the bare slug (e.g. `git-restore`, `hsts`) — `file=` resolves by name like wikilinks. Do NOT use `path=` (returns "File not found"). The vault name is `study`.
+   Use the wiki-relative slug without `.md` (e.g. `git/git-restore`, `security/hsts`) — `file=` resolves by name like wikilinks. The vault is the repo root, name `study`; pass the wiki-relative slug (not `wiki/...`).
 
 4. **Resume the skill session** — this is a non-blocking side action, not a skill interruption.
 

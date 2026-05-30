@@ -9,7 +9,7 @@ tags:
 - https
 - web
 created: '2026-04-10'
-updated: '2026-04-23'
+updated: '2026-05-30'
 source_skill: study-walkthrough
 flashcard_ids:
 - cmne7xvvx01sd0mso4nghg03i
@@ -18,26 +18,28 @@ flashcard_ids:
 - cmne7xvym01t50msou805xi7h
 - cmne7xwri02050mso5k9tqzu4
 depth: 1
-next_review: '2026-05-14'
-review_interval: 15
+next_review: '2026-07-07'
+review_interval: 38
 probe_sections:
 - The SSL Stripping Attack
-- "The HSTS header fields: max-age, includeSubDomains, preload"
+- 'The HSTS header fields: max-age, includeSubDomains, preload'
 - TOFU Problem (Trust On First Use)
 - Preload
 - Cross-Host Redirects
 - Full Defense Stack
-- "What the HSTS header looks like on a real site"
+- What the HSTS header looks like on a real site
 - Browser Storage
+- Scheme Defaulting and HTTPS-First
 last_probed:
-- "What the HSTS header looks like on a real site"
+- Scheme Defaulting and HTTPS-First
+- 'The HSTS header fields: max-age, includeSubDomains, preload'
+- TOFU Problem (Trust On First Use)
+- Preload
+- Cross-Host Redirects
+- Full Defense Stack
+- What the HSTS header looks like on a real site
 - Browser Storage
 - The SSL Stripping Attack
-- "The HSTS header fields: max-age, includeSubDomains, preload"
-- TOFU Problem (Trust On First Use)
-- Preload
-- Cross-Host Redirects
-- Full Defense Stack
 ---
 
 # HSTS (HTTP Strict-Transport-Security)
@@ -54,6 +56,23 @@ Without HSTS, typing `example.com` sends a plaintext `GET http://example.com`. A
 4. The victim sees a working site. The attacker sees all traffic
 
 The server's 301 redirect to HTTPS never reaches the victim.
+
+**This attack assumes the browser's first request is plaintext HTTP** — see [[security/hsts#Scheme Defaulting and HTTPS-First]] for why that assumption no longer holds by default on modern browsers.
+
+## Scheme Defaulting and HTTPS-First
+
+The SSL-stripping premise — "typing `example.com` sends a plaintext `GET http://`" — rests on **scheme defaulting**. A bare hostname has no scheme, so the browser prepends one. Historically that default was `http://` (the early web ran on plaintext port 80, and not every site supported TLS), which produced the vulnerable first hop.
+
+Modern browsers flipped the default:
+
+- **Chrome 90** (April 2021): typed navigations without a scheme default to `https://` in the omnibox — no plaintext hop first.
+- **Chrome 94** (September 2021): **HTTPS-First mode** — Chrome attempts HTTPS for *all* navigations (including `http://` links and old bookmarks), showing a full-screen warning before falling back to HTTP.
+- **Chrome 115+** (2023): began enabling HTTPS-First by default for all users.
+- **Firefox**: ships **HTTPS-Only Mode** (opt-in, per-profile).
+
+So on a current browser the "plaintext first request on first visit" is increasingly *not* the default — the browser tries HTTPS first and only falls back to HTTP on failure (cert error, DNS/connection failure, or no HTTPS support). The first-visit SSL-stripping window narrows to fallback and legacy cases: hardcoded `http://` links the page can't upgrade, old browsers, or an HTTPS attempt the browser abandons.
+
+**HSTS preload is still stronger.** HTTPS-First is *best-effort with fallback* — if HTTPS fails, it downgrades to HTTP. A preloaded HSTS entry is *strict*: it hard-refuses HTTP entirely, with no fallback. Browser HTTPS-First narrows the attack surface; preload closes it.
 
 ## The HSTS header fields: max-age, includeSubDomains, preload
 

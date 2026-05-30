@@ -296,7 +296,7 @@ When writing a wiki page, follow this structure:
 - **Always include: `## References`** with up to 4 authoritative URLs from the Phase 1 research findings (one-line "what this is" per URL). Inline-link specific claims in the body (`[per RFC 6797 §7.2](url)`) when the claim is version-specific, contested, or non-obvious. If research was skipped (repo-internal topic) or unavailable, write `## References\n\n_None — repo-internal topic._` or `_Research unavailable at write time; verify before relying on this page._` so the gap is visible.
   - **`References` MUST NOT appear in `probe_sections` or `last_probed`.** It's a citation list, not study material — the probe-section default already excludes `Related Concepts`, `References`, `See also`, `TL;DR`. When extending an existing page with new H2s, include new study-worthy headings only — never add `References` to the queue.
 
-**Session log** -- always append to `logs/YYYY-MM-DD.md`:
+**Session log** -- always append to `logs/<MM>/<YYYY-MM-DD>.md` (zero-padded month folder):
 
 ```markdown
 ## Session N -- Walkthrough (HH:MM)

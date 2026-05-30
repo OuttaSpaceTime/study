@@ -752,7 +752,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-20",
-    "updated": "2026-05-20",
+    "updated": "2026-05-30",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -837,9 +837,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-17",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-14",
-    "review_interval": 8,
+    "updated": "2026-05-30",
+    "next_review": "2026-06-09",
+    "review_interval": 10,
     "probe_sections": [
       "The Problem It Solves",
       "Schema Shape",
@@ -851,14 +851,14 @@
       "N+1 Gotcha"
     ],
     "last_probed": [
-      "Schema Shape",
-      "What `delegated_type` Expands To",
-      "What the delegated_type declaration generates",
       "Direction of Delegation",
       "Design Rule: Where Attributes Live",
       "STI vs Delegated Type",
       "N+1 Gotcha",
-      "The Problem It Solves"
+      "The Problem It Solves",
+      "Schema Shape",
+      "What `delegated_type` Expands To",
+      "What the delegated_type declaration generates"
     ]
   },
   "rails/routing/collection-and-member-routes": {
@@ -950,9 +950,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-14",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-14",
-    "review_interval": 12,
+    "updated": "2026-05-30",
+    "next_review": "2026-06-29",
+    "review_interval": 30,
     "probe_sections": [
       "Renaming with `as:`",
       "The `_index` Suffix",
@@ -960,10 +960,10 @@
       "How to verify path helper names at the console"
     ],
     "last_probed": [
+      "How to verify path helper names at the console",
       "Renaming with `as:`",
       "The `_index` Suffix",
-      "Fix: Set `as:` Explicitly",
-      "How to verify path helper names at the console"
+      "Fix: Set `as:` Explicitly"
     ]
   },
   "rails/routing/route-organization": {
@@ -986,9 +986,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-13",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-13",
-    "review_interval": 14,
+    "updated": "2026-05-30",
+    "next_review": "2026-07-04",
+    "review_interval": 35,
     "probe_sections": [
       "draw -- Split Routes into Files",
       "defaults -- Set Shared Parameters"
@@ -1470,6 +1470,7 @@
     ],
     "sections": [
       "The SSL Stripping Attack",
+      "Scheme Defaulting and HTTPS-First",
       "The HSTS header fields: max-age, includeSubDomains, preload",
       "TOFU Problem (Trust On First Use)",
       "Preload",
@@ -1486,9 +1487,9 @@
       "cmne7xwri02050mso5k9tqzu4"
     ],
     "created": "2026-04-10",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-14",
-    "review_interval": 15,
+    "updated": "2026-05-30",
+    "next_review": "2026-07-07",
+    "review_interval": 38,
     "probe_sections": [
       "The SSL Stripping Attack",
       "The HSTS header fields: max-age, includeSubDomains, preload",
@@ -1497,17 +1498,19 @@
       "Cross-Host Redirects",
       "Full Defense Stack",
       "What the HSTS header looks like on a real site",
-      "Browser Storage"
+      "Browser Storage",
+      "Scheme Defaulting and HTTPS-First"
     ],
     "last_probed": [
-      "What the HSTS header looks like on a real site",
-      "Browser Storage",
-      "The SSL Stripping Attack",
+      "Scheme Defaulting and HTTPS-First",
       "The HSTS header fields: max-age, includeSubDomains, preload",
       "TOFU Problem (Trust On First Use)",
       "Preload",
       "Cross-Host Redirects",
-      "Full Defense Stack"
+      "Full Defense Stack",
+      "What the HSTS header looks like on a real site",
+      "Browser Storage",
+      "The SSL Stripping Attack"
     ]
   },
   "security/same-origin-policy": {
@@ -1604,9 +1607,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-17",
-    "updated": "2026-05-10",
-    "next_review": "2026-05-13",
-    "review_interval": 3,
+    "updated": "2026-05-29",
+    "next_review": "2026-06-02",
+    "review_interval": 4,
     "probe_sections": [
       "What array_agg collects and the implicit single-group rule",
       "No GROUP BY means one implicit group",
@@ -1618,14 +1621,14 @@
       "Canonical shape for \"safe\" usage"
     ],
     "last_probed": [
-      "NULLs are included by default",
       "Empty input returns NULL, not {}",
-      "DISTINCT + ORDER BY must share the expression",
       "array_agg vs jsonb_agg",
       "Canonical shape for \"safe\" usage",
       "What array_agg collects and the implicit single-group rule",
       "No GROUP BY means one implicit group",
-      "Ordering is non-deterministic by default"
+      "Ordering is non-deterministic by default",
+      "NULLs are included by default",
+      "DISTINCT + ORDER BY must share the expression"
     ]
   },
   "sql/nullable-columns": {

@@ -84,7 +84,7 @@ If the developer mentioned new items or completions in B2, update `todo.md` with
 
 ### B4: Block Log
 
-Append to `logs/YYYY-MM-DD.md`:
+Append to `logs/<MM>/<YYYY-MM-DD>.md`:
 
 ```markdown
 ## Session N — Block End (HH:MM)
@@ -108,7 +108,7 @@ Brief sign-off that names the pause they planned:
 
 Gather the day's activity silently (do not dump raw output). Read in parallel:
 
-1. **Today's session log** (`logs/YYYY-MM-DD.md`) — what sessions were logged
+1. **Today's session log** (`logs/<MM>/<YYYY-MM-DD>.md`) — what sessions were logged
 2. **Todo file** (`todo.md`) — current state of the ordered list
 3. **Git activity** — run `git log --oneline --since="8 hours ago" --author="$(git config user.name)"` and `git diff --stat HEAD~5` (adjust range based on commit count). Summarize: number of commits, key changes, files touched.
 
@@ -169,7 +169,7 @@ Read `todo.md` before editing to work from current state.
 
 ### Phase 6: Session Log
 
-Append to `logs/YYYY-MM-DD.md`.
+Append to `logs/<MM>/<YYYY-MM-DD>.md`.
 
 ```markdown
 ## Session N — End (HH:MM)

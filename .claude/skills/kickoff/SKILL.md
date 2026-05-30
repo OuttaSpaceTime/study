@@ -36,12 +36,12 @@ No mode arguments. The flow adapts to whether it's the first kickoff of the day 
 
 ### Phase 1: Detect Session Type
 
-Read today's `logs/YYYY-MM-DD.md` (create date if file doesn't exist). Count existing `## Session N — Kickoff` headers.
+Read today's `logs/<MM>/<YYYY-MM-DD>.md` (zero-padded month folder; create it with a `# <YYYY-MM-DD>` header if it doesn't exist). Count existing `## Session N — Kickoff` headers.
 
 - **Zero** → this is the **first kickoff** of the day. Run full cadence.
 - **One or more** → this is a **refocus**. Run delta cadence (skips Feeling + Noticing).
 
-**First kickoff only:** also read yesterday's log (`logs/YYYY-MM-DD.md` for the previous day) and look for a `**Left off:**` field in the last `## Session N — End` entry. If found, surface it at the top of Phase 2 as a re-entry hint:
+**First kickoff only:** also read yesterday's log (`logs/<MM>/<YYYY-MM-DD>.md` for the previous day — derive `<MM>` from yesterday's date, which may be a different month folder than today's) and look for a `**Left off:**` field in the last `## Session N — End` entry. If found, surface it at the top of Phase 2 as a re-entry hint:
 
 > **Yesterday you left off:** [left off text]
 
@@ -146,7 +146,7 @@ This creates a hard boundary (no drift into sidetracks) and names the pause as a
 
 ### Phase 5: Session Log
 
-Append to `logs/YYYY-MM-DD.md`. Determine the session number by counting existing `## Session` headers in today's log.
+Append to `logs/<MM>/<YYYY-MM-DD>.md` (zero-padded month folder). Determine the session number by counting existing `## Session` headers in today's log.
 
 **First kickoff of the day:**
 

@@ -125,6 +125,7 @@ For each sub-concept that will become a flashcard:
 For each card draft:
 
 1. Present the draft (front, back, type, tags)
+1a. **Atomicity check (front must have a single recall target):** Reject any front that asks for a superlative or judgment ("the single most effective", "the best way", "the right approach to X") or otherwise admits several defensible answers — there is nothing to grade against. Rewrite it to name the specific scenario or principle being tested before proceeding (e.g. "What's the single most effective technique for loose coupling?" → "Which design principle reduces coupling by depending on an abstraction instead of a concrete collaborator?"). This mirrors the *Non-atomic / opinion-bait front* flag in `/study`'s review-time quality check — catch it here so it never becomes a card.
 2. **Semantic duplicate check**: Call `find_similar_cards` with the draft front text
    - >80% match: "Very similar card exists. Skip or rephrase?"
    - 50-80% match: "Related card exists. Your new card covers a different angle — proceed?"

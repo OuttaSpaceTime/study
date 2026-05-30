@@ -39,8 +39,8 @@ No mode arguments.
 
 Read in parallel, do not dump output:
 
-1. Last 2-3 `## Session N — Reflection` entries across `logs/*.md` (to avoid repeating the same anchor verbatim if recent — paraphrase instead).
-2. Today's `logs/YYYY-MM-DD.md` if it exists (for tone — are we mid-day, end-of-day, weekend?).
+1. Last 2-3 `## Session N — Reflection` entries across `logs/*/*.md` (zero-padded month folders) to avoid repeating the same anchor verbatim if recent — paraphrase instead.
+2. Today's `logs/<MM>/<YYYY-MM-DD>.md` if it exists (for tone — are we mid-day, end-of-day, weekend?).
 
 No evidence is surfaced to the developer here. This is a coaching container, not a review. If invoked right after `/progress`, the progression hypothesis is already in context — use it implicitly, don't re-read.
 
@@ -81,7 +81,7 @@ If the developer names something, log it. If not, log the reflection without one
 
 ### Phase 5: Session Log
 
-Append to today's `logs/YYYY-MM-DD.md`. Determine session number by counting existing `## Session` headers.
+Append to today's `logs/<MM>/<YYYY-MM-DD>.md` (zero-padded month folder). Determine session number by counting existing `## Session` headers.
 
 ```markdown
 ## Session N — Reflection (HH:MM)

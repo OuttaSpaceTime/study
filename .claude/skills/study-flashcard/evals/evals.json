@@ -22,7 +22,7 @@
         {"text": "All wikilinks use absolute paths", "type": "output"},
         {"text": "Page links to at least 2 related wiki pages", "type": "output"},
         {"text": "Runs scripts/wiki-write after writing", "type": "behavior"},
-        {"text": "Appends session log to logs/YYYY-MM-DD.md", "type": "behavior"}
+        {"text": "Appends session log to logs/<MM>/<YYYY-MM-DD>.md (zero-padded month folder)", "type": "behavior"}
       ]
     },
     {

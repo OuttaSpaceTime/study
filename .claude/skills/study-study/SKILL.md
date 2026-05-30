@@ -12,7 +12,7 @@ The developer leaves each session with reinforced knowledge, accurate scheduling
 
 ## Wiki Integration
 
-This skill logs session performance to `logs/YYYY-MM-DD.md`. It can also trigger wiki writes when gaps are discovered during study.
+This skill logs session performance to `logs/<MM>/<YYYY-MM-DD>.md`. It can also trigger wiki writes when gaps are discovered during study.
 
 **At any point** during the session, the developer can say "show in Obsidian" to launch Obsidian and view wiki pages related to the current card. Follow the "Show in Obsidian" flow in `references/wiki-write-protocol.md`.
 
@@ -122,6 +122,7 @@ Then loop:
      - **Too broad:** front covers multiple distinct concepts that should be separate cards
      - **Outdated:** code examples reference deprecated APIs or patterns no longer in use
      - **Ambiguous front:** question is unclear without seeing the back
+     - **Non-atomic / opinion-bait front:** front asks for a superlative or judgment ("the single most effective", "the best way", "the right approach") or otherwise admits several defensible answers, so there is no single recall target. The fix is to name the specific scenario or principle being tested — e.g. rewrite "What's the single most effective technique for loose coupling?" to "Which design principle reduces coupling by depending on an abstraction instead of a concrete collaborator?". Distinct from *Too broad* (many concepts) and *Ambiguous front* (unclear meaning): here the meaning is clear but the answer space is open.
      - **Mismatched Q/A:** front asks "what" but back explains "why", or vice versa
      - Do NOT flag cards that are intentionally minimal — simple recall cards with precise, correct backs are fine.
      - **When a quality issue is detected: stop advancing.** Explicitly describe the problem and ask the developer to fix it before continuing. Example: "This card's front is ambiguous — it could mean X or Y. Want to edit it to be more specific, or split it?" Wait for the developer to edit, split, or explicitly say "skip" before moving on.
@@ -204,7 +205,7 @@ If the developer says "skip wiki" or there were no due wiki entries, go to Phase
 
 ### Phase 5: Session Log & Post-Session
 
-**Write session log** — append to `logs/YYYY-MM-DD.md` (create if doesn't exist):
+**Write session log** — append to `logs/<MM>/<YYYY-MM-DD>.md` (create if doesn't exist):
 
 ```markdown
 ## Session N — Study (HH:MM)

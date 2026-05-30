@@ -28,11 +28,11 @@
     {
       "id": 3,
       "prompt": "(Developer says 'show in Obsidian' during study session)",
-      "expected_output": "Skill should check if Obsidian is running, launch if needed with snap run obsidian, open the relevant wiki page, and resume the study session",
+      "expected_output": "Skill should check the CLI socket to see if Obsidian is connected, launch with /opt/Obsidian/obsidian if needed, open the relevant wiki page with the CLI, and resume the study session",
       "assertions": [
-        {"text": "Checks obsidian version to see if running", "type": "behavior"},
-        {"text": "Launches with snap run obsidian if not running", "type": "behavior"},
-        {"text": "Opens relevant page with obsidian open path=", "type": "behavior"},
+        {"text": "Checks the ${XDG_RUNTIME_DIR}/.obsidian-cli.sock socket to see if connected", "type": "behavior"},
+        {"text": "Launches with /opt/Obsidian/obsidian if not running (not snap)", "type": "behavior"},
+        {"text": "Opens relevant page with obsidian open vault=\"study\" file=<slug>", "type": "behavior"},
         {"text": "Resumes study session after opening", "type": "behavior"}
       ]
     }

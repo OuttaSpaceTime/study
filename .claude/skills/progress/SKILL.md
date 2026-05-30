@@ -38,7 +38,7 @@ See `~/.claude/skills/references/interactive-principles.md` for shared interacti
 
 Determine the window:
 
-1. Scan `logs/*.md` (latest first) for a `## Session N — Progression` header. Parse its date from the filename.
+1. Scan `logs/*/*.md` (latest first; logs are in zero-padded month folders) for a `## Session N — Progression` header. Parse its date from the filename.
 2. If found → window = from that date through today.
 3. If not found → window = last 14 days.
 4. If the developer passed an override (`7d`, `30d`, etc.) → use that instead.
@@ -55,7 +55,7 @@ Read in parallel. Do **not** dump raw output.
    ```
    Note count, dominant themes (look at commit subjects), rhythm (consecutive days, gaps).
 
-2. **Session logs in window:** read every `logs/YYYY-MM-DD.md` whose date falls within the window. Extract:
+2. **Session logs in window:** glob `logs/*/*.md` (logs are grouped in zero-padded month folders, so the window may span several) and read every file whose `YYYY-MM-DD` filename date falls within the window. Extract:
    - Kickoff focuses and blockers
    - End-of-day `Left off:` and `Carry forward:`
    - Reflection entries (previous `## Session N — Reflection` if any)
@@ -126,7 +126,7 @@ If no → close plainly. No pressure.
 
 ### Phase 8: Session Log
 
-Append to today's `logs/YYYY-MM-DD.md`:
+Append to today's `logs/<MM>/<YYYY-MM-DD>.md` (zero-padded month folder):
 
 ```markdown
 ## Session N — Progression (HH:MM)

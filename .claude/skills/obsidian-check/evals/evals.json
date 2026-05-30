@@ -4,9 +4,9 @@
     {
       "id": 1,
       "prompt": "/obsidian-check (Obsidian not running, wiki has 3 pages with 1 broken link)",
-      "expected_output": "Skill should: (1) detect Obsidian not running, (2) launch with snap run obsidian, (3) wait and verify, (4) run standalone lint, (5) run CLI checks, (6) report combined results showing the broken link",
+      "expected_output": "Skill should: (1) detect the CLI socket absent, (2) launch with /opt/Obsidian/obsidian, (3) wait and verify, (4) run standalone lint, (5) run CLI checks against vault=study, (6) report combined results showing the broken link",
       "assertions": [
-        {"text": "Launches Obsidian with snap run obsidian", "type": "behavior"},
+        {"text": "Launches Obsidian with /opt/Obsidian/obsidian (not snap)", "type": "behavior"},
         {"text": "Runs scripts/lint as standalone fallback", "type": "behavior"},
         {"text": "Runs obsidian unresolved, orphans, deadends CLI checks", "type": "behavior"},
         {"text": "Reports broken link in combined summary", "type": "output"},

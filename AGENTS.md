@@ -35,7 +35,7 @@ Applies to every skill in this repo.
 
 ## Wiki
 
-The wiki lives in `wiki/` (Obsidian vault). Pages are organized by topic folders (e.g., `wiki/javascript/react/`, `wiki/security/`).
+The wiki content lives in `wiki/`, organized by topic folders (e.g., `wiki/javascript/react/`, `wiki/security/`). The Obsidian vault is the **repo root** (name `study`); non-wiki content is hidden from it — see [Hiding non-wiki content](#hiding-non-wiki-content).
 
 ### Page Format
 
@@ -71,15 +71,37 @@ Python code is linted with ruff: `uv run ruff check scripts/ tests/`. Config liv
 
 ### Show in Obsidian
 
-At any point during any skill, the developer can say "show in Obsidian" to launch the app and open the relevant page. Check if Obsidian is already running before launching — only start it if not:
+At any point during any skill, the developer can say "show in Obsidian" to launch the app and open the relevant page. Page access uses Obsidian's **official CLI** (`obsidian`, shipped with the app and enabled via Settings → General → Command line interface). Check if it's connected before launching — only start the app if the socket is absent:
 
 ```bash
-test -S "${XDG_RUNTIME_DIR:-$HOME}/.obsidian-cli.sock" || (snap run obsidian &>/dev/null & disown && sleep 3)
+test -S "${XDG_RUNTIME_DIR:-$HOME}/.obsidian-cli.sock" || { setsid -f /opt/Obsidian/obsidian >/dev/null 2>&1 < /dev/null; sleep 3; }
 ```
 
-Then open pages with `obsidian open vault="study" file="<slug>"` (use bare slug, not path — `path=` does not work). Never run `snap run obsidian` unconditionally — it breaks when Obsidian is already open.
+Then open pages with the CLI (vault name is `study`; use the bare wiki-relative slug **without** `.md`, e.g. `ruby/transform-values`):
 
-The socket check (`~/.obsidian-cli.sock`) is the reliable indicator that Obsidian is running and the CLI can connect. Do not use `pgrep -f "obsidian"` — it self-matches the shell process that evaluates the check and produces false positives.
+```bash
+obsidian open vault="study" file="<slug>"
+```
+
+Notes:
+- The Obsidian vault is the **repo root** (`/home/felix/Code/Misc/study`), so its name is `study`. Wiki pages live under `wiki/`, but you still pass the wiki-relative slug (`ruby/transform-values`, not `wiki/ruby/transform-values`) — Obsidian's `file=` resolves by name like a wikilink and finds `wiki/ruby/transform-values.md` by suffix. The existing `[[topic/slug]]` wikilinks resolve the same way; no link re-rooting was needed.
+- The socket at `${XDG_RUNTIME_DIR:-$HOME}/.obsidian-cli.sock` (here `/run/user/1000/.obsidian-cli.sock`) is the reliable indicator that Obsidian is running **and** the CLI is connected. Do not use `pgrep -f "obsidian"` — the `-f` form matches the full command line and self-matches the shell process evaluating the check. (`pgrep -x obsidian` tells you the app is running but not whether the CLI is connected.)
+- Obsidian is installed from the **Debian package** at `/opt/Obsidian/obsidian` — there is no `snap` on this machine, so `snap run obsidian` fails. Never launch unconditionally; it breaks when Obsidian is already open.
+- Non-wiki content is kept out of Obsidian — see [Hiding non-wiki content](#hiding-non-wiki-content) below.
+- If the CLI toggle is ever off, `xdg-open "obsidian://open?vault=study&file=<slug>"` opens a page with no CLI dependency — a fallback, not the default.
+
+### Hiding non-wiki content
+
+The vault is the whole repo, but only `wiki/` is knowledge content. Hiding the rest takes **two layers**, because Obsidian's core "Excluded files" setting only *dims* explorer entries — it never removes them:
+
+| Surface | Mechanism | File |
+| --- | --- | --- |
+| Search, graph, quick-switcher, link autocomplete | `userIgnoreFilters` (core "Excluded files") | `.obsidian/app.json` |
+| File-explorer sidebar (full removal) | CSS snippet using `.nav-folder:has(...)` / `.nav-file:has(...)` rules | `.obsidian/snippets/hide-non-wiki.css` (enabled via `enabledCssSnippets` in `.obsidian/appearance.json`) |
+
+Both lists must stay **in sync**. Currently hidden: `probes/`, `scripts/`, `tests/`, `CLAUDE.md`. Kept visible on purpose: `wiki/`, `logs/`, `AGENTS.md`, `todo.md`. Dotfolders (`.claude/`, `.git/`, `.venv/`, `.pytest_cache/`) are auto-ignored by Obsidian; non-markdown (`pyproject.toml`, `uv.lock`) is hidden by `showUnsupportedFiles: false`. The graph view is separately scoped to `path:wiki/` via `.obsidian/graph.json`.
+
+To change what's hidden: edit the list in **both** `app.json` (`userIgnoreFilters`) and `hide-non-wiki.css`, then reload Obsidian (`Ctrl+R`). For a folder, add `.nav-folder:has(> .nav-folder-title[data-path="<name>"])`; for a file, `.nav-file:has(> .nav-file-title[data-path="<name>.md"])`.
 
 ## Probes
 
@@ -96,7 +118,7 @@ When the developer asks a substantive knowledge question — any "what is X / ho
    - Call `mcp__flashcard-mcp__search_cards` with the same query.
    - Optionally glance at `wiki/.wiki-index.json` sections/aliases if phrasing is unlikely to embed well.
    - **Always verify the memory answer against the web** via `WebSearch` (and `WebFetch` on the most authoritative result — official docs, source code, RFC, upstream repo — when the question has a specific factual claim to check). This runs regardless of whether wiki/cards hit, so memory answers are never trusted on their own.
-   - Append a `## Query N (HH:MM)` entry to today's `logs/YYYY-MM-DD.md` (creating the file if missing) with: **Question**, **Wiki hits** (wikilinks or `none`), **Card hits** (ids + one-line fronts or `none`), **Web check** (one-line verdict: `confirms` | `contradicts: <what>` | `refines: <what>` | `inconclusive`, plus the authoritative URL used), **Source** (`wiki` | `cards` | `research` | `mixed` | `memory`), **Answer** (one-line summary of what you told the developer).
+   - Append a `## Query N (HH:MM)` entry to today's `logs/<MM>/<YYYY-MM-DD>.md` (zero-padded month folder; creating the file if missing) with: **Question**, **Wiki hits** (wikilinks or `none`), **Card hits** (ids + one-line fronts or `none`), **Web check** (one-line verdict: `confirms` | `contradicts: <what>` | `refines: <what>` | `inconclusive`, plus the authoritative URL used), **Source** (`wiki` | `cards` | `research` | `mixed` | `memory`), **Answer** (one-line summary of what you told the developer).
    - Report back the wiki/card hits **and the web-check verdict** so the main thread can reconcile.
 
    The main thread must not `Read` or `Write` the log file itself, and must not run wiki-search / card-search directly. Same rule for the wiki-write follow-up when the developer accepts a `/study-walkthrough --write` offer: spawn it in the background.
@@ -115,9 +137,22 @@ Scope: this applies to knowledge/explanation questions. It does *not* apply to o
 
 ## Session Logs
 
-Daily append-only logs in `logs/YYYY-MM-DD.md`. Each session records: skill used, topic, cards reviewed/created, accuracy, lapses, wiki updates, duration.
+Daily append-only logs live at **`logs/MM/YYYY-MM-DD.md`** — the parent folder is the zero-padded month (`logs/04/2026-04-30.md`, `logs/05/2026-05-30.md`). Each session records: skill used, topic, cards reviewed/created, accuracy, lapses, wiki updates, duration.
 
-**Always log repo changes.** Any change you make to this repo — skills, scripts, wiki, todo, config, AGENTS.md itself — must be recorded in today's `logs/YYYY-MM-DD.md` as a `## Session N — Change (HH:MM)` entry with **Files:**, **Change:**, and **Why:** fields. Do this even outside a kickoff/end ritual. If today's log doesn't exist yet, create it.
+**Path convention (writing & reading):**
+- **Today's log:** `logs/<MM>/<YYYY-MM-DD>.md`, where `<MM>` is the current month zero-padded. Create the month folder if missing.
+- **A specific day** (e.g. yesterday, for a re-entry hint): derive `<MM>` from that day's date — it may differ from today's at a month boundary.
+- **A window of days** (e.g. `/progress`): glob `logs/*/*.md` and filter by the `YYYY-MM-DD` date in the filename; do not assume a single month folder.
+- A new daily log starts with a `# <YYYY-MM-DD>` header; session entries append below it.
+
+**Section legend** (entries append at H2; `N` increments across ALL session types within a day; queries use their own sequence):
+- `## Session N — Kickoff (HH:MM)`
+- `## Session N — Study | Walkthrough | Flashcard | Reflection | Progression (HH:MM)`
+- `## Session N — Change (HH:MM)` → **Files:** / **Change:** / **Why:**
+- `## Session N — End (HH:MM)`
+- `## Query N (HH:MM)` → Question / Wiki hits / Card hits / Web check / Source / Answer
+
+**Always log repo changes.** Any change you make to this repo — skills, scripts, wiki, todo, config, AGENTS.md itself — must be recorded in today's `logs/<MM>/<YYYY-MM-DD>.md` as a `## Session N — Change (HH:MM)` entry with **Files:**, **Change:**, and **Why:** fields. Do this even outside a kickoff/end ritual. If today's log doesn't exist yet, create it with a `# <YYYY-MM-DD>` header.
 
 ## MCP Server
 
@@ -157,4 +192,4 @@ Python modules live in `scripts/wiki/`. The top-level scripts are thin entry poi
 
 - **TreeSearch**: `uv tool install pytreesearch` — FTS5 search for wiki
 - **Ollama**: Local LLM runtime with `nomic-embed-text` model — semantic embeddings
-- **Obsidian**: Optional, for graph visualization and enhanced health checks. Launch with `snap run obsidian`.
+- **Obsidian**: Optional, for graph visualization and enhanced health checks. Installed from the Debian package at `/opt/Obsidian/obsidian`. Its official CLI (`obsidian`) is enabled via Settings → General → Command line interface and lives at `~/.local/bin/obsidian`. Launch detached with `setsid -f /opt/Obsidian/obsidian >/dev/null 2>&1 < /dev/null`; open pages with `obsidian open vault="study" file="<slug>"`.
