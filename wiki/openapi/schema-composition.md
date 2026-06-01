@@ -14,8 +14,8 @@ updated: '2026-04-09'
 source_skill: study-walkthrough
 flashcard_ids: []
 depth: 1
-next_review: '2026-05-15'
-review_interval: 7
+next_review: '2026-06-07'
+review_interval: 8
 probe_sections:
 - anyOf vs oneOf
 - The oneOf Shared-Field Trap
@@ -23,11 +23,11 @@ probe_sections:
 - The additionalProperties Trap
 - not as a Filter
 last_probed:
+- The additionalProperties Trap
+- not as a Filter
 - anyOf vs oneOf
 - The oneOf Shared-Field Trap
 - allOf Is Not Inheritance
-- The additionalProperties Trap
-- not as a Filter
 ---
 
 # Schema Composition

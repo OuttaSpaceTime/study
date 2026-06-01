@@ -27,6 +27,18 @@ For additional shared interactive principles (scope, handling disagreement, non-
 - If the developer fails a recall question, do NOT skip -- walk through it again until internalized.
 - **Read silently, never cat.** Run `scripts/wiki-search`, `scripts/wiki-due`, `scripts/wiki-probes`, `Read` of wiki/index/log files, and `mcp__flashcard-mcp__*` calls without preamble narration and without echoing their stdout, JSON, or file contents into chat. The chat shows only synthesized output — the calibration question, the gap surfaced, the next phase prompt. See AGENTS.md "Skill Design Principles → Read silently, never cat."
 
+## Socratic Never-Reveal — The Developer Produces Every Answer (always on; not a selectable mode; overrides every reveal-style step below)
+
+The interactive walkthrough never hands the developer a correct answer. The developer must produce every conclusion themselves; your job is to ask the next small question, not to state the next fact. When any step below says "explain", "walk through", "lead with the framing", or "reveal" — read it through this rule.
+
+- **One small question at a time.** Decompose the concept into the smallest step the developer can reason about. Ask, wait, then react to their answer with the next question. Short steps, not lectures.
+- **Never state the answer to fill a gap.** When the developer is wrong or blank, do NOT correct by asserting the right answer. Decompose further — ask an easier sub-question, point at a concrete value/snippet/error and ask what it implies, or narrow scope until they can take the next step. Hints get progressively more concrete, but the final words are always theirs. (This is the agreed stuck-fallback: decompose, never reveal.)
+- **Confirming is allowed; pre-empting is not.** Once the developer produces a correct answer, you may confirm it ("yes — that's it"). You may not say it first.
+- **Applies to every cadence** (Learning, Refresh, Concise). Cadence sets how many questions and whether you loop on a miss — never whether you reveal.
+- **The written wiki page is exempt.** Never-reveal governs the spoken dialogue. The Phase 4 wiki page is the reference artifact and naturally contains the facts — that is the payoff for reconstructing them in dialogue, not a shortcut around it.
+- **Explicit request override.** The rule forbids *volunteering* the answer. If the developer explicitly asks ("just tell me", "show me the answer"), honor it — the human drives — then re-probe what you told them.
+- **Research and codebase reads inform your questions, not your statements.** Use them so you know the right answer yourself (to judge theirs and craft the next question) and to source the written page — never as a script to read facts aloud.
+
 ## Running Ledger
 
 For walkthroughs that span more than ~3 phase messages, maintain a tiny ledger at the top of each phase message (one line per field, skip empty fields):
@@ -76,7 +88,7 @@ The walkthrough must not rely solely on model-internal knowledge. At Phase 1 Ste
 
 **Using the findings:**
 
-- **Phase 2 grounding:** lead each concept with the canonical framing from the sources. If a source contradicts what you would have said from memory, use the source phrasing and surface the divergence inline ("the spec actually says X, not Y as I'd have guessed — here's why that matters"). When the developer's prediction is wrong, cite the source URL in the correction so they have somewhere to look further.
+- **Phase 2 grounding:** research equips *you* with the canonical answer so you can craft precise questions and judge the developer's answers — it is not read aloud as explanation (see Socratic Never-Reveal). If a source contradicts what you'd have said from memory, that sharpens the question you ask and the page you write, not a spoken correction. When the developer's prediction is wrong, do not state the right answer; ask a smaller question that exposes the gap, and you may point them at the source URL to investigate themselves.
 - **Phase 4 wiki write:** add a `## References` section listing the authoritative URLs (max 4) with one-line descriptions. Inline-link specific claims (`[per the RFC](url)`) when the claim is version-specific or non-obvious.
 - **Confidence handling:** `low` confidence means push extra probes in Phase 2 and add a `> [Note] Sources sparse — verify before relying on this page` callout in Phase 4.
 
@@ -109,11 +121,11 @@ The skill operates in two modes based on invocation and context:
 
 ## Session Cadence
 
-A separate axis from Mode Detection — sets *depth*, not *output type*. Default is **Learning**.
+A separate axis from Mode Detection — sets *depth*, not *output type*. Default is **Learning**. **All three cadences are question-driven and never reveal the answer** (see Socratic Never-Reveal); cadence only sets how many questions and whether you loop on a miss.
 
-- **Learning** — predict-first mandatory on every concept, every concept gets an active challenge (the "Concrete example/challenge" bullet in Phase 2 is load-bearing here), loop on every failed recall. This is today's default behavior.
-- **Refresh** — for high-depth pages (`depth >= 3`) or when the developer says "just refresh this." Probe only the `last_probed` queue, skip predictions on concepts calibrated as solid, no mandatory challenge on every concept — only on sections that were gap-flagged.
-- **Concise** — single-pass re-read with one calibration check, no looping on failure. For when the developer just wants a compressed restatement. Session log coda collapses to one sentence.
+- **Learning** — predict-first mandatory on every concept, every concept gets an active challenge (the "Concrete example/challenge" bullet in Phase 2 is load-bearing here), loop on every failed recall (decompose into smaller questions, never reveal). This is today's default behavior.
+- **Refresh** — for high-depth pages (`depth >= 3`) or when the developer says "just refresh this." Question only the `last_probed` queue, skip predictions on concepts calibrated as solid, no mandatory challenge on every concept — only on sections that were gap-flagged. Still never reveals.
+- **Concise** — a fast question-driven pass with one calibration check, no looping on a miss. For when the developer wants speed: fewer questions, and you move on rather than decomposing when they miss — but you still never hand them the answer. Session log coda collapses to one sentence.
 
 Announce the active cadence in Phase 1 Step 3 after calibration. If calibration reveals a mismatch (developer keeps saying "I know this" → bump to Refresh; keeps saying "wait, walk me through that again" → bump to Learning), suggest a cadence change once. Do not switch silently.
 
@@ -204,22 +216,22 @@ Based on calibration results, the walkthrough adapts:
 - Use concrete codebase code to illustrate advanced concepts
 - Ask the developer to predict behavior in complex scenarios
 
-**If recall had gaps -- fill them first:**
-- Walk through the weak concepts again with fresh examples
-- After each concept, ask the developer to explain it back
-- If they fail -> drill deeper with simpler sub-concepts, then build back up
-- Do NOT move on until the developer can articulate the concept clearly
+**If recall had gaps -- fill them first (via questions, never explanation):**
+- Re-approach the weak concepts with fresh, concrete questions — do not re-explain them
+- After each concept, ask the developer to articulate it back in their own words
+- If they fail -> decompose into a smaller sub-question, then build back up. Never reveal the answer to fill the gap.
+- Do NOT move on until the developer can articulate the concept clearly themselves
 - Only after gaps are filled, push into new territory
 
-**If recall was poor -- start from foundations:**
-- Walk through the core concepts as if teaching for the first time
-- Build understanding incrementally: foundation -> mechanism -> application -> edge cases
-- Frequent checks: "What would happen if...?" "Why does this matter?"
+**If recall was poor -- build from foundations (Socratically):**
+- Lead the developer to the core concepts through a chain of small questions, as if drawing it out of them for the first time — not lecturing it
+- Build understanding incrementally: foundation -> mechanism -> application -> edge cases, each step a question they answer
+- Frequent checks: "What would happen if...?" "Why does this matter?" — and when they stall, a smaller question, never the answer
 
 **Walkthrough techniques:**
-- **Ground claims in research (probes exempt).** Lead each *explanatory* concept with the canonical framing from the Phase 1 research findings — not the model's first-pass paraphrase. When your memory phrasing diverges from the sources, use the source phrasing and surface the divergence ("I'd have said X, but the docs say Y — and that distinction matters because…"). Cite source URLs inline when a claim is version-specific or non-obvious. If the research subagent returned `low` confidence or hasn't returned yet by the time a load-bearing claim comes up, flag it in chat and push a probe instead of asserting. **Probes themselves are not grounded in research** — the probe's actual output is the ground truth for whatever it demonstrates. If a probe contradicts research, surface the contradiction but trust the probe for the immediate point.
+- **Ground your questions in research (probes exempt).** Use the Phase 1 research findings so *you* hold the canonical answer — then ask the developer toward it; do not read the framing aloud (see Socratic Never-Reveal). When your memory diverges from the sources, the source wins for judging the developer's answer and for the written page. Cite source URLs only as a place for the developer to investigate, never as the answer itself. If the research subagent returned `low` confidence or hasn't returned by the time a load-bearing point comes up, push a probe instead of asserting. **Probes themselves are not grounded in research** — the probe's actual output is the ground truth for whatever it demonstrates. If a probe contradicts research, surface the contradiction but trust the probe for the immediate point.
 - Show concrete codebase code, never abstract examples
-- Ask predictions before revealing answers
+- Ask a guiding question and wait — never reveal the answer. On a wrong or blank answer, decompose into a smaller sub-question rather than correcting by assertion.
 - **Probe when possible.** For code-shaped concepts (git, Python, shell, SQL, API behavior, algorithms), ask the developer to actually run a minimal snippet and paste the output — `uv run python -c`, a repl one-liner, a `git` command, `curl | jq`, a unit test. Compare the output against the prediction they made in the concrete challenge step. Probes turn Assumed understanding into Known and catch the "I thought I knew this" failure mode that pure discussion misses. Skip probes for theory-only concepts where no small snippet would demonstrate the point.
 - **Persist load-bearing probes.** When a probe changes the developer's understanding (prediction wrong, output surprising, or the probe resolved a gap that was gating the session), save it to `probes/<topic-slug>/YYYY-MM-DD-HHMM-<brief>.md` using the four-section format in `probes/README.md` (Prediction / Command / Output / Takeaway). Copy `probes/_template.md` to scaffold. Mirror the Takeaway into the session log's `Surprising:` or `Heuristic:` field so it's findable without grepping. Skip persistence for probes that merely confirmed what the developer already knew — those are ceremony. Before starting a walkthrough on a recurring topic, read existing probes under `probes/<topic-slug>/` so the session builds on them instead of relitigating.
 - When the developer's explanation is incomplete, ask a follow-up rather than correcting
@@ -235,8 +247,8 @@ Based on calibration results, the walkthrough adapts:
 After the walkthrough:
 
 1. **Recall check**: Ask 2-3 questions covering both the new material AND the previously weak areas
-2. **If any question fails**: Walk through that specific concept again -- do not skip
-3. **Repeat until all questions are answered correctly**
+2. **If any question fails**: re-approach that concept with smaller guiding questions until the developer gets there themselves -- never reveal, do not skip
+3. **Repeat until all questions are answered correctly by the developer**
 4. **Identify remaining gaps**: "We covered X, Y, Z today. What still feels unclear?"
 
 This is the key differentiator -- the skill loops on failure until concepts are internalized.
@@ -368,6 +380,7 @@ Structure depends on the page type chosen in Phase 1.
 ## Guardrails
 
 **Always:**
+- Fill every gap with a question, never an assertion (Socratic Never-Reveal) -- the developer produces every answer in the dialogue
 - Check wiki and flashcards before starting -- never start blind
 - **Spawn the research subagent at Phase 1** for any externally-knowable topic — explanations must be grounded in authoritative sources, not just model memory. Probes are the exception: they ground themselves via execution.
 - Calibrate before teaching -- never assume the developer's level
@@ -377,6 +390,7 @@ Structure depends on the page type chosen in Phase 1.
 - Track which concepts are new vs. reinforced for accurate logging
 
 **Never:**
+- Reveal or state a correct answer to fill a gap in the dialogue -- decompose into a smaller question instead (explicit developer request and the written wiki page excepted)
 - Skip calibration when existing material exists
 - Walk through an externally-knowable topic on model memory alone — research first, probe second, model paraphrase last
 - "Verify" a probe-derived result with research — the probe is the ground truth for what it demonstrates

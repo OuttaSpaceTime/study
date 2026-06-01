@@ -37,6 +37,17 @@ See `~/.claude/skills/references/interactive-principles.md` for shared interacti
 - If the developer has studied today already, acknowledge it
 - Show "Session complete" when queue is exhausted — do not pull more cards
 
+## Socratic Never-Reveal on Weak Answers
+
+When the developer's answer is good (would rate Good/Easy), they already produced it — confirm and move on as normal. When the answer is weak (would rate Again/Hard: wrong, blank, or significant gaps), do NOT reveal the card back. Recover via questions instead:
+
+- **Decompose, don't explain.** Ask one smaller guiding question aimed at the missing piece. Point at a concrete value, snippet, error, or the half they did get, and ask what follows. Wait.
+- **Never hand over the answer to end the loop.** Keep decomposing into smaller, more concrete questions until the developer produces the missing piece themselves. Hints get more concrete; the final words stay theirs. (Agreed stuck-fallback: decompose, never reveal.)
+- **Confirming ≠ revealing.** Once they produce it, confirm ("right — that's the piece you were missing"). Do not say it first.
+- **Then rate honestly.** Needing scaffolding is the rating signal: a card the developer could only reconstruct under heavy hinting is Again (1) or Hard (2), even though they got there. Submit that rating so the card resurfaces soon.
+- **Explicit request override.** If the developer explicitly asks ("just show me the back"), honor it, then re-probe. The rule forbids volunteering the answer, not refusing a direct request.
+- **Escape hatch is a walkthrough, not a reveal.** If a card stays stuck after several decomposed hints, rate Again and offer `/study-walkthrough <topic>` rather than dumping the back.
+
 ## MCP Server Dependency
 
 This skill requires the `flashcard-mcp` MCP server running from `~/Code/Misc/flashcard-mcp`. If tools are not available, tell the user:
@@ -113,10 +124,11 @@ Then loop:
    - `Hard (2)`: Mostly correct but significant gaps
    - `Good (3)`: Correct answer with reasonable detail
    - `Easy (4)`: Perfect, immediate recall
-5. **Show feedback** — brief, constructive:
-   - Reveal the card back
+5. **Feedback** — brief, constructive, and **answer-dependent** (see Socratic Never-Reveal):
+   - **Good/Easy answer:** keep it tight — **2-3 sentences, hard cap.** The developer already produced the answer, so don't re-explain it back to them. Spend the sentences only on filling a genuine gap or drawing one interesting/non-obvious connection, and only when there is one — a clean answer can just get a one-line confirm + rating. Do not volunteer a deeper expansion; the developer will ask ("discuss", "tell me more") if a card is worth dwelling on. The goal on good answers is to keep moving; Socratic depth is for the cards that need it (weak answers), not for cards already known.
+   - **Again/Hard answer:** do NOT reveal the back. Enter Socratic recovery — decompose into smaller guiding questions until the developer produces the missing piece themselves, then confirm. Never volunteer the answer to close the loop.
    - State what was correct and what was missing (1-2 sentences)
-   - State the rating: "Rated: **Good (3)**"
+   - State the rating: "Rated: **Good (3)**" — needing recovery hints means Again/Hard
    - **Flashcard quality check:** Evaluate the card itself — not just the answer. Flag genuinely weak cards:
      - **Too vague:** back doesn't give enough concrete detail to learn from (not just short — a precise one-liner is fine)
      - **Too broad:** front covers multiple distinct concepts that should be separate cards
@@ -167,7 +179,7 @@ If the developer says "skip wiki" or there were no due wiki entries, go to Phase
    **Tune difficulty by `review_interval`:** short (1-3d) → gentle recall; medium (4-14d) → standard application; long (15+d) → harder applied or "teach it back".
 
 4. **Wait for the developer's answer to each question in turn.**
-5. **Evaluate each answer** with 1-2 sentences of feedback and a per-section rating (1-4). Assign page rating = rounded mean (round half-down). Score code answers on structural correctness, not literal completeness.
+5. **Evaluate each answer** with 1-2 sentences of feedback and a per-section rating (1-4). Assign page rating = rounded mean (round half-down). Score code answers on structural correctness, not literal completeness. **On a weak section answer, apply Socratic Never-Reveal** — recover via smaller guiding questions until the developer produces the missing piece, then rate; do not read the section content back at them.
 6. State rating breakdown and apply:
    > Section A: Good · Section B: Hard → page rated **Hard (2)**. Applying.
 7. Run `scripts/wiki-reschedule wiki/<path>.md <rating> --probed "<Section A>,<Section B>"`.
@@ -301,13 +313,14 @@ If developer says "actually harder" or "actually easier" after feedback, acknowl
 
 **Always:**
 - Reference actual codebase code when discussing card concepts
-- Give the developer a chance to answer before revealing the back
+- On a weak (Again/Hard) answer, recover via smaller questions — never volunteer the back (Socratic Never-Reveal)
 - Respect every mid-session action immediately
 - Write session log at the end of every session
 - Link lapses to wiki pages when they exist
 
 **Never:**
 - Show the answer before the developer attempts a response
+- Reveal the back to fill a gap on a weak answer — decompose into a smaller question instead (explicit developer request excepted)
 - Create cards automatically
 - Batch multiple cards in one message
 - Ignore mid-session requests

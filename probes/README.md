@@ -155,7 +155,7 @@ scripts/wiki-probes                            # all probes grouped by wiki page
 ## Cross-references
 
 - Spec: `.claude/skills/study-walkthrough/SKILL.md` → Phase 2 "Probe when possible" bullet
-- Wiki review hook: `.claude/skills/study-study/SKILL.md` → Phase 2 Step 2a
+- Wiki review hook: `.claude/skills/study/SKILL.md` → Phase 2 Step 2a
 - Lookup script: `scripts/wiki-probes`
 - Principles: `AGENTS.md` → Skill Design Principles
 - Methodology source: the Solveit page in the master-terminal wiki (`wiki/solveit-method.md`)

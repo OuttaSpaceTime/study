@@ -1,0 +1,16 @@
+{
+	"nodes":[
+		{"id":"g-polya","type":"group","label":"Pólya — How to Solve It (4 steps)","x":340,"y":-90,"width":1540,"height":410},
+		{"id":"n-research","type":"text","text":"## Research / Query\n\n*Scope + what I already know vs. need to retrieve.*\n\n- \n- ","x":0,"y":0,"width":320,"height":260,"color":"6"},
+		{"id":"n1","type":"text","text":"## 1 — Understand the problem\n\n*Unknown, data, conditions, rephrase, visualize.*\n\n- \n- ","x":380,"y":0,"width":320,"height":260,"color":"1"},
+		{"id":"n2","type":"text","text":"## 2 — Devise a plan\n\n*Pattern, reduce, work backwards, decompose, representation.*\n\n- \n- ","x":760,"y":0,"width":320,"height":260,"color":"2"},
+		{"id":"n3","type":"text","text":"## 3 — Carry out the plan\n\n*Execute step by step; check each step; back up if stuck.*\n\n- \n- ","x":1140,"y":0,"width":320,"height":260,"color":"4"},
+		{"id":"n4","type":"text","text":"## 4 — Look back\n\n*Verify, alternatives, extract patterns, generalize.*\n\n- \n- ","x":1520,"y":0,"width":320,"height":260,"color":"5"}
+	],
+	"edges":[
+		{"id":"e0","fromNode":"n-research","fromSide":"right","toNode":"n1","toSide":"left"},
+		{"id":"e1","fromNode":"n1","fromSide":"right","toNode":"n2","toSide":"left"},
+		{"id":"e2","fromNode":"n2","fromSide":"right","toNode":"n3","toSide":"left"},
+		{"id":"e3","fromNode":"n3","fromSide":"right","toNode":"n4","toSide":"left"}
+	]
+}

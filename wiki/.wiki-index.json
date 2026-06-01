@@ -92,7 +92,10 @@
       "Signals push-pull model vs Zone.js passive patching",
       "How signal writes mark ancestors: traversal flag vs dirty flag",
       "Semi-local CD: which nodes are traversed vs which re-evaluate bindings",
-      "The click-event caveat: when semi-local CD collapses",
+      "Why change detection walks top-down",
+      "The click-event caveat: two independent mechanisms",
+      "When the caveat bites vs when semi-local CD survives",
+      "Why semi-local CD only matters in zoneless",
       "toSignal(): observable-to-signal bridge and what it buys",
       "Signals vs async pipe: when to use which",
       "Related Concepts",
@@ -100,24 +103,30 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-05-11",
-    "next_review": "2026-05-15",
-    "review_interval": 4,
+    "updated": "2026-05-30",
+    "next_review": "2026-06-04",
+    "review_interval": 5,
     "probe_sections": [
       "Signals push-pull model vs Zone.js passive patching",
       "How signal writes mark ancestors: traversal flag vs dirty flag",
       "Semi-local CD: which nodes are traversed vs which re-evaluate bindings",
-      "The click-event caveat: when semi-local CD collapses",
+      "Why change detection walks top-down",
+      "The click-event caveat: two independent mechanisms",
+      "When the caveat bites vs when semi-local CD survives",
+      "Why semi-local CD only matters in zoneless",
       "toSignal(): observable-to-signal bridge and what it buys",
       "Signals vs async pipe: when to use which"
     ],
     "last_probed": [
-      "The click-event caveat: when semi-local CD collapses",
-      "toSignal(): observable-to-signal bridge and what it buys",
-      "Signals vs async pipe: when to use which",
       "Signals push-pull model vs Zone.js passive patching",
       "How signal writes mark ancestors: traversal flag vs dirty flag",
-      "Semi-local CD: which nodes are traversed vs which re-evaluate bindings"
+      "Semi-local CD: which nodes are traversed vs which re-evaluate bindings",
+      "The click-event caveat: two independent mechanisms",
+      "When the caveat bites vs when semi-local CD survives",
+      "Why semi-local CD only matters in zoneless",
+      "Why change detection walks top-down",
+      "toSignal(): observable-to-signal bridge and what it buys",
+      "Signals vs async pipe: when to use which"
     ]
   },
   "git/git-index": {
@@ -410,9 +419,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-15",
-    "review_interval": 8,
+    "updated": "2026-05-31",
+    "next_review": "2026-06-03",
+    "review_interval": 3,
     "probe_sections": [
       "The decode loop has a sampler",
       "Temperature - how peaked the distribution is",
@@ -421,11 +430,11 @@
       "Choosing knobs by task shape"
     ],
     "last_probed": [
-      "The decode loop has a sampler",
       "Temperature - how peaked the distribution is",
       "num_predict - the output cap",
       "Thinking mode - reasoning preamble",
-      "Choosing knobs by task shape"
+      "Choosing knobs by task shape",
+      "The decode loop has a sampler"
     ]
   },
   "llm/serving-runtime-and-vram": {
@@ -607,9 +616,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-09",
-    "updated": "2026-05-08",
-    "next_review": "2026-05-15",
-    "review_interval": 7,
+    "updated": "2026-05-30",
+    "next_review": "2026-06-07",
+    "review_interval": 8,
     "probe_sections": [
       "anyOf vs oneOf",
       "The oneOf Shared-Field Trap",
@@ -618,11 +627,11 @@
       "not as a Filter"
     ],
     "last_probed": [
+      "The additionalProperties Trap",
+      "not as a Filter",
       "anyOf vs oneOf",
       "The oneOf Shared-Field Trap",
-      "allOf Is Not Inheritance",
-      "The additionalProperties Trap",
-      "not as a Filter"
+      "allOf Is Not Inheritance"
     ]
   },
   "programming-languages/compilers-and-interpreters": {
@@ -1435,9 +1444,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-05-12",
-    "next_review": "2026-05-16",
-    "review_interval": 4,
+    "updated": "2026-05-31",
+    "next_review": "2026-06-06",
+    "review_interval": 6,
     "probe_sections": [
       "Why the browser makes CSRF possible",
       "Three preconditions for a successful CSRF attack",
@@ -1447,12 +1456,12 @@
       "Login CSRF and the pre-session token fix"
     ],
     "last_probed": [
-      "Synchronizer token vs. signed double-submit cookie",
-      "Why CSRF tokens don't stop XSS",
-      "Login CSRF and the pre-session token fix",
       "Why the browser makes CSRF possible",
       "Three preconditions for a successful CSRF attack",
-      "Why SameSite=Lax doesn't fully protect against subdomain attacks"
+      "Why SameSite=Lax doesn't fully protect against subdomain attacks",
+      "Synchronizer token vs. signed double-submit cookie",
+      "Why CSRF tokens don't stop XSS",
+      "Login CSRF and the pre-session token fix"
     ]
   },
   "security/hsts": {
