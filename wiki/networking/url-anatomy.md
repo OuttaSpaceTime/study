@@ -92,7 +92,7 @@ Read host names **right-to-left**. That mirrors how DNS delegates ownership.
                     domain (SLD)        domain (TLD)
 ```
 
-- **TLD** (`.de`, `.com`, `.org`): run by a registry (DENIC for `.de`, Verisign for `.com`). The TLD only knows which authoritative nameservers handle each SLD beneath it.
+- **TLD** (`.com`, `.org`, `.de`): run by a registry (Verisign for `.com`, DENIC for `.de`). The TLD only knows which authoritative nameservers handle each SLD beneath it.
 - **SLD** (`example`): the registered domain. This is what you pay the registry for. You control everything to the left.
 - **Subdomain** (`www`, `chat`, `staging`, `api`): labels the domain owner adds under their SLD. No coordination with anyone else needed; just add a DNS record.
 

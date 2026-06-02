@@ -8,21 +8,21 @@ tags:
 - rails
 - routing
 created: '2026-04-13'
-updated: '2026-04-13'
+updated: '2026-06-01'
 source_skill: study-walkthrough
 depth: 1
-next_review: '2026-05-15'
-review_interval: 20
+next_review: '2026-07-21'
+review_interval: 50
 probe_sections:
 - How shallow routing splits member vs collection routes
 - Why This Split
 - Named Helpers Change Too
 - Applying to All Nested Resources
 last_probed:
+- Named Helpers Change Too
 - Applying to All Nested Resources
 - How shallow routing splits member vs collection routes
 - Why This Split
-- Named Helpers Change Too
 flashcard_ids: []
 ---
 
@@ -80,6 +80,17 @@ shallow do
   end
 end
 ```
+
+Equivalently, pass `shallow: true` as an option on the parent -- it cascades to every nested resource inside the block:
+
+```ruby
+resources :posts, shallow: true do
+  resources :comments
+  resources :likes
+end
+```
+
+Both forms generate identical routes. Per the Rails guide, you can specify the `:shallow` option on the parent resource, in which case all of its nested resources will be shallow.
 
 ## Related Concepts
 

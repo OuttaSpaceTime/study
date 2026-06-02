@@ -242,7 +242,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-23",
+    "updated": "2026-06-02",
     "next_review": "2026-05-31",
     "review_interval": 8,
     "probe_sections": [
@@ -292,9 +292,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-13",
-    "next_review": "2026-05-18",
-    "review_interval": 5,
+    "updated": "2026-06-02",
+    "next_review": "2026-06-14",
+    "review_interval": 12,
     "probe_sections": [
       "Inference vs training",
       "The two phases at a glance",
@@ -307,11 +307,11 @@
     "last_probed": [
       "Prefill - one pass, parallel",
       "Decode - N passes, sequential",
-      "Why output length dominates",
       "num_predict as the circuit breaker",
       "Rules of thumb for controlling prefill and decode cost",
       "Inference vs training",
-      "The two phases at a glance"
+      "The two phases at a glance",
+      "Why output length dominates"
     ]
   },
   "llm/kv-cache": {
@@ -344,7 +344,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-23",
+    "updated": "2026-06-02",
     "next_review": "2026-05-30",
     "review_interval": 7,
     "probe_sections": [
@@ -419,7 +419,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-31",
+    "updated": "2026-06-02",
     "next_review": "2026-06-03",
     "review_interval": 3,
     "probe_sections": [
@@ -465,9 +465,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-18",
-    "review_interval": 11,
+    "updated": "2026-06-02",
+    "next_review": "2026-06-30",
+    "review_interval": 28,
     "probe_sections": [
       "The model is a file",
       "VRAM and why GPUs",
@@ -477,12 +477,12 @@
       "Sizing VRAM and choosing KEEP_ALIVE strategy"
     ],
     "last_probed": [
-      "The model is a file",
-      "VRAM and why GPUs",
-      "KEEP_ALIVE and the cold-start tax",
       "Multi-tenancy - what is shared, what is per-slot",
       "Same model, different num_ctx, two instances",
-      "Sizing VRAM and choosing KEEP_ALIVE strategy"
+      "Sizing VRAM and choosing KEEP_ALIVE strategy",
+      "The model is a file",
+      "VRAM and why GPUs",
+      "KEEP_ALIVE and the cold-start tax"
     ]
   },
   "networking/networking-index": {
@@ -543,7 +543,7 @@
       "cmoqrprzu0000ld0mfbwqly5v"
     ],
     "created": "2026-05-04",
-    "updated": "2026-05-07",
+    "updated": "2026-06-02",
     "next_review": "2026-05-21",
     "review_interval": 14,
     "probe_sections": [
@@ -801,7 +801,7 @@
       "cmosqd3r80001h30mwd2tbpht"
     ],
     "created": "2026-05-05",
-    "updated": "2026-05-07",
+    "updated": "2026-06-02",
     "next_review": "2026-05-25",
     "review_interval": 18,
     "probe_sections": [
@@ -1109,9 +1109,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-13",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-15",
-    "review_interval": 20,
+    "updated": "2026-06-01",
+    "next_review": "2026-07-21",
+    "review_interval": 50,
     "probe_sections": [
       "How shallow routing splits member vs collection routes",
       "Why This Split",
@@ -1119,10 +1119,10 @@
       "Applying to All Nested Resources"
     ],
     "last_probed": [
+      "Named Helpers Change Too",
       "Applying to All Nested Resources",
       "How shallow routing splits member vs collection routes",
-      "Why This Split",
-      "Named Helpers Change Too"
+      "Why This Split"
     ]
   },
   "rails/routing/singular-resource": {
@@ -1147,9 +1147,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-13",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-15",
-    "review_interval": 20,
+    "updated": "2026-06-01",
+    "next_review": "2026-07-21",
+    "review_interval": 50,
     "probe_sections": [
       "6 Routes, Not 7",
       "Controller Is Still Plural",
@@ -1159,10 +1159,10 @@
     ],
     "last_probed": [
       "6 Routes, Not 7",
-      "How Identity Is Resolved",
-      "Nesting Works the Same",
       "Controller Is Still Plural",
-      "When to declare a singular resource"
+      "When to declare a singular resource",
+      "How Identity Is Resolved",
+      "Nesting Works the Same"
     ]
   },
   "rails/solidqueue-queue-admin": {
@@ -1230,9 +1230,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-05-12",
-    "next_review": "2026-05-16",
-    "review_interval": 4,
+    "updated": "2026-06-02",
+    "next_review": "2026-06-07",
+    "review_interval": 5,
     "probe_sections": [
       "How error terminates a stream: subscription state after onError",
       "catchError: signature, recovery pattern, and re-throw",
@@ -1242,10 +1242,10 @@
     ],
     "last_probed": [
       "catchError: signature, recovery pattern, and re-throw",
-      "Error in inner vs outer observable (flatMap/switchMap)",
-      "Dead subscriber trap: subscribing after a subject has errored",
       "How error terminates a stream: subscription state after onError",
-      "retry vs retryWhen: immediate resubscription vs conditional backoff"
+      "retry vs retryWhen: immediate resubscription vs conditional backoff",
+      "Error in inner vs outer observable (flatMap/switchMap)",
+      "Dead subscriber trap: subscribing after a subject has errored"
     ]
   },
   "reactive/observables": {

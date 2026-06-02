@@ -23,12 +23,12 @@ probe_sections:
 - 'Dead subscriber trap: subscribing after a subject has errored'
 last_probed:
 - 'catchError: signature, recovery pattern, and re-throw'
-- Error in inner vs outer observable (flatMap/switchMap)
-- 'Dead subscriber trap: subscribing after a subject has errored'
 - 'How error terminates a stream: subscription state after onError'
 - 'retry vs retryWhen: immediate resubscription vs conditional backoff'
-review_interval: 4
-next_review: '2026-05-16'
+- Error in inner vs outer observable (flatMap/switchMap)
+- 'Dead subscriber trap: subscribing after a subject has errored'
+review_interval: 5
+next_review: '2026-06-07'
 ---
 
 # Observable Error Handling

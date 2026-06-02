@@ -25,13 +25,13 @@ probe_sections:
 last_probed:
 - Prefill - one pass, parallel
 - Decode - N passes, sequential
-- Why output length dominates
 - num_predict as the circuit breaker
 - Rules of thumb for controlling prefill and decode cost
 - Inference vs training
 - The two phases at a glance
-review_interval: 5
-next_review: '2026-05-18'
+- Why output length dominates
+review_interval: 12
+next_review: '2026-06-14'
 flashcard_ids: []
 ---
 
