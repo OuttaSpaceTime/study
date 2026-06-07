@@ -155,6 +155,18 @@ Daily append-only logs live at **`logs/MM/YYYY-MM-DD.md`** — the parent folder
 
 **Always log repo changes.** Any change you make to this repo — skills, scripts, wiki, todo, config, AGENTS.md itself — must be recorded in today's `logs/<MM>/<YYYY-MM-DD>.md` as a `## Session N — Change (HH:MM)` entry with **Files:**, **Change:**, and **Why:** fields. Do this even outside a kickoff/end ritual. If today's log doesn't exist yet, create it with a `# <YYYY-MM-DD>` header.
 
+## Anki Sync
+
+`scripts/anki-sync` (module `scripts/ankisync/`) mirrors flashcard-mcp's cards to AnkiWeb so they can be reviewed on the phone. It is **stateless**: no sync bookkeeping exists anywhere — every run derives its plan from the current state of both sides.
+
+- **Identity:** the Anki note `guid` is set to the master card's CUID. A note with a CUID-shaped guid but no master card was ours and gets deleted; non-CUID guids are reported as unknown and never touched or imported.
+- **Existence & content:** one-way push, master.db always wins (front/back/tags/deck overwritten on any difference; Anki-side edits do not survive).
+- **Scheduling:** flows both ways — the side with the newer last review wins its whole FSRS block (`stability`/`difficulty` map natively to Anki's `memory_state`; no SM-2 conversion).
+- **Review history:** append-only union by (card, timestamp) — phone reviews land in the `Review` table, local reviews land in Anki's revlog. Nothing is overwritten.
+- **Bridge collection:** a dedicated headless Anki profile `StudySync` (`~/.local/share/Anki2/StudySync/`) — never the desktop profile. It is disposable: deleting the folder and re-running `sync` rebuilds it.
+- **Credentials:** AnkiWeb email in `StudySync/sync-config.json` (via `anki-sync login <email>`); password in the GNOME keyring (`secret-tool store --label="AnkiWeb study sync" service ankiweb` — run by the developer, never via a skill). After first login the session token persists in the profile; the keyring is only read for re-auth.
+- **Skill hooks:** `/study` runs `sync` before the pressure check (pull phone reviews first) and after the session log (push); `/study-flashcard` runs it after card creation. Always silent, one-line summary only when something moved; failures are a one-line note and never block the session.
+
 ## MCP Server
 
 The `flashcard-mcp` MCP server must be running. It starts automatically via `.mcp.json` (stdio transport pointing to `~/Code/Misc/flashcard-mcp/src/mcp/server.ts`).
@@ -186,6 +198,7 @@ Available scripts:
 - `scripts/wiki-due` — List wiki pages due for review
 - `scripts/wiki-reschedule <page> <rating>` — Reschedule a wiki page after review (1-4), rewrites frontmatter and re-indexes
 - `scripts/wiki-probes [<wiki-path>]` — List probes linked to a wiki page (derived from probe frontmatter). Omit argument to list all grouped by wiki page; `--topic <slug>` to match by topic folder instead; `--count` for count only
+- `scripts/anki-sync <login|sync|status>` — Sync flashcards to AnkiWeb (see [Anki Sync](#anki-sync)). `sync --dry-run` previews, `--local` skips AnkiWeb
 
 Python modules live in `scripts/wiki/`. The top-level scripts are thin entry points.
 

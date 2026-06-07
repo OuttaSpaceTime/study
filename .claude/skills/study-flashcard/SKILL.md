@@ -139,6 +139,7 @@ For each card draft:
 2. Developer confirms: "Create these" or makes final edits
 3. For each approved draft, call `create_card` with deckId, front, back, tags, and type
 4. Report results
+4a. **Push to AnkiWeb:** run `scripts/anki-sync sync` silently so the new cards reach the phone right away. One-line confirm only if it moved something (e.g. `Anki sync: pushed 3 new cards.`); on failure, a one-line note — never block the session on it.
 5. **Offer "write wiki"**: "Want to save a companion wiki page for these concepts?"
    - If yes, follow the full flow from `references/wiki-write-protocol.md`:
      - **Before drafting:** present a brief outline — title, proposed H2 sections with a one-line description each. Wait for confirmation or adjustment, then start writing from the top.

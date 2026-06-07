@@ -70,7 +70,9 @@ This skill requires the `flashcard-mcp` MCP server running from `~/Code/Misc/fla
 
 ### Phase 1: Pressure Check & Status (1 message)
 
-**Two script calls, nothing else.** Run `scripts/srs-pressure --human` and `scripts/wiki-due` — these are the only lookups in Phase 1. No log reads, no index reads, no extra Bash calls.
+**Three script calls, nothing else.** Run `scripts/anki-sync sync` first, then `scripts/srs-pressure --human` and `scripts/wiki-due` — these are the only lookups in Phase 1. No log reads, no index reads, no extra Bash calls.
+
+`scripts/anki-sync sync` runs **before** the pressure check so reviews done on the phone (via AnkiWeb) land in master.db before due counts are computed. It runs silently; mention it only when it pulled or pushed something (one line, e.g. `Anki sync: pulled 6 phone reviews.`) or when it failed — a failure (offline, not logged in) is a one-line note and the session continues; sync never blocks studying.
 
 `scripts/srs-pressure --human` is the **single source of truth** for flashcard due counts and the pressure verdict. Do **not** call `mcp__flashcard-mcp__get_due_cards` for pressure counts — it caps at 30 and underreports.
 
@@ -237,6 +239,8 @@ The `Surprising` and `Heuristic` fields are optional on `/study` (unlike `/study
 Omit the **Wiki reviewed** line if no wiki entries were reviewed in this session.
 
 **Lapse names are plain text, never wikilinks.** Write the card's topic name directly (e.g., "event sourcing"), not `[[architecture/event-sourcing]]`. Lapses refer to flashcard topics, which may not have wiki pages — linking them creates broken wikilinks.
+
+**Push reviews to AnkiWeb.** After the session log, run `scripts/anki-sync sync` silently to push this session's reviews and any card changes. One-line confirm only if it moved something (e.g. `Anki sync: pushed 12 reviews.`); on failure, a one-line note — never re-run automatically or block the wrap-up.
 
 **Wiki review entries use bare wikilinks, never backticked.** Write `[[architecture/event-sourcing]]` not `` `[[architecture/event-sourcing]]` ``. Backticks prevent Obsidian from rendering clickable links.
 

@@ -118,5 +118,8 @@
     "forge": "off",
     "ml-inbox-audit": "user-invocable-only",
     "solveit-nvim": "off"
-  }
+  },
+  "enabledMcpjsonServers": [
+    "flashcard-mcp"
+  ]
 }

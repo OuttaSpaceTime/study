@@ -1,0 +1,18 @@
+#!/usr/bin/env python3
+"""Sync flashcard-mcp cards to AnkiWeb (one-way push + scheduling/history merge)."""
+import os
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+
+# fastanki/anki live in the project venv; re-exec if invoked with another python
+venv_py = ROOT / ".venv" / "bin" / "python3"
+if venv_py.exists() and Path(sys.executable).resolve() != venv_py.resolve():
+    os.execv(str(venv_py), [str(venv_py), str(Path(__file__).resolve()), *sys.argv[1:]])
+
+sys.path.insert(0, str(ROOT))
+
+from scripts.ankisync.cli import main
+
+main()
