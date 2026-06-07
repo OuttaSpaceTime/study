@@ -18,6 +18,11 @@ class TestAlreadyHtml:
         text = "Steps:<ul><li>one</li><li>two</li></ul>"
         assert to_anki_html(text) == text
 
+    def test_apostrophe_entities_normalize_in_html_cards_too(self):
+        # &#x27; -> ' is safe in text and inside quoted attributes alike
+        text = "the user&#x27;s browser<br>can&#39;t do it"
+        assert to_anki_html(text) == "the user's browser<br>can't do it"
+
     def test_idempotent(self):
         text = "line one\nsee `<script>` tags\n**important**"
         once = to_anki_html(text)

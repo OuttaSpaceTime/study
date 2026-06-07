@@ -13,6 +13,7 @@ import sys
 from fastanki.core import data_path
 
 from scripts.ankisync import bridge, master
+from scripts.ankisync.htmlize import to_anki_html
 from scripts.ankisync.merge import is_cuid, plan_history, plan_sync
 
 CONFIG = data_path() / bridge.PROFILE / "sync-config.json"
@@ -50,6 +51,13 @@ def _gather(col):
     return cards, reviews, anki_cards, anki_reviews
 
 
+def _warn_format(cards) -> None:
+    """Simple HTML is the only supported card format; flag drift on every run."""
+    bad = sum(1 for c in cards if to_anki_html(c.front) != c.front or to_anki_html(c.back) != c.back)
+    if bad:
+        print(f"format: {bad} card(s) not in simple-HTML form — run scripts/card-htmlize")
+
+
 def _summary(plan, hist) -> str:
     parts = []
     for label, items in (
@@ -81,6 +89,7 @@ def cmd_sync(args) -> int:
                 return 1
 
         cards, reviews, anki_cards, anki_reviews = _gather(col)
+        _warn_format(cards)
         plan = plan_sync(cards, anki_cards)
         hist = plan_history(reviews, anki_reviews)
         print(f"plan: {_summary(plan, hist)}")
@@ -120,6 +129,7 @@ def cmd_status(args) -> int:
     col = bridge.open_bridge()
     try:
         cards, reviews, anki_cards, anki_reviews = _gather(col)
+        _warn_format(cards)
         plan = plan_sync(cards, anki_cards)
         hist = plan_history(reviews, anki_reviews)
         print(f"master: {len(cards)} cards, {len(reviews)} reviews")

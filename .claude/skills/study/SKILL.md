@@ -46,7 +46,7 @@ When the developer's answer is good (would rate Good/Easy), they already produce
 - **Confirming ≠ revealing.** Once they produce it, confirm ("right — that's the piece you were missing"). Do not say it first.
 - **Then rate honestly.** Needing scaffolding is the rating signal: a card the developer could only reconstruct under heavy hinting is Again (1) or Hard (2), even though they got there. Submit that rating so the card resurfaces soon.
 - **Explicit request override.** If the developer explicitly asks ("just show me the back"), honor it, then re-probe. The rule forbids volunteering the answer, not refusing a direct request.
-- **Escape hatch is a walkthrough, not a reveal.** If a card stays stuck after several decomposed hints, rate Again and offer `/study-walkthrough <topic>` rather than dumping the back.
+- **Escape hatch is a walkthrough, not a reveal.** If a card stays stuck after several decomposed hints, rate Again and offer `/study-walkthrough <topic>` rather than dumping the back. Note rating Again re-queues the card for this session (see Intra-day repeats) — after a 3rd failed pass, skip the repeat instead of looping again.
 
 ## MCP Server Dependency
 
@@ -114,6 +114,13 @@ The warn-threshold cap exists because over-adding under load is the recurring fa
 
 If cards span multiple decks, **interleave** them — don't exhaust one deck before starting the next. Mix topics to strengthen cross-domain connections.
 
+**Intra-day repeats (learning steps).** Any rating that leaves a card in an intra-day learning step re-queues it at the end of the current session — the server appends it with reason `learning_repeat` and `get_next_card` serves it again after the remaining cards. In FSRS terms: Again always repeats; Hard repeats on learning/relearning cards; Good repeats on brand-new cards (10-minute step). A card leaves the session only once its interval is a day or more.
+
+- Mark repeat presentations in the position line: `Card 13/13 — [Deck Name] (repeat)`. The session total grows as repeats are queued — that's expected.
+- Evaluate and rate honestly each time. A repeat rated Again comes back again; that's the point.
+- On a repeat, **vary the probe** — don't re-ask identically. Ask from a different angle or with a different concrete example so the developer recalls the concept, not your previous phrasing.
+- **Stuck-card escape:** if a card fails its 3rd pass in one session, don't keep looping. Rate it honestly, and when it resurfaces, offer `/study-walkthrough <topic>`, call `skip_card`, and move on — it stays due in minutes and returns next session.
+
 Then loop:
 
 1. **Call `get_next_card`** — if null, go to Phase 3 (Wiki Review)
@@ -146,7 +153,7 @@ Then loop:
 7. **Advance** — call `get_next_card` and present the next card in the same message. Only advance if no quality issue was flagged (or developer resolved/skipped it).
 
 **Track session data** internally for the log:
-- Cards reviewed, ratings given, lapses (Again ratings), start time
+- Cards reviewed (unique cards), repeats served, ratings given, lapses (Again ratings), start time
 
 ### Phase 3: Wiki Review (after flashcards)
 
@@ -226,7 +233,7 @@ If the developer says "skip wiki" or there were no due wiki entries, go to Phase
 - **Wiki reviewed:** 2 entries (Good ×1, Easy ×1)
   - [[architecture/event-sourcing]] → Good (3), next: 2026-04-21
   - [[architecture/cqrs]] → Easy (4), next: 2026-05-01
-- **Cards reviewed:** 12
+- **Cards reviewed:** 12 (+3 intra-day repeats)
 - **Accuracy:** 83%
 - **Lapses:** event sourcing (Again), CQRS (Hard)
 - **Duration:** 11 min

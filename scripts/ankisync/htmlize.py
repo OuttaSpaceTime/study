@@ -54,6 +54,10 @@ def _lists_to_html(lines: list[str]) -> list[str]:
 def to_anki_html(text: str) -> str:
     is_html = bool(_HTML_MARKER.search(text))
 
+    # apostrophe entities (old Anki imports) read badly in chat; the literal
+    # character is safe in HTML text and inside double-quoted attributes alike
+    text = text.replace("&#x27;", "'").replace("&#39;", "'")
+
     if not is_html:
         # normalize entities left over from old Anki imports (&#x27; etc.) to the
         # literal character, then re-escape once below — avoids double-escaping
