@@ -14,8 +14,8 @@ updated: '2026-05-07'
 source_skill: study-walkthrough
 depth: 1
 last_deepened: '2026-05-07'
-next_review: '2026-05-19'
-review_interval: 8
+next_review: '2026-06-17'
+review_interval: 10
 probe_sections:
 - 'Zone.js: what triggers CD and what it cannot know'
 - 'Default strategy: full DFS tree walk every cycle'
@@ -24,12 +24,12 @@ probe_sections:
 - setTimeout and manual subscribe silently miss OnPush
 - markForCheck vs detectChanges
 last_probed:
-- 'Mutation on @Input: why the child''s view goes stale'
-- setTimeout and manual subscribe silently miss OnPush
-- markForCheck vs detectChanges
 - 'Zone.js: what triggers CD and what it cannot know'
 - 'Default strategy: full DFS tree walk every cycle'
 - 'OnPush: four conditions that dirty a component'
+- 'Mutation on @Input: why the child''s view goes stale'
+- setTimeout and manual subscribe silently miss OnPush
+- markForCheck vs detectChanges
 flashcard_ids: []
 ---
 
