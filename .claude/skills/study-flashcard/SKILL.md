@@ -200,5 +200,8 @@ Cards sync to AnkiWeb, and Anki note fields are **HTML**: markdown renders liter
 - Lists: `<ul>/<ol>` with `<li>` (never `- ` / `1. ` lines)
 - Literal angle brackets (e.g. a `<script>` XSS example) must be entity-escaped: `&lt;script&gt;` — typically inside `<code>`
 - Never markdown links or `[[wikilinks]]` in card text — wiki linkage belongs in the companion page's `flashcard_ids`, not the card
+- **No em dashes (`—`), ever.** They're the classic LLM tell and read worse than plain prose. Write two sentences instead; after a bold lead-in label, use a colon (`<b>Fresh per response:</b> never reused…`). En dashes in numeric ranges (`1–4`) are fine.
 
 When presenting a card draft in chat, show it rendered (readable), not as raw HTML. `scripts/card-htmlize` exists as a safety net that converts any markdown stragglers (dry-run by default, `--apply` to write), but new cards should be born clean.
+
+These rules are **enforced at write time**: `create_card`/`update_card` reject markdown, bare newlines, wikilinks, and em dashes with a per-field error message. If a write is rejected, fix the draft per the error and retry — do not work around the validation.

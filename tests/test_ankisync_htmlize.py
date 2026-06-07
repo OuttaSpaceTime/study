@@ -98,6 +98,36 @@ class TestLists:
         assert to_anki_html("1. parse\n2. eval") == "<ol><li>parse</li><li>eval</li></ol>"
 
 
+class TestEmDashes:
+    """Em dashes are forbidden in cards (LLM-tell, reads worse than two sentences)."""
+
+    def test_spaced_em_dash_becomes_sentence_break(self):
+        assert to_anki_html("sent once — so the first request is unprotected") == (
+            "sent once. So the first request is unprotected"
+        )
+
+    def test_unspaced_em_dash_becomes_sentence_break(self):
+        assert to_anki_html("design for independence—avoid call-order deps") == (
+            "design for independence. Avoid call-order deps"
+        )
+
+    def test_html_card_em_dash_after_bold_label(self):
+        assert to_anki_html("<li><b>Fresh per response</b> — never reused</li>") == (
+            "<li><b>Fresh per response</b>. Never reused</li>"
+        )
+
+    def test_no_capitalization_into_code(self):
+        assert to_anki_html("SOP applies — <code>script-src</code> decides<br>x") == (
+            "SOP applies. <code>script-src</code> decides<br>x"
+        )
+
+    def test_em_dash_inside_code_is_preserved(self):
+        assert to_anki_html("range op `a — b` here") == "range op <code>a — b</code> here"
+        assert to_anki_html("uses <code>a — b</code> here<br>x") == (
+            "uses <code>a — b</code> here<br>x"
+        )
+
+
 class TestWikilinks:
     def test_wikilink_becomes_readable_text(self):
         assert to_anki_html("see [[rails/activerecord-preloading]]") == (

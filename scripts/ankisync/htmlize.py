@@ -13,6 +13,10 @@ import html
 import re
 
 _HTML_MARKER = re.compile(r"</code>|<br\s*/?>|<div[ >]|<ul>|<ol>|<li>|</b>|</strong>|<pre[ >]")
+_HTML_CODE = re.compile(r"<pre>.*?</pre>|<code>.*?</code>", re.S)
+# em dash (any spacing) -> sentence break; keep following tags, capitalize the
+# next word unless it sits inside a code element
+_EM_DASH = re.compile(r"\s*—+\s*((?:<[a-z]+>)*)([a-zà-ÿ])?")
 _FENCE = re.compile(r"```[^\n]*\n(.*?)\n?```", re.S)
 _INLINE_CODE = re.compile(r"`([^`\n]+)`")
 _BOLD = re.compile(r"\*\*([^*\n]+)\*\*")
@@ -58,22 +62,25 @@ def to_anki_html(text: str) -> str:
     # character is safe in HTML text and inside double-quoted attributes alike
     text = text.replace("&#x27;", "'").replace("&#39;", "'")
 
-    if not is_html:
-        # normalize entities left over from old Anki imports (&#x27; etc.) to the
-        # literal character, then re-escape once below — avoids double-escaping
-        text = html.unescape(text)
-
-    # protect code content from escaping/markdown passes via placeholders
+    # protect code content from escaping/markdown/dash passes via placeholders
     stash: list[str] = []
 
     def _stash(rendered: str) -> str:
         stash.append(rendered)
         return f"\x00{len(stash) - 1}\x00"
 
+    # HTML cards: existing code elements pass through verbatim. Plain cards:
+    # normalize leftover entities (&#x27; etc.), re-escaped once further below.
+    text = _HTML_CODE.sub(lambda m: _stash(m.group(0)), text) if is_html else html.unescape(text)
+
     # markdown constructs convert in every card — including mixed cards that
     # were authored with literal <br>/<div> plus markdown remnants
     text = _FENCE.sub(lambda m: _stash(f"<pre><code>{html.escape(m.group(1))}</code></pre>"), text)
     text = _INLINE_CODE.sub(lambda m: _stash(f"<code>{html.escape(m.group(1))}</code>"), text)
+
+    # em dashes are forbidden: an LLM-tell, and two sentences read better
+    text = _EM_DASH.sub(lambda m: f". {m.group(1)}{(m.group(2) or '').upper()}", text)
+
     text = _WIKILINK.sub(_wikilink_text, text)
     text = _BOLD.sub(r"<b>\1</b>", text)
     text = _ITALIC.sub(r"<i>\1</i>", text)
