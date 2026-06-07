@@ -166,6 +166,7 @@ Daily append-only logs live at **`logs/MM/YYYY-MM-DD.md`** — the parent folder
 - **Bridge collection:** a dedicated headless Anki profile `StudySync` (`~/.local/share/Anki2/StudySync/`) — never the desktop profile. It is disposable: deleting the folder and re-running `sync` rebuilds it.
 - **Credentials:** AnkiWeb email in `StudySync/sync-config.json` (via `anki-sync login <email>`); password in the GNOME keyring (`secret-tool store --label="AnkiWeb study sync" service ankiweb` — run by the developer, never via a skill). After first login the session token persists in the profile; the keyring is only read for re-auth.
 - **Skill hooks:** `/study` runs `sync` before the pressure check (pull phone reviews first) and after the session log (push); `/study-flashcard` runs it after card creation. Always silent, one-line summary only when something moved; failures are a one-line note and never block the session.
+- **Card content format:** Anki renders note fields as HTML, so card fronts/backs are authored in simple HTML (`<br>`, `<code>`, `<pre>`, `<b>`, `<i>`, `<ul>/<ol>/<li>`, entities for literal `<`/`>`) — never markdown, bare newlines, or `[[wikilinks]]`. See "Card Content Format" in `.claude/skills/study-flashcard/SKILL.md`; `scripts/card-htmlize` converts stragglers.
 
 ## MCP Server
 
@@ -199,6 +200,7 @@ Available scripts:
 - `scripts/wiki-reschedule <page> <rating>` — Reschedule a wiki page after review (1-4), rewrites frontmatter and re-indexes
 - `scripts/wiki-probes [<wiki-path>]` — List probes linked to a wiki page (derived from probe frontmatter). Omit argument to list all grouped by wiki page; `--topic <slug>` to match by topic folder instead; `--count` for count only
 - `scripts/anki-sync <login|sync|status>` — Sync flashcards to AnkiWeb (see [Anki Sync](#anki-sync)). `sync --dry-run` previews, `--local` skips AnkiWeb
+- `scripts/card-htmlize` — Convert markdown/plain card text in master.db to simple Anki HTML (dry-run by default, `--apply` writes after backing up master.db)
 
 Python modules live in `scripts/wiki/`. The top-level scripts are thin entry points.
 

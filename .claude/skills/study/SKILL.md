@@ -271,6 +271,8 @@ Chain into `/study-walkthrough` on the current card's topic. When complete, ask:
 
 Show current front and back. Developer provides corrections. Call `update_card`. Resume.
 
+**Card content format (edit & split):** any front/back written via `update_card`/`create_card` must use the simple-HTML format from `/study-flashcard`'s "Card Content Format" section (`<br>`, `<code>`, `<b>`, `<ul>`, entities for literal `<`/`>`) — never markdown or bare newlines. Cards sync to Anki, which renders fields as HTML. Present drafts in chat rendered, not as raw HTML.
+
 ### "actually, your last explanation was wrong" / correction mid-feedback
 
 **Correction Primitive.** If the developer corrects an explanation you gave in the feedback for a previous card (not the card itself), do not argue or layer a second explanation on top. Acknowledge in one line ("Got it — the correct answer is X"), re-state the correction cleanly, and carry the corrected version forward for any later card on the same topic. If a card whose feedback was wrong has already been rated, do not silently re-rate it — offer: "I gave you bad feedback on card N. Want me to reschedule it as Again/Hard so you see it again soon?" Let the developer decide.

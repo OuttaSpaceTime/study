@@ -189,3 +189,16 @@ Avoid cards about:
 - Language/framework trivia that a reference doc or LSP would surface instantly
 
 If a drafted card is pure syntax recall, flag it and ask whether there's a higher-level concept underneath worth capturing instead. When in doubt, ask — don't create the syntax card on assumption.
+
+## Card Content Format — simple HTML, never markdown
+
+Cards sync to AnkiWeb, and Anki note fields are **HTML**: markdown renders literally, raw newlines collapse, and unescaped `<`/`>` are parsed as markup. Author every `create_card`/`update_card` front and back in the simple HTML subset (it renders correctly on desktop, AnkiDroid, and AnkiWeb):
+
+- Line breaks: `<br>` (never bare newlines)
+- Inline code: `<code>...</code>`; code blocks: `<pre><code>...</code></pre>`
+- Emphasis: `<b>`, `<i>` (never `**`/`*`)
+- Lists: `<ul>/<ol>` with `<li>` (never `- ` / `1. ` lines)
+- Literal angle brackets (e.g. a `<script>` XSS example) must be entity-escaped: `&lt;script&gt;` — typically inside `<code>`
+- Never markdown links or `[[wikilinks]]` in card text — wiki linkage belongs in the companion page's `flashcard_ids`, not the card
+
+When presenting a card draft in chat, show it rendered (readable), not as raw HTML. `scripts/card-htmlize` exists as a safety net that converts any markdown stragglers (dry-run by default, `--apply` to write), but new cards should be born clean.
