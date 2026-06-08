@@ -10,7 +10,7 @@ tags:
 - api-design
 - rest
 created: '2026-05-08'
-updated: '2026-05-20'
+updated: '2026-06-08'
 source_skill: study-walkthrough
 flashcard_ids: []
 allow_orphan: true
@@ -83,6 +83,8 @@ This split is deliberate. Uniformity buys generic tooling where it pays off (res
 
 ## Pages
 
+- [[json-api/document-structure]]
+- [[json-api/query-conventions]]
 
 ## Related Concepts
 

@@ -85,26 +85,26 @@ The walk is top-down for correctness, not just convenience:
 - **Data flows down.** A parent's bindings feed child `@Input()`s, so parents must update before children (the same invariant behind `ExpressionChangedAfterChecked`). A leaf refreshed in isolation could read stale inputs.
 - **Structural dependence.** A child's existence can depend on its parent (`@if`, `@for`), so the parent's structural state must settle first.
 
-The three flags involved are distinct. `HasChildViewsToRefresh` (ancestors) is pure routing with no binding check. `RefreshView` (the consuming leaf) means re-run this view's bindings. `Dirty` (set by `markViewDirty`) is the separate OnPush path. `markAncestorsForTraversal` always terminates at a leaf flagged `RefreshView` — traversal with no refresh target would be pointless — but the ancestors it marks are never re-checked. That asymmetry is the whole saving.
+The three flags involved are distinct. `HasChildViewsToRefresh` (ancestors) is pure routing with no binding check. `RefreshView` (the consuming leaf) means re-run this view's bindings. `Dirty` (set by `markViewDirty`) is the separate OnPush path. `markAncestorsForTraversal` always terminates at a leaf flagged `RefreshView` (traversal with no refresh target would be pointless), but the ancestors it marks are never re-checked. That asymmetry is the whole saving.
 
 So the signal graph supplies *targeting* (which leaves, and the spine to reach them); the top-down walk supplies *ordering*. Traversing the spine is a cheap per-node flag check. Re-running binding expressions, the expensive part, still happens only at the flagged leaf.
 
 ## The click-event caveat: two independent mechanisms
 
-When a signal is mutated from inside a template event handler (`<button (click)="count.set(...)">`), two *independent* mechanisms fire — and conflating them hides what actually happens:
+When a signal is mutated from inside a template event handler (`<button (click)="count.set(...)">`), two *independent* mechanisms fire, and conflating them hides what actually happens:
 
-1. **The click listener** (not the signal). Angular's `wrapListener` calls `markViewDirty` on the component that *hosts the `(click)` binding*, after the handler runs, regardless of what the handler does. An empty `(click)="noop()"` still does this. It walks up to root stamping `Dirty`. This predates signals — it's why OnPush components have always re-rendered on their own click handlers.
-2. **The signal write** `count.set(...)`. This calls `markAncestorsForTraversal` on the signal's consumers — landing wherever `count` is *read*, exactly as for any other signal mutation.
+1. **The click listener** (not the signal). Angular's `wrapListener` calls `markViewDirty` on the component that *hosts the `(click)` binding*, after the handler runs, regardless of what the handler does. An empty `(click)="noop()"` still does this. It walks up to root stamping `Dirty`. This predates signals. It's why OnPush components have always re-rendered on their own click handlers.
+2. **The signal write** `count.set(...)`. This calls `markAncestorsForTraversal` on the signal's consumers, landing wherever `count` is *read*, exactly as for any other signal mutation.
 
-The determinant is split: `markViewDirty` is driven by **where the `(click)` binding lives** (dirties up to root); traversal is driven by **where the signal is read**. Both markings poke the CD scheduler, which **coalesces them into a single tick**; where they overlap on the same view, `Dirty` wins (recompute beats traverse-through).
+The determinant is split two ways. `markViewDirty` is driven by **where the `(click)` binding lives** (dirties up to root); traversal is driven by **where the signal is read**. Both markings poke the CD scheduler, which **coalesces them into a single tick**; where they overlap on the same view, `Dirty` wins (recompute beats traverse-through).
 
 ## When the caveat bites vs when semi-local CD survives
 
-The caveat only bites when the signal is read **at or above** the button's host: the click's dirty-walk already runs up to root, so any consumer on that upward path recomputes as a side effect of the click — not because the signal asked for it. The signal's careful leaf-targeting is wasted there.
+The caveat only bites when the signal is read **at or above** the button's host: the click's dirty-walk already runs up to root, so any consumer on that upward path recomputes as a side effect of the click, not because the signal asked for it. The signal's careful leaf-targeting is wasted there.
 
-If the signal is read in the *same* component as the button, that component is `Dirty` from mechanism 1 and recomputes regardless — the traversal flag is redundant.
+If the signal is read in the *same* component as the button, that component is `Dirty` from mechanism 1 and recomputes regardless. The traversal flag is redundant.
 
-Semi-local CD survives in full only when the signal mutation comes from **outside** a template event — a service, a timer, a WebSocket callback — where mechanism 1 never fires and only `markAncestorsForTraversal` runs.
+Semi-local CD survives in full only when the signal mutation comes from **outside** a template event (a service, a timer, a WebSocket callback), where mechanism 1 never fires and only `markAncestorsForTraversal` runs.
 
 ## Why semi-local CD only matters in zoneless
 
@@ -112,7 +112,7 @@ The signal markings (`markAncestorsForTraversal`) run identically whether or not
 
 With Zone.js present, Zone fires a global CD pass after every async task regardless of what changed. The targeted leaf-only traversal is drowned out by zone's blanket top-down sweeps, so you pay full CD anyway. Remove the zone (`provideZonelessChangeDetection`) and the signal write becomes the *only* trigger, so the minimal traversal is what actually executes. The optimization is invisible with a zone and load-bearing without one.
 
-The click caveat is itself a zoneless artifact. Without a zone, nothing automatically schedules CD when a user clicks. Angular's event-listener wrapper does the scheduling instead, by calling `markViewDirty` on the host component — the explicit replacement for zone's old automatic CD-on-events. So mechanism 1 from the caveat above *is* the zoneless event-handling path. The full dirty walk on a click is the price of not having a zone to do it implicitly.
+The click caveat is itself a zoneless artifact. Without a zone, nothing automatically schedules CD when a user clicks. Angular's event-listener wrapper does the scheduling instead, by calling `markViewDirty` on the host component, the explicit replacement for zone's old automatic CD-on-events. So mechanism 1 from the caveat above *is* the zoneless event-handling path. The full dirty walk on a click is the price of not having a zone to do it implicitly.
 
 ## toSignal(): observable-to-signal bridge and what it buys
 

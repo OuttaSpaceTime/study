@@ -164,6 +164,49 @@ def exit_code(level: str) -> int:
     return {"ok": EXIT_OK, "warn": EXIT_WARN, "pause": EXIT_PAUSE}[level]
 
 
+_CLEARANCE_KEYS = ("flashcards", "wiki", "new_today")
+
+
+def clearance(flashcards_due: int, wiki_due: int, new_today: int) -> dict[str, dict[str, int]]:
+    """Per-axis: how many items to clear to drop below the warn / pause line.
+
+    `to_exit_warn` is the number of reviews that takes the axis from its current
+    count down to one below its warn threshold (i.e. into the ok band).
+    `to_exit_pause` does the same for the pause threshold. Both are 0 when the
+    axis is already below the threshold in question.
+    """
+    out: dict[str, dict[str, int]] = {}
+    counts = (flashcards_due, wiki_due, new_today)
+    for key, count, (_label, warn, pause) in zip(_CLEARANCE_KEYS, counts, _CHECKS, strict=True):
+        out[key] = {
+            "due": count,
+            "warn": warn,
+            "pause": pause,
+            "to_exit_warn": max(0, count - warn + 1),
+            "to_exit_pause": max(0, count - pause + 1),
+        }
+    return out
+
+
+def _clearance_lines(flashcards_due: int, wiki_due: int, new_today: int) -> list[str]:
+    """Human-readable 'review N to exit warn/pause' lines for contributing axes."""
+    lines: list[str] = []
+    counts = (flashcards_due, wiki_due, new_today)
+    for count, (label, warn, pause) in zip(counts, _CHECKS, strict=True):
+        if count < warn:
+            continue
+        to_warn = count - warn + 1
+        if count >= pause:
+            to_pause = count - pause + 1
+            lines.append(
+                f"  - {label}: review {to_pause} to exit pause ({count} -> {pause - 1}), "
+                f"{to_warn} total to exit warn ({count} -> {warn - 1})"
+            )
+        else:
+            lines.append(f"  - {label}: review {to_warn} to exit warn ({count} -> {warn - 1})")
+    return lines
+
+
 def render_human(
     level: str,
     reasons: list[str],
@@ -174,8 +217,8 @@ def render_human(
 ) -> str:
     header = {
         "ok": "SRS pressure: OK",
-        "warn": "We recommend pausing.",
-        "pause": "Danger! You are well past the recommended pause point.",
+        "warn": "SRS pressure: WARN — we recommend pausing.",
+        "pause": "SRS pressure: PAUSE — Danger! You are well past the recommended pause point.",
     }[level]
 
     lines = [
@@ -216,6 +259,9 @@ def render_human(
     lines.append("")
     lines.append("Reasons:")
     lines.extend(f"  - {r}" for r in reasons)
+    lines.append("")
+    lines.append("To clear pressure:")
+    lines.extend(_clearance_lines(flashcards_due, wiki_due, new_today))
     lines.append("")
     lines.append(
         "When learning, we retain more knowledge from short, focused daily\n"
@@ -272,6 +318,7 @@ def main(argv: list[str] | None = None) -> int:
                 "warn": {"flashcards": WARN_FLASHCARDS, "wiki": WARN_WIKI, "new_today": WARN_NEW_TODAY},
                 "pause": {"flashcards": PAUSE_FLASHCARDS, "wiki": PAUSE_WIKI, "new_today": PAUSE_NEW_TODAY},
             },
+            "clearance": clearance(flashcards_due, wiki_due, args.new_today),
         }, indent=2))
 
     return exit_code(level)

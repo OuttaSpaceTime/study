@@ -103,7 +103,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-05-30",
+    "updated": "2026-06-08",
     "next_review": "2026-06-04",
     "review_interval": 5,
     "probe_sections": [
@@ -543,9 +543,9 @@
       "cmoqrprzu0000ld0mfbwqly5v"
     ],
     "created": "2026-05-04",
-    "updated": "2026-06-02",
-    "next_review": "2026-05-21",
-    "review_interval": 14,
+    "updated": "2026-06-08",
+    "next_review": "2026-06-09",
+    "review_interval": 1,
     "probe_sections": [
       "URL anatomy at a glance",
       "Scheme vs protocol",
@@ -557,14 +557,14 @@
       "Host header and virtual hosts"
     ],
     "last_probed": [
-      "URL anatomy at a glance",
-      "Scheme vs protocol",
       "Host - subdomain, SLD, TLD",
       "Port: default ports and when the URL includes one",
       "Path and query",
       "DNS resolution",
       "DNS caching, TTL, and safe migrations",
-      "Host header and virtual hosts"
+      "Host header and virtual hosts",
+      "URL anatomy at a glance",
+      "Scheme vs protocol"
     ]
   },
   "openapi/openapi-index": {
@@ -1272,9 +1272,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-05-12",
-    "next_review": "2026-05-20",
-    "review_interval": 8,
+    "updated": "2026-06-08",
+    "next_review": "2026-06-18",
+    "review_interval": 10,
     "probe_sections": [
       "Why observables are lazy and what subscribe triggers",
       "The Observable Contract: grammar and serial delivery rule",
@@ -1282,10 +1282,10 @@
       "Subscription lifecycle: what subscribe returns and how teardown works"
     ],
     "last_probed": [
+      "Cold vs hot observables: independent vs shared execution",
       "Subscription lifecycle: what subscribe returns and how teardown works",
       "Why observables are lazy and what subscribe triggers",
-      "The Observable Contract: grammar and serial delivery rule",
-      "Cold vs hot observables: independent vs shared execution"
+      "The Observable Contract: grammar and serial delivery rule"
     ]
   },
   "reactive/reactive-index": {
@@ -1338,9 +1338,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-05-12",
-    "next_review": "2026-05-20",
-    "review_interval": 8,
+    "updated": "2026-06-08",
+    "next_review": "2026-06-28",
+    "review_interval": 20,
     "probe_sections": [
       "Reactive programming definition: streams as first-class values",
       "Stream anatomy: values, errors, and completion over time",
@@ -1351,9 +1351,9 @@
     "last_probed": [
       "Stream anatomy: values, errors, and completion over time",
       "Core operator categories: transform, filter, combine, flatten",
-      "flatMap/mergeMap: collapsing a stream of streams",
       "Mental model shift from imperative to reactive",
-      "Reactive programming definition: streams as first-class values"
+      "Reactive programming definition: streams as first-class values",
+      "flatMap/mergeMap: collapsing a stream of streams"
     ]
   },
   "ruby/ruby-index": {
@@ -1496,7 +1496,7 @@
       "cmne7xwri02050mso5k9tqzu4"
     ],
     "created": "2026-04-10",
-    "updated": "2026-05-30",
+    "updated": "2026-06-08",
     "next_review": "2026-07-07",
     "review_interval": 38,
     "probe_sections": [
@@ -1745,7 +1745,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-08",
-    "updated": "2026-05-20",
+    "updated": "2026-06-08",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [

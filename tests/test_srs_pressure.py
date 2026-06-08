@@ -19,6 +19,7 @@ from scripts.srs_pressure import (
     WARN_NEW_TODAY,
     WARN_WIKI,
     DeckState,
+    clearance,
     exit_code,
     main,
     parse_decks_output,
@@ -88,6 +89,39 @@ class TestVerdict:
         assert ">=" in reasons[0]
 
 
+class TestClearance:
+    def test_below_warn_needs_nothing(self):
+        c = clearance(0, 0, 0)
+        for axis in ("flashcards", "wiki", "new_today"):
+            assert c[axis]["to_exit_warn"] == 0
+            assert c[axis]["to_exit_pause"] == 0
+
+    def test_in_warn_band_reports_to_exit_warn_only(self):
+        # wiki at exactly its warn threshold: clear 1 to drop below warn.
+        c = clearance(0, WARN_WIKI, 0)
+        assert c["wiki"]["to_exit_warn"] == 1
+        assert c["wiki"]["to_exit_pause"] == 0
+
+    def test_in_pause_band_reports_both(self):
+        c = clearance(PAUSE_FLASHCARDS, 0, 0)
+        assert c["flashcards"]["to_exit_pause"] == 1
+        assert c["flashcards"]["to_exit_warn"] == PAUSE_FLASHCARDS - WARN_FLASHCARDS + 1
+
+    def test_matches_bug_scenario(self):
+        # The reported session: 19 flashcards due, 19 wiki due.
+        c = clearance(19, 19, 0)
+        # flashcards 19 < warn 20 -> nothing to clear
+        assert c["flashcards"]["to_exit_warn"] == 0
+        # wiki 19 >= warn 8 -> clear 12 to reach 7
+        assert c["wiki"]["to_exit_warn"] == 12
+        assert c["wiki"]["to_exit_pause"] == 0
+
+    def test_carries_thresholds(self):
+        c = clearance(0, 0, 0)
+        assert c["wiki"]["warn"] == WARN_WIKI
+        assert c["wiki"]["pause"] == PAUSE_WIKI
+
+
 class TestExitCode:
     def test_ok(self):
         assert exit_code("ok") == EXIT_OK == 0
@@ -123,6 +157,32 @@ class TestRenderHuman:
         assert "9" in out
         assert "6" in out
 
+    def test_warn_states_explicit_verdict_token(self):
+        # The canonical verdict word must appear so callers never infer it
+        # from the prose (the warn header itself contains "pausing").
+        out = render_human("warn", ["9 wiki pages due"], 0, 9, 0)
+        assert "WARN" in out
+
+    def test_pause_states_explicit_verdict_token(self):
+        out = render_human("pause", ["60 flashcards due (>= 50)"], 60, 0, 0)
+        assert "PAUSE" in out
+
+    def test_ok_states_explicit_verdict_token(self):
+        out = render_human("ok", [], 3, 0, 0)
+        assert "OK" in out
+
+    def test_warn_includes_clearance_block(self):
+        # 19 wiki due (warn 8) -> clear 12 to exit warn.
+        out = render_human("warn", ["19 wiki pages due"], 0, 19, 0)
+        assert "To clear" in out
+        assert "12" in out
+        assert "exit warn" in out
+
+    def test_pause_clearance_reports_both_targets(self):
+        out = render_human("pause", ["60 flashcards due (>= 50)"], 60, 0, 0)
+        assert "exit pause" in out
+        assert "exit warn" in out
+
 
 class TestWikiDueCount:
     def test_empty_index(self, wiki_dir: Path):
@@ -150,6 +210,15 @@ class TestMainCLI:
         assert payload["new_today"] == 0
         assert payload["reasons"] == []
         assert "thresholds" in payload
+        assert "clearance" in payload
+
+    def test_json_clearance_numbers(self, capsys, wiki_dir: Path):
+        # 19 flashcards due, no wiki -> flashcards below warn(20), nothing to clear.
+        rc = main(["--flashcards-due", "19", "--wiki-dir", str(wiki_dir)])
+        assert rc == EXIT_OK
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["clearance"]["flashcards"]["to_exit_warn"] == 0
+        assert payload["clearance"]["wiki"]["to_exit_warn"] == 0
 
     def test_json_output_warn(self, capsys, wiki_dir: Path):
         rc = main(["--flashcards-due", str(WARN_FLASHCARDS), "--wiki-dir", str(wiki_dir)])

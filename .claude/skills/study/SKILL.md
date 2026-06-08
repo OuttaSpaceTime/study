@@ -76,17 +76,22 @@ This skill requires the `flashcard-mcp` MCP server running from `~/Code/Misc/fla
 
 `scripts/srs-pressure --human` is the **single source of truth** for flashcard due counts and the pressure verdict. Do **not** call `mcp__flashcard-mcp__get_due_cards` for pressure counts — it caps at 30 and underreports.
 
+**Report the verdict token verbatim — never infer it from the prose.** The first line of `scripts/srs-pressure --human` is the canonical verdict: `SRS pressure: OK`, `SRS pressure: WARN`, or `SRS pressure: PAUSE`. Use exactly that word (`ok` / `warn` / `pause`) in your opening line. Do **not** read the level off the recommendation prose — the `warn` header contains the phrase "we recommend pausing", which is *not* the `pause` verdict. (`warn` = "we recommend pausing"; `pause` = "Danger! …well past the recommended pause point".) When the level matters for `maxNewCards`, it is driven by the `flashcards due` axis per the Phase 2 table, independent of which axis triggered the overall verdict.
+
+**Always surface the clearance numbers.** When the verdict is `warn` or `pause`, the script prints a `To clear pressure:` block stating, per axis, how many flashcards / wiki pages must be reviewed to drop below the warn line (and, in `pause`, below the pause line first). Carry these numbers into your opening message verbatim so the developer always knows the exact count to clear to leave the pressure phase — e.g. "clear 12 wiki pages to exit warn". The same numbers are in the `clearance` object of `--json` if you need them programmatically.
+
 `scripts/wiki-due --human` returns the full formatted list of due wiki entries. Print it directly in the opening message — this is informational only, wiki review happens after flashcards (Phase 3).
 
-Emit one opening message with the pressure verdict, the wiki due list, then **immediately start Phase 2 (flashcard loop)** — no confirmation gate, no "ready?", no "say open N".
+Emit one opening message with the pressure verdict, the clearance numbers, the wiki due list, then **immediately start Phase 2 (flashcard loop)** — no confirmation gate, no "ready?", no "say open N".
 
-Example when burdened:
+Example when the verdict is `warn` (driven by the wiki axis):
 
-> **Pressure:** burdened — 48 flashcards due, 23 wiki pages due. `maxNewCards: 0`.
+> **Pressure: warn** — 19 flashcards due (below the 20 warn line), 19 wiki pages due. `maxNewCards: 0`.
+> **To clear:** review 12 wiki pages to exit warn (19 → 7). Flashcards are already below their warn line.
 >
-> **Wiki due (23):**
-> 1. [[programming-languages/compilers-and-interpreters]] — due 2026-05-12 (interval: 4d)
-> 2. [[llm/kv-cache]] — due 2026-05-13 (interval: 6d)
+> **Wiki due (19):**
+> 1. [[reactive/observables]] — due 2026-05-20 (interval: 8d)
+> 2. [[reactive/reactive-programming]] — due 2026-05-20 (interval: 8d)
 > …
 >
 > Starting flashcard session.
