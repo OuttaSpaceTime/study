@@ -25,13 +25,13 @@ probe_sections:
 - Choosing between joins, preload, eager_load, and includes
 - Polymorphic associations
 last_probed:
+- Choosing between joins, preload, eager_load, and includes
+- Polymorphic associations
 - The four methods
 - How includes auto-switches
 - 'Cost model: when JOIN multiplies rows'
-- Choosing between joins, preload, eager_load, and includes
-- Polymorphic associations
-review_interval: 18
-next_review: '2026-05-25'
+review_interval: 45
+next_review: '2026-07-23'
 ---
 
 # ActiveRecord preloading: joins, preload, eager_load, includes

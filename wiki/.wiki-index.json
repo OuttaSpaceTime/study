@@ -801,9 +801,9 @@
       "cmosqd3r80001h30mwd2tbpht"
     ],
     "created": "2026-05-05",
-    "updated": "2026-06-02",
-    "next_review": "2026-05-25",
-    "review_interval": 18,
+    "updated": "2026-06-08",
+    "next_review": "2026-07-23",
+    "review_interval": 45,
     "probe_sections": [
       "The four methods",
       "How includes auto-switches",
@@ -812,11 +812,11 @@
       "Polymorphic associations"
     ],
     "last_probed": [
+      "Choosing between joins, preload, eager_load, and includes",
+      "Polymorphic associations",
       "The four methods",
       "How includes auto-switches",
-      "Cost model: when JOIN multiplies rows",
-      "Choosing between joins, preload, eager_load, and includes",
-      "Polymorphic associations"
+      "Cost model: when JOIN multiplies rows"
     ]
   },
   "rails/delegated-type": {
@@ -1671,9 +1671,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-13",
-    "next_review": "2026-05-23",
-    "review_interval": 10,
+    "updated": "2026-06-08",
+    "next_review": "2026-06-20",
+    "review_interval": 12,
     "probe_sections": [
       "Three-valued logic is the root cause",
       "The NOT IN trap",
@@ -1685,14 +1685,14 @@
       "Sentinels masquerading as values"
     ],
     "last_probed": [
-      "Partial unique indexes",
-      "Nullable foreign keys",
-      "Migrating to NOT NULL is expensive",
       "When NULL is the right choice",
       "Sentinels masquerading as values",
       "Three-valued logic is the root cause",
       "The NOT IN trap",
-      "UNIQUE does not constrain NULLs"
+      "UNIQUE does not constrain NULLs",
+      "Partial unique indexes",
+      "Nullable foreign keys",
+      "Migrating to NOT NULL is expensive"
     ]
   },
   "sql/sql-index": {
@@ -1789,9 +1789,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-08",
-    "updated": "2026-05-20",
-    "next_review": "2026-05-24",
-    "review_interval": 4,
+    "updated": "2026-06-08",
+    "next_review": "2026-06-18",
+    "review_interval": 10,
     "probe_sections": [
       "Init order: depth-first post-order across the tree",
       "constructor vs ngOnInit: why @Input is undefined in the constructor",
@@ -1801,12 +1801,12 @@
       "afterNextRender vs ngAfterViewInit: post-paint vs pre-paint timing"
     ],
     "last_probed": [
-      "Content vs View hooks: which decorator becomes available where",
-      "Injection context: where inject() is valid and where it throws NG0203",
-      "afterNextRender vs ngAfterViewInit: post-paint vs pre-paint timing",
       "Init order: depth-first post-order across the tree",
       "constructor vs ngOnInit: why @Input is undefined in the constructor",
-      "ngOnChanges: fires on first render and batches all input changes"
+      "ngOnChanges: fires on first render and batches all input changes",
+      "Content vs View hooks: which decorator becomes available where",
+      "Injection context: where inject() is valid and where it throws NG0203",
+      "afterNextRender vs ngAfterViewInit: post-paint vs pre-paint timing"
     ]
   }
 }
