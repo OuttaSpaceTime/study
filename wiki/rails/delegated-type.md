@@ -10,7 +10,7 @@ tags:
 - activerecord
 - polymorphism
 created: '2026-04-17'
-updated: '2026-04-17'
+updated: '2026-06-10'
 source_skill: study-walkthrough
 depth: 1
 last_deepened: '2026-04-17'
@@ -93,7 +93,10 @@ end
 1. `belongs_to :entryable, polymorphic: true`
 2. Scopes: `Entry.messages`, `Entry.comments`
 3. Type predicates: `entry.message?`, `entry.comment?`
-4. Creators: `Entry.create_with_message!(subject: "hi", body: "...")`. This creates the subtype row *and* the parent `Entry` row atomically.
+4. Typed accessors: `entry.message` / `entry.comment` (return the entryable when it's that type, else `nil`) plus `entry.message_id` / `entry.comment_id`
+5. Reflection helpers: `entry.entryable_class` (e.g. `Message`) and `entry.entryable_name` (e.g. `"message"`)
+
+It does **not** generate atomic creators. `Entry.create_with_message!(...)` is **not** a default method. The macro produces no `create_with_*` at all. The Rails docs show it as a factory method you define yourself; if you want atomic subtype-plus-parent creation, you write it (see below).
 
 ## What `delegated_type` Expands To
 
@@ -112,12 +115,22 @@ class Entry < ApplicationRecord
   def message?; entryable_type == "Message"; end
   def comment?; entryable_type == "Comment"; end
 
-  # 4. Atomic creators (transaction wrapping subtype + parent insert)
+  # 4. Typed accessors + reflection helpers
+  def message; entryable if message?; end
+  def comment; entryable if comment?; end
+  def entryable_class; entryable_type.constantize; end
+end
+```
+
+Atomic creators are **not** part of this expansion. The macro does not generate them. If you want `Entry.create_with_message!`, you write it yourself:
+
+```ruby
+class Entry < ApplicationRecord
+  delegated_type :entryable, types: %w[Message Comment], dependent: :destroy
+
+  # Hand-written factory — NOT generated. Wraps subtype + parent insert in a transaction.
   def self.create_with_message!(attrs)
     transaction { create!(entryable: Message.create!(attrs)) }
-  end
-  def self.create_with_comment!(attrs)
-    transaction { create!(entryable: Comment.create!(attrs)) }
   end
 end
 ```
@@ -130,7 +143,7 @@ Know what's an association vs what's not. This matters for `includes`:
 | `:messages`, `:comments` | scopes (SQL filters) | no (raises `AssociationNotFoundError`) |
 | `:message?`, `:comment?` | predicate methods | no |
 
-`delegated_type` itself sits next to `belongs_to` / `has_many` syntactically. It's a class-level declaration with side effects. Specifically, it's a **higher-order** declaration that expands into one association, two scopes, two predicates, and two creators (multiplied by the number of variant types).
+`delegated_type` itself sits next to `belongs_to` / `has_many` syntactically. It's a class-level declaration with side effects. Specifically, it's a **higher-order** declaration that, per variant type, expands into one polymorphic association plus a scope, a predicate, a typed accessor, and an id accessor, plus the `entryable_class` / `entryable_name` reflection helpers. It does **not** expand into creators; those are hand-written factories.
 
 ## Direction of Delegation
 

@@ -15,16 +15,14 @@ updated: '2026-04-23'
 source_skill: study-walkthrough
 probe_sections:
 - Clearing a queue
-- The batching gotcha
 - Nuclear path for large queues
 - discard vs delete_all
 last_probed:
 - Clearing a queue
-- The batching gotcha
 - Nuclear path for large queues
 - discard vs delete_all
-review_interval: 22
-next_review: '2026-05-29'
+review_interval: 1
+next_review: '2026-06-11'
 flashcard_ids: []
 depth: 1
 ---
@@ -42,19 +40,6 @@ SolidQueue::Queue.find_by(name: "my_queue").clear
 ```
 
 This routes through `Queue#clear`, which runs the proper job lifecycle (executions destroyed, jobs finalized). Safe for production. Callbacks fire and instrumentation works.
-
-## The batching gotcha
-
-In older SolidQueue versions, `Queue#clear` only wipes the first batch. Root cause (solid_queue#181). `dependent: :destroy` on `ready_executions` / `scheduled_executions` cascades row-by-row, and the outer relation is re-queried mid-destroy. Leaving residual rows.
-
-Mitigation until upgraded:
-
-```ruby
-q = SolidQueue::Queue.find_by(name: "my_queue")
-q.clear while q.size > 0
-```
-
-Upgrade if you can; otherwise loop until `size` (or `SolidQueue::Job.where(queue_name: ...).count`) hits zero.
 
 ## Nuclear path for large queues
 
@@ -75,7 +60,3 @@ Order matters. Executions reference jobs via FK; delete executions first. `delet
 - For bulk failed-execution cleanup you either iterate (`each(&:discard)`, slow but correct) or `delete_all` (fast, skips the lifecycle: rarely what you want for failures you might want to retry).
 
 Rule of thumb. Individual discards for correctness, `delete_all` for throw-away bulk cleanup, `Queue#clear` for the normal admin path.
-
-## Sources
-
-- solid_queue GitHub issues #181 (batch clear bug), #124, #278.

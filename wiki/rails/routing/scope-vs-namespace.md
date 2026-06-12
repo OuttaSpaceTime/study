@@ -12,8 +12,8 @@ created: '2026-04-13'
 updated: '2026-04-16'
 source_skill: study-walkthrough
 depth: 1
-next_review: '2026-05-29'
-review_interval: 30
+next_review: '2026-08-24'
+review_interval: 75
 probe_sections:
 - The Three Knobs
 - Scope Picks and Chooses
@@ -22,12 +22,12 @@ probe_sections:
 - 'The controller: Option'
 - When to use scope vs namespace vs module
 last_probed:
-- Per-Resource Options
-- 'The controller: Option'
-- When to use scope vs namespace vs module
 - The Three Knobs
 - Scope Picks and Chooses
 - Module Path Format
+- Per-Resource Options
+- 'The controller: Option'
+- When to use scope vs namespace vs module
 flashcard_ids: []
 ---
 
@@ -115,6 +115,12 @@ resources :posts, as: :blog_posts      # changes helper name
 ```ruby
 # scope: pin loose pages to one controller
 scope controller: :pages do
+  get "about"    # => pages#about
+  get "contact"  # => pages#contact
+end
+
+# shorthand: `controller` block == `scope controller:`
+controller :pages do
   get "about"    # => pages#about
   get "contact"  # => pages#contact
 end

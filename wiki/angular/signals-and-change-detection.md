@@ -17,8 +17,8 @@ updated: '2026-05-30'
 source_skill: study-walkthrough
 depth: 1
 last_deepened: '2026-05-07'
-next_review: '2026-06-04'
-review_interval: 5
+next_review: '2026-06-22'
+review_interval: 12
 probe_sections:
 - Signals push-pull model vs Zone.js passive patching
 - 'How signal writes mark ancestors: traversal flag vs dirty flag'
@@ -30,15 +30,15 @@ probe_sections:
 - 'toSignal(): observable-to-signal bridge and what it buys'
 - 'Signals vs async pipe: when to use which'
 last_probed:
-- Signals push-pull model vs Zone.js passive patching
-- 'How signal writes mark ancestors: traversal flag vs dirty flag'
-- 'Semi-local CD: which nodes are traversed vs which re-evaluate bindings'
 - 'The click-event caveat: two independent mechanisms'
 - When the caveat bites vs when semi-local CD survives
 - Why semi-local CD only matters in zoneless
 - Why change detection walks top-down
 - 'toSignal(): observable-to-signal bridge and what it buys'
 - 'Signals vs async pipe: when to use which'
+- Signals push-pull model vs Zone.js passive patching
+- 'How signal writes mark ancestors: traversal flag vs dirty flag'
+- 'Semi-local CD: which nodes are traversed vs which re-evaluate bindings'
 flashcard_ids: []
 ---
 

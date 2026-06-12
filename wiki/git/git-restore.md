@@ -21,8 +21,8 @@ flashcard_ids:
 - cmne7xy9k02d90mso2ibigeht
 depth: 1
 last_deepened: '2026-04-09'
-next_review: '2026-05-27'
-review_interval: 25
+next_review: '2026-08-10'
+review_interval: 62
 probe_sections:
 - 'Targets: --worktree and --staged'
 - '--source: Restoring from Any Commit'
@@ -33,14 +33,14 @@ probe_sections:
 - 'Interactive: -p'
 - Common Patterns
 last_probed:
-- 'Interactive: -p'
-- Common Patterns
-- 'Targets: --worktree and --staged'
 - '--source: Restoring from Any Commit'
 - --ours and --theirs During Merge Conflicts
 - Conflicts from `git stash pop`
 - '--merge: Recreate Conflict State'
 - --ignore-unmerged
+- 'Interactive: -p'
+- Common Patterns
+- 'Targets: --worktree and --staged'
 ---
 
 # git restore

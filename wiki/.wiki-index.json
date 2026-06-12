@@ -103,9 +103,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-06-08",
-    "next_review": "2026-06-04",
-    "review_interval": 5,
+    "updated": "2026-06-10",
+    "next_review": "2026-06-22",
+    "review_interval": 12,
     "probe_sections": [
       "Signals push-pull model vs Zone.js passive patching",
       "How signal writes mark ancestors: traversal flag vs dirty flag",
@@ -118,15 +118,15 @@
       "Signals vs async pipe: when to use which"
     ],
     "last_probed": [
-      "Signals push-pull model vs Zone.js passive patching",
-      "How signal writes mark ancestors: traversal flag vs dirty flag",
-      "Semi-local CD: which nodes are traversed vs which re-evaluate bindings",
       "The click-event caveat: two independent mechanisms",
       "When the caveat bites vs when semi-local CD survives",
       "Why semi-local CD only matters in zoneless",
       "Why change detection walks top-down",
       "toSignal(): observable-to-signal bridge and what it buys",
-      "Signals vs async pipe: when to use which"
+      "Signals vs async pipe: when to use which",
+      "Signals push-pull model vs Zone.js passive patching",
+      "How signal writes mark ancestors: traversal flag vs dirty flag",
+      "Semi-local CD: which nodes are traversed vs which re-evaluate bindings"
     ]
   },
   "git/git-index": {
@@ -188,9 +188,9 @@
       "cmne7xy9k02d90mso2ibigeht"
     ],
     "created": "2026-04-09",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-27",
-    "review_interval": 25,
+    "updated": "2026-06-09",
+    "next_review": "2026-08-10",
+    "review_interval": 62,
     "probe_sections": [
       "Targets: --worktree and --staged",
       "--source: Restoring from Any Commit",
@@ -202,14 +202,14 @@
       "Common Patterns"
     ],
     "last_probed": [
-      "Interactive: -p",
-      "Common Patterns",
-      "Targets: --worktree and --staged",
       "--source: Restoring from Any Commit",
       "--ours and --theirs During Merge Conflicts",
       "Conflicts from `git stash pop`",
       "--merge: Recreate Conflict State",
-      "--ignore-unmerged"
+      "--ignore-unmerged",
+      "Interactive: -p",
+      "Common Patterns",
+      "Targets: --worktree and --staged"
     ]
   },
   "llm/embeddings-vs-embedding-layer": {
@@ -333,6 +333,7 @@
     "sections": [
       "TL;DR",
       "What attention is doing - Q, K, V",
+      "Where the prediction comes from - K/V are inputs, not the output",
       "Why two vectors per token, not one",
       "Why K and V are cached but not Q",
       "The cache grows by one entry per decode step",
@@ -344,11 +345,12 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-06-02",
-    "next_review": "2026-05-30",
-    "review_interval": 7,
+    "updated": "2026-06-10",
+    "next_review": "2026-06-18",
+    "review_interval": 8,
     "probe_sections": [
       "What attention is doing - Q, K, V",
+      "Where the prediction comes from - K/V are inputs, not the output",
       "Why two vectors per token, not one",
       "Why K and V are cached but not Q",
       "The cache grows by one entry per decode step",
@@ -357,13 +359,14 @@
       "num_ctx is the cache buffer size"
     ],
     "last_probed": [
+      "Where the prediction comes from - K/V are inputs, not the output",
       "What attention is doing - Q, K, V",
       "Why two vectors per token, not one",
-      "The cache grows by one entry per decode step",
       "Cost formula",
       "Without the cache - O(N²)",
       "num_ctx is the cache buffer size",
-      "Why K and V are cached but not Q"
+      "Why K and V are cached but not Q",
+      "The cache grows by one entry per decode step"
     ]
   },
   "llm/llm-index": {
@@ -419,9 +422,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-06-02",
-    "next_review": "2026-06-03",
-    "review_interval": 3,
+    "updated": "2026-06-10",
+    "next_review": "2026-06-18",
+    "review_interval": 8,
     "probe_sections": [
       "The decode loop has a sampler",
       "Temperature - how peaked the distribution is",
@@ -430,11 +433,11 @@
       "Choosing knobs by task shape"
     ],
     "last_probed": [
+      "Choosing knobs by task shape",
+      "The decode loop has a sampler",
       "Temperature - how peaked the distribution is",
       "num_predict - the output cap",
-      "Thinking mode - reasoning preamble",
-      "Choosing knobs by task shape",
-      "The decode loop has a sampler"
+      "Thinking mode - reasoning preamble"
     ]
   },
   "llm/serving-runtime-and-vram": {
@@ -543,9 +546,9 @@
       "cmoqrprzu0000ld0mfbwqly5v"
     ],
     "created": "2026-05-04",
-    "updated": "2026-06-08",
-    "next_review": "2026-06-09",
-    "review_interval": 1,
+    "updated": "2026-06-10",
+    "next_review": "2026-06-12",
+    "review_interval": 2,
     "probe_sections": [
       "URL anatomy at a glance",
       "Scheme vs protocol",
@@ -558,13 +561,13 @@
     ],
     "last_probed": [
       "Host - subdomain, SLD, TLD",
-      "Port: default ports and when the URL includes one",
-      "Path and query",
       "DNS resolution",
       "DNS caching, TTL, and safe migrations",
       "Host header and virtual hosts",
       "URL anatomy at a glance",
-      "Scheme vs protocol"
+      "Scheme vs protocol",
+      "Port: default ports and when the URL includes one",
+      "Path and query"
     ]
   },
   "openapi/openapi-index": {
@@ -662,9 +665,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-23",
-    "next_review": "2026-05-28",
-    "review_interval": 5,
+    "updated": "2026-06-10",
+    "next_review": "2026-06-16",
+    "review_interval": 6,
     "probe_sections": [
       "Compiler vs interpreter: roles, not languages",
       "Two orthogonal axes: type checking ⊥ compile target",
@@ -673,9 +676,9 @@
     ],
     "last_probed": [
       "Compiler vs interpreter: roles, not languages",
+      "Two orthogonal axes: type checking ⊥ compile target",
       "Case study: the CPython chain",
-      "JIT: when bytecode becomes machine code at runtime",
-      "Two orthogonal axes: type checking ⊥ compile target"
+      "JIT: when bytecode becomes machine code at runtime"
     ]
   },
   "programming-languages/programming-languages-index": {
@@ -761,7 +764,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-20",
-    "updated": "2026-05-30",
+    "updated": "2026-06-10",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -846,7 +849,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-17",
-    "updated": "2026-05-30",
+    "updated": "2026-06-10",
     "next_review": "2026-06-09",
     "review_interval": 10,
     "probe_sections": [
@@ -1068,9 +1071,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-13",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-29",
-    "review_interval": 30,
+    "updated": "2026-06-10",
+    "next_review": "2026-08-24",
+    "review_interval": 75,
     "probe_sections": [
       "The Three Knobs",
       "Scope Picks and Chooses",
@@ -1080,12 +1083,12 @@
       "When to use scope vs namespace vs module"
     ],
     "last_probed": [
-      "Per-Resource Options",
-      "The controller: Option",
-      "When to use scope vs namespace vs module",
       "The Three Knobs",
       "Scope Picks and Chooses",
-      "Module Path Format"
+      "Module Path Format",
+      "Per-Resource Options",
+      "The controller: Option",
+      "When to use scope vs namespace vs module"
     ]
   },
   "rails/routing/shallow-routing": {
@@ -1182,25 +1185,22 @@
     ],
     "sections": [
       "Clearing a queue",
-      "The batching gotcha",
       "Nuclear path for large queues",
       "discard vs delete_all",
       "Sources"
     ],
     "flashcard_ids": [],
     "created": "2026-04-23",
-    "updated": "2026-05-07",
-    "next_review": "2026-05-29",
-    "review_interval": 22,
+    "updated": "2026-06-10",
+    "next_review": "2026-06-11",
+    "review_interval": 1,
     "probe_sections": [
       "Clearing a queue",
-      "The batching gotcha",
       "Nuclear path for large queues",
       "discard vs delete_all"
     ],
     "last_probed": [
       "Clearing a queue",
-      "The batching gotcha",
       "Nuclear path for large queues",
       "discard vs delete_all"
     ]
@@ -1807,6 +1807,56 @@
       "Content vs View hooks: which decorator becomes available where",
       "Injection context: where inject() is valid and where it throws NG0203",
       "afterNextRender vs ngAfterViewInit: post-paint vs pre-paint timing"
+    ]
+  },
+  "rails/foreign-keys": {
+    "file": "rails/foreign-keys.md",
+    "title": "Foreign keys",
+    "aliases": [
+      "foreign key",
+      "foreign key constraint",
+      "add_foreign_key",
+      "on_delete",
+      "referential integrity"
+    ],
+    "tags": [
+      "rails",
+      "postgres",
+      "database",
+      "migrations"
+    ],
+    "sections": [
+      "TL;DR",
+      "Two layers - DB constraint vs app validation",
+      "on_delete vs dependent and which side effects decide",
+      "The four referential actions and the real default",
+      "RESTRICT vs NO ACTION is only about deferrability",
+      "A foreign key does not create an index",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [
+      "cmq8hw4vw0000j70mqz3fb339",
+      "cmq8hw75w0001j70mf0kbcv8t",
+      "cmq8hwa0t0002j70mfor6qqf7"
+    ],
+    "created": "2026-06-10",
+    "updated": "2026-06-10",
+    "next_review": "2026-06-13",
+    "review_interval": 3,
+    "probe_sections": [
+      "Two layers - DB constraint vs app validation",
+      "on_delete vs dependent and which side effects decide",
+      "The four referential actions and the real default",
+      "RESTRICT vs NO ACTION is only about deferrability",
+      "A foreign key does not create an index"
+    ],
+    "last_probed": [
+      "Two layers - DB constraint vs app validation",
+      "on_delete vs dependent and which side effects decide",
+      "The four referential actions and the real default",
+      "RESTRICT vs NO ACTION is only about deferrability",
+      "A foreign key does not create an index"
     ]
   }
 }

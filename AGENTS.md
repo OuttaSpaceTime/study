@@ -108,6 +108,12 @@ To change what's hidden: edit the list in **both** `app.json` (`userIgnoreFilter
 
 `probes/` is where `/study-walkthrough` Probe mode saves load-bearing runtime checks — the portable analog of Solveit's live kernel. One markdown file per probe, four sections (Prediction / Command / Output / Takeaway), committed. See `probes/README.md` for the full format spec and the three-tier dependency model (inline → topic env → scratch project). Only persist probes that changed the developer's understanding; skip the ones that merely confirmed what was already known.
 
+## Workflows
+
+`.claude/workflows/*.js` are reusable multi-agent workflow definitions invoked via the **Workflow tool** (background, deterministic fan-out + synthesis). A skill instructing you to call one IS the opt-in — no separate confirmation needed.
+
+- `research-grounding` — two-lane research for `/study-walkthrough` (and reusable standalone). The **authoritative lane** (docs/RFC/source agents) establishes facts; the **practitioner lane** (blog/talk/forum agents) gathers opinion (tradeoffs, lived experience, architectural nuance, gotchas). A synthesis agent reconciles them under a hard rule — **authoritative wins for facts** — flagging any practitioner claim that contradicts ground truth and keeping opinions labelled `consensus`/`contested`/`single-voice`, never promoted to facts. `args: { topic, cadence?, thoroughness?, depth?, lastDeepened?, fromUrl? }`; fan-out is `2+2+1` by default, `1+1+1` on concise/refresh, `3+3+1` on `thoroughness: deep`. This replaces the walkthrough's former single background research subagent (which remains the fallback when the workflow cannot run).
+
 ## Query Protocol
 
 When the developer asks a substantive knowledge question — any "what is X / how does X work / why does X" or equivalent — handle it through this flow. The guiding principle: **never block the first answer on lookups**. Answer from memory immediately; run saved-knowledge lookups in the background and reconcile afterward.

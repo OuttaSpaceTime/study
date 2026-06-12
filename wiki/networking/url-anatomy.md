@@ -28,15 +28,15 @@ probe_sections:
 - Host header and virtual hosts
 last_probed:
 - Host - subdomain, SLD, TLD
-- 'Port: default ports and when the URL includes one'
-- Path and query
 - DNS resolution
 - DNS caching, TTL, and safe migrations
 - Host header and virtual hosts
 - URL anatomy at a glance
 - Scheme vs protocol
-review_interval: 1
-next_review: '2026-06-09'
+- 'Port: default ports and when the URL includes one'
+- Path and query
+review_interval: 2
+next_review: '2026-06-12'
 ---
 
 # URL Anatomy

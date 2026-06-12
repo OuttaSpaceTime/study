@@ -68,31 +68,50 @@ This skill uses the `flashcard-mcp` MCP server for flashcard lookup. Tools used:
 
 ## Research Grounding
 
-The walkthrough must not rely solely on model-internal knowledge. At Phase 1 Step 1, spawn a **background research subagent** (`run_in_background: true`) in parallel with the wiki/index lookups. It fetches authoritative sources (official docs, RFCs, source code, canonical references) and returns structured findings the main thread uses to ground Phase 2 explanations and Phase 4 wiki references.
+The walkthrough must not rely solely on model-internal knowledge. At Phase 1 Step 1, run the **`research-grounding` workflow** (`.claude/workflows/research-grounding.js`) in the background, in parallel with the wiki/index lookups. It fans out across two lanes and synthesises one structured result the main thread uses to ground Phase 2 questions and the Phase 4 wiki page.
 
-**Subagent prompt (general topic):**
+**Two lanes — and they are not equal:**
 
-> Research `<topic>` for a developer walkthrough. Find 2-4 authoritative sources — prefer official docs, RFCs, source code, or canonical references over blog posts. Use `WebSearch` to locate them, `WebFetch` to read the most authoritative one or two. Return:
-> 1. **Sources** — URL + one-line "what this is" for each (max 4)
-> 2. **Load-bearing facts** — 3-6 facts the walkthrough should anchor on, each tagged with which source supports it
-> 3. **Misconceptions / version gotchas** — anywhere common explanations diverge from the canonical source, or where behavior differs across versions
-> 4. **Confidence** — `high` (multiple sources agree), `medium` (one authoritative source), `low` (sparse coverage — walk carefully)
->
-> Under 400 words. No prose preamble, just the four sections.
+- **Authoritative lane (ground truth).** Official docs, specs, RFCs, source code, canonical references. This lane decides what is *factually true*. Every fact must be traceable to an authoritative source.
+- **Practitioner lane (opinion).** Blog posts, conference talks, credible practitioner write-ups, high-signal forum threads. This lane adds what the docs leave out: tradeoffs, lived experience, architectural nuance, established-pattern critiques, and gotchas. It is **explicitly not ground truth** — every item stays labelled as opinion, attributed to its source, and marked `consensus` / `contested` / `single-voice`.
 
-**Variants:**
+**The hard rule: authoritative wins for facts.** The synthesis step reconciles the two lanes and flags any practitioner claim that contradicts an authoritative fact (`contradictsGroundTruth: true`) — the fact stands, the blog claim is marked likely stale, wrong, or context-specific. An opinion is never promoted into a fact. Practitioner divergence (where blogs disagree with each other) is surfaced so the walkthrough can present it as genuinely open rather than settled.
 
-- `--from <url>` or pasted text: include the source in the prompt and ask the subagent to **cross-check** that source's claims against 1-2 other authoritative references. Flag any divergence.
-- Refresh cadence on `depth >= 3` pages: narrow the prompt to "verify this page's load-bearing claims are still current; flag deprecations or version drift since `last_deepened`."
-- Concise cadence: still run, but the result only needs to confirm-or-correct the one-pass restatement.
+**Invoking the workflow.** Call the `Workflow` tool with `name: "research-grounding"` and `args` as a **real JSON object — never a JSON-encoded string**. Pass the topic in full: `args: { "topic": "<the developer's full topic, verbatim>", "cadence": "learning" }`. Stringifying `args` (passing `"{\"topic\": ...}"`) is a known footgun — the workflow then sees no topic and the run is wasted; the workflow now rejects that case loudly, but get the call shape right the first time. This skill instructing you to call it IS the opt-in — no separate confirmation needed. Workflows run in the background automatically: the call returns a task id immediately and a notification arrives when synthesis completes, so kick it off at Phase 1 Step 1 and keep running calibration meanwhile (the developer is busy answering calibration questions while it works — same anti-slot-machine posture as the old single subagent). Pass args:
+
+| arg | value |
+| --- | --- |
+| `topic` | the walkthrough topic |
+| `cadence` | `learning` \| `refresh` \| `concise` — trims the fan-out (`concise`/`refresh` → 1+1, `learning` → 2+2 authoritative+practitioner agents) |
+| `thoroughness` | optional `lite` \| `normal` \| `deep` — pass `deep` (3+3) for architecture/pattern topics where practitioner opinion matters most |
+| `depth` | the existing wiki page's `depth`, if any (drives refresh narrowing) |
+| `lastDeepened` | the existing page's `last_deepened`, if any |
+| `fromUrl` | the URL (or a note that source text was pasted) for `--from` / pasted-text invocations |
+
+The workflow returns `{ confidence, authoritativeSources[], practitionerSources[], facts[], loadBearing[], misconceptions[], opinions[], divergence[] }` — where each opinion carries `{ claim, kind, source, stance, contradictsGroundTruth, note? }`.
+
+**Variants (set via args):**
+
+- `--from <url>` or pasted text: pass `fromUrl`. The authoritative lane cross-checks that source's factual claims against other authoritative references; the practitioner lane treats it as one opinion among several.
+- Refresh cadence on `depth >= 3` pages: pass `depth` + `lastDeepened`. Both lanes narrow to "what changed since then" — deprecations, version drift, and any newer practitioner consensus.
+- Concise cadence: pass `cadence: "concise"`. Fan-out drops to 1+1; the result only needs to confirm-or-correct the one-pass restatement.
 
 **Using the findings:**
 
-- **Phase 2 grounding:** research equips *you* with the canonical answer so you can craft precise questions and judge the developer's answers — it is not read aloud as explanation (see Socratic Never-Reveal). If a source contradicts what you'd have said from memory, that sharpens the question you ask and the page you write, not a spoken correction. When the developer's prediction is wrong, do not state the right answer; ask a smaller question that exposes the gap, and you may point them at the source URL to investigate themselves.
-- **Phase 4 wiki write:** add a `## References` section listing the authoritative URLs (max 4) with one-line descriptions. Inline-link specific claims (`[per the RFC](url)`) when the claim is version-specific or non-obvious.
-- **Confidence handling:** `low` confidence means push extra probes in Phase 2 and add a `> [Note] Sources sparse — verify before relying on this page` callout in Phase 4.
+- **Phase 2 grounding (facts).** `facts` / `loadBearing` equip *you* with the canonical answer so you can craft precise questions and judge the developer's answers — never read aloud (see Socratic Never-Reveal). If a source contradicts what you'd have said from memory, that sharpens the question you ask, not a spoken correction. When the developer's prediction is wrong, do not state the right answer; ask a smaller question that exposes the gap, and you may point them at the source URL to investigate themselves.
+- **Phase 2 grounding (opinions).** `opinions` and `divergence` unlock a class of question the docs cannot ground: tradeoff and judgement prompts. Pose them as open ("practitioners disagree about X — what do you think the tradeoff is?", "here's a gotcha someone hit in production — why might that happen?"). Never present an opinion as settled fact, and never reveal — the opinion shapes the *question*, the developer still produces the answer. An opinion flagged `contradictsGroundTruth` is not used to question at all; the authoritative fact it contradicts is.
+- **Phase 4 wiki write (facts).** Add a `## References` section listing the authoritative URLs (max 4) with one-line descriptions. Inline-link specific claims (`[per the RFC](url)`) when the claim is version-specific or non-obvious.
+- **Phase 4 wiki write (opinions).** Surface practitioner findings by content (let the material decide the shape):
+  - Load-bearing tradeoffs and gotchas get a dedicated H2 (`## Tradeoffs & gotchas`, or a name that fits the topic), each point attributed and marked consensus/contested.
+  - One-off nuances weave into the relevant concept section as an attributed callout, e.g. `> [Note] In practice, <source> warns that X; the spec only guarantees Y.`
+  - List practitioner URLs in `## References` under a `**Practitioner / opinion:**` sub-label, kept visually distinct from the authoritative sources. A factual claim in the body must never be cited only to a practitioner source.
+- **Confidence handling:** `confidence: low` means push extra probes in Phase 2 and add a `> [Note] Sources sparse. Verify before relying on this page.` callout in Phase 4. A `contested` opinion stance means present both sides; do not declare a winner the sources do not support.
 
-**Silent execution.** The subagent runs in the background — do not narrate "spawning research subagent" or echo its output. When it returns, fold the findings into the next phase message. If it errors or times out, note one line ("research unavailable — proceeding from model knowledge, flagged in Phase 4 references") and continue — do not block the developer.
+**Silent execution.** The workflow runs in the background — do not narrate "running research workflow", echo its `/workflows` progress tree, or paste its output. When the synthesis notification arrives, fold the findings into the next phase message. If the workflow errors or times out, fall back to a single background research subagent using the two-lane fallback prompt below; if that also fails, note one line ("research unavailable — proceeding from model knowledge, flagged in Phase 4 references") and continue — never block the developer.
+
+**Single-agent fallback prompt** (only when the workflow itself cannot run):
+
+> Research `<topic>` for a developer walkthrough across two lanes, kept separate. **Authoritative (ground truth):** find 2-3 official docs / RFCs / source / canonical refs (`WebSearch` then `WebFetch`); return load-bearing facts, each tagged with its source and confidence. **Practitioner (opinion):** find 1-2 credible blog posts / talks / forum threads; return tradeoffs, experiences, architectural nuances, and gotchas, each tagged with its source and stance (consensus | contested | single-voice). Then reconcile: authoritative wins for any factual conflict — flag practitioner claims that contradict a fact as likely stale/wrong, never promote an opinion to a fact. Return `confidence` (high|medium|low), the authoritative facts, the labelled opinions, misconceptions/version gotchas, and any practitioner divergence. Under 450 words, no preamble.
 
 **Skip research only when:** the topic is repository-internal (a codebase pattern, an internal script, a project decision) where no public authoritative source exists. Note the skip in the session log under a `Research:` field so the pattern is visible across sessions.
 
@@ -166,7 +185,7 @@ Follow `references/srs-pressure-check.md` exactly. Summary:
 2. Run `treesearch search --query "<topic>" --index_dir wiki/indexes` for keyword matches
 3. Run `scripts/wiki-search "<topic>"` for semantic matches (if Ollama running)
 4. Call `find_similar_cards` from MCP to find related flashcards
-5. **Spawn the research subagent in the background** per the "Research Grounding" section above. Do this at the same time as steps 1-4 — it should be running while calibration happens, so findings are ready by Phase 2. Skip only for repo-internal topics (note the skip in the session log).
+5. **Run the `research-grounding` workflow in the background** per the "Research Grounding" section above (passing `topic`, `cadence`, and — if a page exists — `depth` / `lastDeepened`). Do this at the same time as steps 1-4 — it should be running while calibration happens, so the synthesised two-lane findings are ready by Phase 2. Skip only for repo-internal topics (note the skip in the session log).
 
 **Step 2 -- Present existing knowledge:**
 
@@ -229,7 +248,7 @@ Based on calibration results, the walkthrough adapts:
 - Frequent checks: "What would happen if...?" "Why does this matter?" — and when they stall, a smaller question, never the answer
 
 **Walkthrough techniques:**
-- **Ground your questions in research (probes exempt).** Use the Phase 1 research findings so *you* hold the canonical answer — then ask the developer toward it; do not read the framing aloud (see Socratic Never-Reveal). When your memory diverges from the sources, the source wins for judging the developer's answer and for the written page. Cite source URLs only as a place for the developer to investigate, never as the answer itself. If the research subagent returned `low` confidence or hasn't returned by the time a load-bearing point comes up, push a probe instead of asserting. **Probes themselves are not grounded in research** — the probe's actual output is the ground truth for whatever it demonstrates. If a probe contradicts research, surface the contradiction but trust the probe for the immediate point.
+- **Ground your questions in research (probes exempt).** Use the Phase 1 research findings so *you* hold the canonical answer — then ask the developer toward it; do not read the framing aloud (see Socratic Never-Reveal). When your memory diverges from the sources, the source wins for judging the developer's answer and for the written page. Cite source URLs only as a place for the developer to investigate, never as the answer itself. If the research grounding came back `low` confidence or hasn't returned by the time a load-bearing point comes up, push a probe instead of asserting. **Probes themselves are not grounded in research** — the probe's actual output is the ground truth for whatever it demonstrates. If a probe contradicts research, surface the contradiction but trust the probe for the immediate point.
 - Show concrete codebase code, never abstract examples
 - Ask a guiding question and wait — never reveal the answer. On a wrong or blank answer, decompose into a smaller sub-question rather than correcting by assertion.
 - **Probe when possible.** For code-shaped concepts (git, Python, shell, SQL, API behavior, algorithms), ask the developer to actually run a minimal snippet and paste the output — `uv run python -c`, a repl one-liner, a `git` command, `curl | jq`, a unit test. Compare the output against the prediction they made in the concrete challenge step. Probes turn Assumed understanding into Known and catch the "I thought I knew this" failure mode that pure discussion misses. Skip probes for theory-only concepts where no small snippet would demonstrate the point.
@@ -275,11 +294,11 @@ A single page with 15+ em-dashes and 3+ prose-colons forces a multi-pass cleanup
 
 1. **Present a brief outline first:** title, proposed H2 sections with a one-line description each. Wait for the developer to confirm or adjust before writing the full draft. Then start writing from the top.
 2. Present the full draft wiki page with frontmatter, wikilinks, and all sections
-2. For each section: ask the developer to explain it in their own words. If they cannot, discuss until they can.
-3. Adjust the page based on gaps surfaced during review
-4. **Probe sections:** Default `probe_sections` to all H2 headings except `Related Concepts`, `References`, `See also`, and `TL;DR`. Offer the developer a chance to mark any remaining sections as reference-only — but default-all is usually correct. Write `probe_sections` in frontmatter and seed `last_probed` with the same list (keeps the queue invariant `set(last_probed) == set(probe_sections)` true from day one; first review rotates as if fresh). **Heading quality gate:** before finalizing probe_sections, check each heading — if it doesn't tell you what to recall without re-reading the section, rename it first. `## Gotchas` is a weak prompt; `## nil on no match and chaining behavior` is a strong one.
-5. Follow `references/wiki-write-protocol.md` for the full write flow
-6. Log the session
+3. For each section: ask the developer to explain it in their own words. If they cannot, discuss until they can.
+4. Adjust the page based on gaps surfaced during review
+5. **Probe sections:** Default `probe_sections` to all H2 headings except `Related Concepts`, `References`, `See also`, and `TL;DR`. Offer the developer a chance to mark any remaining sections as reference-only — but default-all is usually correct. Write `probe_sections` in frontmatter and seed `last_probed` with the same list (keeps the queue invariant `set(last_probed) == set(probe_sections)` true from day one; first review rotates as if fresh). **Heading quality gate:** before finalizing probe_sections, check each heading — if it doesn't tell you what to recall without re-reading the section, rename it first. `## Gotchas` is a weak prompt; `## nil on no match and chaining behavior` is a strong one.
+6. Follow `references/wiki-write-protocol.md` for the full write flow
+7. Log the session
 
 **Deepen-focused mode** -- offer choices:
 
@@ -305,8 +324,9 @@ When writing a wiki page, follow this structure:
   - **Pattern/Technique**: Jump into the pattern with descriptive H2/H3 headings
   - **Feature/Tool Overview**: What is possible, then H2 sections per feature
 - Always include: `## Related Concepts` with `[[absolute/path]]` wikilinks
-- **Always include: `## References`** with up to 4 authoritative URLs from the Phase 1 research findings (one-line "what this is" per URL). Inline-link specific claims in the body (`[per RFC 6797 §7.2](url)`) when the claim is version-specific, contested, or non-obvious. If research was skipped (repo-internal topic) or unavailable, write `## References\n\n_None — repo-internal topic._` or `_Research unavailable at write time; verify before relying on this page._` so the gap is visible.
+- **Always include: `## References`** with up to 4 authoritative URLs from the Phase 1 research findings (one-line "what this is" per URL). When the workflow also returned practitioner sources, list them in the same section under a `**Practitioner / opinion:**` sub-label, kept visually distinct from the authoritative URLs. Inline-link specific claims in the body (`[per RFC 6797 §7.2](url)`) when the claim is version-specific, contested, or non-obvious. **A factual claim in the body must never be cited only to a practitioner source** — facts cite the authoritative lane. If research was skipped (repo-internal topic) or unavailable, write `## References\n\n_None — repo-internal topic._` or `_Research unavailable at write time; verify before relying on this page._` so the gap is visible.
   - **`References` MUST NOT appear in `probe_sections` or `last_probed`.** It's a citation list, not study material — the probe-section default already excludes `Related Concepts`, `References`, `See also`, `TL;DR`. When extending an existing page with new H2s, include new study-worthy headings only — never add `References` to the queue.
+- **Surface practitioner opinions by content** (from the workflow's `opinions` / `divergence`): load-bearing tradeoffs and gotchas get a dedicated H2 (`## Tradeoffs & gotchas`, or a topic-fitting name) with each point attributed and marked consensus/contested; one-off nuances weave into the relevant concept section as an attributed `> [Note]` callout. Frame opinions as opinions, never as ground truth — `> [Note] Some practitioners argue X; the spec only guarantees Y.` A dedicated opinion H2 IS study-worthy, so include it in `probe_sections` (unlike `References`). Drop any opinion the workflow flagged `contradictsGroundTruth` — keep the authoritative fact instead.
 
 **Session log** -- always append to `logs/<MM>/<YYYY-MM-DD>.md` (zero-padded month folder):
 
@@ -320,7 +340,7 @@ When writing a wiki page, follow this structure:
 - **Gaps filled:** projections (re-walked, now solid)
 - **Wiki updates:** [[architecture/event-sourcing]] extended with 2 new sections (depth: 2 -> 3)
 - **Flashcards:** 2 created for event versioning
-- **Research:** 3 sources fetched (Greg Young's CQRS doc, EventStore docs, Martin Fowler's bliki) — confidence: high. Cited 2 inline in wiki page.
+- **Research:** research-grounding workflow — 2 authoritative (Greg Young's CQRS doc, EventStore docs) + 2 practitioner (Martin Fowler's bliki, a production post-mortem); confidence: high. 1 blog claim flagged contradictsGroundTruth (dropped). Cited 2 authoritative inline; 1 tradeoff surfaced in `## Tradeoffs & gotchas`.
 - **Surprising:** upcasting was expected to be a compile-time transform; it's runtime-per-event
 - **Heuristic:** any change to a persisted event shape needs an upcaster, not a migration
 - **Next-time unblocker:** a small probe script that replays one serialized event through the upcaster chain
@@ -351,12 +371,19 @@ Structure depends on the page type chosen in Phase 1.
 ### 5. Related Concepts (H2)
 - `[[absolute/path]]` wikilinks with brief relationship descriptions
 
-### 6. References (H2)
+### 6. Tradeoffs & gotchas (H2, optional — when practitioner opinion is load-bearing)
+- Collects the workflow's practitioner `opinions`: tradeoffs, lived experience, architectural nuance, gotchas
+- Each point attributed to its source and marked consensus/contested; framed as opinion, never as ground truth
+- One-off nuances go inline as `> [Note]` callouts in the relevant section instead of here
+- This H2 is study-worthy — include it in `probe_sections` (unlike `References`)
+
+### 7. References (H2)
 - Authoritative URLs (max 4) from Phase 1 research, each with a one-line "what this is"
-- Prefer official docs, RFCs, source code, canonical references over blog posts
+- Prefer official docs, RFCs, source code, canonical references for ground truth — facts cite this lane
+- When practitioner sources were used, list them under a `**Practitioner / opinion:**` sub-label, distinct from the authoritative URLs
 - Inline-link specific version-specific or non-obvious claims in the body in addition to listing here
 
-### 7. Warnings/Notes
+### 8. Warnings/Notes
 - Short warnings: bold inline. Standalone callouts: `> [Warning]` / `> [Note]`
 
 ## Writing Style
@@ -382,7 +409,7 @@ Structure depends on the page type chosen in Phase 1.
 **Always:**
 - Fill every gap with a question, never an assertion (Socratic Never-Reveal) -- the developer produces every answer in the dialogue
 - Check wiki and flashcards before starting -- never start blind
-- **Spawn the research subagent at Phase 1** for any externally-knowable topic — explanations must be grounded in authoritative sources, not just model memory. Probes are the exception: they ground themselves via execution.
+- **Run the `research-grounding` workflow at Phase 1** for any externally-knowable topic — explanations must be grounded in authoritative sources (facts) and enriched with practitioner opinion (tradeoffs, gotchas), not just model memory. Authoritative always wins for facts; opinions stay labelled and never override ground truth. Probes are the exception: they ground themselves via execution.
 - Calibrate before teaching -- never assume the developer's level
 - Loop on failed recall -- never skip past a gap
 - Use concrete codebase code, not abstract examples
@@ -393,6 +420,8 @@ Structure depends on the page type chosen in Phase 1.
 - Reveal or state a correct answer to fill a gap in the dialogue -- decompose into a smaller question instead (explicit developer request and the written wiki page excepted)
 - Skip calibration when existing material exists
 - Walk through an externally-knowable topic on model memory alone — research first, probe second, model paraphrase last
+- Present a practitioner opinion as ground truth, or cite a factual body claim only to a blog — facts come from the authoritative lane; opinions stay labelled and attributed
+- Promote an opinion the workflow flagged `contradictsGroundTruth` — keep the authoritative fact it contradicts
 - "Verify" a probe-derived result with research — the probe is the ground truth for what it demonstrates
 - Move past a concept the developer can't explain back
 - Dump information without checking understanding

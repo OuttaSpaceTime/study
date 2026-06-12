@@ -17,6 +17,7 @@ source_skill: study-walkthrough
 depth: 1
 probe_sections:
 - What attention is doing - Q, K, V
+- Where the prediction comes from - K/V are inputs, not the output
 - Why two vectors per token, not one
 - Why K and V are cached but not Q
 - The cache grows by one entry per decode step
@@ -24,15 +25,16 @@ probe_sections:
 - Without the cache - O(N²)
 - num_ctx is the cache buffer size
 last_probed:
+- Where the prediction comes from - K/V are inputs, not the output
 - What attention is doing - Q, K, V
 - Why two vectors per token, not one
-- The cache grows by one entry per decode step
 - Cost formula
 - Without the cache - O(N²)
 - num_ctx is the cache buffer size
 - Why K and V are cached but not Q
-review_interval: 7
-next_review: '2026-05-30'
+- The cache grows by one entry per decode step
+review_interval: 8
+next_review: '2026-06-18'
 flashcard_ids: []
 ---
 
@@ -59,6 +61,16 @@ A concrete walk. Context is `"The cat sat on the"`. The model is producing the n
 5. Output of the attention layer = weighted sum of V vectors: `0.05·V_The + 0.40·V_cat + ...`.
 
 That blended vector flows to the next layer. Each transformer layer has its own attention; the model has dozens of layers, so this happens dozens of times per token.
+
+## Where the prediction comes from - K/V are inputs, not the output
+
+A common confusion is "the sentence is passed through the model and K/V predict the next token." Two corrections.
+
+**K/V are per-layer, computed and consumed inside the forward pass, not as a separate step.** The model is a stack of layers run in one pass. At every layer, each token produces its own Q/K/V from that layer's hidden state, and that layer's attention consumes them immediately; the blended output flows up to the next layer, which has its own independent K/V. So there is no single global K/V. There is one cache per layer (that is the `× num_layers` in the cost formula).
+
+**The next-token prediction does not come from K/V directly. It comes from the last position's final hidden state.** K and V are attended-to inputs. The current position's Q reads them to build a context-blended representation. The actual prediction is produced by the hidden state at the **last position**, after it has flowed through all layers, hitting the output (unembedding) matrix to produce logits, which the sampler turns into a token. The cached K/V of past tokens shape that last-position representation; they are inputs to the prediction, not the prediction itself.
+
+So a prompt pass (prefill) does two things at once. Every token at every layer writes its K/V into the per-layer caches, and the last position's final hidden state produces the first next-token distribution. Decode then repeats one token at a time. Its Q attends against the cached K/V, its own K/V append, and its last-position output predicts the following token. See [[llm/inference-prefill-and-decode]] for the phase split.
 
 ## Why two vectors per token, not one
 

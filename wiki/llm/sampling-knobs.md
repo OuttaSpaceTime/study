@@ -22,13 +22,13 @@ probe_sections:
 - Thinking mode - reasoning preamble
 - Choosing knobs by task shape
 last_probed:
+- Choosing knobs by task shape
+- The decode loop has a sampler
 - Temperature - how peaked the distribution is
 - num_predict - the output cap
 - Thinking mode - reasoning preamble
-- Choosing knobs by task shape
-- The decode loop has a sampler
-review_interval: 3
-next_review: '2026-06-03'
+review_interval: 8
+next_review: '2026-06-18'
 flashcard_ids: []
 ---
 
