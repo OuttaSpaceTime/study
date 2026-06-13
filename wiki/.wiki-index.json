@@ -1616,9 +1616,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-17",
-    "updated": "2026-05-29",
-    "next_review": "2026-06-02",
-    "review_interval": 4,
+    "updated": "2026-06-13",
+    "next_review": "2026-06-18",
+    "review_interval": 5,
     "probe_sections": [
       "What array_agg collects and the implicit single-group rule",
       "No GROUP BY means one implicit group",
@@ -1631,13 +1631,13 @@
     ],
     "last_probed": [
       "Empty input returns NULL, not {}",
-      "array_agg vs jsonb_agg",
-      "Canonical shape for \"safe\" usage",
       "What array_agg collects and the implicit single-group rule",
       "No GROUP BY means one implicit group",
       "Ordering is non-deterministic by default",
       "NULLs are included by default",
-      "DISTINCT + ORDER BY must share the expression"
+      "DISTINCT + ORDER BY must share the expression",
+      "array_agg vs jsonb_agg",
+      "Canonical shape for \"safe\" usage"
     ]
   },
   "sql/nullable-columns": {

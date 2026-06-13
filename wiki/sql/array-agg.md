@@ -23,15 +23,15 @@ probe_sections:
 - Canonical shape for "safe" usage
 last_probed:
 - Empty input returns NULL, not {}
-- array_agg vs jsonb_agg
-- Canonical shape for "safe" usage
 - What array_agg collects and the implicit single-group rule
 - No GROUP BY means one implicit group
 - Ordering is non-deterministic by default
 - NULLs are included by default
 - DISTINCT + ORDER BY must share the expression
-review_interval: 4
-next_review: '2026-06-02'
+- array_agg vs jsonb_agg
+- Canonical shape for "safe" usage
+review_interval: 5
+next_review: '2026-06-18'
 flashcard_ids: []
 ---
 
@@ -96,6 +96,19 @@ array_agg(product) FILTER (WHERE product IS NOT NULL)
 ## Empty input returns NULL, not {}
 
 > [Warning] When an aggregate receives zero input rows (empty group, or everything filtered out), it returns **`NULL`**. Not an empty array. `COUNT` is the only aggregate that returns `0` on empty input.
+
+The behaviour differs by whether `GROUP BY` is present:
+
+- **No `GROUP BY`** (implicit single-group): one row is always returned, but `array_agg` is `NULL`.
+  ```sql
+  SELECT array_agg(tag) FROM post_tags WHERE post_id = 42;
+  -- => one row: NULL   (even if no post_tags rows exist for id 42)
+  ```
+- **With `GROUP BY`**: no groups form from empty input, so **zero rows** are returned.
+  ```sql
+  SELECT post_id, array_agg(tag) FROM post_tags WHERE post_id = 42 GROUP BY post_id;
+  -- => zero rows   (42 never appears in the result)
+  ```
 
 This matters because consumer code that does `result.length` or iterates will behave differently on `NULL` vs. `{}`. Defaulting to empty is usually the safer contract:
 
