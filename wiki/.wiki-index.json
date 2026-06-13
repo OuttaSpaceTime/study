@@ -619,9 +619,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-09",
-    "updated": "2026-05-30",
-    "next_review": "2026-06-07",
-    "review_interval": 8,
+    "updated": "2026-06-13",
+    "next_review": "2026-07-03",
+    "review_interval": 20,
     "probe_sections": [
       "anyOf vs oneOf",
       "The oneOf Shared-Field Trap",
@@ -630,11 +630,11 @@
       "not as a Filter"
     ],
     "last_probed": [
+      "The oneOf Shared-Field Trap",
+      "allOf Is Not Inheritance",
       "The additionalProperties Trap",
       "not as a Filter",
-      "anyOf vs oneOf",
-      "The oneOf Shared-Field Trap",
-      "allOf Is Not Inheritance"
+      "anyOf vs oneOf"
     ]
   },
   "programming-languages/compilers-and-interpreters": {
