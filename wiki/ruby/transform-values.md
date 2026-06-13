@@ -19,9 +19,15 @@ probe_sections:
 - Bang variant
 - with_index for positional info
 - When not to use it
-last_probed: []
-review_interval: 28
-next_review: '2026-06-04'
+last_probed:
+- What transform_values does and why it preserves keys
+- with_index for positional info
+- When not to use it
+- vs map on a hash
+- The block receives only the value
+- Bang variant
+review_interval: 3
+next_review: '2026-06-16'
 flashcard_ids: []
 ---
 
