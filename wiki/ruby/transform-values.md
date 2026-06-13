@@ -26,8 +26,8 @@ last_probed:
 - vs map on a hash
 - The block receives only the value
 - Bang variant
-review_interval: 3
-next_review: '2026-06-16'
+review_interval: 34
+next_review: '2026-07-17'
 flashcard_ids: []
 ---
 

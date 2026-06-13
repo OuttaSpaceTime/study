@@ -1408,8 +1408,8 @@
     "flashcard_ids": [],
     "created": "2026-04-17",
     "updated": "2026-06-13",
-    "next_review": "2026-06-16",
-    "review_interval": 3,
+    "next_review": "2026-07-17",
+    "review_interval": 34,
     "probe_sections": [
       "What transform_values does and why it preserves keys",
       "vs map on a hash",
