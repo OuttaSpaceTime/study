@@ -162,22 +162,24 @@ Then loop:
 
 ### Phase 3: Wiki Review (after flashcards)
 
-When the flashcard queue is exhausted, offer wiki review using the list already shown in Phase 1:
+When the flashcard queue is exhausted, review the due wiki pages **in the order `scripts/wiki-due` returned them — most due first, least due last.** Do not ask the developer which page to open; do not present the list again as a menu. Start immediately with the most-due page and walk down the list one page at a time. The only choices the developer makes are per-page actions (next / discuss / walkthrough / skip) and the global escape ("skip wiki" / "done with wiki" → Phase 4).
 
-> **Flashcards done.** 23 wiki pages are due — want to review some? Say "open 1" (or a number), "open <slug>", or "skip wiki" to go straight to the summary.
+> **Flashcards done.** 11 wiki pages are due. Going through them most-due first — say "skip wiki" any time to jump to the summary.
+>
+> First up: [[llm/embeddings-vs-embedding-layer]].
 
-If the developer says "skip wiki" or there were no due wiki entries, go to Phase 4.
+If there were no due wiki entries, go straight to Phase 4.
 
-**Review loop for each entry:**
+**Review loop for each entry** (start at the top of the due list, advance down it):
 
-1. Developer says "open 1" (or "open git-restore", or "next")
+1. Take the next page in due order automatically — no "which one?" prompt.
 2. Read the wiki page. Present a brief summary: title, sections, depth, current interval — but do NOT open Obsidian yet.
 2a. **Surface linked probes (if any):** Run `scripts/wiki-probes <wiki-path>`. If probes exist, list them with path and Takeaway one-liner. Offer: "Want to re-run one as a recall check before I ask the section questions?" Skip silently if none.
 3. **Pick sections to probe — rotation via `last_probed`:**
 
    Read `probe_sections` and `last_probed` from the page's YAML frontmatter. `last_probed` is an ordered queue (oldest first); treat as `probe_sections` order if empty.
 
-   Choose `n = min(len(probe_sections), 3)` sections — the first `n` from the queue. Ask **one focused question per section**, cap 3 total.
+   Choose `n = min(len(probe_sections), 3)` sections — the first `n` from the queue. You will ask **one focused question per section, cap 3 total — but strictly one question per message.** Never list two or three questions together or say "take them in order." Ask the first section's question, wait for the answer, evaluate it, then ask the next section's question in a new message. This is the same one-card-per-message rule from Phase 2 applied to wiki sections.
 
    **Pick the question shape based on page content:**
    - **Code-heavy section:** predict output, fix a broken snippet, trace execution order
@@ -192,8 +194,8 @@ If the developer says "skip wiki" or there were no due wiki entries, go to Phase
 
    **Tune difficulty by `review_interval`:** short (1-3d) → gentle recall; medium (4-14d) → standard application; long (15+d) → harder applied or "teach it back".
 
-4. **Wait for the developer's answer to each question in turn.**
-5. **Evaluate each answer** with 1-2 sentences of feedback and a per-section rating (1-4). Assign page rating = rounded mean (round half-down). Score code answers on structural correctness, not literal completeness. **On a weak section answer, apply Socratic Never-Reveal** — recover via smaller guiding questions until the developer produces the missing piece, then rate; do not read the section content back at them.
+4. **Ask one section question, then wait for the developer's answer before asking the next.** One question per message — no batching.
+5. **Evaluate each answer** as it comes in: 1-2 sentences of feedback and a per-section rating (1-4), then move to the next section's question (or, after the last section, to the rating breakdown). Assign page rating = rounded mean (round half-down). Score code answers on structural correctness, not literal completeness. **On a weak section answer, apply Socratic Never-Reveal** — recover via smaller guiding questions until the developer produces the missing piece, then rate; do not read the section content back at them.
 6. State rating breakdown and apply:
    > Section A: Good · Section B: Hard → page rated **Hard (2)**. Applying.
 7. Run `scripts/wiki-reschedule wiki/<path>.md <rating> --probed "<Section A>,<Section B>"`.
@@ -341,5 +343,7 @@ If developer says "actually harder" or "actually easier" after feedback, acknowl
 - Reveal the back to fill a gap on a weak answer — decompose into a smaller question instead (explicit developer request excepted)
 - Create cards automatically
 - Batch multiple cards in one message
+- Batch multiple questions in one message — wiki section questions are asked strictly one at a time (never "take them in order")
+- Ask the developer which wiki page to open — review due pages automatically, most-due first
 - Ignore mid-session requests
 - Skip the session log
