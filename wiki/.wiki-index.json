@@ -1452,8 +1452,8 @@
     "flashcard_ids": [],
     "created": "2026-05-07",
     "updated": "2026-06-13",
-    "next_review": "2026-06-06",
-    "review_interval": 6,
+    "next_review": "2026-06-20",
+    "review_interval": 7,
     "probe_sections": [
       "Why the browser makes CSRF possible",
       "Three preconditions for a successful CSRF attack",
@@ -1463,12 +1463,12 @@
       "Login CSRF and the pre-session token fix"
     ],
     "last_probed": [
-      "Why the browser makes CSRF possible",
-      "Three preconditions for a successful CSRF attack",
       "Why SameSite=Lax doesn't fully protect against subdomain attacks",
       "Synchronizer token vs. signed double-submit cookie",
       "Why CSRF tokens don't stop XSS",
-      "Login CSRF and the pre-session token fix"
+      "Login CSRF and the pre-session token fix",
+      "Why the browser makes CSRF possible",
+      "Three preconditions for a successful CSRF attack"
     ]
   },
   "security/hsts": {
