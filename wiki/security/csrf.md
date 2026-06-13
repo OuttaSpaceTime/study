@@ -38,6 +38,8 @@ An attacker tricks the victim's browser into sending a state-changing request to
 
 The browser attaches cookies to every request targeting a domain, regardless of which page triggered the request. A form on `evil.com` that posts to `bank.com/transfer` will carry the victim's `bank.com` session cookie. The server sees a valid session and treats the request as legitimate.
 
+**Modern default:** Since ~2020, browsers default to `SameSite=Lax`, which blocks cross-site cookies on subresource requests (forms, `fetch`, `img`). POST, PUT, and DELETE are always blocked cross-site under Lax. In practice this stops most naive CSRF. It is not a complete fix though. Top-level GET navigations still send the cookie (leaving state-changing GET endpoints exposed), and requests from a same-site subdomain (`evil.example.com → app.example.com`) are not blocked at all. Same-site is not the same as same-origin.
+
 ## Three preconditions for a successful CSRF attack
 
 All three must hold. Remove any one and CSRF is blocked:
