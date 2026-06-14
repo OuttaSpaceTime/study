@@ -546,9 +546,9 @@
       "cmoqrprzu0000ld0mfbwqly5v"
     ],
     "created": "2026-05-04",
-    "updated": "2026-06-10",
-    "next_review": "2026-06-12",
-    "review_interval": 2,
+    "updated": "2026-06-14",
+    "next_review": "2026-06-17",
+    "review_interval": 3,
     "probe_sections": [
       "URL anatomy at a glance",
       "Scheme vs protocol",
@@ -561,13 +561,13 @@
     ],
     "last_probed": [
       "Host - subdomain, SLD, TLD",
-      "DNS resolution",
       "DNS caching, TTL, and safe migrations",
       "Host header and virtual hosts",
       "URL anatomy at a glance",
       "Scheme vs protocol",
       "Port: default ports and when the URL includes one",
-      "Path and query"
+      "Path and query",
+      "DNS resolution"
     ]
   },
   "openapi/openapi-index": {
@@ -619,9 +619,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-09",
-    "updated": "2026-05-30",
-    "next_review": "2026-06-07",
-    "review_interval": 8,
+    "updated": "2026-06-13",
+    "next_review": "2026-07-03",
+    "review_interval": 20,
     "probe_sections": [
       "anyOf vs oneOf",
       "The oneOf Shared-Field Trap",
@@ -630,11 +630,11 @@
       "not as a Filter"
     ],
     "last_probed": [
+      "The oneOf Shared-Field Trap",
+      "allOf Is Not Inheritance",
       "The additionalProperties Trap",
       "not as a Filter",
-      "anyOf vs oneOf",
-      "The oneOf Shared-Field Trap",
-      "allOf Is Not Inheritance"
+      "anyOf vs oneOf"
     ]
   },
   "programming-languages/compilers-and-interpreters": {
@@ -764,7 +764,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-20",
-    "updated": "2026-06-10",
+    "updated": "2026-06-13",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -849,9 +849,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-17",
-    "updated": "2026-06-10",
-    "next_review": "2026-06-09",
-    "review_interval": 10,
+    "updated": "2026-06-13",
+    "next_review": "2026-06-25",
+    "review_interval": 12,
     "probe_sections": [
       "The Problem It Solves",
       "Schema Shape",
@@ -863,14 +863,14 @@
       "N+1 Gotcha"
     ],
     "last_probed": [
-      "Direction of Delegation",
-      "Design Rule: Where Attributes Live",
-      "STI vs Delegated Type",
       "N+1 Gotcha",
       "The Problem It Solves",
       "Schema Shape",
       "What `delegated_type` Expands To",
-      "What the delegated_type declaration generates"
+      "What the delegated_type declaration generates",
+      "Direction of Delegation",
+      "Design Rule: Where Attributes Live",
+      "STI vs Delegated Type"
     ]
   },
   "rails/routing/collection-and-member-routes": {
@@ -1168,43 +1168,6 @@
       "Nesting Works the Same"
     ]
   },
-  "rails/solidqueue-queue-admin": {
-    "file": "rails/solidqueue-queue-admin.md",
-    "title": "SolidQueue Queue Admin",
-    "aliases": [
-      "solid_queue clear queue",
-      "solid queue drain",
-      "solid_queue delete jobs",
-      "solid_queue purge"
-    ],
-    "tags": [
-      "rails",
-      "solid-queue",
-      "background-jobs",
-      "ops"
-    ],
-    "sections": [
-      "Clearing a queue",
-      "Nuclear path for large queues",
-      "discard vs delete_all",
-      "Sources"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-23",
-    "updated": "2026-06-10",
-    "next_review": "2026-06-11",
-    "review_interval": 1,
-    "probe_sections": [
-      "Clearing a queue",
-      "Nuclear path for large queues",
-      "discard vs delete_all"
-    ],
-    "last_probed": [
-      "Clearing a queue",
-      "Nuclear path for large queues",
-      "discard vs delete_all"
-    ]
-  },
   "reactive/observable-error-handling": {
     "file": "reactive/observable-error-handling.md",
     "title": "Observable Error Handling",
@@ -1230,9 +1193,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-06-02",
-    "next_review": "2026-06-07",
-    "review_interval": 5,
+    "updated": "2026-06-13",
+    "next_review": "2026-06-19",
+    "review_interval": 6,
     "probe_sections": [
       "How error terminates a stream: subscription state after onError",
       "catchError: signature, recovery pattern, and re-throw",
@@ -1242,10 +1205,10 @@
     ],
     "last_probed": [
       "catchError: signature, recovery pattern, and re-throw",
-      "How error terminates a stream: subscription state after onError",
-      "retry vs retryWhen: immediate resubscription vs conditional backoff",
       "Error in inner vs outer observable (flatMap/switchMap)",
-      "Dead subscriber trap: subscribing after a subject has errored"
+      "Dead subscriber trap: subscribing after a subject has errored",
+      "How error terminates a stream: subscription state after onError",
+      "retry vs retryWhen: immediate resubscription vs conditional backoff"
     ]
   },
   "reactive/observables": {
@@ -1407,9 +1370,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-17",
-    "updated": "2026-05-07",
-    "next_review": "2026-06-04",
-    "review_interval": 28,
+    "updated": "2026-06-13",
+    "next_review": "2026-07-17",
+    "review_interval": 34,
     "probe_sections": [
       "What transform_values does and why it preserves keys",
       "vs map on a hash",
@@ -1418,7 +1381,14 @@
       "with_index for positional info",
       "When not to use it"
     ],
-    "last_probed": []
+    "last_probed": [
+      "What transform_values does and why it preserves keys",
+      "with_index for positional info",
+      "When not to use it",
+      "vs map on a hash",
+      "The block receives only the value",
+      "Bang variant"
+    ]
   },
   "security/csrf": {
     "file": "security/csrf.md",
@@ -1444,9 +1414,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-05-31",
-    "next_review": "2026-06-06",
-    "review_interval": 6,
+    "updated": "2026-06-13",
+    "next_review": "2026-06-20",
+    "review_interval": 7,
     "probe_sections": [
       "Why the browser makes CSRF possible",
       "Three preconditions for a successful CSRF attack",
@@ -1456,12 +1426,12 @@
       "Login CSRF and the pre-session token fix"
     ],
     "last_probed": [
-      "Why the browser makes CSRF possible",
-      "Three preconditions for a successful CSRF attack",
       "Why SameSite=Lax doesn't fully protect against subdomain attacks",
       "Synchronizer token vs. signed double-submit cookie",
       "Why CSRF tokens don't stop XSS",
-      "Login CSRF and the pre-session token fix"
+      "Login CSRF and the pre-session token fix",
+      "Why the browser makes CSRF possible",
+      "Three preconditions for a successful CSRF attack"
     ]
   },
   "security/hsts": {
@@ -1545,9 +1515,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-29",
-    "updated": "2026-05-07",
-    "next_review": "2026-06-11",
-    "review_interval": 35,
+    "updated": "2026-06-13",
+    "next_review": "2026-06-14",
+    "review_interval": 1,
     "probe_sections": [
       "What an Origin Is",
       "What SOP Actually Blocks",
@@ -1556,11 +1526,11 @@
       "Server-to-Server Requests"
     ],
     "last_probed": [
+      "SOP Is Not Configurable",
+      "Server-to-Server Requests",
       "What an Origin Is",
       "What SOP Actually Blocks",
-      "The Threat Model",
-      "SOP Is Not Configurable",
-      "Server-to-Server Requests"
+      "The Threat Model"
     ]
   },
   "security/security-index": {
