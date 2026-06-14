@@ -292,9 +292,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-06-02",
-    "next_review": "2026-06-14",
-    "review_interval": 12,
+    "updated": "2026-06-14",
+    "next_review": "2026-06-28",
+    "review_interval": 14,
     "probe_sections": [
       "Inference vs training",
       "The two phases at a glance",
@@ -307,11 +307,11 @@
     "last_probed": [
       "Prefill - one pass, parallel",
       "Decode - N passes, sequential",
-      "num_predict as the circuit breaker",
       "Rules of thumb for controlling prefill and decode cost",
       "Inference vs training",
       "The two phases at a glance",
-      "Why output length dominates"
+      "Why output length dominates",
+      "num_predict as the circuit breaker"
     ]
   },
   "llm/kv-cache": {
@@ -730,9 +730,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-09",
-    "updated": "2026-05-13",
-    "next_review": "2026-06-12",
-    "review_interval": 30,
+    "updated": "2026-06-14",
+    "next_review": "2026-08-28",
+    "review_interval": 75,
     "probe_sections": [
       "What pick returns and when it stops scanning",
       "vs pluck",
@@ -741,11 +741,11 @@
       "nil on no match and chaining with scopes"
     ],
     "last_probed": [
+      "nil on no match and chaining with scopes",
+      "What pick returns and when it stops scanning",
       "vs pluck",
       "Raw SQL expressions",
-      "Multiple aggregates in one query",
-      "nil on no match and chaining with scopes",
-      "What pick returns and when it stops scanning"
+      "Multiple aggregates in one query"
     ]
   },
   "rails/rails-index": {
@@ -764,7 +764,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-20",
-    "updated": "2026-06-13",
+    "updated": "2026-06-14",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -1798,6 +1798,7 @@
     "sections": [
       "TL;DR",
       "Two layers - DB constraint vs app validation",
+      "Which row the constraint blocks from deletion",
       "on_delete vs dependent and which side effects decide",
       "The four referential actions and the real default",
       "RESTRICT vs NO ACTION is only about deferrability",
@@ -1811,22 +1812,78 @@
       "cmq8hwa0t0002j70mfor6qqf7"
     ],
     "created": "2026-06-10",
-    "updated": "2026-06-10",
-    "next_review": "2026-06-13",
-    "review_interval": 3,
+    "updated": "2026-06-14",
+    "next_review": "2026-06-18",
+    "review_interval": 4,
     "probe_sections": [
       "Two layers - DB constraint vs app validation",
+      "Which row the constraint blocks from deletion",
       "on_delete vs dependent and which side effects decide",
       "The four referential actions and the real default",
       "RESTRICT vs NO ACTION is only about deferrability",
       "A foreign key does not create an index"
     ],
     "last_probed": [
+      "Which row the constraint blocks from deletion",
+      "RESTRICT vs NO ACTION is only about deferrability",
+      "A foreign key does not create an index",
       "Two layers - DB constraint vs app validation",
       "on_delete vs dependent and which side effects decide",
-      "The four referential actions and the real default",
-      "RESTRICT vs NO ACTION is only about deferrability",
-      "A foreign key does not create an index"
+      "The four referential actions and the real default"
+    ]
+  },
+  "rails/upsert-and-concurrent-inserts": {
+    "file": "rails/upsert-and-concurrent-inserts.md",
+    "title": "Upsert and concurrent inserts",
+    "aliases": [
+      "ON CONFLICT",
+      "upsert",
+      "insert_all",
+      "upsert_all",
+      "find_or_create_by race",
+      "RecordNotUnique",
+      "excluded pseudo-table"
+    ],
+    "tags": [
+      "rails",
+      "postgres",
+      "database",
+      "concurrency"
+    ],
+    "sections": [
+      "TL;DR",
+      "The race between two concurrent inserts",
+      "ON CONFLICT DO NOTHING vs DO UPDATE",
+      "RETURNING returns only touched rows",
+      "Rails create!, insert_all, insert_all!, upsert_all",
+      "Bulk methods bypass validations and callbacks",
+      "find_or_create_by is not atomic",
+      "Tradeoffs and gotchas",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-06-14",
+    "updated": "2026-06-14",
+    "next_review": "2026-06-17",
+    "review_interval": 3,
+    "probe_sections": [
+      "The race between two concurrent inserts",
+      "ON CONFLICT DO NOTHING vs DO UPDATE",
+      "RETURNING returns only touched rows",
+      "Rails create!, insert_all, insert_all!, upsert_all",
+      "Bulk methods bypass validations and callbacks",
+      "find_or_create_by is not atomic",
+      "Tradeoffs and gotchas"
+    ],
+    "last_probed": [
+      "The race between two concurrent inserts",
+      "ON CONFLICT DO NOTHING vs DO UPDATE",
+      "RETURNING returns only touched rows",
+      "Rails create!, insert_all, insert_all!, upsert_all",
+      "Bulk methods bypass validations and callbacks",
+      "find_or_create_by is not atomic",
+      "Tradeoffs and gotchas"
     ]
   }
 }

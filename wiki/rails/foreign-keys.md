@@ -1,16 +1,40 @@
 ---
-title: "Foreign keys"
-aliases: [foreign key, foreign key constraint, add_foreign_key, on_delete, referential integrity]
-tags: [rails, postgres, database, migrations]
-created: 2026-06-10
-updated: 2026-06-10
+title: Foreign keys
+aliases:
+- foreign key
+- foreign key constraint
+- add_foreign_key
+- on_delete
+- referential integrity
+tags:
+- rails
+- postgres
+- database
+- migrations
+created: '2026-06-10'
+updated: '2026-06-10'
 source_skill: study-walkthrough
-flashcard_ids: [cmq8hw4vw0000j70mqz3fb339, cmq8hw75w0001j70mf0kbcv8t, cmq8hwa0t0002j70mfor6qqf7]
-probe_sections: [Two layers - DB constraint vs app validation, on_delete vs dependent and which side effects decide, The four referential actions and the real default, RESTRICT vs NO ACTION is only about deferrability, A foreign key does not create an index]
-last_probed: [Two layers - DB constraint vs app validation, on_delete vs dependent and which side effects decide, The four referential actions and the real default, RESTRICT vs NO ACTION is only about deferrability, A foreign key does not create an index]
+flashcard_ids:
+- cmq8hw4vw0000j70mqz3fb339
+- cmq8hw75w0001j70mf0kbcv8t
+- cmq8hwa0t0002j70mfor6qqf7
+probe_sections:
+- Two layers - DB constraint vs app validation
+- Which row the constraint blocks from deletion
+- on_delete vs dependent and which side effects decide
+- The four referential actions and the real default
+- RESTRICT vs NO ACTION is only about deferrability
+- A foreign key does not create an index
+last_probed:
+- Which row the constraint blocks from deletion
+- RESTRICT vs NO ACTION is only about deferrability
+- A foreign key does not create an index
+- Two layers - DB constraint vs app validation
+- on_delete vs dependent and which side effects decide
+- The four referential actions and the real default
 depth: 1
-next_review: 2026-06-13
-review_interval: 3
+next_review: '2026-06-18'
+review_interval: 4
 ---
 
 # Foreign keys
@@ -38,6 +62,17 @@ Item.where(id: 1).update_all(event_id: 999)   # skips validation
 ```
 
 `update_column`, `insert_all`, and `update_all` are deliberate "skip callbacks and validations" tools. Add a raw `psql` session, a data migration, or a second app on the same database, and the Rails guard is bypassed entirely. The foreign key is the only thing standing behind all of those paths. So the rule. Validate in the app for UX, enforce in the DB for truth.
+
+## Which row the constraint blocks from deletion
+
+The constraint lives as a column on the **referencing (child)** table and guarantees that column points at a live row in the **referenced (parent)** table. That asymmetry decides which delete is blocked, and it is the part people most often get backwards.
+
+- Deleting the **parent** (the pointed-at row) while children still reference it is what `on_delete` governs. It is blocked under `NO ACTION` / `RESTRICT`, or cascaded / nullified.
+- Deleting the **child** (the row holding the foreign key column) is always allowed. It just drops a reference and orphans nothing.
+
+So with a foreign key on `items.event_id` referencing `events`, deleting an `event` that still has items is blocked, while deleting an `item` is always fine. Flip the schema so `events` holds an `item_id` referencing `items` and it reverses, so now deleting the referenced `item` is blocked, and deleting the `event` is free.
+
+The trap is reading "importance" into it. The rule is purely structural. The foreign key protects the pointed-at row from vanishing, so it constrains deletion of whatever is **referenced**, never the row that holds the column.
 
 ## on_delete vs dependent and which side effects decide
 

@@ -7,7 +7,7 @@ tags:
 - moc
 - rails
 created: '2026-04-20'
-updated: '2026-06-10'
+updated: '2026-06-14'
 source_skill: manual
 probe_sections:
 - Pages
@@ -29,4 +29,5 @@ Map of content for the `rails/` wiki folder. Auto-maintained by `scripts/wiki-wr
 - [[rails/delegated-type]]
 - [[rails/foreign-keys]]
 - [[rails/index-with]]
+- [[rails/upsert-and-concurrent-inserts]]
 
