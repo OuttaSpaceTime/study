@@ -29,5 +29,4 @@ Map of content for the `rails/` wiki folder. Auto-maintained by `scripts/wiki-wr
 - [[rails/delegated-type]]
 - [[rails/foreign-keys]]
 - [[rails/index-with]]
-- [[rails/solidqueue-queue-admin]]
 
