@@ -18,13 +18,13 @@ probe_sections:
 - SOP Is Not Configurable
 - Server-to-Server Requests
 last_probed:
+- What SOP Actually Blocks
+- The Threat Model
 - SOP Is Not Configurable
 - Server-to-Server Requests
 - What an Origin Is
-- What SOP Actually Blocks
-- The Threat Model
-review_interval: 1
-next_review: '2026-06-14'
+review_interval: 3
+next_review: '2026-06-24'
 flashcard_ids: []
 ---
 

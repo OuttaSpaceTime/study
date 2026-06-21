@@ -1515,9 +1515,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-29",
-    "updated": "2026-06-13",
-    "next_review": "2026-06-14",
-    "review_interval": 1,
+    "updated": "2026-06-21",
+    "next_review": "2026-06-24",
+    "review_interval": 3,
     "probe_sections": [
       "What an Origin Is",
       "What SOP Actually Blocks",
@@ -1526,11 +1526,11 @@
       "Server-to-Server Requests"
     ],
     "last_probed": [
+      "What SOP Actually Blocks",
+      "The Threat Model",
       "SOP Is Not Configurable",
       "Server-to-Server Requests",
-      "What an Origin Is",
-      "What SOP Actually Blocks",
-      "The Threat Model"
+      "What an Origin Is"
     ]
   },
   "security/security-index": {
