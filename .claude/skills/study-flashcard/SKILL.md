@@ -138,6 +138,7 @@ For each card draft:
 1. Present all approved drafts in a numbered list
 2. Developer confirms: "Create these" or makes final edits
 3. For each approved draft, call `create_card` with deckId, front, back, tags, and type
+   - **Deriving from an existing card?** If these drafts are a split or rephrasing of a card that already has review history, pass `inheritFrom: <original card id>` on each `create_card` so the new cards copy the original's FSRS schedule (due, stability, interval, state, maturity) instead of resetting to fresh New cards. Read the original's id with `find_similar_cards`/`get_card` before creating, and delete the original only after the new cards are created. Brand-new concepts with no parent card omit `inheritFrom`.
 4. Report results
 4a. **Push to AnkiWeb:** run `scripts/anki-sync sync` silently so the new cards reach the phone right away. One-line confirm only if it moved something (e.g. `Anki sync: pushed 3 new cards.`); on failure, a one-line note — never block the session on it.
 5. **Offer "write wiki"**: "Want to save a companion wiki page for these concepts?"
