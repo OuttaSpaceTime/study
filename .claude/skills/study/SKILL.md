@@ -142,7 +142,9 @@ Then loop:
    - **Good/Easy answer:** keep it tight — **2-3 sentences, hard cap.** The developer already produced the answer, so don't re-explain it back to them. Spend the sentences only on filling a genuine gap or drawing one interesting/non-obvious connection, and only when there is one — a clean answer can just get a one-line confirm + rating. Do not volunteer a deeper expansion; the developer will ask ("discuss", "tell me more") if a card is worth dwelling on. The goal on good answers is to keep moving; Socratic depth is for the cards that need it (weak answers), not for cards already known.
    - **Again/Hard answer:** do NOT reveal the back. Enter Socratic recovery — decompose into smaller guiding questions until the developer produces the missing piece themselves, then confirm. Never volunteer the answer to close the loop.
    - State what was correct and what was missing (1-2 sentences)
-   - State the rating: "Rated: **Good (3)**" — needing recovery hints means Again/Hard
+   - State the rating **with the next interval**: "Rated: **Good (3)** — next review in 4 days (2026-06-25)" — needing recovery hints means Again/Hard. The interval comes from the `submit_review` return (see step 6), so state the rating word in feedback and append the interval right after the call lands. Format from the returned schedule:
+     - `intraDay: true` (interval `0`) → "repeats this session" (e.g. "Rated: **Again (1)** — repeats this session"). Don't invent a minute count.
+     - `interval >= 1` → "next review in **N days** (YYYY-MM-DD)" using `interval` and the date portion of `due`. Use "1 day" (singular) when `interval` is 1.
    - **Flashcard quality check:** Evaluate the card itself — not just the answer. Flag genuinely weak cards:
      - **Too vague:** back doesn't give enough concrete detail to learn from (not just short — a precise one-liner is fine)
      - **Too broad:** front covers multiple distinct concepts that should be separate cards
@@ -154,7 +156,7 @@ Then loop:
      - **When a quality issue is detected: stop advancing.** Explicitly describe the problem and ask the developer to fix it before continuing. Example: "This card's front is ambiguous — it could mean X or Y. Want to edit it to be more specific, or split it?" Wait for the developer to edit, split, or explicitly say "skip" before moving on.
    - **Generation prompt** (on Good/Easy cards, ~1 in 4 cards): Ask the developer to generate their own example or analogy: "Can you give me a real-world scenario where this applies?" This strengthens encoding. Keep it brief — one sentence is enough.
    - One-liner reminder: *(harder/easier · discuss · edit · split · delete · show in Obsidian)*
-6. **Call `submit_review`** with the rating
+6. **Call `submit_review`** with the rating. It returns the new schedule (`due`, `interval`, `state`, `intraDay`) — surface the next interval in the rating line per step 5's format. Read the schedule silently; show only the formatted "next review in …" phrase, never the raw JSON.
 7. **Advance** — call `get_next_card` and present the next card in the same message. Only advance if no quality issue was flagged (or developer resolved/skipped it).
 
 **Track session data** internally for the log:
