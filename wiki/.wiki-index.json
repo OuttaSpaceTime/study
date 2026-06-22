@@ -51,9 +51,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-06-07",
-    "next_review": "2026-06-17",
-    "review_interval": 10,
+    "updated": "2026-06-22",
+    "next_review": "2026-07-17",
+    "review_interval": 25,
     "probe_sections": [
       "Zone.js: what triggers CD and what it cannot know",
       "Default strategy: full DFS tree walk every cycle",
@@ -63,12 +63,12 @@
       "markForCheck vs detectChanges"
     ],
     "last_probed": [
-      "Zone.js: what triggers CD and what it cannot know",
-      "Default strategy: full DFS tree walk every cycle",
-      "OnPush: four conditions that dirty a component",
       "Mutation on @Input: why the child's view goes stale",
       "setTimeout and manual subscribe silently miss OnPush",
-      "markForCheck vs detectChanges"
+      "markForCheck vs detectChanges",
+      "Zone.js: what triggers CD and what it cannot know",
+      "Default strategy: full DFS tree walk every cycle",
+      "OnPush: four conditions that dirty a component"
     ]
   },
   "angular/signals-and-change-detection": {
