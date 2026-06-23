@@ -546,9 +546,9 @@
       "cmoqrprzu0000ld0mfbwqly5v"
     ],
     "created": "2026-05-04",
-    "updated": "2026-06-14",
-    "next_review": "2026-06-17",
-    "review_interval": 3,
+    "updated": "2026-06-23",
+    "next_review": "2026-06-27",
+    "review_interval": 4,
     "probe_sections": [
       "URL anatomy at a glance",
       "Scheme vs protocol",
@@ -562,12 +562,12 @@
     "last_probed": [
       "Host - subdomain, SLD, TLD",
       "DNS caching, TTL, and safe migrations",
-      "Host header and virtual hosts",
       "URL anatomy at a glance",
       "Scheme vs protocol",
       "Port: default ports and when the URL includes one",
       "Path and query",
-      "DNS resolution"
+      "DNS resolution",
+      "Host header and virtual hosts"
     ]
   },
   "openapi/openapi-index": {

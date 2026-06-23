@@ -29,14 +29,14 @@ probe_sections:
 last_probed:
 - Host - subdomain, SLD, TLD
 - DNS caching, TTL, and safe migrations
-- Host header and virtual hosts
 - URL anatomy at a glance
 - Scheme vs protocol
 - 'Port: default ports and when the URL includes one'
 - Path and query
 - DNS resolution
-review_interval: 3
-next_review: '2026-06-17'
+- Host header and virtual hosts
+review_interval: 4
+next_review: '2026-06-27'
 ---
 
 # URL Anatomy
