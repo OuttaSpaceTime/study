@@ -26,16 +26,16 @@ probe_sections:
 - find_or_create_by is not atomic
 - Tradeoffs and gotchas
 last_probed:
-- The race between two concurrent inserts
-- ON CONFLICT DO NOTHING vs DO UPDATE
-- RETURNING returns only touched rows
 - Rails create!, insert_all, insert_all!, upsert_all
 - Bulk methods bypass validations and callbacks
 - find_or_create_by is not atomic
 - Tradeoffs and gotchas
+- The race between two concurrent inserts
+- ON CONFLICT DO NOTHING vs DO UPDATE
+- RETURNING returns only touched rows
 depth: 1
-review_interval: 3
-next_review: '2026-06-17'
+review_interval: 8
+next_review: '2026-07-01'
 ---
 
 # Upsert and concurrent inserts

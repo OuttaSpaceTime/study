@@ -33,8 +33,8 @@ last_probed:
 - num_ctx is the cache buffer size
 - Why K and V are cached but not Q
 - The cache grows by one entry per decode step
-review_interval: 8
-next_review: '2026-06-18'
+review_interval: 10
+next_review: '2026-07-03'
 flashcard_ids: []
 ---
 

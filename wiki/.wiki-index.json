@@ -345,9 +345,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-06-10",
-    "next_review": "2026-06-18",
-    "review_interval": 8,
+    "updated": "2026-06-23",
+    "next_review": "2026-07-03",
+    "review_interval": 10,
     "probe_sections": [
       "What attention is doing - Q, K, V",
       "Where the prediction comes from - K/V are inputs, not the output",
@@ -422,9 +422,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-06-10",
-    "next_review": "2026-06-18",
-    "review_interval": 8,
+    "updated": "2026-06-23",
+    "next_review": "2026-07-03",
+    "review_interval": 10,
     "probe_sections": [
       "The decode loop has a sampler",
       "Temperature - how peaked the distribution is",
@@ -433,11 +433,11 @@
       "Choosing knobs by task shape"
     ],
     "last_probed": [
+      "num_predict - the output cap",
+      "Thinking mode - reasoning preamble",
       "Choosing knobs by task shape",
       "The decode loop has a sampler",
-      "Temperature - how peaked the distribution is",
-      "num_predict - the output cap",
-      "Thinking mode - reasoning preamble"
+      "Temperature - how peaked the distribution is"
     ]
   },
   "llm/serving-runtime-and-vram": {
@@ -1235,9 +1235,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-06-08",
-    "next_review": "2026-06-18",
-    "review_interval": 10,
+    "updated": "2026-06-23",
+    "next_review": "2026-07-05",
+    "review_interval": 12,
     "probe_sections": [
       "Why observables are lazy and what subscribe triggers",
       "The Observable Contract: grammar and serial delivery rule",
@@ -1245,10 +1245,10 @@
       "Subscription lifecycle: what subscribe returns and how teardown works"
     ],
     "last_probed": [
+      "The Observable Contract: grammar and serial delivery rule",
       "Cold vs hot observables: independent vs shared execution",
       "Subscription lifecycle: what subscribe returns and how teardown works",
-      "Why observables are lazy and what subscribe triggers",
-      "The Observable Contract: grammar and serial delivery rule"
+      "Why observables are lazy and what subscribe triggers"
     ]
   },
   "reactive/reactive-index": {
@@ -1864,9 +1864,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-06-14",
-    "updated": "2026-06-14",
-    "next_review": "2026-06-17",
-    "review_interval": 3,
+    "updated": "2026-06-23",
+    "next_review": "2026-07-01",
+    "review_interval": 8,
     "probe_sections": [
       "The race between two concurrent inserts",
       "ON CONFLICT DO NOTHING vs DO UPDATE",
@@ -1877,13 +1877,13 @@
       "Tradeoffs and gotchas"
     ],
     "last_probed": [
-      "The race between two concurrent inserts",
-      "ON CONFLICT DO NOTHING vs DO UPDATE",
-      "RETURNING returns only touched rows",
       "Rails create!, insert_all, insert_all!, upsert_all",
       "Bulk methods bypass validations and callbacks",
       "find_or_create_by is not atomic",
-      "Tradeoffs and gotchas"
+      "Tradeoffs and gotchas",
+      "The race between two concurrent inserts",
+      "ON CONFLICT DO NOTHING vs DO UPDATE",
+      "RETURNING returns only touched rows"
     ]
   }
 }
