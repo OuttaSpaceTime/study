@@ -16,7 +16,6 @@ updated: '2026-05-04'
 source_skill: study-walkthrough
 flashcard_ids:
 - cmoqrprzu0000ld0mfbwqly5v
-depth: 1
 probe_sections:
 - URL anatomy at a glance
 - Scheme vs protocol

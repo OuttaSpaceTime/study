@@ -14,7 +14,6 @@ tags:
 created: '2026-05-05'
 updated: '2026-05-05'
 source_skill: study-walkthrough
-depth: 1
 flashcard_ids:
 - cmosqcwsg0000h30mvfne2v51
 - cmosqd3r80001h30mwd2tbpht

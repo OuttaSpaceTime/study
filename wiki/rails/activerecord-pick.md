@@ -26,7 +26,6 @@ last_probed:
 - Raw SQL expressions
 - Multiple aggregates in one query
 flashcard_ids: []
-depth: 1
 ---
 
 # ActiveRecord pick

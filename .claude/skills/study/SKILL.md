@@ -175,7 +175,7 @@ If there were no due wiki entries, go straight to Phase 4.
 **Review loop for each entry** (start at the top of the due list, advance down it):
 
 1. Take the next page in due order automatically — no "which one?" prompt.
-2. Read the wiki page. Present a brief summary: title, sections, depth, current interval — but do NOT open Obsidian yet.
+2. Read the wiki page. Present a brief summary: title, sections, current interval — but do NOT open Obsidian yet.
 2a. **Surface linked probes (if any):** Run `scripts/wiki-probes <wiki-path>`. If probes exist, list them with path and Takeaway one-liner. Offer: "Want to re-run one as a recall check before I ask the section questions?" Skip silently if none.
 3. **Pick sections to probe — rotation via `last_probed`:**
 

@@ -15,7 +15,7 @@ def test_fills_review_fields_on_content_page(tmp_path: Path):
     assert changed is True
     assert meta["review_interval"] == 3
     assert meta["next_review"] == (date.today() + timedelta(days=3)).isoformat()
-    assert meta["depth"] == 1
+    assert "depth" not in meta
     assert meta["flashcard_ids"] == []
 
 

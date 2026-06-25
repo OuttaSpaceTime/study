@@ -19,7 +19,6 @@ flashcard_ids:
 - cmne7xyd402e70mso1xuwru3o
 - cmne7xya902dh0msotg5sajyw
 - cmne7xy9k02d90mso2ibigeht
-depth: 1
 last_deepened: '2026-04-09'
 next_review: '2026-08-10'
 review_interval: 62

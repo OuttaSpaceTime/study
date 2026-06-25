@@ -25,7 +25,6 @@ last_probed:
 - Every node on an include path is included
 - Top-level keys and their mutual exclusions
 - Resource object shape
-depth: 1
 review_interval: 4
 next_review: '2026-05-17'
 ---

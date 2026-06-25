@@ -15,7 +15,6 @@ tags:
 created: '2026-05-05'
 updated: '2026-05-05'
 source_skill: study-walkthrough
-depth: 1
 probe_sections:
 - Three-valued logic is the root cause
 - The NOT IN trap

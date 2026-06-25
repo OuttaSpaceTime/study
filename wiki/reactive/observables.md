@@ -14,7 +14,6 @@ created: '2026-05-07'
 updated: '2026-05-07'
 source_skill: study-walkthrough
 flashcard_ids: []
-depth: 1
 probe_sections:
 - Why observables are lazy and what subscribe triggers
 - 'The Observable Contract: grammar and serial delivery rule'

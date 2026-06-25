@@ -25,7 +25,6 @@ last_probed:
 - Why SameSite=Lax doesn't fully protect against subdomain attacks
 - Synchronizer token vs. signed double-submit cookie
 - Why CSRF tokens don't stop XSS
-depth: 1
 review_interval: 18
 next_review: '2026-07-13'
 ---

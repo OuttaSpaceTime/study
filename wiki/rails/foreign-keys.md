@@ -32,7 +32,6 @@ last_probed:
 - Which row the constraint blocks from deletion
 - RESTRICT vs NO ACTION is only about deferrability
 - A foreign key does not create an index
-depth: 1
 next_review: '2026-07-07'
 review_interval: 12
 ---

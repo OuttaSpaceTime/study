@@ -217,9 +217,9 @@ Parse the JSON output:
 - `{"status":"ok","lint":"warnings","details":"..."}` → write succeeded; surface warnings (e.g., orphan pages) so the developer can decide whether to add inbound links
 - `{"status":"ok","lint":"errors","details":"..."}` → show lint errors to developer (these block a clean write)
 
-### Step 8b: Update Depth Metadata (when extending)
+### Step 8b: Mark Deepening (when extending)
 
-**Skill responsibility — `scripts/wiki-write` does not do this automatically.** If the page was extended by `/study-walkthrough`, the calling skill must increment the `depth` frontmatter field and set `last_deepened` to today's date *before* running `scripts/wiki-write`. If the field doesn't exist, set `depth: 2` (the initial write was depth 1).
+**Skill responsibility — `scripts/wiki-write` does not do this automatically.** If the page was extended by `/study-walkthrough`, the calling skill must set the `last_deepened` frontmatter field to today's date *before* running `scripts/wiki-write`.
 
 ### Step 9: Append Session Log
 
@@ -228,7 +228,7 @@ Append to `logs/<MM>/<YYYY-MM-DD>.md` (zero-padded month folder; create if doesn
 ```markdown
 ## Session N — <Skill Name> (HH:MM)
 - **Topic:** <topic>
-- **Wiki updates:** [[folder/page-name]] created|extended (depth: 3)
+- **Wiki updates:** [[folder/page-name]] created|extended
 - **Links added:** [[folder/other-page]], [[folder/another]]
 - **Flashcard IDs:** 123, 456 (if applicable)
 ```
@@ -309,7 +309,7 @@ For a **sub-MOC** (`wiki/<folder>/<sub>/<sub>-index.md`), use the same template 
 All four are enforced by `scripts/lint`:
 
 - **Must include `tags: [moc, <folder>]`** — the `moc` tag is the exclusion marker; `scripts/wiki-due` and study-selection skips any entry tagged `moc`. Lint codes: `moc-tag-missing`, `moc-folder-tag-missing`. For sub-MOCs, `<folder>` is the sub-folder name (e.g. `routing`).
-- **Must NOT include `next_review` / `review_interval` / `depth`** — MOCs are hubs, not studyable content. Lint code: `moc-forbidden-field`.
+- **Must NOT include `next_review` / `review_interval`** — MOCs are hubs, not studyable content. Lint code: `moc-forbidden-field`.
 - **Top-level MOCs must include `allow_orphan: true`** — they have no inbound links by design. Sub-MOCs must NOT set `allow_orphan` — they are linked from their parent MOC, and the orphan check enforces that link. Lint code: `moc-allow-orphan-missing` (top-level only).
 - **Must NOT be created as flashcard sources** — do not pass them to `/study-flashcard`.
 
@@ -343,8 +343,7 @@ If a folder has no MOC yet, `scripts/wiki-write` emits a stderr warning and the 
 | `updated` | date | Yes | ISO date of last update |
 | `source_skill` | string | Yes | Which skill created this page |
 | `flashcard_ids` | array | No | Associated SRS flashcard IDs |
-| `depth` | number | No | How many times this page has been deepened (starts at 1, incremented by `/study-walkthrough`) |
-| `last_deepened` | date | No | ISO date of last deepening session |
+| `last_deepened` | date | No | ISO date of last deepening session (set by `/study-walkthrough` when it extends a page) |
 | `next_review` | date | No | ISO date of next scheduled review. Auto-filled by `scripts/wiki-write` to `today + 3 days` if missing. Updated after each review by `/study`. Forbidden on `*-index.md` MOCs. |
 | `review_interval` | number | No | Current review interval in days. Auto-filled by `scripts/wiki-write` to `3` if missing. Updated after each review using spaced repetition scheduling. Forbidden on `*-index.md` MOCs. |
 | `last_probed` | array | No | Probe rotation queue. Auto-seeded by `scripts/wiki-write` to a copy of `probe_sections` if missing. |

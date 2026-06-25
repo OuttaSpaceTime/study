@@ -29,7 +29,7 @@ REQUIRED_FIELDS = {
 }
 
 # Fields required on content pages only (not on *-index.md MOC files)
-CONTENT_REQUIRED_FIELDS = {"next_review", "review_interval", "depth"}
+CONTENT_REQUIRED_FIELDS = {"next_review", "review_interval"}
 
 _FENCED_CODE_RE = re.compile(r"```.*?```", re.DOTALL)
 _INLINE_CODE_RE = re.compile(r"``[^`\n]+``|`[^`\n]+`")
@@ -432,7 +432,7 @@ def _check_frontmatter(pages: list[ParsedPage]) -> list[str]:
     return errors
 
 
-_MOC_FORBIDDEN_FIELDS = ("next_review", "review_interval", "depth")
+_MOC_FORBIDDEN_FIELDS = ("next_review", "review_interval")
 
 
 def _check_moc_frontmatter(wiki_dir: Path, pages: list[ParsedPage]) -> list[str]:
@@ -441,7 +441,7 @@ def _check_moc_frontmatter(wiki_dir: Path, pages: list[ParsedPage]) -> list[str]
     - moc-tag-missing: tags must include 'moc' (the exclusion marker for study-selection).
     - moc-folder-tag-missing: tags must include the parent folder name.
     - moc-allow-orphan-missing: must declare allow_orphan: true (MOCs have no inbound links by design).
-    - moc-forbidden-field: must not include next_review / review_interval / depth (MOCs are not studyable).
+    - moc-forbidden-field: must not include next_review / review_interval (MOCs are not studyable).
     """
     errors: list[str] = []
     for p in pages:

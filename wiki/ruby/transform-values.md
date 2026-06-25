@@ -11,7 +11,6 @@ tags:
 created: '2026-04-17'
 updated: '2026-04-17'
 source_skill: study-walkthrough
-depth: 1
 probe_sections:
 - What transform_values does and why it preserves keys
 - vs map on a hash

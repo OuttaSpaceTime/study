@@ -13,7 +13,6 @@ created: '2026-04-09'
 updated: '2026-04-09'
 source_skill: study-walkthrough
 flashcard_ids: []
-depth: 1
 next_review: '2026-07-03'
 review_interval: 20
 probe_sections:

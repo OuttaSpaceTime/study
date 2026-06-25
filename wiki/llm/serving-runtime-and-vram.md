@@ -14,7 +14,6 @@ tags:
 created: '2026-05-05'
 updated: '2026-05-05'
 source_skill: study-walkthrough
-depth: 1
 probe_sections:
 - The model is a file
 - VRAM and why GPUs

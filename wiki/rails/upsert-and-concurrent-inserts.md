@@ -33,7 +33,6 @@ last_probed:
 - The race between two concurrent inserts
 - ON CONFLICT DO NOTHING vs DO UPDATE
 - RETURNING returns only touched rows
-depth: 1
 review_interval: 8
 next_review: '2026-07-01'
 ---

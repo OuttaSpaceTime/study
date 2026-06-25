@@ -12,7 +12,6 @@ tags:
 created: '2026-05-07'
 updated: '2026-05-07'
 source_skill: study-walkthrough
-depth: 1
 last_deepened: '2026-05-07'
 next_review: '2026-07-17'
 review_interval: 25

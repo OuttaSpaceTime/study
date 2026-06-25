@@ -29,7 +29,6 @@ last_probed:
 - Custom query parameters need a non-alpha character
 - The envelope-vs-strategy split
 - Pagination URLs are opaque to the client
-depth: 1
 review_interval: 4
 next_review: '2026-05-17'
 ---

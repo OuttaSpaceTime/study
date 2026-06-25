@@ -2,7 +2,7 @@ export const meta = {
   name: 'research-grounding',
   description: 'Two-lane research for a study walkthrough: authoritative ground truth + practitioner opinion, synthesised with a ground-truth-wins reconciliation.',
   whenToUse:
-    'Invoked by /study-walkthrough at Phase 1 to ground explanations and the wiki page. Authoritative lane = docs/RFC/source for facts; practitioner lane = blogs/talks/forums for tradeoffs, experiences, architectural nuance, and gotchas. Synthesis keeps the two strictly separate and flags any practitioner claim that contradicts ground truth. args: { topic, cadence?, thoroughness?, depth?, lastDeepened?, fromUrl? }.',
+    'Invoked by /study-walkthrough at Phase 1 to ground explanations and the wiki page. Authoritative lane = docs/RFC/source for facts; practitioner lane = blogs/talks/forums for tradeoffs, experiences, architectural nuance, and gotchas. Synthesis keeps the two strictly separate and flags any practitioner claim that contradicts ground truth. args: { topic, cadence?, thoroughness?, lastDeepened?, fromUrl? }.',
   phases: [
     { title: 'Authoritative', detail: 'docs / RFC / source — establish facts' },
     { title: 'Practitioner', detail: 'blogs / talks / forums — tradeoffs, experience, gotchas' },
@@ -198,11 +198,10 @@ if (!topic || !String(topic).trim()) {
 }
 const fromUrl = opts.fromUrl
 const cadence = opts.cadence || 'learning'
-const depth = opts.depth
 const lastDeepened = opts.lastDeepened
 const thoroughness =
   opts.thoroughness || (cadence === 'concise' || cadence === 'refresh' ? 'lite' : 'normal')
-const isRefresh = cadence === 'refresh' || (typeof depth === 'number' && depth >= 3)
+const isRefresh = cadence === 'refresh'
 
 const N = { lite: 1, normal: 2, deep: 3 }[thoroughness] || 2
 const authAngles = AUTH_ANGLES.slice(0, N)
@@ -212,7 +211,7 @@ const fromClause = fromUrl
   ? `\nThe developer supplied this source: ${fromUrl}. Cross-check its factual claims against your own findings and flag any divergence.`
   : ''
 const refreshClause = isRefresh
-  ? `\nThis is a REFRESH of an existing page${typeof depth === 'number' ? ` (depth ${depth})` : ''}${
+  ? `\nThis is a REFRESH of an existing page${
       lastDeepened ? ` last deepened ${lastDeepened}` : ''
     }. Prioritise what changed since then: deprecations, version drift, behaviour changes, and any newer practitioner consensus.`
   : ''

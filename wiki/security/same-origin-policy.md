@@ -10,7 +10,6 @@ tags:
 created: '2026-04-29'
 updated: '2026-04-29'
 source_skill: study-walkthrough
-depth: 1
 probe_sections:
 - What an Origin Is
 - What SOP Actually Blocks

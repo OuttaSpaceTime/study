@@ -32,10 +32,6 @@ def _fill_defaults(page_path: Path, meta: dict) -> bool:
     if page_path.stem.endswith("-index"):
         return changed
 
-    if "depth" not in meta:
-        meta["depth"] = 1
-        changed = True
-
     if "review_interval" not in meta:
         meta["review_interval"] = _DEFAULT_REVIEW_INTERVAL
         changed = True

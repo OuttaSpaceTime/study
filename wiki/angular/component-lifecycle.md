@@ -28,7 +28,6 @@ last_probed:
 - 'constructor vs ngOnInit: why @Input is undefined in the constructor'
 - 'ngOnChanges: fires on first render and batches all input changes'
 flashcard_ids: []
-depth: 1
 review_interval: 25
 next_review: '2026-07-20'
 ---

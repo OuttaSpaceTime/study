@@ -13,7 +13,6 @@ created: '2026-05-07'
 updated: '2026-05-07'
 source_skill: study-walkthrough
 flashcard_ids: []
-depth: 1
 probe_sections:
 - 'Reactive programming definition: streams as first-class values'
 - 'Stream anatomy: values, errors, and completion over time'

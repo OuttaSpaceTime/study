@@ -16,7 +16,6 @@ class TestParseFrontmatter:
             updated: 2026-04-09
             source_skill: study-walkthrough
             flashcard_ids: [cmne7xz9202lx0msonsbfhp3j, cmne7xz1y02k30msouw64srcz]
-            depth: 1
             last_deepened: 2026-04-09
             next_review: 2026-04-12
             review_interval: 3
@@ -34,7 +33,6 @@ class TestParseFrontmatter:
         assert meta["updated"] == "2026-04-09"
         assert meta["next_review"] == "2026-04-12"
         assert meta["review_interval"] == 3
-        assert meta["depth"] == 1
         assert "# git restore" in body
 
     def test_flashcard_ids_are_strings(self):

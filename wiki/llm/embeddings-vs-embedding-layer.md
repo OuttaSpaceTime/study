@@ -15,7 +15,6 @@ tags:
 created: '2026-05-05'
 updated: '2026-05-05'
 source_skill: study-walkthrough
-depth: 1
 probe_sections:
 - The two meanings, untangled
 - Meaning 1 - the embedding layer
