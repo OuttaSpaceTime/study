@@ -19,15 +19,15 @@ probe_sections:
 - Why CSRF tokens don't stop XSS
 - Login CSRF and the pre-session token fix
 last_probed:
-- Why SameSite=Lax doesn't fully protect against subdomain attacks
-- Synchronizer token vs. signed double-submit cookie
-- Why CSRF tokens don't stop XSS
 - Login CSRF and the pre-session token fix
 - Why the browser makes CSRF possible
 - Three preconditions for a successful CSRF attack
+- Why SameSite=Lax doesn't fully protect against subdomain attacks
+- Synchronizer token vs. signed double-submit cookie
+- Why CSRF tokens don't stop XSS
 depth: 1
-review_interval: 7
-next_review: '2026-06-20'
+review_interval: 18
+next_review: '2026-07-13'
 ---
 
 # CSRF (Cross-Site Request Forgery)

@@ -1193,9 +1193,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-06-13",
-    "next_review": "2026-06-19",
-    "review_interval": 6,
+    "updated": "2026-06-25",
+    "next_review": "2026-07-10",
+    "review_interval": 15,
     "probe_sections": [
       "How error terminates a stream: subscription state after onError",
       "catchError: signature, recovery pattern, and re-throw",
@@ -1205,10 +1205,10 @@
     ],
     "last_probed": [
       "catchError: signature, recovery pattern, and re-throw",
-      "Error in inner vs outer observable (flatMap/switchMap)",
-      "Dead subscriber trap: subscribing after a subject has errored",
       "How error terminates a stream: subscription state after onError",
-      "retry vs retryWhen: immediate resubscription vs conditional backoff"
+      "retry vs retryWhen: immediate resubscription vs conditional backoff",
+      "Error in inner vs outer observable (flatMap/switchMap)",
+      "Dead subscriber trap: subscribing after a subject has errored"
     ]
   },
   "reactive/observables": {
@@ -1414,9 +1414,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-06-13",
-    "next_review": "2026-06-20",
-    "review_interval": 7,
+    "updated": "2026-06-25",
+    "next_review": "2026-07-13",
+    "review_interval": 18,
     "probe_sections": [
       "Why the browser makes CSRF possible",
       "Three preconditions for a successful CSRF attack",
@@ -1426,12 +1426,12 @@
       "Login CSRF and the pre-session token fix"
     ],
     "last_probed": [
-      "Why SameSite=Lax doesn't fully protect against subdomain attacks",
-      "Synchronizer token vs. signed double-submit cookie",
-      "Why CSRF tokens don't stop XSS",
       "Login CSRF and the pre-session token fix",
       "Why the browser makes CSRF possible",
-      "Three preconditions for a successful CSRF attack"
+      "Three preconditions for a successful CSRF attack",
+      "Why SameSite=Lax doesn't fully protect against subdomain attacks",
+      "Synchronizer token vs. signed double-submit cookie",
+      "Why CSRF tokens don't stop XSS"
     ]
   },
   "security/hsts": {
