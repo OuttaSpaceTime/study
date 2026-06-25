@@ -1586,9 +1586,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-17",
-    "updated": "2026-06-13",
-    "next_review": "2026-06-18",
-    "review_interval": 5,
+    "updated": "2026-06-25",
+    "next_review": "2026-07-15",
+    "review_interval": 20,
     "probe_sections": [
       "What array_agg collects and the implicit single-group rule",
       "No GROUP BY means one implicit group",
@@ -1601,13 +1601,13 @@
     ],
     "last_probed": [
       "Empty input returns NULL, not {}",
-      "What array_agg collects and the implicit single-group rule",
-      "No GROUP BY means one implicit group",
       "Ordering is non-deterministic by default",
       "NULLs are included by default",
       "DISTINCT + ORDER BY must share the expression",
       "array_agg vs jsonb_agg",
-      "Canonical shape for \"safe\" usage"
+      "Canonical shape for \"safe\" usage",
+      "What array_agg collects and the implicit single-group rule",
+      "No GROUP BY means one implicit group"
     ]
   },
   "sql/nullable-columns": {
@@ -1759,9 +1759,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-08",
-    "updated": "2026-06-08",
-    "next_review": "2026-06-18",
-    "review_interval": 10,
+    "updated": "2026-06-25",
+    "next_review": "2026-07-20",
+    "review_interval": 25,
     "probe_sections": [
       "Init order: depth-first post-order across the tree",
       "constructor vs ngOnInit: why @Input is undefined in the constructor",
@@ -1771,12 +1771,12 @@
       "afterNextRender vs ngAfterViewInit: post-paint vs pre-paint timing"
     ],
     "last_probed": [
-      "Init order: depth-first post-order across the tree",
-      "constructor vs ngOnInit: why @Input is undefined in the constructor",
-      "ngOnChanges: fires on first render and batches all input changes",
       "Content vs View hooks: which decorator becomes available where",
       "Injection context: where inject() is valid and where it throws NG0203",
-      "afterNextRender vs ngAfterViewInit: post-paint vs pre-paint timing"
+      "afterNextRender vs ngAfterViewInit: post-paint vs pre-paint timing",
+      "Init order: depth-first post-order across the tree",
+      "constructor vs ngOnInit: why @Input is undefined in the constructor",
+      "ngOnChanges: fires on first render and batches all input changes"
     ]
   },
   "rails/foreign-keys": {
@@ -1812,9 +1812,9 @@
       "cmq8hwa0t0002j70mfor6qqf7"
     ],
     "created": "2026-06-10",
-    "updated": "2026-06-14",
-    "next_review": "2026-06-18",
-    "review_interval": 4,
+    "updated": "2026-06-25",
+    "next_review": "2026-07-07",
+    "review_interval": 12,
     "probe_sections": [
       "Two layers - DB constraint vs app validation",
       "Which row the constraint blocks from deletion",
@@ -1824,12 +1824,12 @@
       "A foreign key does not create an index"
     ],
     "last_probed": [
-      "Which row the constraint blocks from deletion",
-      "RESTRICT vs NO ACTION is only about deferrability",
-      "A foreign key does not create an index",
       "Two layers - DB constraint vs app validation",
       "on_delete vs dependent and which side effects decide",
-      "The four referential actions and the real default"
+      "The four referential actions and the real default",
+      "Which row the constraint blocks from deletion",
+      "RESTRICT vs NO ACTION is only about deferrability",
+      "A foreign key does not create an index"
     ]
   },
   "rails/upsert-and-concurrent-inserts": {

@@ -23,15 +23,15 @@ probe_sections:
 - Canonical shape for "safe" usage
 last_probed:
 - Empty input returns NULL, not {}
-- What array_agg collects and the implicit single-group rule
-- No GROUP BY means one implicit group
 - Ordering is non-deterministic by default
 - NULLs are included by default
 - DISTINCT + ORDER BY must share the expression
 - array_agg vs jsonb_agg
 - Canonical shape for "safe" usage
-review_interval: 5
-next_review: '2026-06-18'
+- What array_agg collects and the implicit single-group rule
+- No GROUP BY means one implicit group
+review_interval: 20
+next_review: '2026-07-15'
 flashcard_ids: []
 ---
 

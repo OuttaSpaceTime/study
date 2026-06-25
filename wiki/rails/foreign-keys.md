@@ -26,15 +26,15 @@ probe_sections:
 - RESTRICT vs NO ACTION is only about deferrability
 - A foreign key does not create an index
 last_probed:
-- Which row the constraint blocks from deletion
-- RESTRICT vs NO ACTION is only about deferrability
-- A foreign key does not create an index
 - Two layers - DB constraint vs app validation
 - on_delete vs dependent and which side effects decide
 - The four referential actions and the real default
+- Which row the constraint blocks from deletion
+- RESTRICT vs NO ACTION is only about deferrability
+- A foreign key does not create an index
 depth: 1
-next_review: '2026-06-18'
-review_interval: 4
+next_review: '2026-07-07'
+review_interval: 12
 ---
 
 # Foreign keys
