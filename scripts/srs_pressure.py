@@ -140,6 +140,22 @@ def fetch_srs_state(mcp_dir: Path | None = None) -> list[DeckState]:
     return parse_decks_output(result.stdout)
 
 
+def review_due(d: DeckState) -> int:
+    """Due cards that count as review *backlog* — excludes the new-card pool.
+
+    New cards are an optional pool you draw from, not a scheduled backlog, so
+    they must not drive review pressure: warning on a pile of fresh material
+    with zero backlog would force ``maxNewCards: 0`` and you could never start
+    them. New-card intake is policed separately by the ``cards added today``
+    axis. Legacy deck output without a due breakdown can't be split, so fall
+    back to the full due count rather than silently under-warning.
+    """
+    breakdown_total = d.due_new + d.due_learning + d.due_review + d.due_relearning
+    if breakdown_total == 0 and d.due > 0:
+        return d.due
+    return d.due_learning + d.due_review + d.due_relearning
+
+
 def verdict(flashcards_due: int, wiki_due: int, new_today: int) -> tuple[str, list[str]]:
     """Return (level, reasons). Level is one of: ok, warn, pause."""
     reasons: list[str] = []
@@ -225,6 +241,11 @@ def render_human(
         header,
         "",
         f"  flashcards due:    {flashcards_due}",
+    ]
+    if decks:
+        new_available = sum(d.due_new for d in decks)
+        lines.append(f"  new available:     {new_available}")
+    lines += [
         f"  wiki pages due:    {wiki_due}",
         f"  cards added today: {new_today}",
     ]
@@ -296,9 +317,10 @@ def main(argv: list[str] | None = None) -> int:
     decks: list[DeckState] = []
     if args.flashcards_due is None:
         decks = fetch_srs_state()
-        flashcards_due = sum(d.due for d in decks)
+        flashcards_due = sum(review_due(d) for d in decks)
     else:
         flashcards_due = args.flashcards_due
+    new_available = sum(d.due_new for d in decks)
 
     wiki_due = wiki_due_count(args.wiki_dir)
     level, reasons = verdict(flashcards_due, wiki_due, args.new_today)
@@ -310,6 +332,7 @@ def main(argv: list[str] | None = None) -> int:
             "verdict": level,
             "flashcards_due": flashcards_due,
             "total_due": flashcards_due,
+            "new_available": new_available,
             "wiki_due": wiki_due,
             "new_today": args.new_today,
             "decks": [asdict(d) for d in decks],

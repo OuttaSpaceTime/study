@@ -24,6 +24,7 @@ from scripts.srs_pressure import (
     main,
     parse_decks_output,
     render_human,
+    review_due,
     verdict,
     wiki_due_count,
 )
@@ -87,6 +88,35 @@ class TestVerdict:
     def test_pause_level_reason_has_threshold_marker(self):
         _, reasons = verdict(PAUSE_FLASHCARDS, 0, 0)
         assert ">=" in reasons[0]
+
+
+class TestReviewDue:
+    """The pressure axis counts review backlog only — never the new-card pool."""
+
+    def test_all_new_due_is_not_backlog(self):
+        # The reported bug: 22 cards "due" but all are new, zero review load.
+        d = DeckState(
+            "Software Engineering", 301, due=22, new=22, learning=0, review=278,
+            relearning=1, due_new=22, due_learning=0, due_review=0, due_relearning=0,
+        )
+        assert review_due(d) == 0
+
+    def test_counts_learning_review_relearning_only(self):
+        d = DeckState(
+            "Software Engineering", 274, due=36, new=17, learning=0, review=251,
+            relearning=6, due_new=17, due_learning=0, due_review=14, due_relearning=5,
+        )
+        assert review_due(d) == 19  # 14 review + 5 relearning, new excluded
+
+    def test_legacy_no_breakdown_falls_back_to_total_due(self):
+        # Old flashcard-mcp output has no due breakdown — can't split, so
+        # conservatively treat all due as backlog rather than under-warn.
+        d = DeckState("My Deck", 7, due=5, new=0, learning=0, review=7)
+        assert review_due(d) == 5
+
+    def test_zero_due_is_zero(self):
+        d = DeckState("Empty", 10, due=0, new=3, learning=0, review=7)
+        assert review_due(d) == 0
 
 
 class TestClearance:
@@ -271,6 +301,38 @@ class TestMainCLI:
             }
         ]
 
+    def test_all_new_due_is_ok_not_warn(self, monkeypatch, capsys, wiki_dir: Path):
+        # 22 cards due but all new, zero review load -> ok, and new cards are
+        # surfaced as available rather than counted as pressure.
+        fake_decks = [
+            DeckState(
+                "Software Engineering", 301, due=22, new=22, learning=0, review=278,
+                relearning=1, due_new=22, due_learning=0, due_review=0, due_relearning=0,
+            ),
+        ]
+        monkeypatch.setattr(srs_pressure, "fetch_srs_state", lambda: fake_decks)
+        rc = main(["--wiki-dir", str(wiki_dir)])
+        assert rc == EXIT_OK
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["verdict"] == "ok"
+        assert payload["flashcards_due"] == 0
+        assert payload["new_available"] == 22
+
+    def test_real_backlog_still_warns(self, monkeypatch, capsys, wiki_dir: Path):
+        # New excluded, but 20 genuine review-backlog cards still trigger warn.
+        fake_decks = [
+            DeckState(
+                "Software Engineering", 301, due=42, new=22, learning=0, review=278,
+                relearning=0, due_new=22, due_learning=0, due_review=20, due_relearning=0,
+            ),
+        ]
+        monkeypatch.setattr(srs_pressure, "fetch_srs_state", lambda: fake_decks)
+        rc = main(["--wiki-dir", str(wiki_dir)])
+        assert rc == EXIT_WARN
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["flashcards_due"] == 20
+        assert payload["new_available"] == 22
+
     def test_wiki_due_contributes_to_verdict(self, capsys, wiki_dir: Path):
         # Build an index with enough due entries to trigger a warn.
         index = {
@@ -360,6 +422,21 @@ class TestHumanOutputDeckBreakdown:
     def test_omits_deck_breakdown_when_no_decks(self):
         out = render_human("ok", [], 0, 0, 0, [])
         assert "Decks:" not in out
+
+    def test_includes_new_available_line_from_decks(self):
+        decks = [
+            DeckState(
+                "Software Engineering", 301, due=0, new=22, learning=0, review=278,
+                relearning=1, due_new=22, due_learning=0, due_review=0, due_relearning=0,
+            )
+        ]
+        out = render_human("ok", [], 0, 7, 0, decks)
+        assert "new available:" in out
+        assert "flashcards due:    0" in out
+
+    def test_omits_new_available_line_when_no_decks(self):
+        out = render_human("warn", ["x"], 22, 0, 0)
+        assert "new available:" not in out
 
 
 class TestThresholdInvariants:

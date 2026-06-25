@@ -27,6 +27,8 @@ If you realize mid-flow that the preflight was skipped, stop immediately, run th
 
    Exit codes: `0` ok, `1` warn, `2` pause. Pressure is computed globally across all decks (no category filter).
 
+   **`flashcards due` is the review backlog only — it excludes new cards.** New cards are an optional pool you draw from, not a scheduled backlog, so they never drive review pressure (intake is policed by the separate `cards added today` axis). The script reports the new pool on its own `new available:` line for visibility. Consequence: a large pile of *new* cards with no review backlog reads as `ok`, not `warn` — that is correct; you should learn new cards, not be blocked from starting them.
+
    **The verdict token is the first line of the output, stated literally:** `SRS pressure: OK` / `SRS pressure: WARN` / `SRS pressure: PAUSE`. Read the level from that token (or from the exit code), **never** from the recommendation prose — the `warn` header reads "we recommend pausing", which is the `warn` level, **not** `pause`. When the verdict is `warn` or `pause`, the output also includes a `To clear pressure:` block giving the exact number of flashcards / wiki pages to review to drop below the warn (and pause) line; carry those numbers through when you surface the result so the developer always knows the count needed to leave the pressure phase.
 
 2. **Surface the result in the first assistant message:**

@@ -111,7 +111,7 @@ Example when nothing is due:
 | `warn` (≥ 20 due) | **0** | 15 |
 | `pause` (≥ 50 due) | **0** | 15 |
 
-The warn-threshold cap exists because over-adding under load is the recurring failure mode (see `feedback_srs_over_adding`). The pressure script's `flashcards due` count is the trigger — not the wiki/new-today axes. The developer can override explicitly ("include new cards anyway") — pass their requested number and note the override in the session log.
+The warn-threshold cap exists because over-adding under load is the recurring failure mode (see `feedback_srs_over_adding`). The pressure script's `flashcards due` count is the trigger — not the wiki/new-today axes. Note `flashcards due` is the **review backlog only** (learning + review + relearning); it excludes the new-card pool, which the script reports separately as `new available`. So a deck with many new cards and no backlog reads `ok` and pulls the default 5 new — new material is meant to be learned, not held back. The developer can override explicitly ("include new cards anyway") — pass their requested number and note the override in the session log.
 
 **Surface the cap in the opening line of Phase 2** so the developer never wonders where the new cards went. Example:
 
