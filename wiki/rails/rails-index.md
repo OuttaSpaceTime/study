@@ -7,7 +7,7 @@ tags:
 - moc
 - rails
 created: '2026-04-20'
-updated: '2026-06-14'
+updated: '2026-06-25'
 source_skill: manual
 probe_sections:
 - Pages
@@ -26,8 +26,10 @@ Map of content for the `rails/` wiki folder. Auto-maintained by `scripts/wiki-wr
 - [[rails/routing/routing-index]]
 - [[rails/activerecord-pick]]
 - [[rails/activerecord-preloading]]
+- [[rails/database-transactions]]
 - [[rails/delegated-type]]
 - [[rails/foreign-keys]]
 - [[rails/index-with]]
+- [[rails/row-locking-and-concurrency]]
 - [[rails/upsert-and-concurrent-inserts]]
 

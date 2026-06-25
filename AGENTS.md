@@ -40,7 +40,9 @@ The wiki content lives in `wiki/`, organized by topic folders (e.g., `wiki/javas
 
 ### Page Format
 
-Every wiki page has YAML frontmatter. Required on **all pages**: `title`, `aliases`, `tags`, `created`, `updated`, `source_skill`, `flashcard_ids` (list, empty `[]` is fine), `probe_sections` (non-empty list of H2 headings the page will be probed against at review time), `last_probed` (queue that rotates during review — seed with `probe_sections` on a new page). Required on **content pages** (non-`*-index.md`): `next_review` (ISO date), `review_interval` (days). `scripts/wiki-write` auto-fills `flashcard_ids`, `next_review`, `review_interval` when missing, and seeds `last_probed` from `probe_sections`; the remaining fields (`title`, `aliases`, `tags`, `created`, `updated`, `source_skill`, `probe_sections`) must be set by the calling skill. Optional: `last_deepened`, `allow_orphan` (set to `true` to suppress the orphan warning for pages that are intentionally standalone — required on MOCs).
+Every wiki page has YAML frontmatter. Required on **all pages**: `title`, `aliases`, `tags`, `created`, `updated`, `source_skill`, `flashcard_ids` (list, empty `[]` is fine), `probe_sections` (non-empty list of H2 headings the page will be probed against at review time), `last_probed` (queue that rotates during review — seed with `probe_sections` on a new page). Required on **content pages** (non-`*-index.md`): `next_review` (ISO date), `review_interval` (days). `scripts/wiki-write` auto-fills `flashcard_ids`, `next_review`, `review_interval` when missing, and seeds `last_probed` from `probe_sections`; the remaining fields (`title`, `aliases`, `tags`, `created`, `updated`, `source_skill`, `probe_sections`) must be set by the calling skill. Optional: `last_deepened`, `allow_orphan` (set to `true` to suppress the orphan warning for pages that are intentionally standalone — required on MOCs), `lint_ignore` (list of lint **warning** labels to suppress for this page — see [Suppressing warnings per page](#suppressing-warnings-per-page)).
+
+**Probe-section count is a split signal, not a hard cap.** 5 or fewer `probe_sections` is the comfortable size; 6–7 is fine for a genuinely broad-but-cohesive topic. At **8 or more**, lint emits a `probe-section-count` **warning** (informational, exit 0 — never blocks) prompting you to consider splitting into two focused pages, each carrying its own subset of sections and cross-linked with wikilinks. Split only when there is a real conceptual seam (e.g. `transactions-and-locking` → `database-transactions` + `row-locking-and-concurrency`); leave a high count alone when the sections are all intrinsic facets of one atomic topic (e.g. `hsts`). The threshold counts `probe_sections`, not H2 headings generally. When you do split, give each child its own `probe_sections`/`last_probed`, and have the derived page inherit the parent's `next_review`/`review_interval` rather than resetting to a fresh schedule.
 
 ### Linking Rules
 
@@ -64,9 +66,25 @@ All skills follow the shared protocol in `.claude/skills/references/wiki-write-p
 
 ### Linting
 
-`scripts/lint` checks: broken wikilinks, absolute path enforcement, frontmatter completeness, orphan pages, alias collisions, slug/filename consistency, flashcard ID drift between frontmatter and index. Runs automatically after every wiki write.
+`scripts/lint` checks: broken wikilinks, absolute path enforcement, frontmatter completeness, orphan pages, alias collisions, slug/filename consistency, flashcard ID drift between frontmatter and index, and probe-section count (`probe-section-count` warning at ≥8 — see the split-signal note under [Page Format](#page-format)). Runs automatically after every wiki write.
 
 Results are split into **errors** (block clean status, exit 1) and **warnings** (informational, exit 0). Orphan pages are warnings — suppress per-page with `allow_orphan: true` in frontmatter. Wikilink parsing ignores fenced code blocks, inline code, and image embeds (`![[...]]`), and strips `#heading` anchors and `|display` pipes before resolving targets. Self-links do not count as inbound.
+
+#### Suppressing warnings per page
+
+Add a `lint_ignore` list to a page's frontmatter naming the warning labels to silence for that page (the label is the token before the first colon in the lint line, e.g. `probe-section-count`, `prose-quality`, `orphan`):
+
+```yaml
+lint_ignore:
+- probe-section-count
+```
+
+Only **warnings** can be suppressed — errors always fire. The suppression is **gated on git**: it applies only while the page is **committed and clean**. A page with uncommitted changes (modified, staged, or untracked) still emits all its warnings. Two consequences follow by design:
+
+- **The opt-out must be committed to take effect.** Adding `lint_ignore` makes the page dirty, so the warning keeps showing until you commit the change — i.e. you have to commit the decision before it counts.
+- **Editing a suppressed page re-surfaces the rule.** As soon as you touch the page again, its warnings come back so you reconsider them against the new content, then go quiet once you re-commit.
+
+Use it for warnings you've deliberately judged not to apply — e.g. `hsts` carries `lint_ignore: [probe-section-count]` because its 9 sections are all intrinsic facets of one topic with no real split seam. Dirtiness is detected via `git status`; outside a git repo (or if git is unavailable) nothing is considered dirty, so suppressions simply apply.
 
 Python code is linted with ruff: `uv run ruff check scripts/ tests/`. Config lives in `pyproject.toml`.
 

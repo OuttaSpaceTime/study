@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -90,16 +91,27 @@ def _parse_pages(wiki_dir: Path, md_files: list[Path]) -> list[ParsedPage]:
     return pages
 
 
-def lint_wiki(wiki_dir: Path, probes_dir: Path | None = None) -> tuple[list[str], list[str]]:
+def lint_wiki(
+    wiki_dir: Path,
+    probes_dir: Path | None = None,
+    dirty_pages: set[str] | None = None,
+) -> tuple[list[str], list[str]]:
     """Run all lint checks.
 
     Returns (errors, warnings). Errors should block CI; warnings are informational.
 
     `probes_dir` defaults to `<wiki_dir>/../probes`.
+
+    Per-page `lint_ignore` frontmatter suppresses named **warnings** for that page,
+    but only while the page is committed (not dirty in git) — see `_apply_lint_ignore`.
+    `dirty_pages` (rel paths under `wiki_dir`) is computed from git when omitted;
+    pass an explicit set to make the suppression deterministic in tests.
     """
     wiki_dir = Path(wiki_dir)
     if probes_dir is None:
         probes_dir = wiki_dir.parent / "probes"
+    if dirty_pages is None:
+        dirty_pages = _dirty_wiki_pages(wiki_dir)
     md_files = iter_wiki_pages(wiki_dir)
 
     if not md_files:
@@ -124,11 +136,102 @@ def lint_wiki(wiki_dir: Path, probes_dir: Path | None = None) -> tuple[list[str]
     errors.extend(_check_probe_files(probes_dir, wiki_dir, pages))
     warnings.extend(_check_moc_coverage(wiki_dir, pages))
     warnings.extend(_check_moc_split_suggestion(wiki_dir, pages))
+    warnings.extend(_check_probe_section_count(pages))
     warnings.extend(_check_prose_quality(pages))
     warnings.extend(_check_sentence_fragments(pages))
     warnings.extend(_check_colon_connectors(pages))
 
+    warnings = _apply_lint_ignore(warnings, pages, dirty_pages)
+
     return errors, warnings
+
+
+def _dirty_wiki_pages(wiki_dir: Path) -> set[str]:
+    """Return wiki-relative paths that have uncommitted git changes.
+
+    Includes modified, staged, and untracked files. Returns an empty set when
+    `wiki_dir` is not inside a git repo or git is unavailable — so suppression
+    falls back to "treat as clean" rather than crashing lint.
+    """
+    try:
+        top = subprocess.run(
+            ["git", "-C", str(wiki_dir), "rev-parse", "--show-toplevel"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if top.returncode != 0:
+            return set()
+        root = Path(top.stdout.strip())
+        status = subprocess.run(
+            ["git", "-C", str(root), "status", "--porcelain"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if status.returncode != 0:
+            return set()
+    except (OSError, subprocess.SubprocessError):
+        return set()
+
+    dirty: set[str] = set()
+    for line in status.stdout.splitlines():
+        if len(line) < 4:
+            continue
+        path_part = line[3:]
+        # Renames are reported as "old -> new"; the new path is what's on disk.
+        if " -> " in path_part:
+            path_part = path_part.split(" -> ", 1)[1]
+        abs_path = (root / path_part.strip().strip('"')).resolve()
+        try:
+            dirty.add(str(abs_path.relative_to(wiki_dir.resolve())))
+        except ValueError:
+            continue  # outside the wiki tree
+    return dirty
+
+
+def _warning_label_and_target(warning: str) -> tuple[str, str]:
+    """Split a warning string into its `label` and the page rel-path it concerns.
+
+    Warnings are formatted `"<label>: <rel> ..."`. Folder-scoped warnings
+    (e.g. moc-split-suggestion) have a non-path second token that simply won't
+    match any page's lint_ignore, so they are never suppressed by accident.
+    """
+    label, _, rest = warning.partition(": ")
+    target = rest.split(maxsplit=1)[0] if rest else ""
+    return label, target
+
+
+def _apply_lint_ignore(
+    warnings: list[str], pages: list[ParsedPage], dirty_pages: set[str]
+) -> list[str]:
+    """Drop warnings a page opted out of via `lint_ignore`, unless the page is dirty.
+
+    `lint_ignore` is a frontmatter list of warning labels (e.g. `probe-section-count`).
+    The opt-out only holds while the page is committed: a page with uncommitted
+    changes still gets all its warnings, so the decision to ignore must itself be
+    committed before it takes effect, and editing the page re-surfaces the rule.
+    Only warnings are suppressible; errors are never filtered.
+    """
+    ignore_map: dict[str, set[str]] = {}
+    for p in pages:
+        rules = p.meta.get("lint_ignore") or []
+        if isinstance(rules, list):
+            ignored = {str(r) for r in rules}
+            if ignored:
+                ignore_map[p.rel] = ignored
+
+    if not ignore_map:
+        return warnings
+
+    kept: list[str] = []
+    for w in warnings:
+        label, target = _warning_label_and_target(w)
+        ignored = ignore_map.get(target)
+        if ignored and label in ignored and target not in dirty_pages:
+            continue
+        kept.append(w)
+    return kept
 
 
 def _check_moc_coverage(wiki_dir: Path, pages: list[ParsedPage]) -> list[str]:
@@ -243,6 +346,28 @@ def _check_moc_split_suggestion(wiki_dir: Path, pages: list[ParsedPage]) -> list
             warnings.append(
                 f"moc-split-suggestion: folder '{folder}' has {len(folder_pages)} pages; "
                 f"tag '{tag}' clusters {count} — consider wiki/{folder}/{tag}/{tag}-index.md"
+            )
+    return warnings
+
+
+# A page probing this many distinct sections is usually two topics wearing one
+# page. The split is a judgment call (some topics are genuinely broad and
+# cohesive), so this is a warning that prompts a look, never a hard cap.
+PROBE_SECTION_SPLIT_THRESHOLD = 8
+
+
+def _check_probe_section_count(pages: list[ParsedPage]) -> list[str]:
+    """Warn when a page declares ≥8 probe_sections — consider splitting it.
+
+    A smell, not a mandate: split only when there is a real conceptual seam.
+    """
+    warnings: list[str] = []
+    for p in pages:
+        n = len(p.meta.get("probe_sections") or [])
+        if n >= PROBE_SECTION_SPLIT_THRESHOLD:
+            warnings.append(
+                f"probe-section-count: {p.rel} has {n} probe_sections "
+                f"(≥{PROBE_SECTION_SPLIT_THRESHOLD}) — consider splitting into two focused pages"
             )
     return warnings
 

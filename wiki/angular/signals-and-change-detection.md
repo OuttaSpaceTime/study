@@ -3,7 +3,6 @@ title: Signals and Change Detection
 aliases:
 - angular signals CD
 - angular signals change detection
-- toSignal
 - semi-local change detection
 - zoneless angular
 tags:
@@ -13,29 +12,23 @@ tags:
 - signals
 - rxjs
 created: '2026-05-07'
-updated: '2026-05-30'
+updated: '2026-06-25'
 source_skill: study-walkthrough
 last_deepened: '2026-05-07'
 next_review: '2026-06-22'
 review_interval: 12
 probe_sections:
-- Signals push-pull model vs Zone.js passive patching
 - 'How signal writes mark ancestors: traversal flag vs dirty flag'
 - 'Semi-local CD: which nodes are traversed vs which re-evaluate bindings'
 - Why change detection walks top-down
 - 'The click-event caveat: two independent mechanisms'
 - When the caveat bites vs when semi-local CD survives
 - Why semi-local CD only matters in zoneless
-- 'toSignal(): observable-to-signal bridge and what it buys'
-- 'Signals vs async pipe: when to use which'
 last_probed:
 - 'The click-event caveat: two independent mechanisms'
 - When the caveat bites vs when semi-local CD survives
 - Why semi-local CD only matters in zoneless
 - Why change detection walks top-down
-- 'toSignal(): observable-to-signal bridge and what it buys'
-- 'Signals vs async pipe: when to use which'
-- Signals push-pull model vs Zone.js passive patching
 - 'How signal writes mark ancestors: traversal flag vs dirty flag'
 - 'Semi-local CD: which nodes are traversed vs which re-evaluate bindings'
 flashcard_ids: []
@@ -45,14 +38,6 @@ flashcard_ids: []
 # Signals and Change Detection
 
 Signals give Angular a data-driven CD trigger. Instead of Zone.js watching the browser for any async task, signal writes notify Angular exactly which components need updating.
-
-## Signals push-pull model vs Zone.js passive patching
-
-A signal pushes invalidation. Calling `.set()` notifies all registered consumers that the value changed. Consumers pull the current value when they read it. The model is push-pull. The consumer is told when to re-read and pulls the value on demand.
-
-Zone.js is passive. It patches async APIs and fires CD after every task, whether or not anything changed. The browser owns the trigger cadence.
-
-With signals, your code owns the trigger. `signal.set(x)` is the trigger. No Zone patching required.
 
 ## How signal writes mark ancestors: traversal flag vs dirty flag
 
@@ -113,40 +98,12 @@ With Zone.js present, Zone fires a global CD pass after every async task regardl
 
 The click caveat is itself a zoneless artifact. Without a zone, nothing automatically schedules CD when a user clicks. Angular's event-listener wrapper does the scheduling instead, by calling `markViewDirty` on the host component, the explicit replacement for zone's old automatic CD-on-events. So mechanism 1 from the caveat above *is* the zoneless event-handling path. The full dirty walk on a click is the price of not having a zone to do it implicitly.
 
-## toSignal(): observable-to-signal bridge and what it buys
-
-`toSignal()` wraps an observable in a signal at the component boundary:
-
-```ts
-// class
-users$ = this.service.getUsers();   // Observable stays as-is
-users  = toSignal(this.users$);     // signal at the template boundary
-
-// template
-@for (u of users(); track u.id) { ... }
-```
-
-`toSignal()` subscribes internally. The template reads the signal, not the observable. Each emission updates the signal, which triggers semi-local CD on this component only. The full dirty path is not involved.
-
-This keeps RxJS for async workflows and gives signals the rendering boundary.
-
-## Signals vs async pipe: when to use which
-
-| | `async` pipe | `toSignal()` |
-|---|---|---|
-| CD trigger path | `markForCheck()` (full dirty path) | `markAncestorsForTraversal` (leaf only) |
-| Ancestor cost per emission | Full binding re-evaluation on all ancestors | Traversal only |
-| Template syntax | `{{ stream$ \| async }}` | `{{ stream() }}` |
-| Best for | Low-frequency streams, simple setup | High-frequency streams, deep trees, zoneless |
-
-Signals and RxJS are complementary. Use signals for state (component fields, derived values with `computed()`). Use observables for async workflows (HTTP, WebSocket, form events). Bridge them with `toSignal()`.
-
 ## Related Concepts
 
+- [[angular/signals-and-rxjs-interop]]: the signal push-pull model, `toSignal()`, and when to reach for it over the `async` pipe
 - [[angular/change-detection]]: Zone.js mechanics, Default vs OnPush strategies, the four dirty triggers
 
 ## References
 
 - [Angular: Signals overview](https://angular.dev/guide/signals): covers signal primitives, computed, effects, and their role in reactivity and CD
-- [Angular: toSignal() API](https://angular.dev/api/core/rxjs-interop/toSignal): reference for the observable-to-signal bridge (stable as of v20)
 - [Angular: Zoneless guide](https://angular.dev/guide/zoneless): explains `provideZonelessChangeDetection`, the semi-local CD model, and migration path

@@ -77,7 +77,6 @@
     "aliases": [
       "angular signals CD",
       "angular signals change detection",
-      "toSignal",
       "semi-local change detection",
       "zoneless angular"
     ],
@@ -89,42 +88,33 @@
       "rxjs"
     ],
     "sections": [
-      "Signals push-pull model vs Zone.js passive patching",
       "How signal writes mark ancestors: traversal flag vs dirty flag",
       "Semi-local CD: which nodes are traversed vs which re-evaluate bindings",
       "Why change detection walks top-down",
       "The click-event caveat: two independent mechanisms",
       "When the caveat bites vs when semi-local CD survives",
       "Why semi-local CD only matters in zoneless",
-      "toSignal(): observable-to-signal bridge and what it buys",
-      "Signals vs async pipe: when to use which",
       "Related Concepts",
       "References"
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-06-10",
+    "updated": "2026-06-25",
     "next_review": "2026-06-22",
     "review_interval": 12,
     "probe_sections": [
-      "Signals push-pull model vs Zone.js passive patching",
       "How signal writes mark ancestors: traversal flag vs dirty flag",
       "Semi-local CD: which nodes are traversed vs which re-evaluate bindings",
       "Why change detection walks top-down",
       "The click-event caveat: two independent mechanisms",
       "When the caveat bites vs when semi-local CD survives",
-      "Why semi-local CD only matters in zoneless",
-      "toSignal(): observable-to-signal bridge and what it buys",
-      "Signals vs async pipe: when to use which"
+      "Why semi-local CD only matters in zoneless"
     ],
     "last_probed": [
       "The click-event caveat: two independent mechanisms",
       "When the caveat bites vs when semi-local CD survives",
       "Why semi-local CD only matters in zoneless",
       "Why change detection walks top-down",
-      "toSignal(): observable-to-signal bridge and what it buys",
-      "Signals vs async pipe: when to use which",
-      "Signals push-pull model vs Zone.js passive patching",
       "How signal writes mark ancestors: traversal flag vs dirty flag",
       "Semi-local CD: which nodes are traversed vs which re-evaluate bindings"
     ]
@@ -764,7 +754,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-20",
-    "updated": "2026-06-14",
+    "updated": "2026-06-25",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -1466,7 +1456,7 @@
       "cmne7xwri02050mso5k9tqzu4"
     ],
     "created": "2026-04-10",
-    "updated": "2026-06-08",
+    "updated": "2026-06-25",
     "next_review": "2026-07-07",
     "review_interval": 38,
     "probe_sections": [
@@ -1884,6 +1874,153 @@
       "The race between two concurrent inserts",
       "ON CONFLICT DO NOTHING vs DO UPDATE",
       "RETURNING returns only touched rows"
+    ]
+  },
+  "rails/database-transactions": {
+    "file": "rails/database-transactions.md",
+    "title": "Database transactions",
+    "aliases": [
+      "Rails transactions",
+      "ActiveRecord transactions",
+      "ActiveRecord::Rollback",
+      "Transaction isolation levels"
+    ],
+    "tags": [
+      "rails",
+      "postgres",
+      "transactions",
+      "databases"
+    ],
+    "sections": [
+      "TL;DR",
+      "What a transaction guarantees, and what it does not",
+      "Isolation levels and the anomalies each allows",
+      "Never put slow or external calls inside a transaction",
+      "Idempotency and effects outside the transaction",
+      "Rails rollback-on-exception",
+      "Nested transactions and savepoints",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [
+      "cmqu0tqlr0004150miu3h07bc",
+      "cmqu0ts1l0005150mcb26qlt0",
+      "cmqu0ttxx0006150myqedtn6q",
+      "cmqu0tvnw0007150msfy24wz5"
+    ],
+    "created": "2026-06-25",
+    "updated": "2026-06-25",
+    "next_review": "2026-06-28",
+    "review_interval": 3,
+    "probe_sections": [
+      "What a transaction guarantees, and what it does not",
+      "Isolation levels and the anomalies each allows",
+      "Never put slow or external calls inside a transaction",
+      "Idempotency and effects outside the transaction",
+      "Rails rollback-on-exception",
+      "Nested transactions and savepoints"
+    ],
+    "last_probed": [
+      "What a transaction guarantees, and what it does not",
+      "Isolation levels and the anomalies each allows",
+      "Never put slow or external calls inside a transaction",
+      "Idempotency and effects outside the transaction",
+      "Rails rollback-on-exception",
+      "Nested transactions and savepoints"
+    ]
+  },
+  "rails/row-locking-and-concurrency": {
+    "file": "rails/row-locking-and-concurrency.md",
+    "title": "Row locking and concurrency",
+    "aliases": [
+      "with_lock",
+      "Pessimistic locking in Rails",
+      "Optimistic locking",
+      "Database row locking",
+      "MVCC",
+      "Lost update"
+    ],
+    "tags": [
+      "rails",
+      "postgres",
+      "concurrency",
+      "locking",
+      "databases"
+    ],
+    "sections": [
+      "TL;DR",
+      "MVCC means readers and writers never block each other",
+      "Implicit row locks make writers block writers",
+      "Lost updates and why with_lock fixes them",
+      "with_lock, lock!, and lock",
+      "Why a transaction does not speed up parallel work",
+      "Optimistic versus pessimistic locking",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [
+      "cmqu0tx600008150m7a48y2lr",
+      "cmqu0tyy80009150ma3fm8a5h",
+      "cmqu0u0ef000a150muv3hmvrl",
+      "cmqu0u1ur000b150m6ttrks13",
+      "cmqu0u3eu000c150m44rrl72z"
+    ],
+    "created": "2026-06-25",
+    "updated": "2026-06-25",
+    "next_review": "2026-06-28",
+    "review_interval": 3,
+    "probe_sections": [
+      "MVCC means readers and writers never block each other",
+      "Implicit row locks make writers block writers",
+      "Lost updates and why with_lock fixes them",
+      "with_lock, lock!, and lock",
+      "Why a transaction does not speed up parallel work",
+      "Optimistic versus pessimistic locking"
+    ],
+    "last_probed": [
+      "MVCC means readers and writers never block each other",
+      "Implicit row locks make writers block writers",
+      "Lost updates and why with_lock fixes them",
+      "with_lock, lock!, and lock",
+      "Why a transaction does not speed up parallel work",
+      "Optimistic versus pessimistic locking"
+    ]
+  },
+  "angular/signals-and-rxjs-interop": {
+    "file": "angular/signals-and-rxjs-interop.md",
+    "title": "Signals and RxJS Interop",
+    "aliases": [
+      "toSignal",
+      "signals rxjs interop",
+      "signals vs async pipe"
+    ],
+    "tags": [
+      "angular",
+      "frontend",
+      "signals",
+      "rxjs"
+    ],
+    "sections": [
+      "Signals push-pull model vs Zone.js passive patching",
+      "toSignal(): observable-to-signal bridge and what it buys",
+      "Signals vs async pipe: when to use which",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-07",
+    "updated": "2026-06-25",
+    "next_review": "2026-06-22",
+    "review_interval": 12,
+    "probe_sections": [
+      "Signals push-pull model vs Zone.js passive patching",
+      "toSignal(): observable-to-signal bridge and what it buys",
+      "Signals vs async pipe: when to use which"
+    ],
+    "last_probed": [
+      "Signals push-pull model vs Zone.js passive patching",
+      "toSignal(): observable-to-signal bridge and what it buys",
+      "Signals vs async pipe: when to use which"
     ]
   }
 }

@@ -1774,3 +1774,102 @@ class TestProbeFiles:
         errors, _ = lint_wiki(wiki_dir, probes_dir=wiki_dir.parent / "no-such-probes")
         probe_errors = [e for e in errors if "probe-wiki" in e]
         assert probe_errors == [], f"missing probes dir should be silent: {probe_errors}"
+
+
+def _page_with_n_probe_sections(n: int, lint_ignore: list[str] | None = None) -> str:
+    """Build a content page with `n` probe_sections and matching H2 headings."""
+    secs = [f"Section {i}" for i in range(1, n + 1)]
+    fm_list = "\n".join(f"    - {s}" for s in secs)
+    bodies = "\n\n".join(f"## {s}\n\nContent." for s in secs)
+    ignore_block = ""
+    if lint_ignore is not None:
+        rules = "\n".join(f"    - {r}" for r in lint_ignore)
+        ignore_block = f"lint_ignore:\n{rules}\n"
+    return (
+        "---\n"
+        'title: "count page"\n'
+        "aliases: [count alias]\n"
+        "tags: [git]\n"
+        "created: 2026-04-09\n"
+        "updated: 2026-04-09\n"
+        "source_skill: study-walkthrough\n"
+        "flashcard_ids: []\n"
+        "next_review: '2026-05-01'\n"
+        "review_interval: 3\n"
+        f"{ignore_block}"
+        "probe_sections:\n"
+        f"{fm_list}\n"
+        "last_probed:\n"
+        f"{fm_list}\n"
+        "---\n\n"
+        "# count page\n\n"
+        f"{bodies}\n"
+    )
+
+
+class TestProbeSectionCount:
+    def test_warns_at_eight(self, wiki_dir: Path):
+        _write_page(wiki_dir, "git/count-page.md", _page_with_n_probe_sections(8))
+        _write_index(wiki_dir, {})
+        errors, warnings = lint_wiki(wiki_dir)
+        assert any("probe-section-count" in w for w in warnings), warnings
+        # The count check is a warning, never an error.
+        assert not any("probe-section-count" in e for e in errors), errors
+
+    def test_no_warn_at_seven(self, wiki_dir: Path):
+        _write_page(wiki_dir, "git/count-page.md", _page_with_n_probe_sections(7))
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        assert not any("probe-section-count" in w for w in warnings), warnings
+
+    def test_no_warn_at_five(self, wiki_dir: Path):
+        _write_page(wiki_dir, "git/count-page.md", _page_with_n_probe_sections(5))
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        assert not any("probe-section-count" in w for w in warnings), warnings
+
+
+class TestLintIgnore:
+    def test_ignore_suppresses_when_clean(self, wiki_dir: Path):
+        _write_page(
+            wiki_dir,
+            "git/count-page.md",
+            _page_with_n_probe_sections(8, lint_ignore=["probe-section-count"]),
+        )
+        _write_index(wiki_dir, {})
+        # Clean working tree (nothing dirty) → suppression active.
+        _, warnings = lint_wiki(wiki_dir, dirty_pages=set())
+        assert not any("probe-section-count" in w for w in warnings), warnings
+
+    def test_ignore_inactive_when_dirty(self, wiki_dir: Path):
+        _write_page(
+            wiki_dir,
+            "git/count-page.md",
+            _page_with_n_probe_sections(8, lint_ignore=["probe-section-count"]),
+        )
+        _write_index(wiki_dir, {})
+        # Page has uncommitted changes → ignore does not apply, warning fires.
+        _, warnings = lint_wiki(wiki_dir, dirty_pages={"git/count-page.md"})
+        assert any("probe-section-count" in w for w in warnings), warnings
+
+    def test_ignore_wrong_rule_does_not_suppress(self, wiki_dir: Path):
+        _write_page(
+            wiki_dir,
+            "git/count-page.md",
+            _page_with_n_probe_sections(8, lint_ignore=["orphan"]),
+        )
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir, dirty_pages=set())
+        assert any("probe-section-count" in w for w in warnings), warnings
+
+    def test_ignore_default_path_clean_outside_repo(self, wiki_dir: Path):
+        # No dirty_pages passed: the git probe runs and finds no repo here,
+        # so it reports nothing dirty and the suppression applies.
+        _write_page(
+            wiki_dir,
+            "git/count-page.md",
+            _page_with_n_probe_sections(8, lint_ignore=["probe-section-count"]),
+        )
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        assert not any("probe-section-count" in w for w in warnings), warnings

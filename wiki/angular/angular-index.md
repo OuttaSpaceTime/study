@@ -26,4 +26,5 @@ Map of content for the `angular/` wiki folder. Auto-maintained by `scripts/wiki-
 - [[angular/change-detection]]
 - [[angular/component-lifecycle]]
 - [[angular/signals-and-change-detection]]
+- [[angular/signals-and-rxjs-interop]]
 

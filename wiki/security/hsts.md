@@ -19,6 +19,8 @@ flashcard_ids:
 - cmne7xwri02050mso5k9tqzu4
 next_review: '2026-07-07'
 review_interval: 38
+lint_ignore:
+- probe-section-count
 probe_sections:
 - The SSL Stripping Attack
 - 'The HSTS header fields: max-age, includeSubDomains, preload'
