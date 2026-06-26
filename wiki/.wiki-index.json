@@ -99,9 +99,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-06-25",
-    "next_review": "2026-06-22",
-    "review_interval": 12,
+    "updated": "2026-06-26",
+    "next_review": "2026-07-10",
+    "review_interval": 14,
     "probe_sections": [
       "How signal writes mark ancestors: traversal flag vs dirty flag",
       "Semi-local CD: which nodes are traversed vs which re-evaluate bindings",
@@ -111,12 +111,12 @@
       "Why semi-local CD only matters in zoneless"
     ],
     "last_probed": [
-      "The click-event caveat: two independent mechanisms",
-      "When the caveat bites vs when semi-local CD survives",
-      "Why semi-local CD only matters in zoneless",
       "Why change detection walks top-down",
       "How signal writes mark ancestors: traversal flag vs dirty flag",
-      "Semi-local CD: which nodes are traversed vs which re-evaluate bindings"
+      "Semi-local CD: which nodes are traversed vs which re-evaluate bindings",
+      "The click-event caveat: two independent mechanisms",
+      "When the caveat bites vs when semi-local CD survives",
+      "Why semi-local CD only matters in zoneless"
     ]
   },
   "git/git-index": {
@@ -1631,9 +1631,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-06-08",
-    "next_review": "2026-06-20",
-    "review_interval": 12,
+    "updated": "2026-06-26",
+    "next_review": "2026-07-10",
+    "review_interval": 14,
     "probe_sections": [
       "Three-valued logic is the root cause",
       "The NOT IN trap",
@@ -1645,14 +1645,14 @@
       "Sentinels masquerading as values"
     ],
     "last_probed": [
-      "When NULL is the right choice",
-      "Sentinels masquerading as values",
-      "Three-valued logic is the root cause",
       "The NOT IN trap",
       "UNIQUE does not constrain NULLs",
       "Partial unique indexes",
       "Nullable foreign keys",
-      "Migrating to NOT NULL is expensive"
+      "Migrating to NOT NULL is expensive",
+      "When NULL is the right choice",
+      "Sentinels masquerading as values",
+      "Three-valued logic is the root cause"
     ]
   },
   "sql/sql-index": {
