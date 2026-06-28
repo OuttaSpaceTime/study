@@ -655,9 +655,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-06-21",
-    "next_review": "2026-06-22",
-    "review_interval": 1,
+    "updated": "2026-06-28",
+    "next_review": "2026-07-01",
+    "review_interval": 3,
     "probe_sections": [
       "Compiler vs interpreter: roles, not languages",
       "Two orthogonal axes: type checking ⊥ compile target",
@@ -666,9 +666,9 @@
     ],
     "last_probed": [
       "Compiler vs interpreter: roles, not languages",
+      "Case study: the CPython chain",
       "JIT: when bytecode becomes machine code at runtime",
-      "Two orthogonal axes: type checking ⊥ compile target",
-      "Case study: the CPython chain"
+      "Two orthogonal axes: type checking ⊥ compile target"
     ]
   },
   "programming-languages/programming-languages-index": {
