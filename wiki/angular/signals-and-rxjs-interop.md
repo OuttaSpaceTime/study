@@ -13,8 +13,8 @@ created: '2026-05-07'
 updated: '2026-06-25'
 source_skill: study-walkthrough
 last_deepened: '2026-05-07'
-next_review: '2026-06-22'
-review_interval: 12
+next_review: '2026-07-30'
+review_interval: 30
 probe_sections:
 - Signals push-pull model vs Zone.js passive patching
 - 'toSignal(): observable-to-signal bridge and what it buys'

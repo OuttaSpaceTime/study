@@ -655,9 +655,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-06-21",
-    "next_review": "2026-06-22",
-    "review_interval": 1,
+    "updated": "2026-06-30",
+    "next_review": "2026-07-02",
+    "review_interval": 2,
     "probe_sections": [
       "Compiler vs interpreter: roles, not languages",
       "Two orthogonal axes: type checking ⊥ compile target",
@@ -666,9 +666,9 @@
     ],
     "last_probed": [
       "Compiler vs interpreter: roles, not languages",
+      "Case study: the CPython chain",
       "JIT: when bytecode becomes machine code at runtime",
-      "Two orthogonal axes: type checking ⊥ compile target",
-      "Case study: the CPython chain"
+      "Two orthogonal axes: type checking ⊥ compile target"
     ]
   },
   "programming-languages/programming-languages-index": {
@@ -2009,9 +2009,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-06-25",
-    "next_review": "2026-06-22",
-    "review_interval": 12,
+    "updated": "2026-06-30",
+    "next_review": "2026-07-30",
+    "review_interval": 30,
     "probe_sections": [
       "Signals push-pull model vs Zone.js passive patching",
       "toSignal(): observable-to-signal bridge and what it buys",

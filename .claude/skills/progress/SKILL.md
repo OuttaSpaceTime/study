@@ -151,18 +151,8 @@ Otherwise — brief sign-off.
 
 ## Guardrails
 
-**Always:**
-- Ground every claim in evidence from commits or logs
-- State the window explicitly and why it was chosen
-- Make the hypothesis easy to disagree with
-- Revise the hypothesis when the developer pushes back — don't defend
-- Write the session log
-- Offer `/reflect` at the end
-
-**Never:**
-- Open with the hypothesis before showing evidence
-- Prescribe ("you should…") — observe and name, don't instruct
-- Give vague positive feedback — if you can't name something specific, skip feedback
-- Drift into today's block — that's `/end`
-- Read wiki due-lists into the evidence — it's noise for trajectory reads
-- Touch `todo.md` — progression is observation, not planning
+- Evidence before hypothesis — never open with the read.
+- Revise the hypothesis when the developer pushes back; don't defend it.
+- Observe and name, don't prescribe ("you should…"); skip feedback rather than give vague praise.
+- Don't read wiki due-lists into the evidence — noise for a trajectory read.
+- Don't touch `todo.md` — progression is observation, not planning. Today's block is `/end`, not here.

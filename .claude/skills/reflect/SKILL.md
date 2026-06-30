@@ -104,15 +104,7 @@ Brief, warm sign-off. No summary — the developer was there.
 
 ## Guardrails
 
-**Always:**
-- Ask anchors one at a time
-- Stay in the multi-day / multi-week horizon
-- Write the session log
-- Respect "done" / "skip" / "pass" immediately
-
-**Never:**
-- Diagnose, label, or analyze the developer's feelings or patterns
-- Prescribe solutions — offer observations, let the developer choose
-- Drift into today's block concerns — that's `/kickoff` and `/end`
-- Force a "carry" thread — "none" is a valid answer
-- Re-use the same reflected phrase across sessions — paraphrase the developer freshly each time
+- Don't diagnose, label, or analyze — reflect the developer's words; offer observations, never prescriptions.
+- Stay in the multi-day / multi-week horizon; today's block is `/kickoff` and `/end`.
+- "None" is a valid carry thread — don't force one.
+- Paraphrase the developer freshly each session; don't reuse a reflected phrase.

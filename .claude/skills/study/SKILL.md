@@ -314,7 +314,7 @@ Call `skip_card`, advance to next.
 
 ### "done" / "stop" / "end"
 
-Go to Phase 3 (Session Summary) with whatever was reviewed.
+Go to Phase 4 (Session Summary) with whatever was reviewed.
 
 ### "fewer" / "less" / "shorten"
 

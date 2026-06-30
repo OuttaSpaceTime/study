@@ -33,6 +33,7 @@ The interactive walkthrough never hands the developer a correct answer. The deve
 
 - **One small question at a time.** Decompose the concept into the smallest step the developer can reason about. Ask, wait, then react to their answer with the next question. Short steps, not lectures.
 - **Never state the answer to fill a gap.** When the developer is wrong or blank, do NOT correct by asserting the right answer. Decompose further — ask an easier sub-question, point at a concrete value/snippet/error and ask what it implies, or narrow scope until they can take the next step. Hints get progressively more concrete, but the final words are always theirs. (This is the agreed stuck-fallback: decompose, never reveal.)
+- **"Make it concrete" / "I don't understand" is NOT a reveal request.** When the developer says the *question* is unclear or asks you to make it concrete, make the **next question** smaller and more grounded (a specific value, a one-line snippet, a named scenario) — do **not** answer it for them or work the example to its conclusion. Reformulating the prompt is not the same as supplying the missing piece; a clarification plea answered with the full worked solution is the most common way revealing sneaks in.
 - **Confirming is allowed; pre-empting is not.** Once the developer produces a correct answer, you may confirm it ("yes — that's it"). You may not say it first.
 - **Applies to every cadence** (Learning, Refresh, Concise). Cadence sets how many questions and whether you loop on a miss — never whether you reveal.
 - **The written wiki page is exempt.** Never-reveal governs the spoken dialogue. The Phase 4 wiki page is the reference artifact and naturally contains the facts — that is the payoff for reconstructing them in dialogue, not a shortcut around it.
@@ -99,11 +100,7 @@ The workflow returns `{ confidence, authoritativeSources[], practitionerSources[
 
 - **Phase 2 grounding (facts).** `facts` / `loadBearing` equip *you* with the canonical answer so you can craft precise questions and judge the developer's answers — never read aloud (see Socratic Never-Reveal). If a source contradicts what you'd have said from memory, that sharpens the question you ask, not a spoken correction. When the developer's prediction is wrong, do not state the right answer; ask a smaller question that exposes the gap, and you may point them at the source URL to investigate themselves.
 - **Phase 2 grounding (opinions).** `opinions` and `divergence` unlock a class of question the docs cannot ground: tradeoff and judgement prompts. Pose them as open ("practitioners disagree about X — what do you think the tradeoff is?", "here's a gotcha someone hit in production — why might that happen?"). Never present an opinion as settled fact, and never reveal — the opinion shapes the *question*, the developer still produces the answer. An opinion flagged `contradictsGroundTruth` is not used to question at all; the authoritative fact it contradicts is.
-- **Phase 4 wiki write (facts).** Add a `## References` section listing the authoritative URLs (max 4) with one-line descriptions. Inline-link specific claims (`[per the RFC](url)`) when the claim is version-specific or non-obvious.
-- **Phase 4 wiki write (opinions).** Surface practitioner findings by content (let the material decide the shape):
-  - Load-bearing tradeoffs and gotchas get a dedicated H2 (`## Tradeoffs & gotchas`, or a name that fits the topic), each point attributed and marked consensus/contested.
-  - One-off nuances weave into the relevant concept section as an attributed callout, e.g. `> [Note] In practice, <source> warns that X; the spec only guarantees Y.`
-  - List practitioner URLs in `## References` under a `**Practitioner / opinion:**` sub-label, kept visually distinct from the authoritative sources. A factual claim in the body must never be cited only to a practitioner source.
+- **Phase 4 wiki write.** Fold facts and opinions into the page per the `## References` and `## Tradeoffs & gotchas` rules in "Wiki Page Structure" below: facts go to an authoritative `## References` (inline-link version-specific claims); load-bearing opinions go to a `## Tradeoffs & gotchas` H2 or inline `> [Note]` callouts, attributed and marked consensus/contested; drop any `contradictsGroundTruth` opinion.
 - **Confidence handling:** `confidence: low` means push extra probes in Phase 2 and add a `> [Note] Sources sparse. Verify before relying on this page.` callout in Phase 4. A `contested` opinion stance means present both sides; do not declare a winner the sources do not support.
 
 **Silent execution.** The workflow runs in the background — do not narrate "running research workflow", echo its `/workflows` progress tree, or paste its output. When the synthesis notification arrives, fold the findings into the next phase message. If the workflow errors or times out, fall back to a single background research subagent using the two-lane fallback prompt below; if that also fails, note one line ("research unavailable — proceeding from model knowledge, flagged in Phase 4 references") and continue — never block the developer.
@@ -280,12 +277,7 @@ If any of these are missing or vague, return to the relevant concept and discuss
 
 ### Phase 4/4: Write & Chain
 
-**Before drafting anything**, internalize the prose conventions from `references/wiki-write-protocol.md` "Writing Style" section. The two highest-cost-to-fix-after-the-fact rules:
-
-1. **No em-dashes** anywhere — not in prose, not in headings, not in link text, not in list-item descriptions, not in table cells. Use period, comma, parentheses, or `: ` after a wikilink/markdown-link/bold-term/code in list items.
-2. **No prose-colons** as clause connectors. `The trap: in one document...` is flagged. Split into two sentences (`The trap. In one document...`) or rephrase.
-
-A single page with 15+ em-dashes and 3+ prose-colons forces a multi-pass cleanup touching every line — write clean from the first draft.
+**Before drafting anything**, internalize the "Writing Style" section of `references/wiki-write-protocol.md`. The two costliest-to-fix-after-the-fact rules: **no em-dashes anywhere** (prose, headings, link text, list-item descriptions, table cells) and **no prose-colons as clause connectors** (`The trap: ...` is flagged — split into two sentences). A page with many of either forces a multi-pass cleanup touching every line; write clean from the first draft.
 
 **Filename = slugified title** (lint error, not warning). When the folder name disambiguates (e.g., `wiki/json-api/`), the title does not need to repeat the topic — `Document structure` is a cleaner title than `JSON:API document structure` because its slug equals the filename `document-structure.md`. Pick the filename first, then choose a title that slugifies back to it.
 
@@ -323,9 +315,7 @@ When writing a wiki page, follow this structure:
   - **Pattern/Technique**: Jump into the pattern with descriptive H2/H3 headings
   - **Feature/Tool Overview**: What is possible, then H2 sections per feature
 - Always include: `## Related Concepts` with `[[absolute/path]]` wikilinks
-- **Always include: `## References`** with up to 4 authoritative URLs from the Phase 1 research findings (one-line "what this is" per URL). When the workflow also returned practitioner sources, list them in the same section under a `**Practitioner / opinion:**` sub-label, kept visually distinct from the authoritative URLs. Inline-link specific claims in the body (`[per RFC 6797 §7.2](url)`) when the claim is version-specific, contested, or non-obvious. **A factual claim in the body must never be cited only to a practitioner source** — facts cite the authoritative lane. If research was skipped (repo-internal topic) or unavailable, write `## References\n\n_None — repo-internal topic._` or `_Research unavailable at write time; verify before relying on this page._` so the gap is visible.
-  - **`References` MUST NOT appear in `probe_sections` or `last_probed`.** It's a citation list, not study material — the probe-section default already excludes `Related Concepts`, `References`, `See also`, `TL;DR`. When extending an existing page with new H2s, include new study-worthy headings only — never add `References` to the queue.
-- **Surface practitioner opinions by content** (from the workflow's `opinions` / `divergence`): load-bearing tradeoffs and gotchas get a dedicated H2 (`## Tradeoffs & gotchas`, or a topic-fitting name) with each point attributed and marked consensus/contested; one-off nuances weave into the relevant concept section as an attributed `> [Note]` callout. Frame opinions as opinions, never as ground truth — `> [Note] Some practitioners argue X; the spec only guarantees Y.` A dedicated opinion H2 IS study-worthy, so include it in `probe_sections` (unlike `References`). Drop any opinion the workflow flagged `contradictsGroundTruth` — keep the authoritative fact instead.
+- **Always include `## References`**, plus a `## Tradeoffs & gotchas` H2 (or inline `> [Note]` callouts) when practitioner opinion is load-bearing. Build both per "Wiki Page Structure" sections 6 & 7 below: facts cite the authoritative lane, opinions stay attributed and labelled consensus/contested, `contradictsGroundTruth` opinions are dropped, and `## References` never enters `probe_sections`.
 
 **Session log** -- always append to `logs/<MM>/<YYYY-MM-DD>.md` (zero-padded month folder):
 
@@ -375,12 +365,15 @@ Structure depends on the page type chosen in Phase 1.
 - Each point attributed to its source and marked consensus/contested; framed as opinion, never as ground truth
 - One-off nuances go inline as `> [Note]` callouts in the relevant section instead of here
 - This H2 is study-worthy — include it in `probe_sections` (unlike `References`)
+- Drop any opinion the workflow flagged `contradictsGroundTruth` — keep the authoritative fact it contradicts instead
 
 ### 7. References (H2)
 - Authoritative URLs (max 4) from Phase 1 research, each with a one-line "what this is"
 - Prefer official docs, RFCs, source code, canonical references for ground truth — facts cite this lane
-- When practitioner sources were used, list them under a `**Practitioner / opinion:**` sub-label, distinct from the authoritative URLs
-- Inline-link specific version-specific or non-obvious claims in the body in addition to listing here
+- When practitioner sources were used, list them under a `**Practitioner / opinion:**` sub-label, distinct from the authoritative URLs. **A factual claim in the body must never be cited only to a practitioner source.**
+- Inline-link specific version-specific, contested, or non-obvious claims in the body (`[per RFC 6797 §7.2](url)`) in addition to listing here
+- **Never put `## References` in `probe_sections` / `last_probed`** — it's a citation list, not study material (the probe-section default already excludes it)
+- If research was skipped (repo-internal topic) or unavailable, still write the section as `_None — repo-internal topic._` or `_Research unavailable at write time; verify before relying on this page._` so the gap is visible
 
 ### 8. Warnings/Notes
 - Short warnings: bold inline. Standalone callouts: `> [Warning]` / `> [Note]`

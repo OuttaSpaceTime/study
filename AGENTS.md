@@ -27,7 +27,6 @@ Applies to every skill in this repo.
 - `/study` — Interactive study session. Claude evaluates answers and rates them. Logs sessions.
 - `/study-flashcard` — Create new flashcards through a guided walkthrough with duplicate detection. Optionally writes companion wiki pages.
 - `/study-walkthrough` — Interactive walkthrough that calibrates to current understanding, fills gaps, pushes deeper. Optionally writes wiki pages. Use `--write` to default to producing a wiki page.
-- `/obsidian-check` — Launch Obsidian, run wiki health checks, open pages in GUI.
 - `/canvas` — Interactively edit an Obsidian `.canvas` in a tight edit→show→react loop. Two modes: **live** (`eval` against the running app, reads your GUI selection) and **file** (Read/Write the JSON on disk, git-trackable). Same JSON schema either way.
 
 ## Todo
