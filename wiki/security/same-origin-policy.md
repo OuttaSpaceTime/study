@@ -8,7 +8,7 @@ tags:
 - web
 - browser
 created: '2026-04-29'
-updated: '2026-04-29'
+updated: '2026-07-01'
 source_skill: study-walkthrough
 probe_sections:
 - What an Origin Is
@@ -17,13 +17,13 @@ probe_sections:
 - SOP Is Not Configurable
 - Server-to-Server Requests
 last_probed:
+- Server-to-Server Requests
+- What an Origin Is
 - What SOP Actually Blocks
 - The Threat Model
 - SOP Is Not Configurable
-- Server-to-Server Requests
-- What an Origin Is
-review_interval: 3
-next_review: '2026-06-24'
+review_interval: 12
+next_review: '2026-07-13'
 flashcard_ids: []
 ---
 
@@ -77,6 +77,17 @@ ctx.getImageData(0, 0, w, h)  // throws SecurityError
 
 The image renders visually, but JS cannot extract its pixels. Visual leak yes, programmatic read no.
 
+Cross-origin iframes follow the same pattern:
+
+```js
+// blocked: cross-origin iframe DOM access
+iframe.contentWindow.document  // throws SecurityError
+```
+
+The frame renders and the user can see its contents, but the embedding page's JS cannot reach into its DOM to read them.
+
+The canvas-tainting rule has one exception. If the cross-origin image was served with a permissive `Access-Control-Allow-Origin` header, the browser does not taint the canvas and `getImageData()` succeeds. The image opts in to being read, the same way CORS lets a `fetch()` read succeed.
+
 ## The Threat Model
 
 SOP exists because browsers attach **ambient credentials** (cookies, HTTP auth, client certs) to outbound requests by **host**, not by **origin of the calling page**.
@@ -93,6 +104,8 @@ Without SOP:
 SOP cuts step 6. The response reaches the browser, but the browser refuses to hand the body to `evil.com`'s JS.
 
 > [Note] SOP does not stop the request being **sent**. It stops the response from being **read**. Side effects (like a state-changing POST) can still happen: that is what CSRF tokens defend against, not SOP.
+
+> [Note] "Loading but not reading" is not automatically safe either. `evil.com` can still render `bank.com/dashboard` inside an `<iframe>` and trick the user into clicking through it. Their real, cookie-authenticated session is what's on screen. SOP does not stop this. Nothing is being *read* by JS, so there is nothing for SOP to block. This is a distinct threat, **clickjacking**, defended against separately with `X-Frame-Options` or the CSP `frame-ancestors` directive, not by SOP.
 
 ## SOP Is Not Configurable
 

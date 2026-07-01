@@ -29,8 +29,8 @@ last_probed:
 - The two phases at a glance
 - Why output length dominates
 - num_predict as the circuit breaker
-review_interval: 14
-next_review: '2026-06-28'
+review_interval: 17
+next_review: '2026-07-18'
 flashcard_ids: []
 ---
 

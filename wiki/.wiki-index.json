@@ -282,9 +282,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-06-14",
-    "next_review": "2026-06-28",
-    "review_interval": 14,
+    "updated": "2026-07-01",
+    "next_review": "2026-07-18",
+    "review_interval": 17,
     "probe_sections": [
       "Inference vs training",
       "The two phases at a glance",
@@ -536,9 +536,9 @@
       "cmoqrprzu0000ld0mfbwqly5v"
     ],
     "created": "2026-05-04",
-    "updated": "2026-06-23",
-    "next_review": "2026-06-27",
-    "review_interval": 4,
+    "updated": "2026-07-01",
+    "next_review": "2026-07-11",
+    "review_interval": 10,
     "probe_sections": [
       "URL anatomy at a glance",
       "Scheme vs protocol",
@@ -552,12 +552,12 @@
     "last_probed": [
       "Host - subdomain, SLD, TLD",
       "DNS caching, TTL, and safe migrations",
-      "URL anatomy at a glance",
       "Scheme vs protocol",
       "Port: default ports and when the URL includes one",
       "Path and query",
       "DNS resolution",
-      "Host header and virtual hosts"
+      "Host header and virtual hosts",
+      "URL anatomy at a glance"
     ]
   },
   "openapi/openapi-index": {
@@ -839,9 +839,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-17",
-    "updated": "2026-06-13",
-    "next_review": "2026-06-25",
-    "review_interval": 12,
+    "updated": "2026-07-01",
+    "next_review": "2026-07-31",
+    "review_interval": 30,
     "probe_sections": [
       "The Problem It Solves",
       "Schema Shape",
@@ -853,14 +853,14 @@
       "N+1 Gotcha"
     ],
     "last_probed": [
-      "N+1 Gotcha",
-      "The Problem It Solves",
-      "Schema Shape",
       "What `delegated_type` Expands To",
       "What the delegated_type declaration generates",
       "Direction of Delegation",
       "Design Rule: Where Attributes Live",
-      "STI vs Delegated Type"
+      "STI vs Delegated Type",
+      "N+1 Gotcha",
+      "The Problem It Solves",
+      "Schema Shape"
     ]
   },
   "rails/routing/collection-and-member-routes": {
@@ -1505,9 +1505,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-29",
-    "updated": "2026-06-21",
-    "next_review": "2026-06-24",
-    "review_interval": 3,
+    "updated": "2026-07-01",
+    "next_review": "2026-07-13",
+    "review_interval": 12,
     "probe_sections": [
       "What an Origin Is",
       "What SOP Actually Blocks",
@@ -1516,11 +1516,11 @@
       "Server-to-Server Requests"
     ],
     "last_probed": [
+      "Server-to-Server Requests",
+      "What an Origin Is",
       "What SOP Actually Blocks",
       "The Threat Model",
-      "SOP Is Not Configurable",
-      "Server-to-Server Requests",
-      "What an Origin Is"
+      "SOP Is Not Configurable"
     ]
   },
   "security/security-index": {
