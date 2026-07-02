@@ -92,10 +92,10 @@
       }
     },
     {
-      "query": "",
+      "query": "path:wiki/software-design  ",
       "color": {
         "a": 1,
-        "rgb": 6084188
+        "rgb": 0
       }
     }
   ],
@@ -109,6 +109,6 @@
   "repelStrength": 15,
   "linkStrength": 1,
   "linkDistance": 150,
-  "scale": 0.328896444345031,
+  "scale": 0.11747689680706913,
   "close": false
 }

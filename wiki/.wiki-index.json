@@ -15,7 +15,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-05-08",
+    "updated": "2026-07-02",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -2021,6 +2021,243 @@
       "Signals push-pull model vs Zone.js passive patching",
       "toSignal(): observable-to-signal bridge and what it buys",
       "Signals vs async pipe: when to use which"
+    ]
+  },
+  "software-design/software-design-index": {
+    "file": "software-design/software-design-index.md",
+    "title": "Software Design Index",
+    "aliases": [
+      "software-design-moc",
+      "software design map"
+    ],
+    "tags": [
+      "moc",
+      "software-design"
+    ],
+    "sections": [
+      "Pages"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-07-02",
+    "updated": "2026-07-02",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Pages"
+    ],
+    "last_probed": [
+      "Pages"
+    ]
+  },
+  "software-design/judging-abstractions": {
+    "file": "software-design/judging-abstractions.md",
+    "title": "Judging abstractions",
+    "aliases": [
+      "wrong abstraction",
+      "leaky abstractions",
+      "rule of three",
+      "abstraction boundaries",
+      "premature abstraction"
+    ],
+    "tags": [
+      "software-design",
+      "abstraction",
+      "code-review"
+    ],
+    "sections": [
+      "TL;DR",
+      "The wrong-abstraction signal",
+      "The remedy is re-inline, then re-derive",
+      "Rule of Three and the two motives for extraction",
+      "Leaky abstractions and the working-vs-learning cost",
+      "Why this bites harder in AI-generated code",
+      "Tradeoffs and gotchas",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [
+      "cmr352mhn0000vi0my4yi3fk0",
+      "cmr352oou0001vi0m2ma2kmqz",
+      "cmr352qkt0002vi0mmvsrf7ou"
+    ],
+    "created": "2026-07-02",
+    "updated": "2026-07-02",
+    "next_review": "2026-07-05",
+    "review_interval": 3,
+    "probe_sections": [
+      "The wrong-abstraction signal",
+      "The remedy is re-inline, then re-derive",
+      "Rule of Three and the two motives for extraction",
+      "Leaky abstractions and the working-vs-learning cost",
+      "Why this bites harder in AI-generated code",
+      "Tradeoffs and gotchas"
+    ],
+    "last_probed": [
+      "The wrong-abstraction signal",
+      "The remedy is re-inline, then re-derive",
+      "Rule of Three and the two motives for extraction",
+      "Leaky abstractions and the working-vs-learning cost",
+      "Why this bites harder in AI-generated code",
+      "Tradeoffs and gotchas"
+    ]
+  },
+  "software-design/splitting-responsibilities": {
+    "file": "software-design/splitting-responsibilities.md",
+    "title": "Splitting responsibilities",
+    "aliases": [
+      "single responsibility principle",
+      "SRP",
+      "command-query separation",
+      "CQS",
+      "connascence",
+      "coupling and cohesion"
+    ],
+    "tags": [
+      "software-design",
+      "coupling",
+      "code-review"
+    ],
+    "sections": [
+      "TL;DR",
+      "What SRP actually measures",
+      "Command-Query Separation and CQS vs CQRS",
+      "Connascence as a coupling vocabulary",
+      "The operative rule for connascence",
+      "Over-splitting can worsen coupling",
+      "Tradeoffs and gotchas",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [
+      "cmr3h5scb0003vi0mlc9rdm2i",
+      "cmr3h5u7c0004vi0mk8acp5vl"
+    ],
+    "created": "2026-07-02",
+    "updated": "2026-07-02",
+    "next_review": "2026-07-05",
+    "review_interval": 3,
+    "probe_sections": [
+      "What SRP actually measures",
+      "Command-Query Separation and CQS vs CQRS",
+      "Connascence as a coupling vocabulary",
+      "The operative rule for connascence",
+      "Over-splitting can worsen coupling",
+      "Tradeoffs and gotchas"
+    ],
+    "last_probed": [
+      "What SRP actually measures",
+      "Command-Query Separation and CQS vs CQRS",
+      "Connascence as a coupling vocabulary",
+      "The operative rule for connascence",
+      "Over-splitting can worsen coupling",
+      "Tradeoffs and gotchas"
+    ]
+  },
+  "angular/where-code-belongs": {
+    "file": "angular/where-code-belongs.md",
+    "title": "Where code belongs",
+    "aliases": [
+      "layered architecture",
+      "smart and dumb components",
+      "container and presentational components",
+      "dependency direction",
+      "where code belongs"
+    ],
+    "tags": [
+      "angular",
+      "architecture",
+      "code-review"
+    ],
+    "sections": [
+      "TL;DR",
+      "The placement axis: how much a piece depends on",
+      "Dependency direction is one-way",
+      "Smart vs dumb is about data access, not tree position",
+      "Where the two kinds of parsing live",
+      "Interceptors and guards detect and delegate",
+      "Deciding where new code goes",
+      "Tradeoffs and gotchas",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [
+      "cmr3kzoif0005vi0m6saz3h2t",
+      "cmr3kzuq10007vi0ml2cjtub2",
+      "cmr3kzwwp0008vi0macw7zben"
+    ],
+    "created": "2026-07-02",
+    "updated": "2026-07-02",
+    "next_review": "2026-07-05",
+    "review_interval": 3,
+    "probe_sections": [
+      "The placement axis: how much a piece depends on",
+      "Dependency direction is one-way",
+      "Smart vs dumb is about data access, not tree position",
+      "Where the two kinds of parsing live",
+      "Interceptors and guards detect and delegate",
+      "Deciding where new code goes",
+      "Tradeoffs and gotchas"
+    ],
+    "last_probed": [
+      "The placement axis: how much a piece depends on",
+      "Dependency direction is one-way",
+      "Smart vs dumb is about data access, not tree position",
+      "Where the two kinds of parsing live",
+      "Interceptors and guards detect and delegate",
+      "Deciding where new code goes",
+      "Tradeoffs and gotchas"
+    ]
+  },
+  "software-design/reading-code-for-intent": {
+    "file": "software-design/reading-code-for-intent.md",
+    "title": "Reading code for intent",
+    "aliases": [
+      "design by contract",
+      "principle of least astonishment",
+      "pit of success",
+      "make illegal states unrepresentable",
+      "preconditions and postconditions"
+    ],
+    "tags": [
+      "software-design",
+      "code-review",
+      "contracts"
+    ],
+    "sections": [
+      "TL;DR",
+      "The signature is a contract",
+      "Preconditions, postconditions, and asymmetric blame",
+      "The name is part of the contract",
+      "Why review is the backstop",
+      "The ladder from documented to impossible",
+      "Tradeoffs and gotchas",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [
+      "cmr3mfpvn000avi0mwndjb23g",
+      "cmr3mfs9b000bvi0mqigj0v9j",
+      "cmr3mfu74000cvi0mp1wy11c5"
+    ],
+    "created": "2026-07-02",
+    "updated": "2026-07-02",
+    "next_review": "2026-07-05",
+    "review_interval": 3,
+    "probe_sections": [
+      "The signature is a contract",
+      "Preconditions, postconditions, and asymmetric blame",
+      "The name is part of the contract",
+      "Why review is the backstop",
+      "The ladder from documented to impossible",
+      "Tradeoffs and gotchas"
+    ],
+    "last_probed": [
+      "The signature is a contract",
+      "Preconditions, postconditions, and asymmetric blame",
+      "The name is part of the contract",
+      "Why review is the backstop",
+      "The ladder from documented to impossible",
+      "Tradeoffs and gotchas"
     ]
   }
 }
