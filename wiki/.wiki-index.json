@@ -1297,9 +1297,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-06-08",
-    "next_review": "2026-06-28",
-    "review_interval": 20,
+    "updated": "2026-07-03",
+    "next_review": "2026-07-27",
+    "review_interval": 24,
     "probe_sections": [
       "Reactive programming definition: streams as first-class values",
       "Stream anatomy: values, errors, and completion over time",
@@ -1310,9 +1310,9 @@
     "last_probed": [
       "Stream anatomy: values, errors, and completion over time",
       "Core operator categories: transform, filter, combine, flatten",
-      "Mental model shift from imperative to reactive",
       "Reactive programming definition: streams as first-class values",
-      "flatMap/mergeMap: collapsing a stream of streams"
+      "flatMap/mergeMap: collapsing a stream of streams",
+      "Mental model shift from imperative to reactive"
     ]
   },
   "ruby/ruby-index": {
