@@ -98,26 +98,26 @@ Use it for warnings you've deliberately judged not to apply — e.g. `hsts` carr
 
 Python code is linted with ruff: `uv run ruff check scripts/ tests/`. Config lives in `pyproject.toml`.
 
-### Show in Obsidian
+### Show in browser
 
-At any point during any skill, the developer can say "show in Obsidian" to launch the app and open the relevant page. Page access uses Obsidian's **official CLI** (`obsidian`, shipped with the app and enabled via Settings → General → Command line interface). Check if it's connected before launching — only start the app if the socket is absent:
-
-```bash
-test -S "${XDG_RUNTIME_DIR:-$HOME}/.obsidian-cli.sock" || { setsid -f /opt/Obsidian/obsidian >/dev/null 2>&1 < /dev/null; sleep 3; }
-```
-
-Then open pages with the CLI (vault name is `study`; use the bare wiki-relative slug **without** `.md`, e.g. `ruby/transform-values`):
+At any point during any skill, the developer can say "show in browser" to open the relevant wiki page in the **wiki-viewer** app (Next.js, `/home/felix/Code/Misc/wiki-viewer`, `http://localhost:4777`). Check health first; launch detached only if it is not running:
 
 ```bash
-obsidian open vault="study" file="<slug>"
+curl -sf http://localhost:4777/api/health >/dev/null || {
+  (cd /home/felix/Code/Misc/wiki-viewer && setsid -f npm run dev >/dev/null 2>&1 < /dev/null)
+  for i in $(seq 1 30); do curl -sf http://localhost:4777/api/health >/dev/null && break; sleep 0.5; done
+}
 ```
 
-Notes:
-- The Obsidian vault is the **repo root** (`/home/felix/Code/Misc/study`), so its name is `study`. Wiki pages live under `wiki/`, but you still pass the wiki-relative slug (`ruby/transform-values`, not `wiki/ruby/transform-values`) — Obsidian's `file=` resolves by name like a wikilink and finds `wiki/ruby/transform-values.md` by suffix. The existing `[[topic/slug]]` wikilinks resolve the same way; no link re-rooting was needed.
-- The socket at `${XDG_RUNTIME_DIR:-$HOME}/.obsidian-cli.sock` (here `/run/user/1000/.obsidian-cli.sock`) is the reliable indicator that Obsidian is running **and** the CLI is connected. Do not use `pgrep -f "obsidian"` — the `-f` form matches the full command line and self-matches the shell process evaluating the check. (`pgrep -x obsidian` tells you the app is running but not whether the CLI is connected.)
-- Obsidian is installed from the **Debian package** at `/opt/Obsidian/obsidian` — there is no `snap` on this machine, so `snap run obsidian` fails. Never launch unconditionally; it breaks when Obsidian is already open.
-- Non-wiki content is kept out of Obsidian — see [Hiding non-wiki content](#hiding-non-wiki-content) below.
-- If the CLI toggle is ever off, `xdg-open "obsidian://open?vault=study&file=<slug>"` opens a page with no CLI dependency — a fallback, not the default.
+Then open pages by wiki key (without `.md`):
+
+```bash
+xdg-open "http://localhost:4777/wiki/<key>"
+```
+
+Challenge study pages open at `http://localhost:4777/study/<topic>/<slug>` (see [Challenges](#challenges)).
+
+Obsidian remains installed but is used **only by `/canvas`** (`.canvas` files have no browser equivalent); its socket-check launch flow lives in that skill. The vault config and [non-wiki hiding](#hiding-non-wiki-content) stay maintained for that use.
 
 ### Hiding non-wiki content
 
@@ -128,13 +128,13 @@ The vault is the whole repo, but only `wiki/` is knowledge content. Hiding the r
 | Search, graph, quick-switcher, link autocomplete | `userIgnoreFilters` (core "Excluded files") | `.obsidian/app.json` |
 | File-explorer sidebar (full removal) | CSS snippet using `.nav-folder:has(...)` / `.nav-file:has(...)` rules | `.obsidian/snippets/hide-non-wiki.css` (enabled via `enabledCssSnippets` in `.obsidian/appearance.json`) |
 
-Both lists must stay **in sync**. Currently hidden: `probes/`, `scripts/`, `tests/`, `CLAUDE.md`. Kept visible on purpose: `wiki/`, `logs/`, `AGENTS.md`, `todo.md`. Dotfolders (`.claude/`, `.git/`, `.venv/`, `.pytest_cache/`) are auto-ignored by Obsidian; non-markdown (`pyproject.toml`, `uv.lock`) is hidden by `showUnsupportedFiles: false`. The graph view is separately scoped to `path:wiki/ -path:wiki/indexes -tag:#archived` via `.obsidian/graph.json` (see [Archiving](#archiving)).
+Both lists must stay **in sync**. Currently hidden: `challenges/`, `scripts/`, `tests/`, `CLAUDE.md`. Kept visible on purpose: `wiki/`, `logs/`, `AGENTS.md`, `todo.md`. Dotfolders (`.claude/`, `.git/`, `.venv/`, `.pytest_cache/`) are auto-ignored by Obsidian; non-markdown (`pyproject.toml`, `uv.lock`) is hidden by `showUnsupportedFiles: false`. The graph view is separately scoped to `path:wiki/ -path:wiki/indexes -tag:#archived` via `.obsidian/graph.json` (see [Archiving](#archiving)).
 
 To change what's hidden: edit the list in **both** `app.json` (`userIgnoreFilters`) and `hide-non-wiki.css`, then reload Obsidian (`Ctrl+R`). For a folder, add `.nav-folder:has(> .nav-folder-title[data-path="<name>"])`; for a file, `.nav-file:has(> .nav-file-title[data-path="<name>.md"])`.
 
-## Probes
+## Challenges
 
-`probes/` is where `/study-walkthrough` Probe mode saves load-bearing runtime checks — the portable analog of Solveit's live kernel. One markdown file per probe, four sections (Prediction / Command / Output / Takeaway), committed. See `probes/README.md` for the full format spec and the three-tier dependency model (inline → topic env → scratch project). Only persist probes that changed the developer's understanding; skip the ones that merely confirmed what was already known.
+`challenges/` holds interactive code exercises linked to wiki pages, one per (page, H2 section) — the successor to the retired `probes/` concept. A challenge is markdown with frontmatter (`wiki`, `section`, `kind: write-code|predict-output`, `env`, `questions`, `created`) and body sections `## Brief` / `## Setup` (pg only) / `## Stub` / `## Solution` / `## Expected Output`. **Atomic like a flashcard: one idea, minimal, self-contained.** The wiki-viewer renders the solved challenge under its H2 in view mode and serves the exercise at `http://localhost:4777/study/<topic>/<slug>` (editor, Run button, sandboxed-iframe render for browser envs). Execution is pinned via `challenges/envs.json` (absolute interpreter paths; `rails` project sandbox at `~/Code/Misc/rails-templates/study-challenges`; `pg` throwaway databases on the `study-pg` Docker container, port 55432). Attempts land in `challenges/.attempts/<id>.json` (gitignored) — `/study` reads them when the developer says "challenge finished". Scratch challenges (`challenges/scratch/`) are the walkthrough's interactive probing tool: wiki/section optional, otherwise identical. Lookup via `scripts/challenges`; linking is one-way from challenge frontmatter (wiki pages stay clean); lint enforces resolution, one-per-section, and known envs. Verify a challenge's solution with `npm run -s run-challenge -- <id>` in the wiki-viewer repo. See `challenges/README.md`. Note: the `probe_sections`/`last_probed` frontmatter on wiki pages is the unrelated per-H2 SRS review rotation and keeps its name.
 
 ## Workflows
 
@@ -233,7 +233,7 @@ Available scripts:
 - `scripts/wiki-due` — List wiki pages due for review
 - `scripts/wiki-reschedule <page> <rating>` — Reschedule a wiki page after review (1-4), rewrites frontmatter and re-indexes
 - `scripts/wiki-archive <page> [--unarchive]` — Archive/unarchive a page by toggling its `archived` tag (drops it from review + graph); re-indexes. See [Archiving](#archiving)
-- `scripts/wiki-probes [<wiki-path>]` — List probes linked to a wiki page (derived from probe frontmatter). Omit argument to list all grouped by wiki page; `--topic <slug>` to match by topic folder instead; `--count` for count only
+- `scripts/challenges [<wiki-key>]` — List code challenges linked to a wiki page (derived from challenge frontmatter, JSON output). `--section "<h2>"` for one section, `--scratch` for scratch challenges, `--count` for count only
 - `scripts/anki-sync <login|sync|status>` — Sync flashcards to AnkiWeb (see [Anki Sync](#anki-sync)). `sync --dry-run` previews, `--local` skips AnkiWeb
 - `scripts/card-htmlize` — Convert markdown/plain card text in master.db to simple Anki HTML (dry-run by default, `--apply` writes after backing up master.db)
 
@@ -243,4 +243,6 @@ Python modules live in `scripts/wiki/`. The top-level scripts are thin entry poi
 
 - **TreeSearch**: `uv tool install pytreesearch` — FTS5 search for wiki
 - **Ollama**: Local LLM runtime with `nomic-embed-text` model — semantic embeddings
-- **Obsidian**: Optional, for graph visualization and enhanced health checks. Installed from the Debian package at `/opt/Obsidian/obsidian`. Its official CLI (`obsidian`) is enabled via Settings → General → Command line interface and lives at `~/.local/bin/obsidian`. Launch detached with `setsid -f /opt/Obsidian/obsidian >/dev/null 2>&1 < /dev/null`; open pages with `obsidian open vault="study" file="<slug>"`.
+- **wiki-viewer**: Next.js app at `/home/felix/Code/Misc/wiki-viewer` — the browser surface for wiki pages and challenges (`http://localhost:4777`, health at `/api/health`). Start with `npm run dev` (binds 127.0.0.1). See [Show in browser](#show-in-browser) and [Challenges](#challenges).
+- **Docker**: runs the `study-pg` container (postgres:17, port 127.0.0.1:55432) for `pg`-env challenges; auto-started by the viewer's runner.
+- **Obsidian**: used only by `/canvas` (`.canvas` editing). Installed from the Debian package at `/opt/Obsidian/obsidian`; official CLI (`obsidian`) at `~/.local/bin/obsidian`. Launch detached with `setsid -f /opt/Obsidian/obsidian >/dev/null 2>&1 < /dev/null`; open files with `obsidian open vault="study" file="<slug>"`.

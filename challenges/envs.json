@@ -1,0 +1,40 @@
+{
+  "python312": {
+    "type": "inline",
+    "command": ["/home/felix/.local/bin/uv", "run", "--python", "3.12", "--no-project", "python", "{file}"],
+    "ext": ".py"
+  },
+  "node24": {
+    "type": "inline",
+    "command": ["/home/felix/.nvm/versions/node/v24.15.0/bin/node", "{file}"],
+    "ext": ".mjs"
+  },
+  "ts-node24": {
+    "type": "inline",
+    "command": ["/home/felix/.nvm/versions/node/v24.15.0/bin/node", "{file}"],
+    "ext": ".ts"
+  },
+  "ruby": {
+    "type": "inline",
+    "command": ["/home/felix/.rbenv/versions/4.0.1/bin/ruby", "{file}"],
+    "ext": ".rb"
+  },
+  "rails": {
+    "type": "project",
+    "cwd": "/home/felix/Code/Misc/rails-templates/study-challenges",
+    "command": ["bin/rails", "runner", "{file}"],
+    "ext": ".rb",
+    "timeoutMs": 30000
+  },
+  "pg": {
+    "type": "postgres",
+    "timeoutMs": 10000
+  },
+  "web": {
+    "type": "browser"
+  },
+  "react": {
+    "type": "browser",
+    "preset": "react"
+  }
+}

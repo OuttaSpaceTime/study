@@ -16,10 +16,13 @@ wiki/indexes/
 # Ollama embeddings cache (rebuilt from wiki content)
 wiki/.embeddings.json
 
-# Probe per-topic envs — lockfiles are committed, build artifacts are not
-probes/*/.venv/
-probes/*/__pycache__/
-probes/*/node_modules/
-probes/*/.bundle/
-probes/*/vendor/bundle/
-probes/*/target/
+# Challenge attempts — written by the wiki-viewer app, read by /study
+challenges/.attempts/
+
+# Challenge project envs — specs and lockfiles committed, build artifacts not
+challenges/envs/*/.venv/
+challenges/envs/*/__pycache__/
+challenges/envs/*/node_modules/
+challenges/envs/*/.bundle/
+challenges/envs/*/vendor/bundle/
+challenges/envs/*/target/

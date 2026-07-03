@@ -1615,8 +1615,8 @@ Two changes vs. a regular unique index:
         assert frags == [], f"abbreviation period should not warn: {warnings}"
 
 
-class TestProbeFiles:
-    """Probe files in probes/<topic>/ must point to a real wiki page via `wiki:` frontmatter."""
+class TestChallengeFiles:
+    """Challenge files must link a real wiki page + H2 section, a known env, one per (page, section)."""
 
     def _write_target_page(self, wiki_dir: Path) -> None:
         _write_page(wiki_dir, "compilers/compilers.md", MINIMAL_PAGE)
@@ -1635,145 +1635,294 @@ class TestProbeFiles:
             }
         })
 
-    def _write_probe(self, probes_dir: Path, rel: str, frontmatter: str) -> None:
-        path = probes_dir / rel
+    def _write_challenge(self, challenges_dir: Path, rel: str, frontmatter: str) -> None:
+        path = challenges_dir / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(textwrap.dedent(frontmatter))
 
-    def test_probe_with_resolved_wiki_clean(self, tmp_path: Path, wiki_dir: Path):
+    def _write_envs(self, challenges_dir: Path, envs: dict | None = None) -> None:
+        challenges_dir.mkdir(parents=True, exist_ok=True)
+        if envs is None:
+            envs = {"node24": {"type": "inline"}}
+        (challenges_dir / "envs.json").write_text(json.dumps(envs))
+
+    CHALLENGE_BODY = """
+
+            ## Brief
+            x
+
+            ## Stub
+            ```js
+            // TODO
+            ```
+
+            ## Solution
+            ```js
+            x
+            ```
+        """
+
+    def test_resolved_challenge_clean(self, tmp_path: Path, wiki_dir: Path):
         self._write_target_page(wiki_dir)
-        probes_dir = tmp_path / "probes"
-        self._write_probe(probes_dir, "compilers/p1.md", """\
+        challenges_dir = tmp_path / "challenges"
+        self._write_envs(challenges_dir)
+        self._write_challenge(challenges_dir, "compilers/c1.md", """\
             ---
-            topic: compilers
             wiki: compilers/compilers
-            created: 2026-05-05 08:10
-            ---
+            section: Section One
+            kind: write-code
+            env: node24
+            created: 2026-07-03
+            ---""" + self.CHALLENGE_BODY)
+        errors, _ = lint_wiki(wiki_dir, challenges_dir=challenges_dir)
+        ch_errors = [e for e in errors if "challenge-" in e]
+        assert ch_errors == [], f"unexpected challenge errors: {ch_errors}"
 
-            ## Prediction
-            x
-
-            ## Command
-            ```bash
-            true
-            ```
-
-            ## Output
-            ```
-            ```
-
-            ## Takeaway
-            x
-        """)
-        errors, _ = lint_wiki(wiki_dir, probes_dir=probes_dir)
-        probe_errors = [e for e in errors if "probe-wiki" in e]
-        assert probe_errors == [], f"unexpected probe errors: {probe_errors}"
-
-    def test_probe_with_empty_wiki_field_is_error(self, tmp_path: Path, wiki_dir: Path):
+    def test_empty_wiki_field_is_error(self, tmp_path: Path, wiki_dir: Path):
         self._write_target_page(wiki_dir)
-        probes_dir = tmp_path / "probes"
-        self._write_probe(probes_dir, "compilers/p1.md", """\
+        challenges_dir = tmp_path / "challenges"
+        self._write_envs(challenges_dir)
+        self._write_challenge(challenges_dir, "compilers/c1.md", """\
             ---
-            topic: compilers
             wiki:
-            created: 2026-05-05 08:10
-            ---
-
-            ## Prediction
-            x
-        """)
-        errors, _ = lint_wiki(wiki_dir, probes_dir=probes_dir)
-        assert any("probe-wiki-missing" in e for e in errors), (
-            f"expected probe-wiki-missing: {errors}"
+            section: Section One
+            env: node24
+            ---""" + self.CHALLENGE_BODY)
+        errors, _ = lint_wiki(wiki_dir, challenges_dir=challenges_dir)
+        assert any("challenge-wiki-missing" in e for e in errors), (
+            f"expected challenge-wiki-missing: {errors}"
         )
 
-    def test_probe_with_missing_wiki_field_is_error(self, tmp_path: Path, wiki_dir: Path):
+    def test_missing_wiki_field_is_error(self, tmp_path: Path, wiki_dir: Path):
         self._write_target_page(wiki_dir)
-        probes_dir = tmp_path / "probes"
-        self._write_probe(probes_dir, "compilers/p1.md", """\
+        challenges_dir = tmp_path / "challenges"
+        self._write_envs(challenges_dir)
+        self._write_challenge(challenges_dir, "compilers/c1.md", """\
             ---
-            topic: compilers
-            created: 2026-05-05 08:10
-            ---
-
-            ## Prediction
-            x
-        """)
-        errors, _ = lint_wiki(wiki_dir, probes_dir=probes_dir)
-        assert any("probe-wiki-missing" in e for e in errors), (
-            f"expected probe-wiki-missing: {errors}"
+            section: Section One
+            env: node24
+            ---""" + self.CHALLENGE_BODY)
+        errors, _ = lint_wiki(wiki_dir, challenges_dir=challenges_dir)
+        assert any("challenge-wiki-missing" in e for e in errors), (
+            f"expected challenge-wiki-missing: {errors}"
         )
 
-    def test_probe_with_unresolved_wiki_path_is_error(self, tmp_path: Path, wiki_dir: Path):
+    def test_unresolved_wiki_is_error(self, tmp_path: Path, wiki_dir: Path):
         self._write_target_page(wiki_dir)
-        probes_dir = tmp_path / "probes"
-        self._write_probe(probes_dir, "compilers/p1.md", """\
+        challenges_dir = tmp_path / "challenges"
+        self._write_envs(challenges_dir)
+        self._write_challenge(challenges_dir, "compilers/c1.md", """\
             ---
-            topic: compilers
             wiki: programming-languages/does-not-exist
-            created: 2026-05-05 08:10
-            ---
-
-            ## Prediction
-            x
-        """)
-        errors, _ = lint_wiki(wiki_dir, probes_dir=probes_dir)
-        assert any("probe-wiki-unresolved" in e for e in errors), (
-            f"expected probe-wiki-unresolved: {errors}"
+            section: Section One
+            env: node24
+            ---""" + self.CHALLENGE_BODY)
+        errors, _ = lint_wiki(wiki_dir, challenges_dir=challenges_dir)
+        assert any("challenge-wiki-unresolved" in e for e in errors), (
+            f"expected challenge-wiki-unresolved: {errors}"
         )
 
-    def test_probe_with_md_suffix_is_unresolved(self, tmp_path: Path, wiki_dir: Path):
+    def test_md_suffix_is_unresolved(self, tmp_path: Path, wiki_dir: Path):
         """`wiki: foo.md` is non-canonical — wiki keys never carry `.md`.
 
-        Why this matters: `scripts/wiki/probes.py:for_wiki()` uses exact equality, so
-        a `.md`-suffixed probe wiki ref is silently invisible to `scripts/wiki-probes`.
+        `scripts/wiki/challenges.py:for_wiki()`/`for_section()` use exact key equality,
+        so a `.md`-suffixed ref would be silently invisible to `scripts/challenges`.
         Lint must reject the non-canonical form so the two stay in sync.
         """
         self._write_target_page(wiki_dir)
-        probes_dir = tmp_path / "probes"
-        self._write_probe(probes_dir, "compilers/p1.md", """\
+        challenges_dir = tmp_path / "challenges"
+        self._write_envs(challenges_dir)
+        self._write_challenge(challenges_dir, "compilers/c1.md", """\
             ---
-            topic: compilers
             wiki: compilers/compilers.md
-            created: 2026-05-05 08:10
-            ---
+            section: Section One
+            env: node24
+            ---""" + self.CHALLENGE_BODY)
+        errors, _ = lint_wiki(wiki_dir, challenges_dir=challenges_dir)
+        assert any("challenge-wiki-unresolved" in e for e in errors), (
+            f"expected challenge-wiki-unresolved on .md suffix: {errors}"
+        )
 
-            ## Prediction
-            x
-        """)
-        errors, _ = lint_wiki(wiki_dir, probes_dir=probes_dir)
-        assert any("probe-wiki-unresolved" in e for e in errors), (
-            f"expected probe-wiki-unresolved on .md suffix: {errors}"
+    def test_section_without_matching_h2_is_error(self, tmp_path: Path, wiki_dir: Path):
+        self._write_target_page(wiki_dir)
+        challenges_dir = tmp_path / "challenges"
+        self._write_envs(challenges_dir)
+        self._write_challenge(challenges_dir, "compilers/c1.md", """\
+            ---
+            wiki: compilers/compilers
+            section: No Such Heading
+            env: node24
+            ---""" + self.CHALLENGE_BODY)
+        errors, _ = lint_wiki(wiki_dir, challenges_dir=challenges_dir)
+        assert any("challenge-section-unresolved" in e for e in errors), (
+            f"expected challenge-section-unresolved: {errors}"
+        )
+
+    def test_missing_section_is_error(self, tmp_path: Path, wiki_dir: Path):
+        self._write_target_page(wiki_dir)
+        challenges_dir = tmp_path / "challenges"
+        self._write_envs(challenges_dir)
+        self._write_challenge(challenges_dir, "compilers/c1.md", """\
+            ---
+            wiki: compilers/compilers
+            env: node24
+            ---""" + self.CHALLENGE_BODY)
+        errors, _ = lint_wiki(wiki_dir, challenges_dir=challenges_dir)
+        assert any("challenge-section-unresolved" in e for e in errors), (
+            f"expected challenge-section-unresolved: {errors}"
+        )
+
+    def test_section_normalized_match_is_clean(self, tmp_path: Path, wiki_dir: Path):
+        self._write_target_page(wiki_dir)
+        challenges_dir = tmp_path / "challenges"
+        self._write_envs(challenges_dir)
+        self._write_challenge(challenges_dir, "compilers/c1.md", """\
+            ---
+            wiki: compilers/compilers
+            section: "section one:"
+            env: node24
+            ---""" + self.CHALLENGE_BODY)
+        errors, _ = lint_wiki(wiki_dir, challenges_dir=challenges_dir)
+        ch_errors = [e for e in errors if "challenge-section" in e]
+        assert ch_errors == [], f"normalized section should resolve: {ch_errors}"
+
+    def test_duplicate_section_is_error(self, tmp_path: Path, wiki_dir: Path):
+        self._write_target_page(wiki_dir)
+        challenges_dir = tmp_path / "challenges"
+        self._write_envs(challenges_dir)
+        self._write_challenge(challenges_dir, "compilers/c1.md", """\
+            ---
+            wiki: compilers/compilers
+            section: Section One
+            env: node24
+            ---""" + self.CHALLENGE_BODY)
+        self._write_challenge(challenges_dir, "compilers/c2.md", """\
+            ---
+            wiki: compilers/compilers
+            section: Section One
+            env: node24
+            ---""" + self.CHALLENGE_BODY)
+        errors, _ = lint_wiki(wiki_dir, challenges_dir=challenges_dir)
+        dupes = [e for e in errors if "challenge-duplicate-section" in e]
+        assert len(dupes) == 1, f"expected exactly one duplicate error: {errors}"
+
+    def test_same_section_different_pages_clean(self, tmp_path: Path, wiki_dir: Path):
+        self._write_target_page(wiki_dir)
+        _write_page(wiki_dir, "git/other-page.md", MINIMAL_PAGE.replace(
+            'title: "test page"', 'title: "other page"'
+        ).replace("aliases: [test alias]", "aliases: [other alias]"))
+        challenges_dir = tmp_path / "challenges"
+        self._write_envs(challenges_dir)
+        self._write_challenge(challenges_dir, "compilers/c1.md", """\
+            ---
+            wiki: compilers/compilers
+            section: Section One
+            env: node24
+            ---""" + self.CHALLENGE_BODY)
+        self._write_challenge(challenges_dir, "git/c2.md", """\
+            ---
+            wiki: git/other-page
+            section: Section One
+            env: node24
+            ---""" + self.CHALLENGE_BODY)
+        errors, _ = lint_wiki(wiki_dir, challenges_dir=challenges_dir)
+        dupes = [e for e in errors if "challenge-duplicate-section" in e]
+        assert dupes == [], f"same section on different pages is fine: {dupes}"
+
+    def test_unknown_env_is_error(self, tmp_path: Path, wiki_dir: Path):
+        self._write_target_page(wiki_dir)
+        challenges_dir = tmp_path / "challenges"
+        self._write_envs(challenges_dir)
+        self._write_challenge(challenges_dir, "compilers/c1.md", """\
+            ---
+            wiki: compilers/compilers
+            section: Section One
+            env: no-such-env
+            ---""" + self.CHALLENGE_BODY)
+        errors, _ = lint_wiki(wiki_dir, challenges_dir=challenges_dir)
+        assert any("challenge-env-unknown" in e for e in errors), (
+            f"expected challenge-env-unknown: {errors}"
+        )
+
+    def test_missing_env_with_registry_is_error(self, tmp_path: Path, wiki_dir: Path):
+        self._write_target_page(wiki_dir)
+        challenges_dir = tmp_path / "challenges"
+        self._write_envs(challenges_dir)
+        self._write_challenge(challenges_dir, "compilers/c1.md", """\
+            ---
+            wiki: compilers/compilers
+            section: Section One
+            ---""" + self.CHALLENGE_BODY)
+        errors, _ = lint_wiki(wiki_dir, challenges_dir=challenges_dir)
+        assert any("challenge-env-unknown" in e for e in errors), (
+            f"expected challenge-env-unknown: {errors}"
+        )
+
+    def test_no_envs_json_skips_env_checks(self, tmp_path: Path, wiki_dir: Path):
+        self._write_target_page(wiki_dir)
+        challenges_dir = tmp_path / "challenges"
+        self._write_challenge(challenges_dir, "compilers/c1.md", """\
+            ---
+            wiki: compilers/compilers
+            section: Section One
+            env: anything-goes
+            ---""" + self.CHALLENGE_BODY)
+        errors, _ = lint_wiki(wiki_dir, challenges_dir=challenges_dir)
+        env_errors = [e for e in errors if "challenge-env" in e]
+        assert env_errors == [], f"missing envs.json should skip env checks: {env_errors}"
+
+    def test_scratch_exempt_from_wiki_and_section(self, tmp_path: Path, wiki_dir: Path):
+        self._write_target_page(wiki_dir)
+        challenges_dir = tmp_path / "challenges"
+        self._write_envs(challenges_dir)
+        self._write_challenge(challenges_dir, "scratch/2026-07-03-1430-x.md", """\
+            ---
+            kind: write-code
+            env: node24
+            ---""" + self.CHALLENGE_BODY)
+        errors, _ = lint_wiki(wiki_dir, challenges_dir=challenges_dir)
+        ch_errors = [e for e in errors if "challenge-" in e]
+        assert ch_errors == [], f"scratch challenges are exempt from linking rules: {ch_errors}"
+
+    def test_scratch_env_still_checked(self, tmp_path: Path, wiki_dir: Path):
+        self._write_target_page(wiki_dir)
+        challenges_dir = tmp_path / "challenges"
+        self._write_envs(challenges_dir)
+        self._write_challenge(challenges_dir, "scratch/2026-07-03-1430-x.md", """\
+            ---
+            kind: write-code
+            env: no-such-env
+            ---""" + self.CHALLENGE_BODY)
+        errors, _ = lint_wiki(wiki_dir, challenges_dir=challenges_dir)
+        assert any("challenge-env-unknown" in e for e in errors), (
+            f"scratch challenges still need a known env: {errors}"
         )
 
     def test_template_and_readme_skipped(self, tmp_path: Path, wiki_dir: Path):
         self._write_target_page(wiki_dir)
-        probes_dir = tmp_path / "probes"
-        self._write_probe(probes_dir, "_template.md", """\
+        challenges_dir = tmp_path / "challenges"
+        self._write_envs(challenges_dir)
+        self._write_challenge(challenges_dir, "_template.md", """\
             ---
-            topic: <topic-slug>
-            wiki:
-            created: YYYY-MM-DD HH:MM
+            wiki: <topic/slug>
+            section: <exact H2 text>
             ---
-
-            ## Prediction
         """)
-        self._write_probe(probes_dir, "README.md", "# Probes\n")
-        self._write_probe(probes_dir, "compilers/_scratch.md", """\
+        self._write_challenge(challenges_dir, "README.md", "# Challenges\n")
+        self._write_challenge(challenges_dir, "compilers/_scratch.md", """\
             ---
-            topic: compilers
             wiki:
             ---
         """)
-        errors, _ = lint_wiki(wiki_dir, probes_dir=probes_dir)
-        probe_errors = [e for e in errors if "probe-wiki" in e]
-        assert probe_errors == [], f"template/readme/_-prefixed should be skipped: {probe_errors}"
+        errors, _ = lint_wiki(wiki_dir, challenges_dir=challenges_dir)
+        ch_errors = [e for e in errors if "challenge-" in e]
+        assert ch_errors == [], f"template/readme/_-prefixed should be skipped: {ch_errors}"
 
-    def test_no_probes_dir_no_error(self, wiki_dir: Path):
-        """Lint must not fail when the probes directory does not exist."""
-        errors, _ = lint_wiki(wiki_dir, probes_dir=wiki_dir.parent / "no-such-probes")
-        probe_errors = [e for e in errors if "probe-wiki" in e]
-        assert probe_errors == [], f"missing probes dir should be silent: {probe_errors}"
+    def test_no_challenges_dir_no_error(self, wiki_dir: Path):
+        """Lint must not fail when the challenges directory does not exist."""
+        errors, _ = lint_wiki(wiki_dir, challenges_dir=wiki_dir.parent / "no-such-challenges")
+        ch_errors = [e for e in errors if "challenge-" in e]
+        assert ch_errors == [], f"missing challenges dir should be silent: {ch_errors}"
 
 
 def _page_with_n_probe_sections(n: int, lint_ignore: list[str] | None = None) -> str:

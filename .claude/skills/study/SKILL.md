@@ -14,7 +14,7 @@ The developer leaves each session with reinforced knowledge, accurate scheduling
 
 This skill logs session performance to `logs/<MM>/<YYYY-MM-DD>.md`. It can also trigger wiki writes when gaps are discovered during study.
 
-**At any point** during the session, the developer can say "show in Obsidian" to launch Obsidian and view wiki pages related to the current card. Follow the "Show in Obsidian" flow in `references/wiki-write-protocol.md`.
+**At any point** during the session, the developer can say "show in browser" to open wiki pages related to the current card in the wiki-viewer app. Follow the "Show in Browser" flow in `references/wiki-write-protocol.md`.
 
 ## Session Rules
 
@@ -27,7 +27,7 @@ See `~/.claude/skills/references/interactive-principles.md` for shared interacti
 
 ## Output Discipline
 
-**Run all lookups silently.** `scripts/srs-pressure`, `scripts/wiki-due`, `scripts/wiki-probes`, `Read` of wiki pages or the index, `mcp__flashcard-mcp__*` calls — these execute without preamble narration ("Starting Phase 1…", "Let me check…") and without any echoing of their stdout, JSON, or file contents into chat. The chat shows only synthesized output: the pressure verdict line, the wiki-due numbered list, the question, the rating, the next prompt. If a script exits non-zero or errors, surface a one-line summary, not the stderr blob. This generalizes the existing "read logs, never tail" rule to every tool the skill calls.
+**Run all lookups silently.** `scripts/srs-pressure`, `scripts/wiki-due`, `scripts/challenges`, `Read` of wiki pages or the index, `mcp__flashcard-mcp__*` calls — these execute without preamble narration ("Starting Phase 1…", "Let me check…") and without any echoing of their stdout, JSON, or file contents into chat. The chat shows only synthesized output: the pressure verdict line, the wiki-due numbered list, the question, the rating, the next prompt. If a script exits non-zero or errors, surface a one-line summary, not the stderr blob. This generalizes the existing "read logs, never tail" rule to every tool the skill calls.
 
 ## Anti-Overload Principle
 
@@ -131,9 +131,9 @@ Then loop:
 
 1. **Call `get_next_card`** — if null, go to Phase 3 (Wiki Review)
 2. **Present the card front**, followed by a small italic footer listing mid-session actions:
-   > *(discuss · edit · split · delete · reschedule · show in Obsidian)*
+   > *(discuss · edit · split · delete · reschedule · show in browser)*
 3. **Wait for the developer's answer**
-3a. **Probe option for code-shaped cards.** When the card is code-shaped (git, Python, shell, SQL, HTTP, regex, algorithms) **and** the developer's answer is uncertain, partial, or asserts a specific output, offer one quick probe before evaluating: a `python -c` line, a `git` command, a `curl | jq`, a small unit assertion. The developer runs it and pastes the output. Compare to what they predicted. If prediction and output disagree, name the gap explicitly (`predicted X, got Y`) before rating — that gap is the rating signal, not a side note. If a probe surprises, persist it under `probes/<topic-slug>/YYYY-MM-DD-HHMM-<brief>.md` using `probes/_template.md` (Prediction / Command / Output / Takeaway). Skip the probe entirely for theory-only cards or when the developer's recall was clearly solid — probing in that case is ceremony.
+3a. **Probe option for code-shaped cards.** When the card is code-shaped (git, Python, shell, SQL, HTTP, regex, algorithms) **and** the developer's answer is uncertain, partial, or asserts a specific output, offer one quick probe before evaluating: a `python -c` line, a `git` command, a `curl | jq`, a small unit assertion. The developer runs it and pastes the output. Compare to what they predicted. If prediction and output disagree, name the gap explicitly (`predicted X, got Y`) before rating — that gap is the rating signal, not a side note. If a probe surprises, note it as a candidate for a scratch challenge (`challenges/scratch/`) after the session. Skip the probe entirely for theory-only cards or when the developer's recall was clearly solid — probing in that case is ceremony.
 4. **Evaluate the answer** against the card back (and the probe output, when one was run):
    - `Again (1)`: Wrong or fundamentally misses the concept
    - `Hard (2)`: Mostly correct but significant gaps
@@ -154,7 +154,7 @@ Then loop:
      - Do NOT flag cards that are intentionally minimal — simple recall cards with precise, correct backs are fine.
      - **When a quality issue is detected: stop advancing.** Explicitly describe the problem and ask the developer to fix it before continuing. Example: "This card's front is ambiguous — it could mean X or Y. Want to edit it to be more specific, or split it?" Wait for the developer to edit, split, or explicitly say "skip" before moving on.
    - **Generation prompt** (on Good/Easy cards, ~1 in 4 cards): Ask the developer to generate their own example or analogy: "Can you give me a real-world scenario where this applies?" This strengthens encoding. Keep it brief — one sentence is enough.
-   - One-liner reminder: *(harder/easier · discuss · edit · split · delete · show in Obsidian)*
+   - One-liner reminder: *(harder/easier · discuss · edit · split · delete · show in browser)*
 6. **Call `submit_review`** with the rating, then state the rating line **once** — complete with the next interval from the returned schedule (`due`, `interval`, `state`, `intraDay`). This is the only place the rating is printed. Read the schedule silently; show only the formatted phrase, never the raw JSON. Format:
    - `intraDay: true` (interval `0`) → "Rated: **Again (1)** — repeats this session". Don't invent a minute count.
    - `interval >= 1` → "Rated: **Good (3)** — next review in **N days** (YYYY-MM-DD)" using `interval` and the date portion of `due`. Use "1 day" (singular) when `interval` is 1.
@@ -176,8 +176,8 @@ If there were no due wiki entries, go straight to Phase 4.
 **Review loop for each entry** (start at the top of the due list, advance down it):
 
 1. Take the next page in due order automatically — no "which one?" prompt.
-2. Read the wiki page. Present a brief summary: title, sections, current interval — but do NOT open Obsidian yet.
-2a. **Surface linked probes (if any):** Run `scripts/wiki-probes <wiki-path>`. If probes exist, list them with path and Takeaway one-liner. Offer: "Want to re-run one as a recall check before I ask the section questions?" Skip silently if none.
+2. Read the wiki page. Present a brief summary: title, sections, current interval — but do NOT open the browser yet.
+2a. **Look up linked challenges (silently):** Run `scripts/challenges <wiki-key>`. The result feeds step 4a — do not surface it on its own.
 3. **Pick sections to probe — rotation via `last_probed`:**
 
    Read `probe_sections` and `last_probed` from the page's YAML frontmatter. `last_probed` is an ordered queue (oldest first); treat as `probe_sections` order if empty.
@@ -198,13 +198,18 @@ If there were no due wiki entries, go straight to Phase 4.
    **Tune difficulty by `review_interval`:** short (1-3d) → gentle recall; medium (4-14d) → standard application; long (15+d) → harder applied or "teach it back".
 
 4. **Ask one section question, then wait for the developer's answer before asking the next.** One question per message — no batching.
+
+4a. **Challenge sub-flow — when the rotated section has a linked challenge** (from the step-2a lookup, matched via its `section:` field): the challenge **replaces** that section's chat question. Follow the "Show in Browser" flow, then open `http://localhost:4777/study/<challenge-id>` with `xdg-open`. Say:
+   > This section has a challenge — it's open in the browser. Solve it there, then reply **"challenge finished: <your answers to its questions>"**.
+
+   Hard pause. On "challenge finished": silently `Read challenges/.attempts/<topic>/<slug>.json` and evaluate the attempt (`code`/`predictedOutput` vs `output`, `exitCode`, `status`; high `runCount` is a struggle signal, not a failure) together with the chat answers to the challenge's `questions`. Give 1-2 sentences of feedback and the per-section rating like any other section — Socratic Never-Reveal still applies to weak question answers, but never reveal the challenge's solution in chat. If the attempt file is missing or stale (old `updatedAt`), ask the developer to hit Run once more instead of guessing.
 5. **Evaluate each answer** as it comes in: 1-2 sentences of feedback and a per-section rating (1-4), then move to the next section's question (or, after the last section, to the rating breakdown). Assign page rating = rounded mean (round half-down). Score code answers on structural correctness, not literal completeness. **On a weak section answer, apply Socratic Never-Reveal** — recover via smaller guiding questions until the developer produces the missing piece, then rate; do not read the section content back at them.
 6. State rating breakdown and apply:
    > Section A: Good · Section B: Hard → page rated **Hard (2)**. Applying.
 7. Run `scripts/wiki-reschedule wiki/<path>.md <rating> --probed "<Section A>,<Section B>"`.
 8. Confirm: `Rated **Hard (2)** — next review in 3 days (2026-04-22)`
-9. **Open Obsidian** using the "Show in Obsidian" flow from `references/wiki-write-protocol.md`. Say:
-   > Opened in Obsidian — take your time reading. Say "next" when done, or "discuss" / "walkthrough" to dig in.
+9. **Open the page in the browser** using the "Show in Browser" flow from `references/wiki-write-protocol.md` (`http://localhost:4777/wiki/<key>`). Say:
+   > Opened in the browser — take your time reading. Say "next" when done, or "discuss" / "walkthrough" to dig in.
 10. **Wait for explicit "next" / "done" before advancing.** Hard pause — do not auto-advance.
 11. After all entries reviewed (or "done with wiki"), go to Phase 4.
 
@@ -324,9 +329,9 @@ Call `adjust_session`. Confirm reduction. Continue.
 
 Chain to `/study-flashcard` with current deck. After creation, resume.
 
-### "show in Obsidian" / "open in Obsidian"
+### "show in browser" / "open it"
 
-Follow the "Show in Obsidian" flow from `references/wiki-write-protocol.md`. If a wiki page exists for the current card's topic, open it. If not, offer to create one. Resume session after.
+Follow the "Show in Browser" flow from `references/wiki-write-protocol.md`. If a wiki page exists for the current card's topic, open it. If not, offer to create one. Resume session after.
 
 ---
 

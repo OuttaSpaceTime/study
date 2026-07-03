@@ -14,7 +14,7 @@ Interactive walkthrough that builds on what the developer already knows. Checks 
 
 This skill reads from and writes to the developer wiki at `wiki/`. See `references/wiki-write-protocol.md` for the full "write wiki" flow, linking rules, and frontmatter spec.
 
-**At any point** during the session, the developer can say "show in Obsidian" to launch Obsidian and view wiki pages. Follow the "Show in Obsidian" flow in the wiki-write-protocol.
+**At any point** during the session, the developer can say "show in browser" to open wiki pages in the wiki-viewer app. Follow the "Show in Browser" flow in the wiki-write-protocol.
 
 ## Session Rules
 
@@ -25,7 +25,7 @@ For additional shared interactive principles (scope, handling disagreement, non-
 - Pause after each phase -- ask whether to continue or discuss. Never auto-advance.
 - If the developer says "skip" or "I know this," fast-forward immediately.
 - If the developer fails a recall question, do NOT skip -- walk through it again until internalized.
-- **Read silently, never cat.** Run `scripts/wiki-search`, `scripts/wiki-due`, `scripts/wiki-probes`, `Read` of wiki/index/log files, and `mcp__flashcard-mcp__*` calls without preamble narration and without echoing their stdout, JSON, or file contents into chat. The chat shows only synthesized output — the calibration question, the gap surfaced, the next phase prompt. See AGENTS.md "Skill Design Principles → Read silently, never cat."
+- **Read silently, never cat.** Run `scripts/wiki-search`, `scripts/wiki-due`, `scripts/challenges`, `Read` of wiki/index/log files, and `mcp__flashcard-mcp__*` calls without preamble narration and without echoing their stdout, JSON, or file contents into chat. The chat shows only synthesized output — the calibration question, the gap surfaced, the next phase prompt. See AGENTS.md "Skill Design Principles → Read silently, never cat."
 
 ## Socratic Never-Reveal — The Developer Produces Every Answer (always on; not a selectable mode; overrides every reveal-style step below)
 
@@ -111,7 +111,7 @@ The workflow returns `{ confidence, authoritativeSources[], practitionerSources[
 
 **Skip research only when:** the topic is repository-internal (a codebase pattern, an internal script, a project decision) where no public authoritative source exists. Note the skip in the session log under a `Research:` field so the pattern is visible across sessions.
 
-**Probes are exempt.** Research grounds *explanations*; probes ground via direct execution. When a probe is run (developer types a command, pastes the output), the probe output IS the authoritative source for that point — do not second-guess a probe with research, do not ask the developer to re-verify a probed result against docs, and do not require a probe-derived claim to carry a `## References` URL. If a probe contradicts the research findings, that's a finding worth surfacing ("the docs say X but your run shows Y — let's dig into why"), but the probe wins for the immediate question. Persisted probes under `probes/<topic-slug>/` are not subject to research-grounding either.
+**Probes and challenges are exempt.** Research grounds *explanations*; probes and challenges ground via direct execution. When a probe or challenge is run (a command in the terminal, or an attempt on a challenge study page), the run output IS the authoritative source for that point — do not second-guess it with research, do not ask the developer to re-verify a run result against docs, and do not require a run-derived claim to carry a `## References` URL. If a run contradicts the research findings, that's a finding worth surfacing ("the docs say X but your run shows Y — let's dig into why"), but the run wins for the immediate question. Persisted challenges under `challenges/` are not subject to research-grounding either.
 
 ## Invocation
 
@@ -247,8 +247,8 @@ Based on calibration results, the walkthrough adapts:
 - **Ground your questions in research (probes exempt).** Use the Phase 1 research findings so *you* hold the canonical answer — then ask the developer toward it; do not read the framing aloud (see Socratic Never-Reveal). When your memory diverges from the sources, the source wins for judging the developer's answer and for the written page. Cite source URLs only as a place for the developer to investigate, never as the answer itself. If the research grounding came back `low` confidence or hasn't returned by the time a load-bearing point comes up, push a probe instead of asserting. **Probes themselves are not grounded in research** — the probe's actual output is the ground truth for whatever it demonstrates. If a probe contradicts research, surface the contradiction but trust the probe for the immediate point.
 - Show concrete codebase code, never abstract examples
 - Ask a guiding question and wait — never reveal the answer. On a wrong or blank answer, decompose into a smaller sub-question rather than correcting by assertion.
-- **Probe when possible.** For code-shaped concepts (git, Python, shell, SQL, API behavior, algorithms), ask the developer to actually run a minimal snippet and paste the output — `uv run python -c`, a repl one-liner, a `git` command, `curl | jq`, a unit test. Compare the output against the prediction they made in the concrete challenge step. Probes turn Assumed understanding into Known and catch the "I thought I knew this" failure mode that pure discussion misses. Skip probes for theory-only concepts where no small snippet would demonstrate the point.
-- **Persist load-bearing probes.** When a probe changes the developer's understanding (prediction wrong, output surprising, or the probe resolved a gap that was gating the session), save it to `probes/<topic-slug>/YYYY-MM-DD-HHMM-<brief>.md` using the four-section format in `probes/README.md` (Prediction / Command / Output / Takeaway). Copy `probes/_template.md` to scaffold. Mirror the Takeaway into the session log's `Surprising:` or `Heuristic:` field so it's findable without grepping. Skip persistence for probes that merely confirmed what the developer already knew — those are ceremony. Before starting a walkthrough on a recurring topic, read existing probes under `probes/<topic-slug>/` so the session builds on them instead of relitigating.
+- **Probe when possible.** For code-shaped concepts (git, Python, shell, SQL, API behavior, algorithms), have the developer actually run something and compare the output against their prediction. Trivial one-liners can stay in the terminal (paste the output); for anything worth an editor, use interactive challenge probing (next bullet). Probes turn Assumed understanding into Known and catch the "I thought I knew this" failure mode that pure discussion misses. Skip probes for theory-only concepts where no small snippet would demonstrate the point.
+- **Interactive challenge probing.** To probe or test understanding live, write a scratch challenge to `challenges/scratch/YYYY-MM-DD-HHMM-<brief>.md` (frontmatter `kind`, `env`, `created`; body `## Brief` + `## Stub` + `## Solution`, optional `## Expected Output`; wiki/section optional for scratch — copy `challenges/_template.md`) and open `http://localhost:4777/study/scratch/<name>` via the "Show in Browser" flow. Keep it atomic like a flashcard: one idea, a few lines, one missing piece — no setup overhead. The developer predicts, fills in, and runs in the browser; silently `Read challenges/.attempts/scratch/<name>.json` to compare prediction against output. Mirror surprising takeaways into the session log's `Surprising:` or `Heuristic:` field. When a scratch challenge changed understanding and maps to a wiki section, offer to promote it in Phase 4; delete-by-neglect is fine for the rest. Before a recurring-topic walkthrough, check prior challenges via `scripts/challenges <wiki-key>` so the session builds on them instead of relitigating.
 - When the developer's explanation is incomplete, ask a follow-up rather than correcting
 - **Concrete example/challenge (mandatory, every concept):** For each concept walked through, ask the developer to actively produce something -- not just passively receive:
   - **Code concepts:** "What do you expect this outputs?" / "How would you write the code for that?" / "Here's a broken version -- what's wrong?" -- show a snippet and require a prediction or solution
@@ -289,7 +289,8 @@ If any of these are missing or vague, return to the relevant concept and discuss
 4. Adjust the page based on gaps surfaced during review
 5. **Probe sections:** Default `probe_sections` to all H2 headings except `Related Concepts`, `References`, `See also`, and `TL;DR`. Offer the developer a chance to mark any remaining sections as reference-only — but default-all is usually correct. Write `probe_sections` in frontmatter and seed `last_probed` with the same list (keeps the queue invariant `set(last_probed) == set(probe_sections)` true from day one; first review rotates as if fresh). **Heading quality gate:** before finalizing probe_sections, check each heading — if it doesn't tell you what to recall without re-reading the section, rename it first. `## Gotchas` is a weak prompt; `## nil on no match and chaining behavior` is a strong one.
 6. Follow `references/wiki-write-protocol.md` for the full write flow
-7. Log the session
+7. **Offer challenges:** propose creating 1-2 permanent challenges for the most code-shaped `probe_sections` (promote the session's scratch challenge when one exists — move the file to `challenges/<topic>/<slug>.md`, fill `wiki`/`section`/`questions`). Keep them atomic; verify each with `npm run -s run-challenge -- <id>` in `/home/felix/Code/Misc/wiki-viewer`, then `scripts/lint`. Skip when no section is code-shaped.
+8. Log the session
 
 **Deepen-focused mode** -- offer choices:
 
@@ -302,7 +303,9 @@ If any of these are missing or vague, return to the relevant concept and discuss
    - Include `flashcard_ids` for any related cards
    - Run `scripts/wiki-write`, append session log
 
-3. **"done"** -- Just log the session, no writes
+3. **"add challenge"** -- Create 1-2 permanent challenges for the page's most code-shaped sections (or promote this session's scratch challenge: move to `challenges/<topic>/<slug>.md`, fill `wiki`/`section`/`questions`). Atomic like a flashcard. Verify with `npm run -s run-challenge -- <id>` in `/home/felix/Code/Misc/wiki-viewer`, then `scripts/lint`.
+
+4. **"done"** -- Just log the session, no writes
 
 **Wiki write details (both modes):**
 
@@ -332,7 +335,7 @@ When writing a wiki page, follow this structure:
 - **Research:** research-grounding workflow — 2 authoritative (Greg Young's CQRS doc, EventStore docs) + 2 practitioner (Martin Fowler's bliki, a production post-mortem); confidence: high. 1 blog claim flagged contradictsGroundTruth (dropped). Cited 2 authoritative inline; 1 tradeoff surfaced in `## Tradeoffs & gotchas`.
 - **Surprising:** upcasting was expected to be a compile-time transform; it's runtime-per-event
 - **Heuristic:** any change to a persisted event shape needs an upcaster, not a migration
-- **Next-time unblocker:** a small probe script that replays one serialized event through the upcaster chain
+- **Next-time unblocker:** a scratch challenge that replays one serialized event through the upcaster chain
 ```
 
 **Look-Back fields are mandatory in Learning cadence, recommended in Refresh, and collapse to a single **Takeaway:** line in Concise.** If nothing was surprising, write `Surprising: none — cadence may have been too shallow` so the pattern shows up across sessions. The heuristic is the single line a future session in this area should read first.

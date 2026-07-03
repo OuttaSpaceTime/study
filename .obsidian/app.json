@@ -5,7 +5,7 @@
   "showUnsupportedFiles": false,
   "alwaysUpdateLinks": true,
   "userIgnoreFilters": [
-    "probes/",
+    "challenges/",
     "scripts/",
     "tests/",
     "CLAUDE.md"

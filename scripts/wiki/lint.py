@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from scripts.wiki.challenges import scan_challenges
 from scripts.wiki.frontmatter import (
     extract_h2s,
     norm_set,
@@ -17,7 +19,6 @@ from scripts.wiki.frontmatter import (
     slugify,
 )
 from scripts.wiki.index import get_wiki_key, iter_wiki_pages, load_index
-from scripts.wiki.probes import scan_probes
 
 REQUIRED_FIELDS = {
     "title",
@@ -93,14 +94,14 @@ def _parse_pages(wiki_dir: Path, md_files: list[Path]) -> list[ParsedPage]:
 
 def lint_wiki(
     wiki_dir: Path,
-    probes_dir: Path | None = None,
+    challenges_dir: Path | None = None,
     dirty_pages: set[str] | None = None,
 ) -> tuple[list[str], list[str]]:
     """Run all lint checks.
 
     Returns (errors, warnings). Errors should block CI; warnings are informational.
 
-    `probes_dir` defaults to `<wiki_dir>/../probes`.
+    `challenges_dir` defaults to `<wiki_dir>/../challenges`.
 
     Per-page `lint_ignore` frontmatter suppresses named **warnings** for that page,
     but only while the page is committed (not dirty in git) — see `_apply_lint_ignore`.
@@ -108,8 +109,8 @@ def lint_wiki(
     pass an explicit set to make the suppression deterministic in tests.
     """
     wiki_dir = Path(wiki_dir)
-    if probes_dir is None:
-        probes_dir = wiki_dir.parent / "probes"
+    if challenges_dir is None:
+        challenges_dir = wiki_dir.parent / "challenges"
     if dirty_pages is None:
         dirty_pages = _dirty_wiki_pages(wiki_dir)
     md_files = iter_wiki_pages(wiki_dir)
@@ -133,7 +134,7 @@ def lint_wiki(
     errors.extend(_check_slugs(pages))
     errors.extend(_check_flashcard_ids(pages, index))
     errors.extend(_check_probe_sections(wiki_dir, pages, index))
-    errors.extend(_check_probe_files(probes_dir, wiki_dir, pages))
+    errors.extend(_check_challenge_files(challenges_dir, wiki_dir, pages))
     warnings.extend(_check_moc_coverage(wiki_dir, pages))
     warnings.extend(_check_moc_split_suggestion(wiki_dir, pages))
     warnings.extend(_check_probe_section_count(pages))
@@ -729,27 +730,69 @@ def _check_probe_sections(
     return errors
 
 
-def _check_probe_files(
-    probes_dir: Path, wiki_dir: Path, pages: list[ParsedPage]
+def _load_envs(envs_path: Path) -> dict | None:
+    if not envs_path.is_file():
+        return None
+    try:
+        envs = json.loads(envs_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return envs if isinstance(envs, dict) else None
+
+
+def _check_challenge_files(
+    challenges_dir: Path, wiki_dir: Path, pages: list[ParsedPage]
 ) -> list[str]:
     """Rules:
-    - probe-wiki-missing: probe must declare a non-empty `wiki:` field.
-    - probe-wiki-unresolved: `wiki:` field must point to an existing wiki page.
+    - challenge-wiki-missing: challenge must declare a non-empty `wiki:` field.
+    - challenge-wiki-unresolved: `wiki:` field must point to an existing wiki page.
+    - challenge-section-unresolved: `section:` must normalize-match an H2 of that page.
+    - challenge-duplicate-section: at most one challenge per (wiki page, section).
+    - challenge-env-unknown: `env:` must be a key in challenges/envs.json (skipped
+      when the registry file is absent).
+    Scratch challenges (under challenges/scratch/) are exempt from the wiki/section
+    rules but still need a known env.
     """
-    valid_keys = {get_wiki_key(wiki_dir, p.path) for p in pages}
+    pages_by_key = {get_wiki_key(wiki_dir, p.path): p for p in pages}
+    envs = _load_envs(challenges_dir / "envs.json")
 
     errors: list[str] = []
-    for probe in scan_probes(probes_dir):
-        rel = Path(probe["path"]).relative_to(probes_dir.parent)
-        wiki_ref = probe.get("wiki")
-        if not wiki_ref:
-            errors.append(f"probe-wiki-missing: {rel} has empty or missing `wiki:` field")
+    seen: dict[tuple[str, str], str] = {}
+    for ch in scan_challenges(challenges_dir):
+        rel = Path(ch["path"]).relative_to(challenges_dir.parent)
+        if envs is not None and (ch.get("env") or "") not in envs:
+            errors.append(
+                f"challenge-env-unknown: {rel} env '{ch.get('env')}' not in challenges/envs.json"
+            )
+        if ch["scratch"]:
             continue
 
-        if str(wiki_ref) not in valid_keys:
+        wiki_ref = ch.get("wiki")
+        if not wiki_ref:
+            errors.append(f"challenge-wiki-missing: {rel} has empty or missing `wiki:` field")
+            continue
+
+        page = pages_by_key.get(str(wiki_ref))
+        if page is None:
             errors.append(
-                f"probe-wiki-unresolved: {rel} `wiki: {wiki_ref}` does not match any wiki page"
+                f"challenge-wiki-unresolved: {rel} `wiki: {wiki_ref}` does not match any wiki page"
             )
+            continue
+
+        section = normalize_heading(str(ch.get("section") or ""))
+        if not section or section not in norm_set(extract_h2s(page.body)):
+            errors.append(
+                f"challenge-section-unresolved: {rel} `section: {ch.get('section')}` has no matching H2 in {wiki_ref}"
+            )
+            continue
+
+        key = (str(wiki_ref), section)
+        if key in seen:
+            errors.append(
+                f"challenge-duplicate-section: {rel} duplicates ({wiki_ref}, {ch.get('section')}) already claimed by {seen[key]}"
+            )
+        else:
+            seen[key] = str(rel)
 
     return errors
 
