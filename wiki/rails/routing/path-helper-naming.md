@@ -11,18 +11,18 @@ tags:
 created: '2026-04-14'
 updated: '2026-04-14'
 source_skill: study-walkthrough
-next_review: '2026-06-29'
-review_interval: 30
+next_review: '2026-07-04'
+review_interval: 1
 probe_sections:
 - Renaming with `as:`
 - The `_index` Suffix
 - 'Fix: Set `as:` Explicitly'
 - How to verify path helper names at the console
 last_probed:
+- 'Fix: Set `as:` Explicitly'
 - How to verify path helper names at the console
 - Renaming with `as:`
 - The `_index` Suffix
-- 'Fix: Set `as:` Explicitly'
 flashcard_ids: []
 ---
 
