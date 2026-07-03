@@ -2045,7 +2045,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-07-02",
-    "updated": "2026-07-02",
+    "updated": "2026-07-03",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -2263,6 +2263,97 @@
       "The name is part of the contract",
       "Why review is the backstop",
       "The ladder from documented to impossible",
+      "Tradeoffs and gotchas"
+    ]
+  },
+  "software-design/software-complexity": {
+    "file": "software-design/software-complexity.md",
+    "title": "Software complexity",
+    "aliases": [
+      "accidental complexity",
+      "essential complexity",
+      "complexity cost",
+      "why lower complexity"
+    ],
+    "tags": [
+      "software-design",
+      "complexity",
+      "code-review"
+    ],
+    "sections": [
+      "TL;DR",
+      "Essential versus accidental complexity, and why the split matters",
+      "Why the cost lands on change, not on reading",
+      "Complecting, when two simple things become one expensive one",
+      "Guarantee ownership at the trust boundary",
+      "Triaging defensive checks, especially in AI-generated code",
+      "Tradeoffs and gotchas",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-07-03",
+    "updated": "2026-07-03",
+    "next_review": "2026-07-06",
+    "review_interval": 3,
+    "probe_sections": [
+      "Essential versus accidental complexity, and why the split matters",
+      "Why the cost lands on change, not on reading",
+      "Complecting, when two simple things become one expensive one",
+      "Guarantee ownership at the trust boundary",
+      "Triaging defensive checks, especially in AI-generated code",
+      "Tradeoffs and gotchas"
+    ],
+    "last_probed": [
+      "Essential versus accidental complexity, and why the split matters",
+      "Why the cost lands on change, not on reading",
+      "Complecting, when two simple things become one expensive one",
+      "Guarantee ownership at the trust boundary",
+      "Triaging defensive checks, especially in AI-generated code",
+      "Tradeoffs and gotchas"
+    ]
+  },
+  "software-design/delegating-to-agents-without-losing-the-map": {
+    "file": "software-design/delegating-to-agents-without-losing-the-map.md",
+    "title": "Delegating to agents without losing the map",
+    "aliases": [
+      "comprehension debt",
+      "delegation boundaries",
+      "context-switch tax",
+      "agentic engineering"
+    ],
+    "tags": [
+      "software-design",
+      "complexity",
+      "ai-agents"
+    ],
+    "sections": [
+      "TL;DR",
+      "Why fast feedback from delegating is addictive",
+      "What passive delegation costs, the map you stop building",
+      "The context-switch tax that undoes parallel delegation",
+      "A checkpoint rule, read and test before starting the next thread",
+      "Tradeoffs and gotchas",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-07-03",
+    "updated": "2026-07-03",
+    "next_review": "2026-07-06",
+    "review_interval": 3,
+    "probe_sections": [
+      "Why fast feedback from delegating is addictive",
+      "What passive delegation costs, the map you stop building",
+      "The context-switch tax that undoes parallel delegation",
+      "A checkpoint rule, read and test before starting the next thread",
+      "Tradeoffs and gotchas"
+    ],
+    "last_probed": [
+      "Why fast feedback from delegating is addictive",
+      "What passive delegation costs, the map you stop building",
+      "The context-switch tax that undoes parallel delegation",
+      "A checkpoint rule, read and test before starting the next thread",
       "Tradeoffs and gotchas"
     ]
   }
