@@ -54,6 +54,17 @@ Every wiki page has YAML frontmatter. Required on **all pages**: `title`, `alias
 
 `wiki/.wiki-index.json` tracks all pages with their titles, aliases, sections (H2 headings), tags, and flashcard IDs. Updated automatically by `scripts/wiki-write`.
 
+### Archiving
+
+A page can be **archived** to drop it from active study without deleting it. Archiving adds an `archived` tag to the page's frontmatter `tags`; that single marker does two things:
+
+- **Out of review.** `get_due_entries` skips `archived`-tagged entries (the same way it skips `moc`), so archived pages leave both `scripts/wiki-due` and the SRS pressure wiki count that `/study` and `/study-walkthrough` gate on.
+- **Out of the graph.** `.obsidian/graph.json` filters `-tag:#archived` (Obsidian's `tag:` search matches frontmatter tags), so archived pages disappear from the graph view.
+
+Archiving is **non-destructive and reversible**: the page keeps its place, frontmatter, schedule (`next_review`/`review_interval`), and wikilinks, and stays searchable via `scripts/wiki-search` / TreeSearch and visible in the Obsidian file explorer. Unarchiving removes the tag and the page rejoins review at its stored `next_review`.
+
+Toggle it with `scripts/wiki-archive <page>` (and `--unarchive`), which rewrites the frontmatter and re-runs the `wiki-write` reindex pipeline. The `wiki/llm/` pages are currently archived.
+
 ### Search
 
 - **TreeSearch** (pytreesearch): FTS5 keyword search, <100ms, section-aware results. Index at `wiki/indexes/`.
@@ -117,7 +128,7 @@ The vault is the whole repo, but only `wiki/` is knowledge content. Hiding the r
 | Search, graph, quick-switcher, link autocomplete | `userIgnoreFilters` (core "Excluded files") | `.obsidian/app.json` |
 | File-explorer sidebar (full removal) | CSS snippet using `.nav-folder:has(...)` / `.nav-file:has(...)` rules | `.obsidian/snippets/hide-non-wiki.css` (enabled via `enabledCssSnippets` in `.obsidian/appearance.json`) |
 
-Both lists must stay **in sync**. Currently hidden: `probes/`, `scripts/`, `tests/`, `CLAUDE.md`. Kept visible on purpose: `wiki/`, `logs/`, `AGENTS.md`, `todo.md`. Dotfolders (`.claude/`, `.git/`, `.venv/`, `.pytest_cache/`) are auto-ignored by Obsidian; non-markdown (`pyproject.toml`, `uv.lock`) is hidden by `showUnsupportedFiles: false`. The graph view is separately scoped to `path:wiki/` via `.obsidian/graph.json`.
+Both lists must stay **in sync**. Currently hidden: `probes/`, `scripts/`, `tests/`, `CLAUDE.md`. Kept visible on purpose: `wiki/`, `logs/`, `AGENTS.md`, `todo.md`. Dotfolders (`.claude/`, `.git/`, `.venv/`, `.pytest_cache/`) are auto-ignored by Obsidian; non-markdown (`pyproject.toml`, `uv.lock`) is hidden by `showUnsupportedFiles: false`. The graph view is separately scoped to `path:wiki/ -path:wiki/indexes -tag:#archived` via `.obsidian/graph.json` (see [Archiving](#archiving)).
 
 To change what's hidden: edit the list in **both** `app.json` (`userIgnoreFilters`) and `hide-non-wiki.css`, then reload Obsidian (`Ctrl+R`). For a folder, add `.nav-folder:has(> .nav-folder-title[data-path="<name>"])`; for a file, `.nav-file:has(> .nav-file-title[data-path="<name>.md"])`.
 
@@ -221,6 +232,7 @@ Available scripts:
 - `scripts/wiki-search "<query>"` — Semantic search against wiki embeddings
 - `scripts/wiki-due` — List wiki pages due for review
 - `scripts/wiki-reschedule <page> <rating>` — Reschedule a wiki page after review (1-4), rewrites frontmatter and re-indexes
+- `scripts/wiki-archive <page> [--unarchive]` — Archive/unarchive a page by toggling its `archived` tag (drops it from review + graph); re-indexes. See [Archiving](#archiving)
 - `scripts/wiki-probes [<wiki-path>]` — List probes linked to a wiki page (derived from probe frontmatter). Omit argument to list all grouped by wiki page; `--topic <slug>` to match by topic folder instead; `--count` for count only
 - `scripts/anki-sync <login|sync|status>` — Sync flashcards to AnkiWeb (see [Anki Sync](#anki-sync)). `sync --dry-run` previews, `--local` skips AnkiWeb
 - `scripts/card-htmlize` — Convert markdown/plain card text in master.db to simple Anki HTML (dry-run by default, `--apply` writes after backing up master.db)

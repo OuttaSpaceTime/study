@@ -217,7 +217,8 @@
       "llm",
       "embeddings",
       "rag",
-      "retrieval"
+      "retrieval",
+      "archived"
     ],
     "sections": [
       "TL;DR",
@@ -232,7 +233,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-06-27",
+    "updated": "2026-07-03",
     "next_review": "2026-07-09",
     "review_interval": 12,
     "probe_sections": [
@@ -267,7 +268,8 @@
     "tags": [
       "llm",
       "inference",
-      "performance"
+      "performance",
+      "archived"
     ],
     "sections": [
       "TL;DR",
@@ -282,7 +284,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-07-01",
+    "updated": "2026-07-03",
     "next_review": "2026-07-18",
     "review_interval": 17,
     "probe_sections": [
@@ -318,7 +320,8 @@
       "llm",
       "inference",
       "attention",
-      "transformer"
+      "transformer",
+      "archived"
     ],
     "sections": [
       "TL;DR",
@@ -335,7 +338,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-06-23",
+    "updated": "2026-07-03",
     "next_review": "2026-07-03",
     "review_interval": 10,
     "probe_sections": [
@@ -368,14 +371,15 @@
     ],
     "tags": [
       "moc",
-      "llm"
+      "llm",
+      "archived"
     ],
     "sections": [
       "Pages"
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-05-07",
+    "updated": "2026-07-03",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -399,7 +403,8 @@
       "llm",
       "inference",
       "sampling",
-      "ollama"
+      "ollama",
+      "archived"
     ],
     "sections": [
       "TL;DR",
@@ -412,7 +417,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-06-23",
+    "updated": "2026-07-03",
     "next_review": "2026-07-03",
     "review_interval": 10,
     "probe_sections": [
@@ -444,7 +449,8 @@
       "llm",
       "ollama",
       "gpu",
-      "infrastructure"
+      "infrastructure",
+      "archived"
     ],
     "sections": [
       "TL;DR",
@@ -458,7 +464,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-06-02",
+    "updated": "2026-07-03",
     "next_review": "2026-06-30",
     "review_interval": 28,
     "probe_sections": [

@@ -6,6 +6,7 @@ aliases:
 tags:
 - moc
 - llm
+- archived
 created: '2026-05-05'
 updated: '2026-05-05'
 source_skill: manual
