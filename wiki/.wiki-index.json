@@ -1972,9 +1972,9 @@
       "cmqu0u3eu000c150m44rrl72z"
     ],
     "created": "2026-06-25",
-    "updated": "2026-06-25",
-    "next_review": "2026-06-28",
-    "review_interval": 3,
+    "updated": "2026-07-03",
+    "next_review": "2026-07-07",
+    "review_interval": 4,
     "probe_sections": [
       "MVCC means readers and writers never block each other",
       "Implicit row locks make writers block writers",
@@ -1984,12 +1984,12 @@
       "Optimistic versus pessimistic locking"
     ],
     "last_probed": [
-      "MVCC means readers and writers never block each other",
-      "Implicit row locks make writers block writers",
-      "Lost updates and why with_lock fixes them",
       "with_lock, lock!, and lock",
       "Why a transaction does not speed up parallel work",
-      "Optimistic versus pessimistic locking"
+      "Optimistic versus pessimistic locking",
+      "MVCC means readers and writers never block each other",
+      "Implicit row locks make writers block writers",
+      "Lost updates and why with_lock fixes them"
     ]
   },
   "angular/signals-and-rxjs-interop": {

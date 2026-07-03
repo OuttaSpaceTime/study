@@ -30,14 +30,14 @@ probe_sections:
 - Why a transaction does not speed up parallel work
 - Optimistic versus pessimistic locking
 last_probed:
-- MVCC means readers and writers never block each other
-- Implicit row locks make writers block writers
-- Lost updates and why with_lock fixes them
 - with_lock, lock!, and lock
 - Why a transaction does not speed up parallel work
 - Optimistic versus pessimistic locking
-review_interval: 3
-next_review: '2026-06-28'
+- MVCC means readers and writers never block each other
+- Implicit row locks make writers block writers
+- Lost updates and why with_lock fixes them
+review_interval: 4
+next_review: '2026-07-07'
 ---
 
 # Row locking and concurrency
