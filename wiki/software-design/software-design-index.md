@@ -23,6 +23,7 @@ Map of content for the `software-design/` wiki folder. Auto-maintained by `scrip
 
 ## Pages
 
+- [[software-design/delegating-to-agents-without-losing-the-map]]
 - [[software-design/judging-abstractions]]
 - [[software-design/reading-code-for-intent]]
 - [[software-design/software-complexity]]

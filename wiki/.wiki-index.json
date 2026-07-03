@@ -2312,5 +2312,49 @@
       "Triaging defensive checks, especially in AI-generated code",
       "Tradeoffs and gotchas"
     ]
+  },
+  "software-design/delegating-to-agents-without-losing-the-map": {
+    "file": "software-design/delegating-to-agents-without-losing-the-map.md",
+    "title": "Delegating to agents without losing the map",
+    "aliases": [
+      "comprehension debt",
+      "delegation boundaries",
+      "context-switch tax",
+      "agentic engineering"
+    ],
+    "tags": [
+      "software-design",
+      "complexity",
+      "ai-agents"
+    ],
+    "sections": [
+      "TL;DR",
+      "Why fast feedback from delegating is addictive",
+      "What passive delegation costs, the map you stop building",
+      "The context-switch tax that undoes parallel delegation",
+      "A checkpoint rule, read and test before starting the next thread",
+      "Tradeoffs and gotchas",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-07-03",
+    "updated": "2026-07-03",
+    "next_review": "2026-07-06",
+    "review_interval": 3,
+    "probe_sections": [
+      "Why fast feedback from delegating is addictive",
+      "What passive delegation costs, the map you stop building",
+      "The context-switch tax that undoes parallel delegation",
+      "A checkpoint rule, read and test before starting the next thread",
+      "Tradeoffs and gotchas"
+    ],
+    "last_probed": [
+      "Why fast feedback from delegating is addictive",
+      "What passive delegation costs, the map you stop building",
+      "The context-switch tax that undoes parallel delegation",
+      "A checkpoint rule, read and test before starting the next thread",
+      "Tradeoffs and gotchas"
+    ]
   }
 }
