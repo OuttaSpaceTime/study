@@ -136,6 +136,14 @@ beforeAll(async () => {
   writeFixture("code-fenced-target.md", "Fenced target body.\n");
   writeFixture("inline-code-target.md", "Inline target body.\n");
 
+  // Archived page: kept on disk but hidden from index, tree, and graph.
+  writeFixture(
+    "archived/secret.md",
+    ["---", "title: Secret Archived", "tags:", "  - archived", "---", "Archived body."].join(
+      "\n",
+    ),
+  );
+
   // Content that must be skipped by discovery.
   writeFixture("indexes/skipme.md", "Should never be indexed.\n");
   writeFixture(".obsidian/hidden.md", "Dotfolder page, skipped.\n");
@@ -209,6 +217,14 @@ describe("page meta", () => {
     expect(ghost.isIndex).toBe(true);
     expect(ghost.folder).toBe("rails");
     expect(mustPage("linker").isIndex).toBe(false);
+  });
+});
+
+describe("archived pages", () => {
+  it("excludes an archived-tagged page from the page list, tree, and graph", () => {
+    expect(index.pages.some((p) => p.path === "archived/secret")).toBe(false);
+    expect(index.tree.folders.some((f) => f.name === "archived")).toBe(false);
+    expect(index.graph.nodes.some((n) => n.id === "archived/secret")).toBe(false);
   });
 });
 
