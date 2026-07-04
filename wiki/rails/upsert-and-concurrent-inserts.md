@@ -27,14 +27,14 @@ probe_sections:
 - Tradeoffs and gotchas
 last_probed:
 - Rails create!, insert_all, insert_all!, upsert_all
-- Bulk methods bypass validations and callbacks
-- find_or_create_by is not atomic
 - Tradeoffs and gotchas
 - The race between two concurrent inserts
 - ON CONFLICT DO NOTHING vs DO UPDATE
 - RETURNING returns only touched rows
-review_interval: 8
-next_review: '2026-07-01'
+- Bulk methods bypass validations and callbacks
+- find_or_create_by is not atomic
+review_interval: 20
+next_review: '2026-07-24'
 ---
 
 # Upsert and concurrent inserts
