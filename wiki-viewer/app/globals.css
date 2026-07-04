@@ -1,0 +1,174 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* Warm paper-white theme. Depth comes from layering (paper bg, white panels)
+   and soft shadows rather than heavy borders. */
+@theme {
+  --color-bg: #f6f5f1;
+  --color-panel: #fdfdfb;
+  --color-panel-2: #efede7;
+  --color-border: #e3e0d8;
+  --color-fg: #1f222a;
+  --color-muted: #555b68;
+  --color-faint: #818794;
+  --color-accent: #4a5fc1;
+  --color-accent-soft: rgba(74, 95, 193, 0.1);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html,
+body {
+  height: 100%;
+  overscroll-behavior: none;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+}
+
+::selection {
+  background: rgba(74, 95, 193, 0.18);
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #d8d4cb;
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Route transition: each page (re)mounted by app/template.tsx eases in. */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.page-enter {
+  animation: page-enter 180ms ease-out;
+}
+
+/* Article typography on top of @tailwindcss/typography.
+   Reading-first: the content is the product; chrome stays out of the way. */
+.wiki-prose {
+  --tw-prose-body: var(--color-fg);
+  --tw-prose-headings: #16181e;
+  --tw-prose-links: var(--color-accent);
+  --tw-prose-bold: #16181e;
+  --tw-prose-code: #2b2e36;
+  /* The plugin assumes dark pre backgrounds and defaults pre text to near-
+     white — unreadable on the light panel; plaintext blocks have no hljs
+     token spans to mask it. */
+  --tw-prose-pre-code: #2b2e36;
+  --tw-prose-pre-bg: var(--color-panel);
+  --tw-prose-quotes: #3f434e;
+  --tw-prose-quote-borders: var(--color-border);
+  --tw-prose-hr: var(--color-border);
+  --tw-prose-th-borders: var(--color-border);
+  --tw-prose-td-borders: var(--color-border);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+}
+
+/* Lead paragraph: the page's framing sentence gets a touch more presence. */
+.wiki-prose > p:first-child {
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: #2b2e36;
+}
+
+.wiki-prose h2 {
+  margin-top: 2.6em;
+  padding-bottom: 0.35em;
+  border-bottom: 1px solid var(--color-border);
+  letter-spacing: -0.01em;
+  font-weight: 600;
+}
+.wiki-prose h3 {
+  margin-top: 2em;
+  font-weight: 600;
+}
+
+.wiki-prose blockquote {
+  font-style: normal;
+  background: var(--color-panel);
+  border-left: 3px solid var(--color-accent);
+  border-radius: 0 6px 6px 0;
+  padding: 0.6em 1.1em;
+  box-shadow: 0 1px 2px rgba(29, 31, 38, 0.04);
+}
+.wiki-prose blockquote p:first-of-type::before,
+.wiki-prose blockquote p:last-of-type::after {
+  content: none;
+}
+
+.wiki-prose li {
+  margin-top: 0.3em;
+  margin-bottom: 0.3em;
+}
+.wiki-prose li::marker {
+  color: var(--color-faint);
+}
+
+.wiki-prose a {
+  text-decoration: none;
+  border-bottom: 1px solid rgba(74, 95, 193, 0.35);
+  transition: border-color 120ms ease, color 120ms ease;
+}
+.wiki-prose a:hover {
+  border-bottom-color: var(--color-accent);
+}
+
+/* Internal wikilinks get a subtle chip treatment; broken ones stay plain text. */
+.wiki-prose a.wikilink {
+  background: var(--color-accent-soft);
+  border-bottom: none;
+  border-radius: 4px;
+  padding: 0 4px;
+}
+.wiki-prose span.wikilink-broken {
+  color: var(--color-muted);
+  background: rgba(110, 115, 128, 0.1);
+  border-radius: 4px;
+  padding: 0 4px;
+}
+
+.wiki-prose :not(pre) > code {
+  background: #efede6;
+  border: 1px solid #ddd9cf;
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.875em;
+}
+.wiki-prose :not(pre) > code::before,
+.wiki-prose :not(pre) > code::after {
+  content: none;
+}
+
+.wiki-prose pre {
+  background: var(--color-panel) !important;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 0.85em;
+  line-height: 1.65;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 1px 3px rgba(29, 31, 38, 0.06);
+}
+
+.wiki-prose table {
+  font-size: 0.9em;
+}
+.wiki-prose thead th {
+  color: #1d1f26;
+}
