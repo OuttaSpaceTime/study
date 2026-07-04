@@ -54,7 +54,7 @@ export default function GraphRail() {
       <aside
         style={{ width: collapsed ? 40 : width }}
         className={clsx(
-          "relative shrink-0 border-l border-border bg-panel max-xl:hidden",
+          "relative shrink-0 border-l border-border bg-panel",
           !dragging && "transition-[width] duration-200 ease-out",
         )}
       >

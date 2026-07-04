@@ -5,9 +5,9 @@
   "showUnsupportedFiles": false,
   "alwaysUpdateLinks": true,
   "userIgnoreFilters": [
-    "probes/",
     "scripts/",
     "tests/",
+    "wiki-viewer/",
     "CLAUDE.md"
   ]
 }

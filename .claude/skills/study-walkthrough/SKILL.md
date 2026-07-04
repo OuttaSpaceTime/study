@@ -14,7 +14,7 @@ Interactive walkthrough that builds on what the developer already knows. Checks 
 
 This skill reads from and writes to the developer wiki at `wiki/`. See `references/wiki-write-protocol.md` for the full "write wiki" flow, linking rules, and frontmatter spec.
 
-**At any point** during the session, the developer can say "show in Obsidian" to launch Obsidian and view wiki pages. Follow the "Show in Obsidian" flow in the wiki-write-protocol.
+**At any point** during the session, the developer can say "show in browser" to open wiki pages in the wiki-viewer app. Follow the "Show in browser" flow in the wiki-write-protocol.
 
 ## Session Rules
 
@@ -25,7 +25,7 @@ For additional shared interactive principles (scope, handling disagreement, non-
 - Pause after each phase -- ask whether to continue or discuss. Never auto-advance.
 - If the developer says "skip" or "I know this," fast-forward immediately.
 - If the developer fails a recall question, do NOT skip -- walk through it again until internalized.
-- **Read silently, never cat.** Run `scripts/wiki-search`, `scripts/wiki-due`, `scripts/wiki-probes`, `Read` of wiki/index/log files, and `mcp__flashcard-mcp__*` calls without preamble narration and without echoing their stdout, JSON, or file contents into chat. The chat shows only synthesized output — the calibration question, the gap surfaced, the next phase prompt. See AGENTS.md "Skill Design Principles → Read silently, never cat."
+- **Read silently, never cat.** Run `scripts/wiki-search`, `scripts/wiki-due`, `Read` of wiki/index/log files, and `mcp__flashcard-mcp__*` calls without preamble narration and without echoing their stdout, JSON, or file contents into chat. The chat shows only synthesized output — the calibration question, the gap surfaced, the next phase prompt. See AGENTS.md "Skill Design Principles → Read silently, never cat."
 
 ## Socratic Never-Reveal — The Developer Produces Every Answer (always on; not a selectable mode; overrides every reveal-style step below)
 
@@ -111,7 +111,7 @@ The workflow returns `{ confidence, authoritativeSources[], practitionerSources[
 
 **Skip research only when:** the topic is repository-internal (a codebase pattern, an internal script, a project decision) where no public authoritative source exists. Note the skip in the session log under a `Research:` field so the pattern is visible across sessions.
 
-**Probes are exempt.** Research grounds *explanations*; probes ground via direct execution. When a probe is run (developer types a command, pastes the output), the probe output IS the authoritative source for that point — do not second-guess a probe with research, do not ask the developer to re-verify a probed result against docs, and do not require a probe-derived claim to carry a `## References` URL. If a probe contradicts the research findings, that's a finding worth surfacing ("the docs say X but your run shows Y — let's dig into why"), but the probe wins for the immediate question. Persisted probes under `probes/<topic-slug>/` are not subject to research-grounding either.
+**Probes are exempt.** Research grounds *explanations*; probes ground via direct execution. When a probe is run (developer types a command, pastes the output), the probe output IS the authoritative source for that point — do not second-guess a probe with research, do not ask the developer to re-verify a probed result against docs, and do not require a probe-derived claim to carry a `## References` URL. If a probe contradicts the research findings, that's a finding worth surfacing ("the docs say X but your run shows Y — let's dig into why"), but the probe wins for the immediate question.
 
 ## Invocation
 
@@ -248,7 +248,7 @@ Based on calibration results, the walkthrough adapts:
 - Show concrete codebase code, never abstract examples
 - Ask a guiding question and wait — never reveal the answer. On a wrong or blank answer, decompose into a smaller sub-question rather than correcting by assertion.
 - **Probe when possible.** For code-shaped concepts (git, Python, shell, SQL, API behavior, algorithms), ask the developer to actually run a minimal snippet and paste the output — `uv run python -c`, a repl one-liner, a `git` command, `curl | jq`, a unit test. Compare the output against the prediction they made in the concrete challenge step. Probes turn Assumed understanding into Known and catch the "I thought I knew this" failure mode that pure discussion misses. Skip probes for theory-only concepts where no small snippet would demonstrate the point.
-- **Persist load-bearing probes.** When a probe changes the developer's understanding (prediction wrong, output surprising, or the probe resolved a gap that was gating the session), save it to `probes/<topic-slug>/YYYY-MM-DD-HHMM-<brief>.md` using the four-section format in `probes/README.md` (Prediction / Command / Output / Takeaway). Copy `probes/_template.md` to scaffold. Mirror the Takeaway into the session log's `Surprising:` or `Heuristic:` field so it's findable without grepping. Skip persistence for probes that merely confirmed what the developer already knew — those are ceremony. Before starting a walkthrough on a recurring topic, read existing probes under `probes/<topic-slug>/` so the session builds on them instead of relitigating.
+- **Capture load-bearing probe takeaways.** When a probe changes the developer's understanding (prediction wrong, output surprising, or the probe resolved a gap that was gating the session), mirror the Takeaway (Prediction / Command / Output / Takeaway) into the session log's `Surprising:` or `Heuristic:` field so it's findable later. Skip capture for probes that merely confirmed what the developer already knew — those are ceremony.
 - When the developer's explanation is incomplete, ask a follow-up rather than correcting
 - **Concrete example/challenge (mandatory, every concept):** For each concept walked through, ask the developer to actively produce something -- not just passively receive:
   - **Code concepts:** "What do you expect this outputs?" / "How would you write the code for that?" / "Here's a broken version -- what's wrong?" -- show a snippet and require a prediction or solution

@@ -14,7 +14,7 @@ Create flashcards for the spaced repetition system through an interactive 4-chec
 
 This skill can write companion wiki pages to `wiki/`. See `references/wiki-write-protocol.md` for the full "write wiki" flow, linking rules, and frontmatter spec. All wikilinks use absolute paths from wiki root (e.g., `[[javascript/closures]]` not `[[closures]]`).
 
-**At any point** during the session, the developer can say "show in Obsidian" to launch Obsidian and view wiki pages. Follow the "Show in Obsidian" flow in the wiki-write-protocol.
+**At any point** during the session, the developer can say "show in browser" to open wiki pages in the wiki-viewer app. Follow the "Show in browser" flow in the wiki-write-protocol.
 
 ## Session Rules
 

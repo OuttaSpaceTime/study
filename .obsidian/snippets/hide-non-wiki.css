@@ -10,18 +10,18 @@
  */
 
 /* Whole folders (hide the title + its children via :has on the parent) */
-.nav-folder:has(> .nav-folder-title[data-path="probes"]),
 .nav-folder:has(> .nav-folder-title[data-path="scripts"]),
 .nav-folder:has(> .nav-folder-title[data-path="tests"]),
+.nav-folder:has(> .nav-folder-title[data-path="wiki-viewer"]),
 /* Individual root files */
 .nav-file:has(> .nav-file-title[data-path="CLAUDE.md"]) {
   display: none !important;
 }
 
 /* Fallback for older engines without :has() — hides at least the title row */
-.nav-folder-title[data-path="probes"],
 .nav-folder-title[data-path="scripts"],
 .nav-folder-title[data-path="tests"],
+.nav-folder-title[data-path="wiki-viewer"],
 .nav-file-title[data-path="CLAUDE.md"] {
   display: none !important;
 }

@@ -239,21 +239,24 @@ Tell the developer:
 > Written `[[architecture/event-sourcing]]` with 3 links. Lint: clean.
 > Session logged to `logs/04/2026-04-09.md`.
 
-## "Show in Obsidian" Flow
+## "Show in browser" Flow
 
-At any point during any skill, the developer can say "show in Obsidian", "open in Obsidian", or "present in Obsidian". The skill should:
+At any point during any skill, the developer can say "show in browser", "open in browser", or "present it". The skill should:
 
-1. **Launch Obsidian** (only if the official CLI socket is absent):
+1. **Ensure the wiki-viewer is running** (launch detached only if health check fails):
    ```bash
-   test -S "${XDG_RUNTIME_DIR:-$HOME}/.obsidian-cli.sock" || { setsid -f /opt/Obsidian/obsidian >/dev/null 2>&1 < /dev/null; sleep 3; }
+   curl -sf http://localhost:4777/api/index >/dev/null || {
+     (cd wiki-viewer && setsid -f npm run dev >/dev/null 2>&1 < /dev/null)
+     for i in $(seq 1 30); do curl -sf http://localhost:4777/api/index >/dev/null && break; sleep 0.5; done
+   }
    ```
-   Obsidian is the Debian package at `/opt/Obsidian/obsidian` (no `snap` on this machine). The socket is the reliable connected-indicator; do not use `pgrep -f "obsidian"` (it self-matches the shell).
+   The wiki-viewer is the in-repo Next.js app at `wiki-viewer/` (binds `127.0.0.1:4777`).
 
-2. **Open the relevant page by slug:**
+2. **Open the relevant page by wiki key:**
    ```bash
-   obsidian open vault="study" file="<slug>"
+   xdg-open "http://localhost:4777/wiki/<key>"
    ```
-   Use the wiki-relative slug without `.md` (e.g. `git/git-restore`, `security/hsts`) — `file=` resolves by name like wikilinks. The vault is the repo root, name `study`; pass the wiki-relative slug (not `wiki/...`).
+   Use the wiki-relative key without `.md` (e.g. `git/git-restore`, `security/hsts`).
 
 4. **Resume the skill session** — this is a non-blocking side action, not a skill interruption.
 
