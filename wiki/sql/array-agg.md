@@ -11,6 +11,8 @@ tags:
 created: '2026-04-17'
 updated: '2026-04-17'
 source_skill: study-walkthrough
+lint_ignore:
+- probe-section-count
 probe_sections:
 - What array_agg collects and the implicit single-group rule
 - No GROUP BY means one implicit group

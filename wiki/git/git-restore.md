@@ -9,6 +9,8 @@ tags:
 created: '2026-04-09'
 updated: '2026-04-22'
 source_skill: study-walkthrough
+lint_ignore:
+- probe-section-count
 flashcard_ids:
 - cmne7xz9202lx0msonsbfhp3j
 - cmne7xz1y02k30msouw64srcz

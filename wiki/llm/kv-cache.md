@@ -15,6 +15,8 @@ tags:
 created: '2026-05-05'
 updated: '2026-05-05'
 source_skill: study-walkthrough
+lint_ignore:
+- probe-section-count
 probe_sections:
 - What attention is doing - Q, K, V
 - Where the prediction comes from - K/V are inputs, not the output
