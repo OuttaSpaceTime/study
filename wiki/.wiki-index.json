@@ -2356,5 +2356,136 @@
       "A checkpoint rule, read and test before starting the next thread",
       "Tradeoffs and gotchas"
     ]
+  },
+  "rails/index-with": {
+    "file": "rails/index-with.md",
+    "title": "index_with",
+    "aliases": [
+      "Enumerable index_with",
+      "ActiveSupport index_with"
+    ],
+    "tags": [
+      "ruby",
+      "rails",
+      "active-support",
+      "enumerable"
+    ],
+    "sections": [
+      "Fixed Value vs Block",
+      "index_with vs index_by",
+      "index_with vs to_h",
+      "Duplicate Keys",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-10",
+    "updated": "2026-07-04",
+    "next_review": "2026-05-14",
+    "review_interval": 12,
+    "probe_sections": [
+      "Fixed Value vs Block",
+      "index_with vs index_by",
+      "index_with vs to_h",
+      "Duplicate Keys"
+    ],
+    "last_probed": [
+      "index_with vs to_h",
+      "Duplicate Keys",
+      "Fixed Value vs Block",
+      "index_with vs index_by"
+    ]
+  },
+  "json-api/document-structure": {
+    "file": "json-api/document-structure.md",
+    "title": "Document structure",
+    "aliases": [
+      "JSON:API document",
+      "JSON:API envelope",
+      "JSON:API resource object",
+      "relationships vs included"
+    ],
+    "tags": [
+      "api-design",
+      "json-api",
+      "rest"
+    ],
+    "sections": [
+      "TL;DR",
+      "Top-level keys and their mutual exclusions",
+      "Resource object shape",
+      "relationships hold pointers, included holds payloads",
+      "Compound documents and the full-linkage rule",
+      "Every node on an include path is included",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-08",
+    "updated": "2026-07-04",
+    "next_review": "2026-05-17",
+    "review_interval": 4,
+    "probe_sections": [
+      "Top-level keys and their mutual exclusions",
+      "Resource object shape",
+      "relationships hold pointers, included holds payloads",
+      "Compound documents and the full-linkage rule",
+      "Every node on an include path is included"
+    ],
+    "last_probed": [
+      "relationships hold pointers, included holds payloads",
+      "Compound documents and the full-linkage rule",
+      "Every node on an include path is included",
+      "Top-level keys and their mutual exclusions",
+      "Resource object shape"
+    ]
+  },
+  "json-api/query-conventions": {
+    "file": "json-api/query-conventions.md",
+    "title": "Query conventions",
+    "aliases": [
+      "JSON:API sparse fieldsets",
+      "JSON:API pagination",
+      "JSON:API filter",
+      "JSON:API sort",
+      "fields[type]"
+    ],
+    "tags": [
+      "api-design",
+      "json-api",
+      "rest",
+      "pagination"
+    ],
+    "sections": [
+      "TL;DR",
+      "The envelope-vs-strategy split",
+      "Sparse fieldsets are per-type, not per-path",
+      "Pagination URLs are opaque to the client",
+      "Cursor vs offset under concurrent inserts",
+      "Sort is precise, filter is deliberately undefined",
+      "Custom query parameters need a non-alpha character",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-05-08",
+    "updated": "2026-07-04",
+    "next_review": "2026-05-17",
+    "review_interval": 4,
+    "probe_sections": [
+      "The envelope-vs-strategy split",
+      "Sparse fieldsets are per-type, not per-path",
+      "Pagination URLs are opaque to the client",
+      "Cursor vs offset under concurrent inserts",
+      "Sort is precise, filter is deliberately undefined",
+      "Custom query parameters need a non-alpha character"
+    ],
+    "last_probed": [
+      "Sparse fieldsets are per-type, not per-path",
+      "Cursor vs offset under concurrent inserts",
+      "Sort is precise, filter is deliberately undefined",
+      "Custom query parameters need a non-alpha character",
+      "The envelope-vs-strategy split",
+      "Pagination URLs are opaque to the client"
+    ]
   }
 }
