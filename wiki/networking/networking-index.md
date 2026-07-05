@@ -7,7 +7,7 @@ tags:
 - moc
 - networking
 created: '2026-05-04'
-updated: '2026-05-04'
+updated: '2026-07-05'
 source_skill: manual
 probe_sections:
 - Pages
@@ -23,5 +23,6 @@ Map of content for the `networking/` wiki folder. Auto-maintained by `scripts/wi
 
 ## Pages
 
+- [[networking/dns]]
 - [[networking/url-anatomy]]
 

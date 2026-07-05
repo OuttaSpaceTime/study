@@ -500,7 +500,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-04",
-    "updated": "2026-05-07",
+    "updated": "2026-07-05",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -533,16 +533,13 @@
       "Host - subdomain, SLD, TLD",
       "Port: default ports and when the URL includes one",
       "Path and query",
-      "DNS resolution",
-      "DNS caching, TTL, and safe migrations",
-      "Host header and virtual hosts",
       "Related Concepts"
     ],
     "flashcard_ids": [
       "cmoqrprzu0000ld0mfbwqly5v"
     ],
     "created": "2026-05-04",
-    "updated": "2026-07-01",
+    "updated": "2026-07-05",
     "next_review": "2026-07-11",
     "review_interval": 10,
     "probe_sections": [
@@ -550,19 +547,13 @@
       "Scheme vs protocol",
       "Host - subdomain, SLD, TLD",
       "Port: default ports and when the URL includes one",
-      "Path and query",
-      "DNS resolution",
-      "DNS caching, TTL, and safe migrations",
-      "Host header and virtual hosts"
+      "Path and query"
     ],
     "last_probed": [
       "Host - subdomain, SLD, TLD",
-      "DNS caching, TTL, and safe migrations",
       "Scheme vs protocol",
       "Port: default ports and when the URL includes one",
       "Path and query",
-      "DNS resolution",
-      "Host header and virtual hosts",
       "URL anatomy at a glance"
     ]
   },
@@ -2486,6 +2477,44 @@
       "Custom query parameters need a non-alpha character",
       "The envelope-vs-strategy split",
       "Pagination URLs are opaque to the client"
+    ]
+  },
+  "networking/dns": {
+    "file": "networking/dns.md",
+    "title": "DNS",
+    "aliases": [
+      "DNS",
+      "domain name system",
+      "DNS resolution",
+      "DNS caching and TTL"
+    ],
+    "tags": [
+      "networking",
+      "dns"
+    ],
+    "sections": [
+      "DNS resolution",
+      "DNS caching and TTL",
+      "Safe migration",
+      "Host header and virtual hosts",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-07-05",
+    "updated": "2026-07-05",
+    "next_review": "2026-07-11",
+    "review_interval": 10,
+    "probe_sections": [
+      "DNS resolution",
+      "DNS caching and TTL",
+      "Safe migration",
+      "Host header and virtual hosts"
+    ],
+    "last_probed": [
+      "DNS resolution",
+      "DNS caching and TTL",
+      "Safe migration",
+      "Host header and virtual hosts"
     ]
   }
 }
