@@ -1,1 +1,8 @@
-{"hooks":{}}
+{
+  "hooks": {},
+  "permissions": {
+    "allow": [
+      "Bash(scripts/wiki-write*)"
+    ]
+  }
+}

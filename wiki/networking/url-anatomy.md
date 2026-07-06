@@ -36,7 +36,7 @@ next_review: '2026-07-11'
 
 ## TL;DR
 
-A URL is a chain of narrowing handoffs. Each layer answers one question and passes the rest down. Scheme → host → port → path → query. Turning the host name into an IP — DNS, TTL caching, and the `Host` header that picks a site when many share one IP — lives in [[networking/dns]]. Everything else (TLDs, subdomains) follows from these handoffs.
+A URL is a chain of narrowing handoffs. Each layer answers one question and passes the rest down. Scheme → host → port → path → query. Turning the host name into an IP is DNS's job. Resolution, TTL caching, and the `Host` header that picks a site when many share one IP all live in [[networking/dns]]. Everything else (TLDs, subdomains) follows from these handoffs.
 
 ## URL anatomy at a glance
 
