@@ -23,14 +23,14 @@ probe_sections:
 - Sort is precise, filter is deliberately undefined
 - Custom query parameters need a non-alpha character
 last_probed:
-- Sparse fieldsets are per-type, not per-path
-- Cursor vs offset under concurrent inserts
-- Sort is precise, filter is deliberately undefined
 - Custom query parameters need a non-alpha character
 - The envelope-vs-strategy split
 - Pagination URLs are opaque to the client
-review_interval: 4
-next_review: '2026-05-17'
+- Sparse fieldsets are per-type, not per-path
+- Cursor vs offset under concurrent inserts
+- Sort is precise, filter is deliberately undefined
+review_interval: 5
+next_review: '2026-07-12'
 ---
 
 # JSON:API query conventions

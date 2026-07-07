@@ -12,18 +12,18 @@ created: '2026-04-10'
 updated: '2026-04-10'
 source_skill: study-walkthrough
 flashcard_ids: []
-next_review: '2026-05-14'
-review_interval: 12
+next_review: '2026-08-06'
+review_interval: 30
 probe_sections:
 - Fixed Value vs Block
 - index_with vs index_by
 - index_with vs to_h
 - Duplicate Keys
 last_probed:
+- index_with vs index_by
 - index_with vs to_h
 - Duplicate Keys
 - Fixed Value vs Block
-- index_with vs index_by
 ---
 
 # index_with

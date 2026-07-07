@@ -18,12 +18,14 @@ def main() -> None:
     parser.add_argument("--wiki-dir", default="wiki", help="Wiki directory")
     parser.add_argument(
         "--probed",
+        action="append",
         default=None,
-        help="Comma-separated section headings probed this review (rotates last_probed queue)",
+        metavar="SECTION",
+        help="Section heading probed this review; repeat per section (rotates last_probed queue)",
     )
     args = parser.parse_args()
 
-    probed = [s.strip() for s in args.probed.split(",")] if args.probed else None
+    probed = [s.strip() for s in args.probed] if args.probed else None
     schedule = reschedule_page(Path(args.page_path), args.rating, probed=probed)
     print(json.dumps(schedule, ensure_ascii=False))
 

@@ -200,7 +200,7 @@ If there were no due wiki entries, go straight to Phase 4.
 5. **Evaluate each answer** as it comes in: 1-2 sentences of feedback and a per-section rating (1-4), then move to the next section's question (or, after the last section, to the rating breakdown). Assign page rating = rounded mean (round half-down). Score code answers on structural correctness, not literal completeness. **On a weak section answer, apply Socratic Never-Reveal** — recover via smaller guiding questions until the developer produces the missing piece, then rate; do not read the section content back at them.
 6. State rating breakdown and apply:
    > Section A: Good · Section B: Hard → page rated **Hard (2)**. Applying.
-7. Run `scripts/wiki-reschedule wiki/<path>.md <rating> --probed "<Section A>,<Section B>"`.
+7. Run `scripts/wiki-reschedule wiki/<path>.md <rating> --probed "<Section A>" --probed "<Section B>"` — repeat the `--probed` flag once per section (heading names may contain commas, so they are never comma-joined into one flag).
 8. Confirm: `Rated **Hard (2)** — next review in 3 days (2026-04-22)`
 9. **Open in browser** using the "Show in browser" flow from `references/wiki-write-protocol.md`. Say:
    > Opened in the browser — take your time reading. Say "next" when done, or "discuss" / "walkthrough" to dig in.
