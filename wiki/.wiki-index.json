@@ -1288,9 +1288,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-06-08",
-    "next_review": "2026-06-28",
-    "review_interval": 20,
+    "updated": "2026-07-11",
+    "next_review": "2026-08-30",
+    "review_interval": 50,
     "probe_sections": [
       "Reactive programming definition: streams as first-class values",
       "Stream anatomy: values, errors, and completion over time",
@@ -1299,11 +1299,11 @@
       "Mental model shift from imperative to reactive"
     ],
     "last_probed": [
+      "Reactive programming definition: streams as first-class values",
+      "flatMap/mergeMap: collapsing a stream of streams",
       "Stream anatomy: values, errors, and completion over time",
       "Core operator categories: transform, filter, combine, flatten",
-      "Mental model shift from imperative to reactive",
-      "Reactive programming definition: streams as first-class values",
-      "flatMap/mergeMap: collapsing a stream of streams"
+      "Mental model shift from imperative to reactive"
     ]
   },
   "ruby/ruby-index": {
@@ -1906,9 +1906,9 @@
       "cmqu0tvnw0007150msfy24wz5"
     ],
     "created": "2026-06-25",
-    "updated": "2026-06-25",
-    "next_review": "2026-06-28",
-    "review_interval": 3,
+    "updated": "2026-07-11",
+    "next_review": "2026-07-19",
+    "review_interval": 8,
     "probe_sections": [
       "What a transaction guarantees, and what it does not",
       "Isolation levels and the anomalies each allows",
@@ -1918,12 +1918,12 @@
       "Nested transactions and savepoints"
     ],
     "last_probed": [
-      "What a transaction guarantees, and what it does not",
-      "Isolation levels and the anomalies each allows",
-      "Never put slow or external calls inside a transaction",
       "Idempotency and effects outside the transaction",
       "Rails rollback-on-exception",
-      "Nested transactions and savepoints"
+      "Nested transactions and savepoints",
+      "What a transaction guarantees, and what it does not",
+      "Isolation levels and the anomalies each allows",
+      "Never put slow or external calls inside a transaction"
     ]
   },
   "rails/row-locking-and-concurrency": {
@@ -2412,9 +2412,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-08",
-    "updated": "2026-07-04",
-    "next_review": "2026-05-17",
-    "review_interval": 4,
+    "updated": "2026-07-11",
+    "next_review": "2026-07-21",
+    "review_interval": 10,
     "probe_sections": [
       "Top-level keys and their mutual exclusions",
       "Resource object shape",
@@ -2423,11 +2423,11 @@
       "Every node on an include path is included"
     ],
     "last_probed": [
+      "Top-level keys and their mutual exclusions",
+      "Resource object shape",
       "relationships hold pointers, included holds payloads",
       "Compound documents and the full-linkage rule",
-      "Every node on an include path is included",
-      "Top-level keys and their mutual exclusions",
-      "Resource object shape"
+      "Every node on an include path is included"
     ]
   },
   "json-api/query-conventions": {
