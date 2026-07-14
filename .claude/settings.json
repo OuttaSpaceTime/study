@@ -2,7 +2,20 @@
   "hooks": {},
   "permissions": {
     "allow": [
-      "Bash(scripts/wiki-write*)"
+      "Bash(uv run pytest:*)",
+      "Bash(uv run ruff check:*)",
+      "Bash(scripts/lint:*)",
+      "Bash(scripts/wiki-write:*)",
+      "Bash(scripts/wiki-due:*)",
+      "Bash(scripts/wiki-search:*)",
+      "Bash(scripts/srs-pressure:*)",
+      "Bash(scripts/anki-sync:*)",
+      "Bash(curl -sf http://localhost:4777/*)",
+      "Bash(xdg-open http://localhost:4777/*)",
+      "Bash(cd wiki-viewer && setsid -f npm run dev*)",
+      "Bash(cd wiki-viewer && npm test*)",
+      "Bash(cd wiki-viewer && npm run lint*)",
+      "Bash(cd wiki-viewer && npm run typecheck*)"
     ]
   }
 }
