@@ -6,6 +6,7 @@ import TagChip from "./TagChip";
 export default function ArticleHeader({ meta }: { meta: PageMeta }) {
   const today = new Date().toISOString().slice(0, 10);
   const due = meta.nextReview !== "" && meta.nextReview <= today;
+  const noStudy = meta.tags.includes("no-study");
 
   return (
     <header className="mb-8">
@@ -23,7 +24,12 @@ export default function ArticleHeader({ meta }: { meta: PageMeta }) {
         )}
         {meta.created && <span>created {meta.created}</span>}
         {meta.updated && <span>updated {meta.updated}</span>}
-        {meta.nextReview && (
+        {noStudy && (
+          <span className="rounded border border-border px-1.5 py-px text-faint">
+            not in study loop
+          </span>
+        )}
+        {meta.nextReview && !noStudy && (
           <span
             className={clsx(
               "rounded border px-1.5 py-px",

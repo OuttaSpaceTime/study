@@ -317,6 +317,8 @@ When writing a wiki page, follow this structure:
 - Always include: `## Related Concepts` with `[[absolute/path]]` wikilinks
 - **Always include `## References`**, plus a `## Tradeoffs & gotchas` H2 (or inline `> [Note]` callouts) when practitioner opinion is load-bearing. Build both per "Wiki Page Structure" sections 6 & 7 below: facts cite the authoritative lane, opinions stay attributed and labelled consensus/contested, `contradictsGroundTruth` opinions are dropped, and `## References` never enters `probe_sections`.
 
+**No-study capture (excluded from the study loop).** When the developer wants the topic in the wiki but **not** in the study loop — the `no-study` path chosen at the SRS pressure gate, or any "exclude from study loop" / "don't schedule it" / "just capture it, no review" at the walkthrough limit or later — write the page exactly as above (full content, `probe_sections`, links) but **add `no-study` to the frontmatter `tags`** (e.g. `tags: [security, no-study]`). Everything else is normal: `scripts/wiki-write` still fills `next_review`/`review_interval`, the page stays in the graph, search, and index, and it renders with a `not in study loop` marker; the `no-study` tag alone keeps it out of review and off the SRS pressure count. To toggle an existing page later, run `scripts/wiki-no-study <page>` (add `--include` to rejoin the study loop) rather than hand-editing the tag. See "Excluded from the study loop (`no-study`)" in `references/wiki-write-protocol.md`.
+
 **Session log** -- always append to `logs/<MM>/<YYYY-MM-DD>.md` (zero-padded month folder):
 
 ```markdown

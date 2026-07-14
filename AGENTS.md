@@ -54,16 +54,17 @@ Every wiki page has YAML frontmatter. Required on **all pages**: `title`, `alias
 
 `wiki/.wiki-index.json` tracks all pages with their titles, aliases, sections (H2 headings), tags, and flashcard IDs. Updated automatically by `scripts/wiki-write`.
 
-### Archiving
+### No-study (excluding a page from the study loop)
 
-A page can be **archived** to drop it from active study without deleting it. Archiving adds an `archived` tag to the page's frontmatter `tags`; that single marker does two things:
+A page can be marked **`no-study`** to drop it from the study loop *only* — it stays a full member of the wiki everywhere else. This is the mechanism for a topic you want to keep, read, link, and find, but are not (yet) studying: added at the `/study-walkthrough` limit for "I need to learn this but have no time to study it now", or toggled later on a page you want to stop reviewing. It adds a `no-study` tag to the page's frontmatter `tags`; that single marker does exactly one thing:
 
-- **Out of review.** `get_due_entries` skips `archived`-tagged entries (the same way it skips `moc`), so archived pages leave both `scripts/wiki-due` and the SRS pressure wiki count that `/study` and `/study-walkthrough` gate on.
-- **Out of the graph.** `.obsidian/graph.json` filters `-tag:#archived` (Obsidian's `tag:` search matches frontmatter tags), so archived pages disappear from the graph view.
+- **Out of review.** `get_due_entries` skips `no-study`-tagged entries (the same way it skips `moc`), so `no-study` pages leave both `scripts/wiki-due` and the SRS pressure wiki count that `/study` and `/study-walkthrough` gate on.
 
-Archiving is **non-destructive and reversible**: the page keeps its place, frontmatter, schedule (`next_review`/`review_interval`), and wikilinks, and stays searchable via `scripts/wiki-search` / TreeSearch and visible in the Obsidian file explorer. Unarchiving removes the tag and the page rejoins review at its stored `next_review`.
+`no-study` does **not** remove the page from anything else: it stays **in the graph** (Obsidian and wiki-viewer), **in the page list and folder tree**, **in search/queries** (`scripts/wiki-search` / TreeSearch), and **in the index** (`.wiki-index.json` carries the `no-study` tag, so studied-vs-excluded is legible there). The wiki-viewer and Obsidian render it with a `not in study loop` marker instead of a review-due badge.
 
-Toggle it with `scripts/wiki-archive <page>` (and `--unarchive`), which rewrites the frontmatter and re-runs the `wiki-write` reindex pipeline. The `wiki/llm/` pages are currently archived.
+Marking `no-study` is **non-destructive and reversible**: the page keeps its place, frontmatter, schedule (`next_review`/`review_interval` if it has one), and wikilinks. Including it again removes the tag and the page rejoins review at its stored `next_review`.
+
+Toggle it with `scripts/wiki-no-study <page>` (and `--include` to rejoin the study loop), which rewrites the frontmatter and re-runs the `wiki-write` reindex pipeline. The `wiki/llm/` pages are currently `no-study`.
 
 ### Search
 
@@ -115,7 +116,7 @@ Then open pages by wiki key (without `.md`):
 xdg-open "http://localhost:4777/wiki/<key>"
 ```
 
-The viewer reads pages straight off `wiki/`, hides `archived`-tagged pages from the graph and the page list, and resolves the same absolute `[[topic/slug]]` wikilinks Obsidian uses. Obsidian remains installed but is used **only by `/canvas`** (`.canvas` files have no browser equivalent); its socket-check launch flow lives in that skill.
+The viewer reads pages straight off `wiki/`, shows `no-study`-tagged pages in the graph and page list with a `not in study loop` marker (they leave the study loop, not the wiki), and resolves the same absolute `[[topic/slug]]` wikilinks Obsidian uses. Obsidian remains installed but is used **only by `/canvas`** (`.canvas` files have no browser equivalent); its socket-check launch flow lives in that skill.
 
 ### Hiding non-wiki content
 
@@ -126,7 +127,7 @@ The vault is the whole repo, but only `wiki/` is knowledge content. Hiding the r
 | Search, graph, quick-switcher, link autocomplete | `userIgnoreFilters` (core "Excluded files") | `.obsidian/app.json` |
 | File-explorer sidebar (full removal) | CSS snippet using `.nav-folder:has(...)` / `.nav-file:has(...)` rules | `.obsidian/snippets/hide-non-wiki.css` (enabled via `enabledCssSnippets` in `.obsidian/appearance.json`) |
 
-Both lists must stay **in sync**. Currently hidden: `scripts/`, `tests/`, `wiki-viewer/`, `CLAUDE.md`. Kept visible on purpose: `wiki/`, `logs/`, `AGENTS.md`, `todo.md`. Dotfolders (`.claude/`, `.git/`, `.venv/`, `.pytest_cache/`) are auto-ignored by Obsidian; non-markdown (`pyproject.toml`, `uv.lock`) is hidden by `showUnsupportedFiles: false`. The graph view is separately scoped to `path:wiki/ -path:wiki/indexes -tag:#archived` via `.obsidian/graph.json` (see [Archiving](#archiving)).
+Both lists must stay **in sync**. Currently hidden: `scripts/`, `tests/`, `wiki-viewer/`, `CLAUDE.md`. Kept visible on purpose: `wiki/`, `logs/`, `AGENTS.md`, `todo.md`. Dotfolders (`.claude/`, `.git/`, `.venv/`, `.pytest_cache/`) are auto-ignored by Obsidian; non-markdown (`pyproject.toml`, `uv.lock`) is hidden by `showUnsupportedFiles: false`. The graph view is separately scoped to `path:wiki/ -path:wiki/indexes` via `.obsidian/graph.json`; `no-study` pages stay in the graph (see [No-study](#no-study-excluding-a-page-from-the-study-loop)).
 
 To change what's hidden: edit the list in **both** `app.json` (`userIgnoreFilters`) and `hide-non-wiki.css`, then reload Obsidian (`Ctrl+R`). For a folder, add `.nav-folder:has(> .nav-folder-title[data-path="<name>"])`; for a file, `.nav-file:has(> .nav-file-title[data-path="<name>.md"])`.
 
@@ -226,7 +227,7 @@ Available scripts:
 - `scripts/wiki-search "<query>"` — Semantic search against wiki embeddings
 - `scripts/wiki-due` — List wiki pages due for review
 - `scripts/wiki-reschedule <page> <rating>` — Reschedule a wiki page after review (1-4), rewrites frontmatter and re-indexes
-- `scripts/wiki-archive <page> [--unarchive]` — Archive/unarchive a page by toggling its `archived` tag (drops it from review + graph); re-indexes. See [Archiving](#archiving)
+- `scripts/wiki-no-study <page> [--include]` — Exclude/include a page in the study loop by toggling its `no-study` tag (drops it from the study loop only; stays in graph, search, and index); re-indexes. See [No-study](#no-study-excluding-a-page-from-the-study-loop)
 - `scripts/anki-sync <login|sync|status>` — Sync flashcards to AnkiWeb (see [Anki Sync](#anki-sync)). `sync --dry-run` previews, `--local` skips AnkiWeb
 - `scripts/card-htmlize` — Convert markdown/plain card text in master.db to simple Anki HTML (dry-run by default, `--apply` writes after backing up master.db)
 

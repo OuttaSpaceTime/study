@@ -218,7 +218,7 @@
       "embeddings",
       "rag",
       "retrieval",
-      "archived"
+      "no-study"
     ],
     "sections": [
       "TL;DR",
@@ -233,7 +233,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-07-03",
+    "updated": "2026-07-14",
     "next_review": "2026-07-09",
     "review_interval": 12,
     "probe_sections": [
@@ -269,7 +269,7 @@
       "llm",
       "inference",
       "performance",
-      "archived"
+      "no-study"
     ],
     "sections": [
       "TL;DR",
@@ -284,7 +284,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-07-03",
+    "updated": "2026-07-14",
     "next_review": "2026-07-18",
     "review_interval": 17,
     "probe_sections": [
@@ -321,7 +321,7 @@
       "inference",
       "attention",
       "transformer",
-      "archived"
+      "no-study"
     ],
     "sections": [
       "TL;DR",
@@ -338,7 +338,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-07-03",
+    "updated": "2026-07-14",
     "next_review": "2026-07-03",
     "review_interval": 10,
     "probe_sections": [
@@ -372,14 +372,14 @@
     "tags": [
       "moc",
       "llm",
-      "archived"
+      "no-study"
     ],
     "sections": [
       "Pages"
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-07-03",
+    "updated": "2026-07-14",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -404,7 +404,7 @@
       "inference",
       "sampling",
       "ollama",
-      "archived"
+      "no-study"
     ],
     "sections": [
       "TL;DR",
@@ -417,7 +417,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-07-03",
+    "updated": "2026-07-14",
     "next_review": "2026-07-03",
     "review_interval": 10,
     "probe_sections": [
@@ -450,7 +450,7 @@
       "ollama",
       "gpu",
       "infrastructure",
-      "archived"
+      "no-study"
     ],
     "sections": [
       "TL;DR",
@@ -464,7 +464,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-07-03",
+    "updated": "2026-07-14",
     "next_review": "2026-06-30",
     "review_interval": 28,
     "probe_sections": [

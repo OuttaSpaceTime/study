@@ -180,9 +180,7 @@ function buildGraph(pages: PageMeta[]): { nodes: GraphNode[]; links: GraphLink[]
 }
 
 async function buildWikiIndex(): Promise<WikiIndexPayload> {
-  const raw = (await loadRawPages()).filter(
-    (p) => !p.meta.tags.includes("archived"),
-  );
+  const raw = await loadRawPages();
   resolveLinks(raw);
   const all = raw.map((p) => p.meta);
   // MOC (*-index) pages aren't rendered as content — they survive only as

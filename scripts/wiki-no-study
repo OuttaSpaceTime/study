@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Archive or unarchive a wiki page (toggles the `archived` tag)."""
+"""Exclude a wiki page from the study loop (toggles the `no-study` tag)."""
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from scripts.wiki.archive import main
+from scripts.wiki.no_study import main
 
 main()

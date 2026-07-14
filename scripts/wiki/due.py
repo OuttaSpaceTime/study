@@ -25,7 +25,7 @@ def get_due_entries(
         if nr > today:
             continue
         tags = entry.get("tags") or []
-        if "moc" in tags or "archived" in tags:
+        if "moc" in tags or "no-study" in tags:
             continue
         due.append(
             {

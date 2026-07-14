@@ -71,6 +71,10 @@ Content...
 - [[folder/page-name]]: brief explanation of relationship
 ```
 
+### Excluded from the study loop (`no-study`)
+
+When the developer wants the topic captured in the wiki but **not** added to the study loop — "exclude from study loop", "don't schedule it", or the `no-study` path chosen at the SRS pressure gate — add `no-study` to the frontmatter `tags` (e.g. `tags: [security, no-study]`). Draft everything else normally, including `probe_sections`; `scripts/wiki-write` still fills `next_review`/`review_interval`, but the `no-study` tag keeps `get_due_entries` from ever surfacing the page, so it stays out of review and off the SRS pressure count. The page remains a full wiki member (graph, search, index, links) and renders with a `not in study loop` marker. It rejoins review later via `scripts/wiki-no-study --include`.
+
 ## Headings as SRS Prompts
 
 H2 headings become `probe_sections` — the quiz question at review time. Write them specific enough to self-grade without re-reading the page.

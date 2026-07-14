@@ -23,6 +23,7 @@ const EXPECTED_PATHS = [
   "embed-only",
   "inline-code-target",
   "linker",
+  "no-study/secret",
   "rails/alpha-page",
   "rails/routing/scope-vs-namespace",
   "rails/zeta-topic",
@@ -136,10 +137,10 @@ beforeAll(async () => {
   writeFixture("code-fenced-target.md", "Fenced target body.\n");
   writeFixture("inline-code-target.md", "Inline target body.\n");
 
-  // Archived page: kept on disk but hidden from index, tree, and graph.
+  // No-study page: full wiki member, only excluded from the study loop.
   writeFixture(
-    "archived/secret.md",
-    ["---", "title: Secret Archived", "tags:", "  - archived", "---", "Archived body."].join(
+    "no-study/secret.md",
+    ["---", "title: Secret Note", "tags:", "  - no-study", "---", "No-study body."].join(
       "\n",
     ),
   );
@@ -220,11 +221,12 @@ describe("page meta", () => {
   });
 });
 
-describe("archived pages", () => {
-  it("excludes an archived-tagged page from the page list, tree, and graph", () => {
-    expect(index.pages.some((p) => p.path === "archived/secret")).toBe(false);
-    expect(index.tree.folders.some((f) => f.name === "archived")).toBe(false);
-    expect(index.graph.nodes.some((n) => n.id === "archived/secret")).toBe(false);
+describe("no-study pages", () => {
+  it("keeps a no-study-tagged page in the page list, tree, and graph, still flagged no-study", () => {
+    expect(index.pages.some((p) => p.path === "no-study/secret")).toBe(true);
+    expect(index.tree.folders.some((f) => f.name === "no-study")).toBe(true);
+    expect(index.graph.nodes.some((n) => n.id === "no-study/secret")).toBe(true);
+    expect(mustPage("no-study/secret").tags).toContain("no-study");
   });
 });
 
@@ -280,7 +282,7 @@ describe("tree", () => {
   it('has root named "wiki" with empty path and folders sorted by name', () => {
     expect(index.tree.name).toBe("wiki");
     expect(index.tree.path).toBe("");
-    expect(index.tree.folders.map((f) => f.name)).toEqual(["a", "b", "rails", "tools"]);
+    expect(index.tree.folders.map((f) => f.name)).toEqual(["a", "b", "no-study", "rails", "tools"]);
   });
 
   it("excludes the MOC from the tree and orders pages by title", () => {

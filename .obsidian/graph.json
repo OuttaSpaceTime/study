@@ -1,6 +1,6 @@
 {
   "collapse-filter": false,
-  "search": "path:wiki/ -path:wiki/indexes -tag:#archived",
+  "search": "path:wiki/ -path:wiki/indexes",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": false,
