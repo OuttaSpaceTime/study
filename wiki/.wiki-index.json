@@ -949,9 +949,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-14",
-    "updated": "2026-05-30",
-    "next_review": "2026-06-29",
-    "review_interval": 30,
+    "updated": "2026-07-03",
+    "next_review": "2026-07-04",
+    "review_interval": 1,
     "probe_sections": [
       "Renaming with `as:`",
       "The `_index` Suffix",
@@ -959,10 +959,10 @@
       "How to verify path helper names at the console"
     ],
     "last_probed": [
+      "Fix: Set `as:` Explicitly",
       "How to verify path helper names at the console",
       "Renaming with `as:`",
-      "The `_index` Suffix",
-      "Fix: Set `as:` Explicitly"
+      "The `_index` Suffix"
     ]
   },
   "rails/routing/route-organization": {
@@ -1851,9 +1851,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-06-14",
-    "updated": "2026-06-23",
-    "next_review": "2026-07-01",
-    "review_interval": 8,
+    "updated": "2026-07-04",
+    "next_review": "2026-07-24",
+    "review_interval": 20,
     "probe_sections": [
       "The race between two concurrent inserts",
       "ON CONFLICT DO NOTHING vs DO UPDATE",
@@ -1865,12 +1865,12 @@
     ],
     "last_probed": [
       "Rails create!, insert_all, insert_all!, upsert_all",
-      "Bulk methods bypass validations and callbacks",
-      "find_or_create_by is not atomic",
       "Tradeoffs and gotchas",
       "The race between two concurrent inserts",
       "ON CONFLICT DO NOTHING vs DO UPDATE",
-      "RETURNING returns only touched rows"
+      "RETURNING returns only touched rows",
+      "Bulk methods bypass validations and callbacks",
+      "find_or_create_by is not atomic"
     ]
   },
   "rails/database-transactions": {
@@ -1963,9 +1963,9 @@
       "cmqu0u3eu000c150m44rrl72z"
     ],
     "created": "2026-06-25",
-    "updated": "2026-06-25",
-    "next_review": "2026-06-28",
-    "review_interval": 3,
+    "updated": "2026-07-03",
+    "next_review": "2026-07-07",
+    "review_interval": 4,
     "probe_sections": [
       "MVCC means readers and writers never block each other",
       "Implicit row locks make writers block writers",
@@ -1975,12 +1975,12 @@
       "Optimistic versus pessimistic locking"
     ],
     "last_probed": [
-      "MVCC means readers and writers never block each other",
-      "Implicit row locks make writers block writers",
-      "Lost updates and why with_lock fixes them",
       "with_lock, lock!, and lock",
       "Why a transaction does not speed up parallel work",
-      "Optimistic versus pessimistic locking"
+      "Optimistic versus pessimistic locking",
+      "MVCC means readers and writers never block each other",
+      "Implicit row locks make writers block writers",
+      "Lost updates and why with_lock fixes them"
     ]
   },
   "angular/signals-and-rxjs-interop": {
