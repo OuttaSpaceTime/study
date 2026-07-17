@@ -9,6 +9,24 @@ from pathlib import Path
 
 from scripts.wiki.index import load_index
 
+FOLDER_TITLE_OVERRIDES = {
+    "sql": "SQL",
+    "llm": "LLM",
+    "json-api": "JSON API",
+    "openapi": "OpenAPI",
+    "typescript": "TypeScript",
+}
+
+
+def display_title(key: str, title: str) -> str:
+    """Render a wiki key + title as a readable breadcrumb, e.g. 'Rails/Routing: Collection and Member Routes'."""
+    folders = key.split("/")[:-1]
+    parts = [
+        FOLDER_TITLE_OVERRIDES.get(folder, folder.replace("-", " ").title())
+        for folder in folders
+    ]
+    return f"{'/'.join(parts)}: {title}"
+
 
 def get_due_entries(
     index: dict, today: str | None = None
@@ -60,7 +78,7 @@ def main() -> None:
         for i, entry in enumerate(due, 1):
             interval = entry.get("review_interval", "?")
             due_date = entry.get("next_review", "?")
-            print(f"{i}. [[{entry['key']}]] — due {due_date} (interval: {interval}d)")
+            print(f"{i}. {display_title(entry['key'], entry['title'])} — due {due_date} (interval: {interval}d)")
     else:
         print(json.dumps(due, indent=2, ensure_ascii=False))
 
