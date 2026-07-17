@@ -11,8 +11,8 @@ tags:
 created: '2026-04-13'
 updated: '2026-04-13'
 source_skill: study-walkthrough
-next_review: '2026-07-04'
-review_interval: 35
+next_review: '2026-07-18'
+review_interval: 1
 probe_sections:
 - draw -- Split Routes into Files
 - defaults -- Set Shared Parameters
