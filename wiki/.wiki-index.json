@@ -2516,5 +2516,121 @@
       "Safe migration",
       "Host header and virtual hosts"
     ]
+  },
+  "typescript/discriminated-union-narrowing": {
+    "file": "typescript/discriminated-union-narrowing.md",
+    "title": "Discriminated union narrowing",
+    "aliases": [
+      "discriminated union narrowing",
+      "literal discriminant",
+      "control-flow narrowing",
+      "nested discriminant"
+    ],
+    "tags": [
+      "typescript",
+      "types",
+      "narrowing",
+      "no-study"
+    ],
+    "sections": [
+      "TL;DR",
+      "Control-flow analysis and what it narrows",
+      "A discriminated union needs a top-level literal discriminant",
+      "Nested discriminants do not narrow the parent union",
+      "Cleaner fixes for a nested discriminant",
+      "strictNullChecks does not defeat a clean boolean discriminant",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-07-15",
+    "updated": "2026-07-15",
+    "next_review": "2026-07-18",
+    "review_interval": 3,
+    "probe_sections": [
+      "Control-flow analysis and what it narrows",
+      "A discriminated union needs a top-level literal discriminant",
+      "Nested discriminants do not narrow the parent union",
+      "Cleaner fixes for a nested discriminant",
+      "strictNullChecks does not defeat a clean boolean discriminant"
+    ],
+    "last_probed": [
+      "Control-flow analysis and what it narrows",
+      "A discriminated union needs a top-level literal discriminant",
+      "Nested discriminants do not narrow the parent union",
+      "Cleaner fixes for a nested discriminant",
+      "strictNullChecks does not defeat a clean boolean discriminant"
+    ]
+  },
+  "typescript/typescript-index": {
+    "file": "typescript/typescript-index.md",
+    "title": "TypeScript Index",
+    "aliases": [
+      "typescript-moc",
+      "typescript map"
+    ],
+    "tags": [
+      "moc",
+      "typescript"
+    ],
+    "sections": [
+      "Pages"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-07-15",
+    "updated": "2026-07-15",
+    "next_review": "",
+    "review_interval": null,
+    "probe_sections": [
+      "Pages"
+    ],
+    "last_probed": [
+      "Pages"
+    ]
+  },
+  "typescript/type-guards-and-inferred-predicates": {
+    "file": "typescript/type-guards-and-inferred-predicates.md",
+    "title": "Type guards and inferred predicates",
+    "aliases": [
+      "type guards",
+      "inferred type predicates",
+      "user-defined type guard",
+      "filter Boolean trap"
+    ],
+    "tags": [
+      "typescript",
+      "types",
+      "narrowing",
+      "no-study"
+    ],
+    "sections": [
+      "TL;DR",
+      "User-defined type guards are unchecked assertions",
+      "Inferred type predicates and the four conditions",
+      "filter and every narrow, filter(Boolean) does not",
+      "Unsound shortcut versus sound check",
+      "Generic guards with Extract",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-07-15",
+    "updated": "2026-07-15",
+    "next_review": "2026-07-18",
+    "review_interval": 3,
+    "probe_sections": [
+      "User-defined type guards are unchecked assertions",
+      "Inferred type predicates and the four conditions",
+      "filter and every narrow, filter(Boolean) does not",
+      "Unsound shortcut versus sound check",
+      "Generic guards with Extract"
+    ],
+    "last_probed": [
+      "User-defined type guards are unchecked assertions",
+      "Inferred type predicates and the four conditions",
+      "filter and every narrow, filter(Boolean) does not",
+      "Unsound shortcut versus sound check",
+      "Generic guards with Extract"
+    ]
   }
 }
