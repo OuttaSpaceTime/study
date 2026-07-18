@@ -606,9 +606,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-09",
-    "updated": "2026-06-13",
-    "next_review": "2026-07-03",
-    "review_interval": 20,
+    "updated": "2026-07-17",
+    "next_review": "2026-08-10",
+    "review_interval": 24,
     "probe_sections": [
       "anyOf vs oneOf",
       "The oneOf Shared-Field Trap",
@@ -617,11 +617,11 @@
       "not as a Filter"
     ],
     "last_probed": [
+      "not as a Filter",
+      "anyOf vs oneOf",
       "The oneOf Shared-Field Trap",
       "allOf Is Not Inheritance",
-      "The additionalProperties Trap",
-      "not as a Filter",
-      "anyOf vs oneOf"
+      "The additionalProperties Trap"
     ]
   },
   "programming-languages/compilers-and-interpreters": {
@@ -652,9 +652,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-06-30",
-    "next_review": "2026-07-02",
-    "review_interval": 2,
+    "updated": "2026-07-17",
+    "next_review": "2026-07-22",
+    "review_interval": 5,
     "probe_sections": [
       "Compiler vs interpreter: roles, not languages",
       "Two orthogonal axes: type checking ⊥ compile target",
@@ -662,10 +662,10 @@
       "JIT: when bytecode becomes machine code at runtime"
     ],
     "last_probed": [
+      "Two orthogonal axes: type checking ⊥ compile target",
       "Compiler vs interpreter: roles, not languages",
       "Case study: the CPython chain",
-      "JIT: when bytecode becomes machine code at runtime",
-      "Two orthogonal axes: type checking ⊥ compile target"
+      "JIT: when bytecode becomes machine code at runtime"
     ]
   },
   "programming-languages/programming-languages-index": {
@@ -949,9 +949,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-14",
-    "updated": "2026-07-03",
-    "next_review": "2026-07-04",
-    "review_interval": 1,
+    "updated": "2026-07-17",
+    "next_review": "2026-07-19",
+    "review_interval": 2,
     "probe_sections": [
       "Renaming with `as:`",
       "The `_index` Suffix",
@@ -959,10 +959,10 @@
       "How to verify path helper names at the console"
     ],
     "last_probed": [
+      "The `_index` Suffix",
       "Fix: Set `as:` Explicitly",
       "How to verify path helper names at the console",
-      "Renaming with `as:`",
-      "The `_index` Suffix"
+      "Renaming with `as:`"
     ]
   },
   "rails/routing/route-organization": {
@@ -985,9 +985,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-13",
-    "updated": "2026-05-30",
-    "next_review": "2026-07-04",
-    "review_interval": 35,
+    "updated": "2026-07-17",
+    "next_review": "2026-07-18",
+    "review_interval": 1,
     "probe_sections": [
       "draw -- Split Routes into Files",
       "defaults -- Set Shared Parameters"
@@ -1222,9 +1222,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-06-23",
-    "next_review": "2026-07-05",
-    "review_interval": 12,
+    "updated": "2026-07-18",
+    "next_review": "2026-08-01",
+    "review_interval": 14,
     "probe_sections": [
       "Why observables are lazy and what subscribe triggers",
       "The Observable Contract: grammar and serial delivery rule",
@@ -1232,10 +1232,10 @@
       "Subscription lifecycle: what subscribe returns and how teardown works"
     ],
     "last_probed": [
+      "Why observables are lazy and what subscribe triggers",
       "The Observable Contract: grammar and serial delivery rule",
       "Cold vs hot observables: independent vs shared execution",
-      "Subscription lifecycle: what subscribe returns and how teardown works",
-      "Why observables are lazy and what subscribe triggers"
+      "Subscription lifecycle: what subscribe returns and how teardown works"
     ]
   },
   "reactive/reactive-index": {

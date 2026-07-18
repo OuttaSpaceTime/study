@@ -20,12 +20,12 @@ probe_sections:
 - 'Cold vs hot observables: independent vs shared execution'
 - 'Subscription lifecycle: what subscribe returns and how teardown works'
 last_probed:
+- Why observables are lazy and what subscribe triggers
 - 'The Observable Contract: grammar and serial delivery rule'
 - 'Cold vs hot observables: independent vs shared execution'
 - 'Subscription lifecycle: what subscribe returns and how teardown works'
-- Why observables are lazy and what subscribe triggers
-review_interval: 12
-next_review: '2026-07-05'
+review_interval: 14
+next_review: '2026-08-01'
 ---
 
 # Observables
