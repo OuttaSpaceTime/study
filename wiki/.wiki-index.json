@@ -1536,7 +1536,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-20",
-    "updated": "2026-05-07",
+    "updated": "2026-07-18",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -2631,6 +2631,59 @@
       "filter and every narrow, filter(Boolean) does not",
       "Unsound shortcut versus sound check",
       "Generic guards with Extract"
+    ]
+  },
+  "security/key-derivation-and-domain-separation": {
+    "file": "security/key-derivation-and-domain-separation.md",
+    "title": "Key Derivation and Domain Separation",
+    "aliases": [
+      "KDF",
+      "key derivation function",
+      "salt vs secret",
+      "domain separation",
+      "purpose separation"
+    ],
+    "tags": [
+      "security",
+      "cryptography",
+      "no-study"
+    ],
+    "sections": [
+      "Secret, salt, and KDF: what each term means",
+      "Why a KDF stretches instead of concatenating",
+      "Encrypting vs signing: confidentiality vs integrity",
+      "Why reusing one derived key for two purposes weakens both",
+      "The salt does not need to be secret, only the underlying secret does",
+      "Purpose strings in Rails as domain separators",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [
+      "cmrq07ajp000cgl0mtbthictu",
+      "cmrq07c7z000dgl0metdea28f",
+      "cmrq07dca000egl0md1eaxsmd",
+      "cmrq07etm000fgl0m8ceqwt7m",
+      "cmrq07g3m000ggl0mvxnqgddj",
+      "cmne7xtdc015z0msomwlu8l9d"
+    ],
+    "created": "2026-07-18",
+    "updated": "2026-07-18",
+    "next_review": "2026-07-21",
+    "review_interval": 3,
+    "probe_sections": [
+      "Secret, salt, and KDF: what each term means",
+      "Why a KDF stretches instead of concatenating",
+      "Encrypting vs signing: confidentiality vs integrity",
+      "Why reusing one derived key for two purposes weakens both",
+      "The salt does not need to be secret, only the underlying secret does",
+      "Purpose strings in Rails as domain separators"
+    ],
+    "last_probed": [
+      "Secret, salt, and KDF: what each term means",
+      "Why a KDF stretches instead of concatenating",
+      "Encrypting vs signing: confidentiality vs integrity",
+      "Why reusing one derived key for two purposes weakens both",
+      "The salt does not need to be secret, only the underlying secret does",
+      "Purpose strings in Rails as domain separators"
     ]
   }
 }
