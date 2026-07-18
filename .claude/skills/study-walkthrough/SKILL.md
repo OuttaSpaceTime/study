@@ -164,7 +164,7 @@ Follow `references/srs-pressure-check.md` exactly. Summary:
 1. Run `scripts/srs-pressure --human` — it fetches accurate counts via the flashcard-mcp CLI itself. Do **not** call `mcp__flashcard-mcp__get_due_cards` or `mcp__flashcard-mcp__list_decks` for pressure signals (`get_due_cards` caps at 30 and will underreport).
 2. First message output:
    - `ok` → one line: `SRS pressure: ok — proceeding.`
-   - `warn` / `pause` → full script output verbatim, then the gate question. Wait for an explicit answer before Phase 1.
+   - `warn` / `pause` → full script output verbatim, then the gate question. Wait for an explicit answer before Phase 1. **Exception:** if `--no-study` was already specified at invocation, skip the gate question — one status line, then proceed straight to Phase 1 (see `references/srs-pressure-check.md`).
 3. Progress footer for this message: `Preflight — SRS Pressure Check`.
 
 **Contract:** skipping this step, folding it into Phase 1, or running other tool calls before the verdict is a contract violation — same severity as omitting the progress footer. The developer can always opt out of downstream steps (e.g., "just deepen, no wiki") mid-session — that does not justify skipping preflight.

@@ -91,8 +91,8 @@ Example when the verdict is `warn` (driven by the wiki axis):
 > **To clear:** review 12 wiki pages to exit warn (19 → 7). Flashcards are already below their warn line.
 >
 > **Wiki due (19):**
-> 1. [[reactive/observables]] — due 2026-05-20 (interval: 8d)
-> 2. [[reactive/reactive-programming]] — due 2026-05-20 (interval: 8d)
+> 1. Reactive: Observables — due 2026-05-20 (interval: 8d)
+> 2. Reactive: Reactive Programming — due 2026-05-20 (interval: 8d)
 > …
 >
 > Starting flashcard session.
