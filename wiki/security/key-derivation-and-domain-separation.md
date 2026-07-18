@@ -14,7 +14,6 @@ created: '2026-07-18'
 updated: '2026-07-18'
 source_skill: study-flashcard
 flashcard_ids:
-- cmrq07ajp000cgl0mtbthictu
 - cmrq07c7z000dgl0metdea28f
 - cmrq07dca000egl0md1eaxsmd
 - cmrq07etm000fgl0m8ceqwt7m
