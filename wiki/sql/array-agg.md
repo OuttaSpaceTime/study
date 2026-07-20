@@ -8,6 +8,7 @@ tags:
 - sql
 - postgres
 - aggregate
+- no-study
 created: '2026-04-17'
 updated: '2026-04-17'
 source_skill: study-walkthrough
