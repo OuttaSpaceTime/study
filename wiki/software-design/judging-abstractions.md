@@ -22,18 +22,18 @@ probe_sections:
 - Why this bites harder in AI-generated code
 - Tradeoffs and gotchas
 last_probed:
-- The wrong-abstraction signal
-- The remedy is re-inline, then re-derive
-- Rule of Three and the two motives for extraction
 - Leaky abstractions and the working-vs-learning cost
 - Why this bites harder in AI-generated code
 - Tradeoffs and gotchas
+- The wrong-abstraction signal
+- The remedy is re-inline, then re-derive
+- Rule of Three and the two motives for extraction
 flashcard_ids:
 - cmr352mhn0000vi0my4yi3fk0
 - cmr352oou0001vi0m2ma2kmqz
 - cmr352qkt0002vi0mmvsrf7ou
-review_interval: 3
-next_review: '2026-07-05'
+review_interval: 8
+next_review: '2026-07-28'
 ---
 
 # Judging abstractions

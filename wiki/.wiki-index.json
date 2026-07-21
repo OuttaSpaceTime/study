@@ -2080,9 +2080,9 @@
       "cmr352qkt0002vi0mmvsrf7ou"
     ],
     "created": "2026-07-02",
-    "updated": "2026-07-02",
-    "next_review": "2026-07-05",
-    "review_interval": 3,
+    "updated": "2026-07-20",
+    "next_review": "2026-07-28",
+    "review_interval": 8,
     "probe_sections": [
       "The wrong-abstraction signal",
       "The remedy is re-inline, then re-derive",
@@ -2092,12 +2092,12 @@
       "Tradeoffs and gotchas"
     ],
     "last_probed": [
-      "The wrong-abstraction signal",
-      "The remedy is re-inline, then re-derive",
-      "Rule of Three and the two motives for extraction",
       "Leaky abstractions and the working-vs-learning cost",
       "Why this bites harder in AI-generated code",
-      "Tradeoffs and gotchas"
+      "Tradeoffs and gotchas",
+      "The wrong-abstraction signal",
+      "The remedy is re-inline, then re-derive",
+      "Rule of Three and the two motives for extraction"
     ]
   },
   "software-design/splitting-responsibilities": {
@@ -2132,9 +2132,9 @@
       "cmr3h5u7c0004vi0mk8acp5vl"
     ],
     "created": "2026-07-02",
-    "updated": "2026-07-02",
-    "next_review": "2026-07-05",
-    "review_interval": 3,
+    "updated": "2026-07-21",
+    "next_review": "2026-07-29",
+    "review_interval": 8,
     "probe_sections": [
       "What SRP actually measures",
       "Command-Query Separation and CQS vs CQRS",
@@ -2144,12 +2144,12 @@
       "Tradeoffs and gotchas"
     ],
     "last_probed": [
-      "What SRP actually measures",
-      "Command-Query Separation and CQS vs CQRS",
-      "Connascence as a coupling vocabulary",
       "The operative rule for connascence",
       "Over-splitting can worsen coupling",
-      "Tradeoffs and gotchas"
+      "Tradeoffs and gotchas",
+      "What SRP actually measures",
+      "Command-Query Separation and CQS vs CQRS",
+      "Connascence as a coupling vocabulary"
     ]
   },
   "angular/where-code-belongs": {

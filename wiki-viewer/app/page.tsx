@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { getWikiIndex } from "@/lib/wiki";
 import { topicColor } from "@/lib/colors";
+import { dueForReview } from "@/app/lib";
 import type { PageMeta, TreeFolder } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -48,9 +49,7 @@ export default async function Home() {
   const index = await getWikiIndex();
   const today = new Date().toISOString().slice(0, 10);
 
-  const due = index.pages
-    .filter((p) => p.nextReview !== "" && p.nextReview <= today)
-    .sort((a, b) => a.nextReview.localeCompare(b.nextReview));
+  const due = dueForReview(index.pages, today);
 
   const recent = [...index.pages]
     .sort((a, b) => b.updated.localeCompare(a.updated))
