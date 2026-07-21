@@ -21,6 +21,7 @@ function makePage(pagePath: string): PageMeta {
     reviewInterval: null,
     depth: null,
     isIndex: slug.endsWith("-index"),
+    sections: [],
     outbound: [],
     inbound: [],
   };

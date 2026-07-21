@@ -14,6 +14,7 @@ import {
 import type { PageMeta, TreeFolder } from "@/lib/types";
 import { ChevronRightIcon } from "./icons";
 import { countPages } from "./lib";
+import PageSections from "./PageSections";
 import SkeletonRows from "./SkeletonRows";
 
 const INDENT = 12;
@@ -33,25 +34,34 @@ function PageRow({
   }, [current]);
 
   return (
-    <Link
-      ref={ref}
-      href={`/wiki/${meta.path}`}
-      className={clsx(
-        "flex items-center gap-1.5 rounded-md px-2 py-[3px] text-[13px] transition-colors",
-        current
-          ? "bg-accent-soft text-accent"
-          : "text-muted hover:bg-panel-2 hover:text-fg",
+    <>
+      <Link
+        ref={ref}
+        href={`/wiki/${meta.path}`}
+        className={clsx(
+          "flex items-center gap-1.5 rounded-md px-2 py-[3px] text-[13px] transition-colors",
+          current
+            ? "bg-accent-soft text-accent"
+            : "text-muted hover:bg-panel-2 hover:text-fg",
+        )}
+        // +16 aligns page titles with folder names (chevron width) at the same depth.
+        style={{ paddingLeft: depth * INDENT + 24 }}
+      >
+        <span className="truncate">{meta.title}</span>
+        {meta.isIndex && (
+          <span className="ml-auto shrink-0 rounded border border-border px-1 text-[9px] uppercase tracking-wider text-faint">
+            moc
+          </span>
+        )}
+      </Link>
+      {current && (
+        <PageSections
+          path={meta.path}
+          sections={meta.sections}
+          paddingLeft={depth * INDENT + 34}
+        />
       )}
-      // +16 aligns page titles with folder names (chevron width) at the same depth.
-      style={{ paddingLeft: depth * INDENT + 24 }}
-    >
-      <span className="truncate">{meta.title}</span>
-      {meta.isIndex && (
-        <span className="ml-auto shrink-0 rounded border border-border px-1 text-[9px] uppercase tracking-wider text-faint">
-          moc
-        </span>
-      )}
-    </Link>
+    </>
   );
 }
 

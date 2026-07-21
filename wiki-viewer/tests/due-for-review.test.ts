@@ -22,6 +22,7 @@ function makePage(
     reviewInterval: null,
     depth: null,
     isIndex: false,
+    sections: [],
     outbound: [],
     inbound: [],
   };

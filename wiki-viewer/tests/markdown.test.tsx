@@ -11,6 +11,7 @@ import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
   createWikilinkResolver,
+  remarkCallouts,
   remarkWikilinks,
   slugifyHeading,
   stripLeadingH1,
@@ -34,6 +35,7 @@ function makePage(path: string): PageMeta {
     reviewInterval: null,
     depth: null,
     isIndex: false,
+    sections: [],
     outbound: [],
     inbound: [],
   };
@@ -48,6 +50,47 @@ function render(markdown: string, paths: readonly string[]): string {
     </Markdown>,
   );
 }
+
+/** Render markdown through remark-gfm + remarkCallouts, as ArticleBody does. */
+function renderCallout(markdown: string): string {
+  return renderToStaticMarkup(
+    <Markdown remarkPlugins={[remarkGfm, remarkCallouts]}>{markdown}</Markdown>,
+  );
+}
+
+describe("remarkCallouts", () => {
+  it("tags a `> [Note] ...` blockquote with callout classes and a title", () => {
+    const html = renderCallout("> [Note] Body text here.");
+    expect(html).toContain('class="callout callout-note"');
+    expect(html).toContain('<p class="callout-title">Note</p>');
+    expect(html).toContain("Body text here.");
+    expect(html).not.toContain("[Note]");
+  });
+
+  it("lowercases the type but keeps the original label casing", () => {
+    const html = renderCallout("> [Warning] Careful.");
+    expect(html).toContain('class="callout callout-warning"');
+    expect(html).toContain('<p class="callout-title">Warning</p>');
+  });
+
+  it("handles a custom label like [Heuristic]", () => {
+    const html = renderCallout("> [Heuristic] A rule of thumb.");
+    expect(html).toContain('class="callout callout-heuristic"');
+    expect(html).toContain('<p class="callout-title">Heuristic</p>');
+  });
+
+  it("leaves a plain blockquote untouched", () => {
+    const html = renderCallout("> Just an ordinary quote.");
+    expect(html).not.toContain("callout");
+    expect(html).toContain("Just an ordinary quote.");
+  });
+
+  it("does not treat a mid-paragraph bracket as a marker", () => {
+    const html = renderCallout("> Text with [Note] in the middle.");
+    expect(html).not.toContain("callout");
+    expect(html).toContain("[Note]");
+  });
+});
 
 describe("slugifyHeading", () => {
   it("lowercases and replaces spaces with hyphens", () => {

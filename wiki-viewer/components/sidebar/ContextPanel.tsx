@@ -15,6 +15,7 @@ import { topicColor } from "@/lib/colors";
 import type { PageMeta, TreeFolder } from "@/lib/types";
 import { ChevronRightIcon } from "./icons";
 import { countPages, findFolder, topLevelFolder } from "./lib";
+import PageSections from "./PageSections";
 import SkeletonRows from "./SkeletonRows";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -237,11 +238,16 @@ export default function ContextPanel() {
           <SectionLabel>{folderName}</SectionLabel>
           <div className="px-1">
             {folder.pages.map((page) => (
-              <SiblingRow
-                key={page.path}
-                meta={page}
-                current={page.path === meta.path}
-              />
+              <div key={page.path}>
+                <SiblingRow meta={page} current={page.path === meta.path} />
+                {page.path === meta.path && (
+                  <PageSections
+                    path={page.path}
+                    sections={page.sections}
+                    paddingLeft={26}
+                  />
+                )}
+              </div>
             ))}
             {folder.folders.map((child) => (
               <SubfolderRow

@@ -105,7 +105,24 @@ beforeAll(async () => {
   );
   writeFixture(
     "rails/alpha-page.md",
-    ["---", "title: Alpha Page", "---", "Alpha body."].join("\n"),
+    [
+      "---",
+      "title: Alpha Page",
+      "---",
+      "Alpha body.",
+      "",
+      "## First Section",
+      "",
+      "Text.",
+      "",
+      `${FENCE}text`,
+      "## Not A Heading",
+      FENCE,
+      "",
+      "## Second Section",
+      "",
+      "More.",
+    ].join("\n"),
   );
   writeFixture(
     "rails/zeta-topic.md",
@@ -200,6 +217,15 @@ describe("page meta", () => {
     expect(page.reviewInterval).toBeNull();
     expect(page.depth).toBeNull();
     expect(page.isIndex).toBe(false);
+  });
+
+  it("extracts H2 headings in order, skipping those inside fenced code blocks", () => {
+    expect(mustPage("rails/alpha-page").sections).toEqual([
+      "First Section",
+      "Second Section",
+    ]);
+    expect(mustPage("rails/routing/scope-vs-namespace").sections).toEqual(["Scope"]);
+    expect(mustPage("tools/unique-slug").sections).toEqual([]);
   });
 
   it("splits path into folder and slug for top-level and nested pages", () => {
