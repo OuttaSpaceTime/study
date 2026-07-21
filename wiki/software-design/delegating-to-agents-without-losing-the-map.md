@@ -24,7 +24,9 @@ last_probed:
 - The context-switch tax that undoes parallel delegation
 - A checkpoint rule, read and test before starting the next thread
 - Tradeoffs and gotchas
-flashcard_ids: []
+flashcard_ids:
+- cmruqtz2l0006qo0mqs7euwx0
+- cmruqu0wr0007qo0morqmixps
 review_interval: 3
 next_review: '2026-07-06'
 ---

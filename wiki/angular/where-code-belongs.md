@@ -11,7 +11,7 @@ tags:
 - architecture
 - code-review
 created: '2026-07-02'
-updated: '2026-07-02'
+updated: '2026-07-21'
 source_skill: study-walkthrough
 last_deepened: '2026-07-02'
 probe_sections:
@@ -23,19 +23,19 @@ probe_sections:
 - Deciding where new code goes
 - Tradeoffs and gotchas
 last_probed:
-- 'The placement axis: how much a piece depends on'
-- Dependency direction is one-way
-- Smart vs dumb is about data access, not tree position
 - Where the two kinds of parsing live
 - Interceptors and guards detect and delegate
 - Deciding where new code goes
 - Tradeoffs and gotchas
+- 'The placement axis: how much a piece depends on'
+- Dependency direction is one-way
+- Smart vs dumb is about data access, not tree position
 flashcard_ids:
 - cmr3kzoif0005vi0m6saz3h2t
 - cmr3kzuq10007vi0ml2cjtub2
 - cmr3kzwwp0008vi0macw7zben
-review_interval: 3
-next_review: '2026-07-05'
+review_interval: 4
+next_review: '2026-07-25'
 ---
 
 # Where code belongs
@@ -62,6 +62,8 @@ The four pieces of the example feature are not just different topics, they form 
 ```
 
 `parseErrorBody` imports nothing from Angular, so you could copy it into a plain Node script and it works. The interceptor is pinned into Angular's HTTP pipeline and goes nowhere. That difference is the axis.
+
+"Depends on" here is not a head-count. By raw import count a smart component often references more than a two-line interceptor, since it injects several services, holds state, wires a template, and coordinates children. The axis measures two other things. First, how **welded to the framework** a piece is, meaning whether it can run or be tested outside Angular at all. Second, how **cross-cutting its scope** is, meaning one screen versus every request in the app. An interceptor sits at the top on scope. It runs over the whole HTTP pipeline, so its reasons to change come from app-wide request conventions like a new correlation-id header or a global retry policy, not from one feature. The load-bearing parts of the gradient are its two ends, a pure function at the bottom that depends on nothing and framework plumbing at the top, together with the rule to push logic down. The exact rank of neighbours in the fuzzy middle, interceptor versus smart component, drives no decision.
 
 The placement rule follows. **Push logic down to the layer that depends on the least it can get away with.** The bottom layer has the least coupling to the framework, so it is the cheapest to change, the easiest to reuse, and the fastest to test (no `TestBed`, no providers). The canonical Angular style-guide instruction, "keep components presentation-focused, refactor complex logic out into pure functions or services," is this rule applied.
 

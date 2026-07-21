@@ -2038,7 +2038,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-07-02",
-    "updated": "2026-07-03",
+    "updated": "2026-07-21",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -2185,9 +2185,9 @@
       "cmr3kzwwp0008vi0macw7zben"
     ],
     "created": "2026-07-02",
-    "updated": "2026-07-02",
-    "next_review": "2026-07-05",
-    "review_interval": 3,
+    "updated": "2026-07-21",
+    "next_review": "2026-07-25",
+    "review_interval": 4,
     "probe_sections": [
       "The placement axis: how much a piece depends on",
       "Dependency direction is one-way",
@@ -2198,13 +2198,13 @@
       "Tradeoffs and gotchas"
     ],
     "last_probed": [
-      "The placement axis: how much a piece depends on",
-      "Dependency direction is one-way",
-      "Smart vs dumb is about data access, not tree position",
       "Where the two kinds of parsing live",
       "Interceptors and guards detect and delegate",
       "Deciding where new code goes",
-      "Tradeoffs and gotchas"
+      "Tradeoffs and gotchas",
+      "The placement axis: how much a piece depends on",
+      "Dependency direction is one-way",
+      "Smart vs dumb is about data access, not tree position"
     ]
   },
   "software-design/reading-code-for-intent": {
@@ -2239,9 +2239,9 @@
       "cmr3mfu74000cvi0mp1wy11c5"
     ],
     "created": "2026-07-02",
-    "updated": "2026-07-02",
-    "next_review": "2026-07-05",
-    "review_interval": 3,
+    "updated": "2026-07-21",
+    "next_review": "2026-07-29",
+    "review_interval": 8,
     "probe_sections": [
       "The signature is a contract",
       "Preconditions, postconditions, and asymmetric blame",
@@ -2251,12 +2251,12 @@
       "Tradeoffs and gotchas"
     ],
     "last_probed": [
-      "The signature is a contract",
-      "Preconditions, postconditions, and asymmetric blame",
-      "The name is part of the contract",
       "Why review is the backstop",
       "The ladder from documented to impossible",
-      "Tradeoffs and gotchas"
+      "Tradeoffs and gotchas",
+      "The signature is a contract",
+      "Preconditions, postconditions, and asymmetric blame",
+      "The name is part of the contract"
     ]
   },
   "software-design/software-complexity": {
@@ -2284,9 +2284,12 @@
       "Related Concepts",
       "References"
     ],
-    "flashcard_ids": [],
+    "flashcard_ids": [
+      "cmruqtu290004qo0meh4jat6l",
+      "cmruqtwrm0005qo0m1zn2mdei"
+    ],
     "created": "2026-07-03",
-    "updated": "2026-07-03",
+    "updated": "2026-07-21",
     "next_review": "2026-07-06",
     "review_interval": 3,
     "probe_sections": [
@@ -2330,9 +2333,12 @@
       "Related Concepts",
       "References"
     ],
-    "flashcard_ids": [],
+    "flashcard_ids": [
+      "cmruqtz2l0006qo0mqs7euwx0",
+      "cmruqu0wr0007qo0morqmixps"
+    ],
     "created": "2026-07-03",
-    "updated": "2026-07-03",
+    "updated": "2026-07-21",
     "next_review": "2026-07-06",
     "review_interval": 3,
     "probe_sections": [
@@ -2685,6 +2691,62 @@
       "Why reusing one derived key for two purposes weakens both",
       "The salt does not need to be secret, only the underlying secret does",
       "Purpose strings in Rails as domain separators"
+    ]
+  },
+  "software-design/extracting-a-domain-rule": {
+    "file": "software-design/extracting-a-domain-rule.md",
+    "title": "Extracting a domain rule",
+    "aliases": [
+      "tell dont ask",
+      "law of demeter",
+      "information expert",
+      "extract method",
+      "tests as documentation"
+    ],
+    "tags": [
+      "software-design",
+      "code-review",
+      "coupling"
+    ],
+    "sections": [
+      "TL;DR",
+      "Extract for a name, not for reuse",
+      "Tell, Don't Ask vs Law of Demeter",
+      "Information Expert decides where it lives",
+      "A real Demeter fix vs relocating the coupling",
+      "Coverage is not documentation",
+      "When extraction is ceremony, not a fix",
+      "Tradeoffs and gotchas",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [
+      "cmruqe38w0000qo0m3plgjvt6",
+      "cmruqe6da0001qo0mj1zcggx0",
+      "cmruqe9fe0002qo0mx0jabxcf",
+      "cmruqebt50003qo0mufs2q74k"
+    ],
+    "created": "2026-07-21",
+    "updated": "2026-07-21",
+    "next_review": "2026-07-24",
+    "review_interval": 3,
+    "probe_sections": [
+      "Extract for a name, not for reuse",
+      "Tell, Don't Ask vs Law of Demeter",
+      "Information Expert decides where it lives",
+      "A real Demeter fix vs relocating the coupling",
+      "Coverage is not documentation",
+      "When extraction is ceremony, not a fix",
+      "Tradeoffs and gotchas"
+    ],
+    "last_probed": [
+      "Extract for a name, not for reuse",
+      "Tell, Don't Ask vs Law of Demeter",
+      "Information Expert decides where it lives",
+      "A real Demeter fix vs relocating the coupling",
+      "Coverage is not documentation",
+      "When extraction is ceremony, not a fix",
+      "Tradeoffs and gotchas"
     ]
   }
 }

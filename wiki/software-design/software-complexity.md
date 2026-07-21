@@ -26,7 +26,9 @@ last_probed:
 - Guarantee ownership at the trust boundary
 - Triaging defensive checks, especially in AI-generated code
 - Tradeoffs and gotchas
-flashcard_ids: []
+flashcard_ids:
+- cmruqtu290004qo0meh4jat6l
+- cmruqtwrm0005qo0m1zn2mdei
 review_interval: 3
 next_review: '2026-07-06'
 ---

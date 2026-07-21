@@ -9,6 +9,7 @@ import type { PageMeta } from "@/lib/types";
 import {
   createWikilinkResolver,
   type MocRef,
+  remarkCallouts,
   remarkWikilinks,
   slugifyHeading,
   stripLeadingH1,
@@ -97,7 +98,7 @@ export default function ArticleBody({
   return (
     <article className="wiki-prose prose max-w-none">
       <Markdown
-        remarkPlugins={[remarkGfm, [remarkWikilinks, { resolve }]]}
+        remarkPlugins={[remarkGfm, remarkCallouts, [remarkWikilinks, { resolve }]]}
         rehypePlugins={[rehypeHighlight]}
         components={components}
       >

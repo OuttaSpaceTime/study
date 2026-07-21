@@ -66,6 +66,20 @@ function extractLinkTargets(markdown: string): string[] {
   return targets;
 }
 
+/** H2 headings in document order, skipping fenced code blocks. */
+function extractSections(markdown: string): string[] {
+  const sections: string[] = [];
+  let inFence = false;
+  for (const line of markdown.split("\n")) {
+    if (/^\s*(```|~~~)/.test(line)) inFence = !inFence;
+    else if (!inFence) {
+      const heading = /^##[ \t]+(.+?)\s*$/.exec(line);
+      if (heading?.[1]) sections.push(heading[1]);
+    }
+  }
+  return sections;
+}
+
 interface RawPage {
   meta: PageMeta;
   rawTargets: string[];
@@ -94,6 +108,7 @@ async function loadRawPages(): Promise<RawPage[]> {
           typeof data.review_interval === "number" ? data.review_interval : null,
         depth: typeof data.depth === "number" ? data.depth : null,
         isIndex: slug.endsWith("-index"),
+        sections: extractSections(content),
         outbound: [],
         inbound: [],
       };

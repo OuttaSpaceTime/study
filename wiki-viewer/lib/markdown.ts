@@ -6,7 +6,7 @@
 // types and are skipped explicitly, so wikilink syntax inside code is never
 // rewritten.
 
-import type { Parent, PhrasingContent, Root, Text } from "mdast";
+import type { Blockquote, Parent, PhrasingContent, Root, Text } from "mdast";
 import type { PageMeta } from "./types";
 
 /**
@@ -78,6 +78,55 @@ export function createWikilinkResolver(
  */
 export function stripLeadingH1(markdown: string): string {
   return markdown.replace(/^\s*#[ \t][^\n]*\n?/, "").replace(/^\n+/, "");
+}
+
+// Callout markers: a blockquote whose first line opens with `[Note]`,
+// `[Warning]`, `[Heuristic]`, etc. The label is lifted into a title row and
+// the marker text is stripped from the body.
+const CALLOUT_PATTERN = /^\[([A-Za-z][\w-]*)\]\s*/;
+
+/**
+ * Remark plugin: turn `> [Label] text` blockquotes into styled callouts.
+ * Strips the `[Label]` marker from the body, prepends a `.callout-title`
+ * paragraph carrying the label, and tags the blockquote with
+ * `callout callout-<type>` classes for globals.css to style.
+ */
+export function remarkCallouts() {
+  return function transform(tree: Root): void {
+    visitBlockquotes(tree);
+  };
+}
+
+function visitBlockquotes(node: Parent): void {
+  for (const child of node.children) {
+    if (child.type === "blockquote") applyCallout(child);
+    if ("children" in child) visitBlockquotes(child);
+  }
+}
+
+function applyCallout(quote: Blockquote): void {
+  const firstParagraph = quote.children[0];
+  if (!firstParagraph || firstParagraph.type !== "paragraph") return;
+  const firstText = firstParagraph.children[0];
+  if (!firstText || firstText.type !== "text") return;
+  const match = CALLOUT_PATTERN.exec(firstText.value);
+  if (!match) return;
+
+  const label = match[1] ?? "";
+  const type = label.toLowerCase();
+  firstText.value = firstText.value.slice(match[0].length);
+  quote.children.unshift({
+    type: "paragraph",
+    children: [{ type: "text", value: label }],
+    data: { hProperties: { className: "callout-title" } },
+  });
+  quote.data = {
+    ...quote.data,
+    hProperties: {
+      ...(quote.data?.hProperties ?? {}),
+      className: ["callout", `callout-${type}`],
+    },
+  };
 }
 
 const WIKILINK_PATTERN = /(!?)\[\[([^[\]]+)\]\]/g;

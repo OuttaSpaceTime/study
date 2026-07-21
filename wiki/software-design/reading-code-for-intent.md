@@ -22,18 +22,18 @@ probe_sections:
 - The ladder from documented to impossible
 - Tradeoffs and gotchas
 last_probed:
-- The signature is a contract
-- Preconditions, postconditions, and asymmetric blame
-- The name is part of the contract
 - Why review is the backstop
 - The ladder from documented to impossible
 - Tradeoffs and gotchas
+- The signature is a contract
+- Preconditions, postconditions, and asymmetric blame
+- The name is part of the contract
 flashcard_ids:
 - cmr3mfpvn000avi0mwndjb23g
 - cmr3mfs9b000bvi0mqigj0v9j
 - cmr3mfu74000cvi0mp1wy11c5
-review_interval: 3
-next_review: '2026-07-05'
+review_interval: 8
+next_review: '2026-07-29'
 ---
 
 # Reading code for intent

@@ -7,7 +7,7 @@ tags:
 - moc
 - software-design
 created: '2026-07-02'
-updated: '2026-07-03'
+updated: '2026-07-21'
 source_skill: manual
 probe_sections:
 - Pages
@@ -24,6 +24,7 @@ Map of content for the `software-design/` wiki folder. Auto-maintained by `scrip
 ## Pages
 
 - [[software-design/delegating-to-agents-without-losing-the-map]]
+- [[software-design/extracting-a-domain-rule]]
 - [[software-design/judging-abstractions]]
 - [[software-design/reading-code-for-intent]]
 - [[software-design/software-complexity]]

@@ -18,6 +18,8 @@ export interface PageMeta {
   depth: number | null;
   /** True for *-index.md MOC pages. */
   isIndex: boolean;
+  /** H2 headings in document order, for the sidebar mini-TOC. */
+  sections: string[];
   /** Resolved wiki paths this page links to. */
   outbound: string[];
   /** Wiki paths that link to this page. */
