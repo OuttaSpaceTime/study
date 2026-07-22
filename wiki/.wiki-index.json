@@ -2338,9 +2338,9 @@
       "cmruqu0wr0007qo0morqmixps"
     ],
     "created": "2026-07-03",
-    "updated": "2026-07-21",
-    "next_review": "2026-07-06",
-    "review_interval": 3,
+    "updated": "2026-07-22",
+    "next_review": "2026-07-30",
+    "review_interval": 8,
     "probe_sections": [
       "Why fast feedback from delegating is addictive",
       "What passive delegation costs, the map you stop building",
@@ -2349,11 +2349,11 @@
       "Tradeoffs and gotchas"
     ],
     "last_probed": [
+      "A checkpoint rule, read and test before starting the next thread",
+      "Tradeoffs and gotchas",
       "Why fast feedback from delegating is addictive",
       "What passive delegation costs, the map you stop building",
-      "The context-switch tax that undoes parallel delegation",
-      "A checkpoint rule, read and test before starting the next thread",
-      "Tradeoffs and gotchas"
+      "The context-switch tax that undoes parallel delegation"
     ]
   },
   "rails/index-with": {
