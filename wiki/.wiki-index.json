@@ -2038,7 +2038,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-07-02",
-    "updated": "2026-07-21",
+    "updated": "2026-07-24",
     "next_review": "",
     "review_interval": null,
     "probe_sections": [
@@ -2746,6 +2746,62 @@
       "A real Demeter fix vs relocating the coupling",
       "Coverage is not documentation",
       "When extraction is ceremony, not a fix",
+      "Tradeoffs and gotchas"
+    ]
+  },
+  "software-design/reading-beyond-the-diff": {
+    "file": "software-design/reading-beyond-the-diff.md",
+    "title": "Reading beyond the diff",
+    "aliases": [
+      "blast radius",
+      "action at a distance",
+      "review scope"
+    ],
+    "tags": [
+      "software-design",
+      "code-review"
+    ],
+    "sections": [
+      "TL;DR",
+      "Comprehension debt",
+      "Two failure classes",
+      "The blast-radius dial",
+      "Why reading more is not enough",
+      "Chesterton's Fence",
+      "Reading for absence",
+      "A decision procedure",
+      "Tradeoffs and gotchas",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [
+      "cmryjbp5600004a0mvoh3k398",
+      "cmryjbr2d00014a0mqbyls1e7",
+      "cmryjbszm00024a0mleqwrfsr",
+      "cmryjbulo00034a0mxj33riwf"
+    ],
+    "created": "2026-07-24",
+    "updated": "2026-07-24",
+    "next_review": "2026-07-27",
+    "review_interval": 3,
+    "probe_sections": [
+      "Comprehension debt",
+      "Two failure classes",
+      "The blast-radius dial",
+      "Why reading more is not enough",
+      "Chesterton's Fence",
+      "Reading for absence",
+      "A decision procedure",
+      "Tradeoffs and gotchas"
+    ],
+    "last_probed": [
+      "Comprehension debt",
+      "Two failure classes",
+      "The blast-radius dial",
+      "Why reading more is not enough",
+      "Chesterton's Fence",
+      "Reading for absence",
+      "A decision procedure",
       "Tradeoffs and gotchas"
     ]
   }
