@@ -146,7 +146,6 @@ For each card draft:
      - **Before drafting:** present a brief outline — title, proposed H2 sections with a one-line description each. Wait for confirmation or adjustment, then start writing from the top.
      - **Before drafting**, internalize that protocol's "Writing Style" section — no em-dashes anywhere, no prose-colons as clause connectors. Filename must equal `slugify(title)` exactly. Writing clean prose first time avoids multi-pass cleanup.
      - Draft a wiki page that goes beyond a thin summary, including context, examples, and the developer's own explanations from the walkthrough.
-     - **Headings as prompts:** H2 headings become `probe_sections`. Write them specific enough to self-grade: `## nil return on no match and chaining` beats `## Gotchas`. See "Headings as SRS Prompts" in the write protocol.
      - Include `flashcard_ids` in frontmatter with the IDs of created cards
      - **Required:** link to at least 2 related wiki pages via `[[absolute/path]]`. Search the index for connections. Companion pages must not be leaf nodes in the graph.
      - Resolve links, propose folder, write file, run `scripts/wiki-write`, append session log
@@ -201,6 +200,7 @@ Cards sync to AnkiWeb, and Anki note fields are **HTML**: markdown renders liter
 - Lists: `<ul>/<ol>` with `<li>` (never `- ` / `1. ` lines)
 - Literal angle brackets (e.g. a `<script>` XSS example) must be entity-escaped: `&lt;script&gt;` — typically inside `<code>`
 - Never markdown links or `[[wikilinks]]` in card text — wiki linkage belongs in the companion page's `flashcard_ids`, not the card
+- **Never a cloze deletion (`{{c1::…}}`).** Cards are question/answer style only: the front asks something, the back answers it. A cloze hands over the sentence frame, so it tests recognition of a missing word instead of a full retrieval attempt, and it makes it easy to smuggle two facts into one deletion. Rephrase the sentence into a question rather than blanking a span.
 - **No em dashes (`—`), ever.** They're the classic LLM tell and read worse than plain prose. Write two sentences instead; after a bold lead-in label, use a colon (`<b>Fresh per response:</b> never reused…`). En dashes in numeric ranges (`1–4`) are fine.
 
 When presenting a card draft in chat, show it rendered (readable), not as raw HTML. `scripts/card-htmlize` exists as a safety net that converts any markdown stragglers (dry-run by default, `--apply` to write), but new cards should be born clean.

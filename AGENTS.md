@@ -24,7 +24,7 @@ Applies to every skill in this repo.
 
 ### Study & Knowledge
 
-- `/study` — Interactive study session. Claude evaluates answers and rates them. Logs sessions.
+- `/study` — Interactive study session. Flashcards are the lever: Claude evaluates answers and rates them. Also opens due wiki pages in the browser for the developer to read and explore, rescheduling each on "next". Logs sessions.
 - `/study-flashcard` — Create new flashcards through a guided walkthrough with duplicate detection. Optionally writes companion wiki pages.
 - `/study-walkthrough` — Interactive walkthrough that calibrates to current understanding, fills gaps, pushes deeper. Optionally writes wiki pages. Use `--write` to default to producing a wiki page.
 - `/canvas` — Interactively edit an Obsidian `.canvas` in a tight edit→show→react loop. Two modes: **live** (`eval` against the running app, reads your GUI selection) and **file** (Read/Write the JSON on disk, git-trackable). Same JSON schema either way.
@@ -37,11 +37,11 @@ Applies to every skill in this repo.
 
 The wiki content lives in `wiki/`, organized by topic folders (e.g., `wiki/javascript/react/`, `wiki/security/`). The Obsidian vault is the **repo root** (name `study`); non-wiki content is hidden from it — see [Hiding non-wiki content](#hiding-non-wiki-content).
 
+Flashcards are the study lever; the wiki is for reading. Pages still carry `next_review`/`review_interval` and still count toward the SRS pressure wiki axis: `/study` Phase 3 opens each due page in the browser for the developer to read (and optionally ask questions or request refinements), then reschedules it as if rated Good (interval × 2.5) on "next".
+
 ### Page Format
 
-Every wiki page has YAML frontmatter. Required on **all pages**: `title`, `aliases`, `tags`, `created`, `updated`, `source_skill`, `flashcard_ids` (list, empty `[]` is fine), `probe_sections` (non-empty list of H2 headings the page will be probed against at review time), `last_probed` (queue that rotates during review — seed with `probe_sections` on a new page). Required on **content pages** (non-`*-index.md`): `next_review` (ISO date), `review_interval` (days). `scripts/wiki-write` auto-fills `flashcard_ids`, `next_review`, `review_interval` when missing, and seeds `last_probed` from `probe_sections`; the remaining fields (`title`, `aliases`, `tags`, `created`, `updated`, `source_skill`, `probe_sections`) must be set by the calling skill. Optional: `last_deepened`, `allow_orphan` (set to `true` to suppress the orphan warning for pages that are intentionally standalone — required on MOCs), `lint_ignore` (list of lint **warning** labels to suppress for this page — see [Suppressing warnings per page](#suppressing-warnings-per-page)).
-
-**Probe-section count is a split signal, not a hard cap.** 5 or fewer `probe_sections` is the comfortable size; 6–7 is fine for a genuinely broad-but-cohesive topic. At **8 or more**, lint emits a `probe-section-count` **warning** (informational, exit 0 — never blocks) prompting you to consider splitting into two focused pages, each carrying its own subset of sections and cross-linked with wikilinks. Split only when there is a real conceptual seam (e.g. `transactions-and-locking` → `database-transactions` + `row-locking-and-concurrency`); leave a high count alone when the sections are all intrinsic facets of one atomic topic (e.g. `hsts`). The threshold counts `probe_sections`, not H2 headings generally. When you do split, give each child its own `probe_sections`/`last_probed`, and have the derived page inherit the parent's `next_review`/`review_interval` rather than resetting to a fresh schedule.
+Every wiki page has YAML frontmatter. Required on **all pages**: `title`, `aliases`, `tags`, `created`, `updated`, `source_skill`, `flashcard_ids` (list, empty `[]` is fine). Required on **content pages** (non-`*-index.md`): `next_review` (ISO date), `review_interval` (days). `scripts/wiki-write` auto-fills `flashcard_ids`, `next_review`, `review_interval` when missing; the remaining fields (`title`, `aliases`, `tags`, `created`, `updated`, `source_skill`) must be set by the calling skill. Optional: `last_deepened`, `allow_orphan` (set to `true` to suppress the orphan warning for pages that are intentionally standalone — required on MOCs), `lint_ignore` (list of lint **warning** labels to suppress for this page — see [Suppressing warnings per page](#suppressing-warnings-per-page)).
 
 ### Linking Rules
 
@@ -54,18 +54,6 @@ Every wiki page has YAML frontmatter. Required on **all pages**: `title`, `alias
 
 `wiki/.wiki-index.json` tracks all pages with their titles, aliases, sections (H2 headings), tags, and flashcard IDs. Updated automatically by `scripts/wiki-write`.
 
-### No-study (excluding a page from the study loop)
-
-A page can be marked **`no-study`** to drop it from the study loop *only* — it stays a full member of the wiki everywhere else. This is the mechanism for a topic you want to keep, read, link, and find, but are not (yet) studying: added at the `/study-walkthrough` limit for "I need to learn this but have no time to study it now", or toggled later on a page you want to stop reviewing. It adds a `no-study` tag to the page's frontmatter `tags`; that single marker does exactly one thing:
-
-- **Out of review.** `get_due_entries` skips `no-study`-tagged entries (the same way it skips `moc`), so `no-study` pages leave both `scripts/wiki-due` and the SRS pressure wiki count that `/study` and `/study-walkthrough` gate on.
-
-`no-study` does **not** remove the page from anything else: it stays **in the graph** (Obsidian and wiki-viewer), **in the page list and folder tree**, **in search/queries** (`scripts/wiki-search` / TreeSearch), and **in the index** (`.wiki-index.json` carries the `no-study` tag, so studied-vs-excluded is legible there). The wiki-viewer and Obsidian render it with a `not in study loop` marker instead of a review-due badge.
-
-Marking `no-study` is **non-destructive and reversible**: the page keeps its place, frontmatter, schedule (`next_review`/`review_interval` if it has one), and wikilinks. Including it again removes the tag and the page rejoins review at its stored `next_review`.
-
-Toggle it with `scripts/wiki-no-study <page>` (and `--include` to rejoin the study loop), which rewrites the frontmatter and re-runs the `wiki-write` reindex pipeline. The `wiki/llm/` pages are currently `no-study`.
-
 ### Search
 
 - **TreeSearch** (pytreesearch): FTS5 keyword search, <100ms, section-aware results. Index at `wiki/indexes/`.
@@ -77,17 +65,17 @@ All skills follow the shared protocol in `.claude/skills/references/wiki-write-p
 
 ### Linting
 
-`scripts/lint` checks: broken wikilinks, absolute path enforcement, frontmatter completeness, orphan pages, alias collisions, slug/filename consistency, flashcard ID drift between frontmatter and index, and probe-section count (`probe-section-count` warning at ≥8 — see the split-signal note under [Page Format](#page-format)). Runs automatically after every wiki write.
+`scripts/lint` checks: broken wikilinks, absolute path enforcement, frontmatter completeness, orphan pages, alias collisions, slug/filename consistency, and flashcard ID drift between frontmatter and index. Runs automatically after every wiki write.
 
 Results are split into **errors** (block clean status, exit 1) and **warnings** (informational, exit 0). Orphan pages are warnings — suppress per-page with `allow_orphan: true` in frontmatter. Wikilink parsing ignores fenced code blocks, inline code, and image embeds (`![[...]]`), and strips `#heading` anchors and `|display` pipes before resolving targets. Self-links do not count as inbound.
 
 #### Suppressing warnings per page
 
-Add a `lint_ignore` list to a page's frontmatter naming the warning labels to silence for that page (the label is the token before the first colon in the lint line, e.g. `probe-section-count`, `prose-quality`, `orphan`):
+Add a `lint_ignore` list to a page's frontmatter naming the warning labels to silence for that page (the label is the token before the first colon in the lint line, e.g. `prose-quality`, `orphan`):
 
 ```yaml
 lint_ignore:
-- probe-section-count
+- orphan
 ```
 
 Only **warnings** can be suppressed — errors always fire. The suppression is **gated on git**: it applies only while the page is **committed and clean**. A page with uncommitted changes (modified, staged, or untracked) still emits all its warnings. Two consequences follow by design:
@@ -95,7 +83,7 @@ Only **warnings** can be suppressed — errors always fire. The suppression is *
 - **The opt-out must be committed to take effect.** Adding `lint_ignore` makes the page dirty, so the warning keeps showing until you commit the change — i.e. you have to commit the decision before it counts.
 - **Editing a suppressed page re-surfaces the rule.** As soon as you touch the page again, its warnings come back so you reconsider them against the new content, then go quiet once you re-commit.
 
-Use it for warnings you've deliberately judged not to apply — e.g. `hsts` carries `lint_ignore: [probe-section-count]` because its 9 sections are all intrinsic facets of one topic with no real split seam. Dirtiness is detected via `git status`; outside a git repo (or if git is unavailable) nothing is considered dirty, so suppressions simply apply.
+Use it for warnings you've deliberately judged not to apply — e.g. a page carries `lint_ignore: [orphan]` when it's deliberately standalone but you'd rather not set `allow_orphan`. Dirtiness is detected via `git status`; outside a git repo (or if git is unavailable) nothing is considered dirty, so suppressions simply apply.
 
 Python code is linted with ruff: `uv run ruff check scripts/ tests/`. Config lives in `pyproject.toml`.
 
@@ -116,7 +104,7 @@ Then open pages by wiki key (without `.md`):
 xdg-open "http://localhost:4777/wiki/<key>"
 ```
 
-The viewer reads pages straight off `wiki/`, shows `no-study`-tagged pages in the graph and page list with a `not in study loop` marker (they leave the study loop, not the wiki), and resolves the same absolute `[[topic/slug]]` wikilinks Obsidian uses. Obsidian remains installed but is used **only by `/canvas`** (`.canvas` files have no browser equivalent); its socket-check launch flow lives in that skill.
+The viewer reads pages straight off `wiki/` and resolves the same absolute `[[topic/slug]]` wikilinks Obsidian uses. Obsidian remains installed but is used **only by `/canvas`** (`.canvas` files have no browser equivalent); its socket-check launch flow lives in that skill.
 
 ### Hiding non-wiki content
 
@@ -127,7 +115,7 @@ The vault is the whole repo, but only `wiki/` is knowledge content. Hiding the r
 | Search, graph, quick-switcher, link autocomplete | `userIgnoreFilters` (core "Excluded files") | `.obsidian/app.json` |
 | File-explorer sidebar (full removal) | CSS snippet using `.nav-folder:has(...)` / `.nav-file:has(...)` rules | `.obsidian/snippets/hide-non-wiki.css` (enabled via `enabledCssSnippets` in `.obsidian/appearance.json`) |
 
-Both lists must stay **in sync**. Currently hidden: `scripts/`, `tests/`, `wiki-viewer/`, `CLAUDE.md`. Kept visible on purpose: `wiki/`, `logs/`, `AGENTS.md`, `todo.md`. Dotfolders (`.claude/`, `.git/`, `.venv/`, `.pytest_cache/`) are auto-ignored by Obsidian; non-markdown (`pyproject.toml`, `uv.lock`) is hidden by `showUnsupportedFiles: false`. The graph view is separately scoped to `path:wiki/ -path:wiki/indexes` via `.obsidian/graph.json`; `no-study` pages stay in the graph (see [No-study](#no-study-excluding-a-page-from-the-study-loop)).
+Both lists must stay **in sync**. Currently hidden: `scripts/`, `tests/`, `wiki-viewer/`, `CLAUDE.md`. Kept visible on purpose: `wiki/`, `logs/`, `AGENTS.md`, `todo.md`. Dotfolders (`.claude/`, `.git/`, `.venv/`, `.pytest_cache/`) are auto-ignored by Obsidian; non-markdown (`pyproject.toml`, `uv.lock`) is hidden by `showUnsupportedFiles: false`. The graph view is separately scoped to `path:wiki/ -path:wiki/indexes` via `.obsidian/graph.json`.
 
 To change what's hidden: edit the list in **both** `app.json` (`userIgnoreFilters`) and `hide-non-wiki.css`, then reload Obsidian (`Ctrl+R`). For a folder, add `.nav-folder:has(> .nav-folder-title[data-path="<name>"])`; for a file, `.nav-file:has(> .nav-file-title[data-path="<name>.md"])`.
 
@@ -223,11 +211,13 @@ python3 scripts/wiki-write wiki/security/hsts.md  # explicit
 
 Available scripts:
 - `scripts/wiki-write <page>` — Update index, reindex TreeSearch, embed via Ollama, run lint
+- `scripts/wiki-reindex [--wiki-dir DIR]` — Rebuild `.wiki-index.json` from every page: drops fields the current schema no longer writes, prunes entries for deleted pages, and carries each page's `updated` stamp over (a reindex is a derive, not a write). Use after any index schema change
 - `scripts/lint` — Check broken wikilinks, frontmatter, orphans, alias collisions
 - `scripts/wiki-search "<query>"` — Semantic search against wiki embeddings
 - `scripts/wiki-due` — List wiki pages due for review
+- `scripts/study-calibration` — True retention over a trailing window + difficulty verdict (`over-difficult` / `calibrated` / `under-difficult` / `low-signal`, with `(MARGINAL)` near a band edge). Drives `/study`'s Phase 2 difficulty levers; never the rating rubric. `--human` or JSON
+- `scripts/study-leeches` — Leech candidates: cards at 5+ lapses (`--threshold` overrides), suspended cards excluded, ordered lapses-descending then lowest FSRS `stability`. Read by `/study` Phase 1; *which* leech a session raises depends on the cards actually served, so that selection stays in Phase 2. `--human` or JSON
 - `scripts/wiki-reschedule <page> <rating>` — Reschedule a wiki page after review (1-4), rewrites frontmatter and re-indexes
-- `scripts/wiki-no-study <page> [--include]` — Exclude/include a page in the study loop by toggling its `no-study` tag (drops it from the study loop only; stays in graph, search, and index); re-indexes. See [No-study](#no-study-excluding-a-page-from-the-study-loop)
 - `scripts/anki-sync <login|sync|status>` — Sync flashcards to AnkiWeb (see [Anki Sync](#anki-sync)). `sync --dry-run` previews, `--local` skips AnkiWeb
 - `scripts/card-htmlize` — Convert markdown/plain card text in master.db to simple Anki HTML (dry-run by default, `--apply` writes after backing up master.db)
 
