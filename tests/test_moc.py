@@ -22,8 +22,6 @@ MOC_TEMPLATE = """\
     created: 2026-04-20
     updated: 2026-04-20
     source_skill: manual
-    probe_sections: [Pages]
-    last_probed: [Pages]
     allow_orphan: true
     ---
 
@@ -46,8 +44,6 @@ PAGE_TEMPLATE = """\
     created: 2026-04-20
     updated: 2026-04-20
     source_skill: study-walkthrough
-    probe_sections: [Overview]
-    last_probed: [Overview]
     ---
 
     # {title}
@@ -130,8 +126,6 @@ class TestUpdateMoc:
             created: 2026-04-20
             updated: 2026-04-20
             source_skill: manual
-            probe_sections: [Pages]
-            last_probed: [Pages]
             allow_orphan: true
             ---
 
@@ -165,8 +159,6 @@ SUB_MOC_TEMPLATE = """\
     updated: 2026-04-20
     source_skill: manual
     flashcard_ids: []
-    probe_sections: [Pages]
-    last_probed: [Pages]
     ---
 
     # Routing Index
@@ -185,8 +177,6 @@ SUB_PAGE_TEMPLATE = """\
     created: 2026-04-20
     updated: 2026-04-20
     source_skill: study-walkthrough
-    probe_sections: [Overview]
-    last_probed: [Overview]
     ---
 
     # {title}
@@ -293,8 +283,6 @@ class TestSubMocLint:
                 updated: 2026-04-20
                 source_skill: manual
                 flashcard_ids: []
-                probe_sections: [Pages]
-                last_probed: [Pages]
                 ---
 
                 # Routing Index
@@ -322,8 +310,6 @@ class TestMocSplitSuggestion:
                     created: 2026-04-20
                     updated: 2026-04-20
                     source_skill: study-walkthrough
-                    probe_sections: [Overview]
-                    last_probed: [Overview]
                     ---
 
                     # r{i}
@@ -351,8 +337,6 @@ class TestMocSplitSuggestion:
                     created: 2026-04-20
                     updated: 2026-04-20
                     source_skill: study-walkthrough
-                    probe_sections: [Overview]
-                    last_probed: [Overview]
                     ---
 
                     # r{i}
@@ -381,8 +365,6 @@ class TestMocSplitSuggestion:
                     created: 2026-04-20
                     updated: 2026-04-20
                     source_skill: study-walkthrough
-                    probe_sections: [Overview]
-                    last_probed: [Overview]
                     ---
 
                     # r{i}
@@ -403,8 +385,6 @@ class TestMocSplitSuggestion:
                     created: 2026-04-20
                     updated: 2026-04-20
                     source_skill: study-walkthrough
-                    probe_sections: [Overview]
-                    last_probed: [Overview]
                     ---
 
                     # a{i}

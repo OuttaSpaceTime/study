@@ -12,16 +12,6 @@ updated: '2026-06-01'
 source_skill: study-walkthrough
 next_review: '2026-07-21'
 review_interval: 50
-probe_sections:
-- How shallow routing splits member vs collection routes
-- Why This Split
-- Named Helpers Change Too
-- Applying to All Nested Resources
-last_probed:
-- Named Helpers Change Too
-- Applying to All Nested Resources
-- How shallow routing splits member vs collection routes
-- Why This Split
 flashcard_ids: []
 ---
 

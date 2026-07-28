@@ -13,12 +13,6 @@ updated: '2026-04-13'
 source_skill: study-walkthrough
 next_review: '2026-07-18'
 review_interval: 1
-probe_sections:
-- draw -- Split Routes into Files
-- defaults -- Set Shared Parameters
-last_probed:
-- draw -- Split Routes into Files
-- defaults -- Set Shared Parameters
 flashcard_ids: []
 ---
 

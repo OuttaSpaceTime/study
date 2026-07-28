@@ -14,20 +14,6 @@ created: '2026-07-02'
 updated: '2026-07-02'
 source_skill: study-walkthrough
 last_deepened: '2026-07-02'
-probe_sections:
-- The wrong-abstraction signal
-- The remedy is re-inline, then re-derive
-- Rule of Three and the two motives for extraction
-- Leaky abstractions and the working-vs-learning cost
-- Why this bites harder in AI-generated code
-- Tradeoffs and gotchas
-last_probed:
-- Leaky abstractions and the working-vs-learning cost
-- Why this bites harder in AI-generated code
-- Tradeoffs and gotchas
-- The wrong-abstraction signal
-- The remedy is re-inline, then re-derive
-- Rule of Three and the two motives for extraction
 flashcard_ids:
 - cmr352mhn0000vi0my4yi3fk0
 - cmr352oou0001vi0m2ma2kmqz

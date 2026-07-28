@@ -14,16 +14,6 @@ created: '2026-05-07'
 updated: '2026-05-07'
 source_skill: study-walkthrough
 flashcard_ids: []
-probe_sections:
-- Why observables are lazy and what subscribe triggers
-- 'The Observable Contract: grammar and serial delivery rule'
-- 'Cold vs hot observables: independent vs shared execution'
-- 'Subscription lifecycle: what subscribe returns and how teardown works'
-last_probed:
-- Why observables are lazy and what subscribe triggers
-- 'The Observable Contract: grammar and serial delivery rule'
-- 'Cold vs hot observables: independent vs shared execution'
-- 'Subscription lifecycle: what subscribe returns and how teardown works'
 review_interval: 14
 next_review: '2026-08-01'
 ---

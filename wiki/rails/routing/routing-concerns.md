@@ -12,16 +12,6 @@ updated: '2026-04-13'
 source_skill: study-walkthrough
 next_review: '2026-10-19'
 review_interval: 120
-probe_sections:
-- 'The problem: duplicated route blocks across resources'
-- Extract a Concern
-- Multiple Concerns
-- When to extract a routing concern
-last_probed:
-- Multiple Concerns
-- When to extract a routing concern
-- 'The problem: duplicated route blocks across resources'
-- Extract a Concern
 flashcard_ids: []
 ---
 

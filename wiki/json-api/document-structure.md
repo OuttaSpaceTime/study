@@ -13,18 +13,6 @@ created: '2026-05-08'
 updated: '2026-05-08'
 source_skill: study-walkthrough
 flashcard_ids: []
-probe_sections:
-- Top-level keys and their mutual exclusions
-- Resource object shape
-- relationships hold pointers, included holds payloads
-- Compound documents and the full-linkage rule
-- Every node on an include path is included
-last_probed:
-- Top-level keys and their mutual exclusions
-- Resource object shape
-- relationships hold pointers, included holds payloads
-- Compound documents and the full-linkage rule
-- Every node on an include path is included
 review_interval: 10
 next_review: '2026-07-21'
 ---

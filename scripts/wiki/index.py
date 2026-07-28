@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import shutil
 import sys
@@ -45,14 +46,31 @@ def iter_wiki_pages(wiki_dir: Path) -> list[Path]:
     )
 
 
-def update_entry(index: dict, wiki_dir: Path, page_path: Path) -> dict:
-    """Parse a wiki page and update the index entry. Returns the updated index."""
-    content = page_path.read_text()
-    meta, body = parse_frontmatter(content)
+def reindex_all(wiki_dir: Path) -> dict:
+    """Rebuild every index entry from the pages on disk.
 
-    sections = extract_h2s(body)
-    wiki_key = get_wiki_key(wiki_dir, page_path)
-    rel_path = str(page_path.relative_to(wiki_dir))
+    A reindex derives rather than writes: it drops fields the current schema no
+    longer produces and prunes entries whose pages are gone, while carrying each
+    page's existing ``updated`` stamp over. Rebuilding after a schema change must
+    not mark the whole wiki as edited today.
+    """
+    previous = load_index(wiki_dir / ".wiki-index.json")
+    rebuilt: dict = {}
+    for page_path in iter_wiki_pages(wiki_dir):
+        wiki_key = get_wiki_key(wiki_dir, page_path)
+        entry = derive_entry(wiki_dir, page_path)
+        entry["updated"] = previous.get(wiki_key, {}).get("updated", entry["updated"])
+        rebuilt[wiki_key] = entry
+    return rebuilt
+
+
+def derive_entry(wiki_dir: Path, page_path: Path) -> dict:
+    """Build an index entry from a page's content alone.
+
+    ``updated`` defaults to today so a page with no prior entry gets a stamp;
+    callers that know no edit happened overwrite it with the value they hold.
+    """
+    meta, body = parse_frontmatter(page_path.read_text())
     today = date.today().isoformat()
 
     aliases = meta.get("aliases", [])
@@ -63,19 +81,33 @@ def update_entry(index: dict, wiki_dir: Path, page_path: Path) -> dict:
     if not isinstance(tags, list):
         tags = [tags]
 
-    index[wiki_key] = {
-        "file": rel_path,
+    return {
+        "file": str(page_path.relative_to(wiki_dir)),
         "title": meta.get("title", ""),
         "aliases": aliases,
         "tags": tags,
-        "sections": sections,
+        "sections": extract_h2s(body),
         "flashcard_ids": meta.get("flashcard_ids", []),
         "created": meta.get("created", today),
         "updated": today,
         "next_review": meta.get("next_review", ""),
         "review_interval": meta.get("review_interval"),
-        "probe_sections": meta.get("probe_sections", []),
-        "last_probed": meta.get("last_probed", []),
     }
 
+
+def update_entry(index: dict, wiki_dir: Path, page_path: Path) -> dict:
+    """Record a write: derive the entry and stamp it as updated today."""
+    index[get_wiki_key(wiki_dir, page_path)] = derive_entry(wiki_dir, page_path)
     return index
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Rebuild .wiki-index.json from all wiki pages")
+    parser.add_argument("--wiki-dir", default="wiki")
+    args = parser.parse_args(argv)
+
+    wiki_dir = Path(args.wiki_dir)
+    index = reindex_all(wiki_dir)
+    save_index(wiki_dir / ".wiki-index.json", index)
+    print(f"reindexed {len(index)} pages")
+    return 0

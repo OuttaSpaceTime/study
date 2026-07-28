@@ -13,18 +13,6 @@ created: '2026-05-07'
 updated: '2026-05-07'
 source_skill: study-walkthrough
 flashcard_ids: []
-probe_sections:
-- 'Reactive programming definition: streams as first-class values'
-- 'Stream anatomy: values, errors, and completion over time'
-- 'Core operator categories: transform, filter, combine, flatten'
-- 'flatMap/mergeMap: collapsing a stream of streams'
-- Mental model shift from imperative to reactive
-last_probed:
-- 'Reactive programming definition: streams as first-class values'
-- 'flatMap/mergeMap: collapsing a stream of streams'
-- 'Stream anatomy: values, errors, and completion over time'
-- 'Core operator categories: transform, filter, combine, flatten'
-- Mental model shift from imperative to reactive
 review_interval: 50
 next_review: '2026-08-30'
 ---

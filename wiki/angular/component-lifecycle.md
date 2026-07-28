@@ -13,20 +13,6 @@ tags:
 created: '2026-05-08'
 updated: '2026-05-08'
 source_skill: study-walkthrough
-probe_sections:
-- 'Init order: depth-first post-order across the tree'
-- 'constructor vs ngOnInit: why @Input is undefined in the constructor'
-- 'ngOnChanges: fires on first render and batches all input changes'
-- 'Content vs View hooks: which decorator becomes available where'
-- 'Injection context: where inject() is valid and where it throws NG0203'
-- 'afterNextRender vs ngAfterViewInit: post-paint vs pre-paint timing'
-last_probed:
-- 'Content vs View hooks: which decorator becomes available where'
-- 'Injection context: where inject() is valid and where it throws NG0203'
-- 'afterNextRender vs ngAfterViewInit: post-paint vs pre-paint timing'
-- 'Init order: depth-first post-order across the tree'
-- 'constructor vs ngOnInit: why @Input is undefined in the constructor'
-- 'ngOnChanges: fires on first render and batches all input changes'
 flashcard_ids: []
 review_interval: 25
 next_review: '2026-07-20'

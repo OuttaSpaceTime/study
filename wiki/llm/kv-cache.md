@@ -11,30 +11,9 @@ tags:
 - inference
 - attention
 - transformer
-- no-study
 created: '2026-05-05'
 updated: '2026-05-05'
 source_skill: study-walkthrough
-lint_ignore:
-- probe-section-count
-probe_sections:
-- What attention is doing - Q, K, V
-- Where the prediction comes from - K/V are inputs, not the output
-- Why two vectors per token, not one
-- Why K and V are cached but not Q
-- The cache grows by one entry per decode step
-- Cost formula
-- Without the cache - O(N²)
-- num_ctx is the cache buffer size
-last_probed:
-- Where the prediction comes from - K/V are inputs, not the output
-- What attention is doing - Q, K, V
-- Why two vectors per token, not one
-- Cost formula
-- Without the cache - O(N²)
-- num_ctx is the cache buffer size
-- Why K and V are cached but not Q
-- The cache grows by one entry per decode step
 review_interval: 10
 next_review: '2026-07-03'
 flashcard_ids: []

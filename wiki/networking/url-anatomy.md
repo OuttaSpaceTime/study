@@ -16,18 +16,6 @@ updated: '2026-05-04'
 source_skill: study-walkthrough
 flashcard_ids:
 - cmoqrprzu0000ld0mfbwqly5v
-probe_sections:
-- URL anatomy at a glance
-- Scheme vs protocol
-- Host - subdomain, SLD, TLD
-- 'Port: default ports and when the URL includes one'
-- Path and query
-last_probed:
-- Host - subdomain, SLD, TLD
-- Scheme vs protocol
-- 'Port: default ports and when the URL includes one'
-- Path and query
-- URL anatomy at a glance
 review_interval: 10
 next_review: '2026-07-11'
 ---

@@ -15,20 +15,6 @@ created: '2026-05-08'
 updated: '2026-05-08'
 source_skill: study-walkthrough
 flashcard_ids: []
-probe_sections:
-- The envelope-vs-strategy split
-- Sparse fieldsets are per-type, not per-path
-- Pagination URLs are opaque to the client
-- Cursor vs offset under concurrent inserts
-- Sort is precise, filter is deliberately undefined
-- Custom query parameters need a non-alpha character
-last_probed:
-- Custom query parameters need a non-alpha character
-- The envelope-vs-strategy split
-- Pagination URLs are opaque to the client
-- Sparse fieldsets are per-type, not per-path
-- Cursor vs offset under concurrent inserts
-- Sort is precise, filter is deliberately undefined
 review_interval: 5
 next_review: '2026-07-12'
 ---

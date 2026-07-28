@@ -17,18 +17,6 @@ source_skill: study-walkthrough
 flashcard_ids:
 - cmosqcwsg0000h30mvfne2v51
 - cmosqd3r80001h30mwd2tbpht
-probe_sections:
-- The four methods
-- How includes auto-switches
-- 'Cost model: when JOIN multiplies rows'
-- Choosing between joins, preload, eager_load, and includes
-- Polymorphic associations
-last_probed:
-- Choosing between joins, preload, eager_load, and includes
-- Polymorphic associations
-- The four methods
-- How includes auto-switches
-- 'Cost model: when JOIN multiplies rows'
 review_interval: 45
 next_review: '2026-07-23'
 ---

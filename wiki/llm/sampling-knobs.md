@@ -11,22 +11,9 @@ tags:
 - inference
 - sampling
 - ollama
-- no-study
 created: '2026-05-05'
 updated: '2026-05-05'
 source_skill: study-walkthrough
-probe_sections:
-- The decode loop has a sampler
-- Temperature - how peaked the distribution is
-- num_predict - the output cap
-- Thinking mode - reasoning preamble
-- Choosing knobs by task shape
-last_probed:
-- num_predict - the output cap
-- Thinking mode - reasoning preamble
-- Choosing knobs by task shape
-- The decode loop has a sampler
-- Temperature - how peaked the distribution is
 review_interval: 10
 next_review: '2026-07-03'
 flashcard_ids: []

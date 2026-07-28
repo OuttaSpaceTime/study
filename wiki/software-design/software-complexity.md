@@ -12,20 +12,6 @@ tags:
 created: '2026-07-03'
 updated: '2026-07-03'
 source_skill: study-walkthrough
-probe_sections:
-- Essential versus accidental complexity, and why the split matters
-- Why the cost lands on change, not on reading
-- Complecting, when two simple things become one expensive one
-- Guarantee ownership at the trust boundary
-- Triaging defensive checks, especially in AI-generated code
-- Tradeoffs and gotchas
-last_probed:
-- Guarantee ownership at the trust boundary
-- Triaging defensive checks, especially in AI-generated code
-- Tradeoffs and gotchas
-- Essential versus accidental complexity, and why the split matters
-- Why the cost lands on change, not on reading
-- Complecting, when two simple things become one expensive one
 flashcard_ids:
 - cmruqtu290004qo0meh4jat6l
 - cmruqtwrm0005qo0m1zn2mdei

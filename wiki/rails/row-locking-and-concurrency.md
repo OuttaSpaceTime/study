@@ -22,20 +22,6 @@ flashcard_ids:
 - cmqu0u0ef000a150muv3hmvrl
 - cmqu0u1ur000b150m6ttrks13
 - cmqu0u3eu000c150m44rrl72z
-probe_sections:
-- MVCC means readers and writers never block each other
-- Implicit row locks make writers block writers
-- Lost updates and why with_lock fixes them
-- with_lock, lock!, and lock
-- Why a transaction does not speed up parallel work
-- Optimistic versus pessimistic locking
-last_probed:
-- with_lock, lock!, and lock
-- Why a transaction does not speed up parallel work
-- Optimistic versus pessimistic locking
-- MVCC means readers and writers never block each other
-- Implicit row locks make writers block writers
-- Lost updates and why with_lock fixes them
 review_interval: 4
 next_review: '2026-07-07'
 ---

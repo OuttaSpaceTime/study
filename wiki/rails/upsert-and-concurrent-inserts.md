@@ -17,22 +17,6 @@ created: '2026-06-14'
 updated: '2026-06-14'
 source_skill: study-walkthrough
 flashcard_ids: []
-probe_sections:
-- The race between two concurrent inserts
-- ON CONFLICT DO NOTHING vs DO UPDATE
-- RETURNING returns only touched rows
-- Rails create!, insert_all, insert_all!, upsert_all
-- Bulk methods bypass validations and callbacks
-- find_or_create_by is not atomic
-- Tradeoffs and gotchas
-last_probed:
-- Rails create!, insert_all, insert_all!, upsert_all
-- Tradeoffs and gotchas
-- The race between two concurrent inserts
-- ON CONFLICT DO NOTHING vs DO UPDATE
-- RETURNING returns only touched rows
-- Bulk methods bypass validations and callbacks
-- find_or_create_by is not atomic
 review_interval: 20
 next_review: '2026-07-24'
 ---

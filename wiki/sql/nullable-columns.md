@@ -15,26 +15,6 @@ tags:
 created: '2026-05-05'
 updated: '2026-05-05'
 source_skill: study-walkthrough
-lint_ignore:
-- probe-section-count
-probe_sections:
-- Three-valued logic is the root cause
-- The NOT IN trap
-- UNIQUE does not constrain NULLs
-- Partial unique indexes
-- Nullable foreign keys
-- Migrating to NOT NULL is expensive
-- When NULL is the right choice
-- Sentinels masquerading as values
-last_probed:
-- The NOT IN trap
-- UNIQUE does not constrain NULLs
-- Partial unique indexes
-- Nullable foreign keys
-- Migrating to NOT NULL is expensive
-- When NULL is the right choice
-- Sentinels masquerading as values
-- Three-valued logic is the root cause
 review_interval: 14
 next_review: '2026-07-10'
 flashcard_ids: []

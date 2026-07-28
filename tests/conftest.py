@@ -33,8 +33,6 @@ def sample_page(wiki_dir: Path) -> Path:
         flashcard_ids: [cmne7xz9202lx0msonsbfhp3j, cmne7xz1y02k30msouw64srcz, cmne7xyv602if0msoa0ryw0o7]
         next_review: 2026-04-12
         review_interval: 3
-        probe_sections: [Section One, Section Two]
-        last_probed: [Section One, Section Two]
         ---
 
         # test page

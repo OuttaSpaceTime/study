@@ -9,8 +9,6 @@ tags:
 created: '2026-04-09'
 updated: '2026-04-22'
 source_skill: study-walkthrough
-lint_ignore:
-- probe-section-count
 flashcard_ids:
 - cmne7xz9202lx0msonsbfhp3j
 - cmne7xz1y02k30msouw64srcz
@@ -24,24 +22,6 @@ flashcard_ids:
 last_deepened: '2026-04-09'
 next_review: '2026-08-10'
 review_interval: 62
-probe_sections:
-- 'Targets: --worktree and --staged'
-- '--source: Restoring from Any Commit'
-- --ours and --theirs During Merge Conflicts
-- '--merge: Recreate Conflict State'
-- Conflicts from `git stash pop`
-- --ignore-unmerged
-- 'Interactive: -p'
-- Common Patterns
-last_probed:
-- '--source: Restoring from Any Commit'
-- --ours and --theirs During Merge Conflicts
-- Conflicts from `git stash pop`
-- '--merge: Recreate Conflict State'
-- --ignore-unmerged
-- 'Interactive: -p'
-- Common Patterns
-- 'Targets: --worktree and --staged'
 ---
 
 # git restore

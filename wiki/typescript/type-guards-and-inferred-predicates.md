@@ -9,23 +9,10 @@ tags:
 - typescript
 - types
 - narrowing
-- no-study
 created: '2026-07-15'
 updated: '2026-07-15'
 source_skill: study-walkthrough
 flashcard_ids: []
-probe_sections:
-- User-defined type guards are unchecked assertions
-- Inferred type predicates and the four conditions
-- filter and every narrow, filter(Boolean) does not
-- Unsound shortcut versus sound check
-- Generic guards with Extract
-last_probed:
-- User-defined type guards are unchecked assertions
-- Inferred type predicates and the four conditions
-- filter and every narrow, filter(Boolean) does not
-- Unsound shortcut versus sound check
-- Generic guards with Extract
 review_interval: 3
 next_review: '2026-07-18'
 ---

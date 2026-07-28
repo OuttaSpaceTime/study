@@ -11,26 +11,6 @@ created: '2026-07-24'
 updated: '2026-07-24'
 source_skill: study-walkthrough
 last_deepened: '2026-07-24'
-lint_ignore:
-- probe-section-count
-probe_sections:
-- Comprehension debt
-- Two failure classes
-- The blast-radius dial
-- Why reading more is not enough
-- Chesterton's Fence
-- Reading for absence
-- A decision procedure
-- Tradeoffs and gotchas
-last_probed:
-- Comprehension debt
-- Two failure classes
-- The blast-radius dial
-- Why reading more is not enough
-- Chesterton's Fence
-- Reading for absence
-- A decision procedure
-- Tradeoffs and gotchas
 flashcard_ids:
 - cmryjbp5600004a0mvoh3k398
 - cmryjbr2d00014a0mqbyls1e7

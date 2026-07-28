@@ -14,22 +14,6 @@ created: '2026-07-02'
 updated: '2026-07-21'
 source_skill: study-walkthrough
 last_deepened: '2026-07-02'
-probe_sections:
-- 'The placement axis: how much a piece depends on'
-- Dependency direction is one-way
-- Smart vs dumb is about data access, not tree position
-- Where the two kinds of parsing live
-- Interceptors and guards detect and delegate
-- Deciding where new code goes
-- Tradeoffs and gotchas
-last_probed:
-- Where the two kinds of parsing live
-- Interceptors and guards detect and delegate
-- Deciding where new code goes
-- Tradeoffs and gotchas
-- 'The placement axis: how much a piece depends on'
-- Dependency direction is one-way
-- Smart vs dumb is about data access, not tree position
 flashcard_ids:
 - cmr3kzoif0005vi0m6saz3h2t
 - cmr3kzuq10007vi0ml2cjtub2

@@ -65,6 +65,20 @@ class TestParseFrontmatter:
         meta, _ = parse_frontmatter(content)
         assert meta["flashcard_ids"] == ["101", "202"]
 
+    def test_only_flashcard_ids_are_coerced_to_strings(self):
+        content = textwrap.dedent("""\
+            ---
+            title: "test"
+            tags: [test]
+            created: 2026-04-09
+            review_interval: 38
+            ---
+
+            Body.
+        """)
+        meta, _ = parse_frontmatter(content)
+        assert meta["review_interval"] == 38
+
     def test_empty_flashcard_ids(self):
         content = textwrap.dedent("""\
             ---

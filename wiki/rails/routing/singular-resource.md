@@ -12,18 +12,6 @@ updated: '2026-04-16'
 source_skill: study-walkthrough
 next_review: '2026-07-21'
 review_interval: 50
-probe_sections:
-- 6 Routes, Not 7
-- Controller Is Still Plural
-- When to declare a singular resource
-- How Identity Is Resolved
-- Nesting Works the Same
-last_probed:
-- 6 Routes, Not 7
-- Controller Is Still Plural
-- When to declare a singular resource
-- How Identity Is Resolved
-- Nesting Works the Same
 flashcard_ids: []
 ---
 

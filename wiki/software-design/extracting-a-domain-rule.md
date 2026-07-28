@@ -13,22 +13,6 @@ tags:
 created: '2026-07-21'
 updated: '2026-07-21'
 source_skill: study-walkthrough
-probe_sections:
-- Extract for a name, not for reuse
-- Tell, Don't Ask vs Law of Demeter
-- Information Expert decides where it lives
-- A real Demeter fix vs relocating the coupling
-- Coverage is not documentation
-- When extraction is ceremony, not a fix
-- Tradeoffs and gotchas
-last_probed:
-- Extract for a name, not for reuse
-- Tell, Don't Ask vs Law of Demeter
-- Information Expert decides where it lives
-- A real Demeter fix vs relocating the coupling
-- Coverage is not documentation
-- When extraction is ceremony, not a fix
-- Tradeoffs and gotchas
 flashcard_ids:
 - cmruqe38w0000qo0m3plgjvt6
 - cmruqe6da0001qo0mj1zcggx0

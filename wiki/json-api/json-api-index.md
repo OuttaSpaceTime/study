@@ -14,16 +14,6 @@ updated: '2026-06-08'
 source_skill: study-walkthrough
 flashcard_ids: []
 allow_orphan: true
-probe_sections:
-- The mental model, graph protocol wearing REST clothes
-- The envelope-vs-strategy throughline
-- When to reach for JSON:API vs GraphQL vs plain REST
-- Pages
-last_probed:
-- The mental model, graph protocol wearing REST clothes
-- The envelope-vs-strategy throughline
-- When to reach for JSON:API vs GraphQL vs plain REST
-- Pages
 ---
 
 # JSON:API Index

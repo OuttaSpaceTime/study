@@ -17,20 +17,6 @@ source_skill: study-walkthrough
 last_deepened: '2026-05-07'
 next_review: '2026-07-10'
 review_interval: 14
-probe_sections:
-- 'How signal writes mark ancestors: traversal flag vs dirty flag'
-- 'Semi-local CD: which nodes are traversed vs which re-evaluate bindings'
-- Why change detection walks top-down
-- 'The click-event caveat: two independent mechanisms'
-- When the caveat bites vs when semi-local CD survives
-- Why semi-local CD only matters in zoneless
-last_probed:
-- Why change detection walks top-down
-- 'How signal writes mark ancestors: traversal flag vs dirty flag'
-- 'Semi-local CD: which nodes are traversed vs which re-evaluate bindings'
-- 'The click-event caveat: two independent mechanisms'
-- When the caveat bites vs when semi-local CD survives
-- Why semi-local CD only matters in zoneless
 flashcard_ids: []
 ---
 

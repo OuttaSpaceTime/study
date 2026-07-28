@@ -10,26 +10,9 @@ tags:
 - llm
 - inference
 - performance
-- no-study
 created: '2026-05-05'
 updated: '2026-05-05'
 source_skill: study-walkthrough
-probe_sections:
-- Inference vs training
-- The two phases at a glance
-- Prefill - one pass, parallel
-- Decode - N passes, sequential
-- Why output length dominates
-- num_predict as the circuit breaker
-- Rules of thumb for controlling prefill and decode cost
-last_probed:
-- Prefill - one pass, parallel
-- Decode - N passes, sequential
-- Rules of thumb for controlling prefill and decode cost
-- Inference vs training
-- The two phases at a glance
-- Why output length dominates
-- num_predict as the circuit breaker
 review_interval: 17
 next_review: '2026-07-18'
 flashcard_ids: []

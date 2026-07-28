@@ -5,12 +5,7 @@ from __future__ import annotations
 from datetime import date, timedelta
 from pathlib import Path
 
-from scripts.wiki.frontmatter import (
-    dump_page,
-    norm_set,
-    normalize_heading,
-    parse_frontmatter,
-)
+from scripts.wiki.frontmatter import dump_page, parse_frontmatter
 
 MULTIPLIERS = {1: 0, 2: 1.2, 3: 2.5, 4: 4.0}
 HARD_MIN = 3
@@ -46,40 +41,12 @@ def compute_schedule(
     return {"review_interval": new_interval, "next_review": next_review}
 
 
-def rotate_last_probed(
-    probe_sections: list[str],
-    last_probed: list[str],
-    probed: list[str],
-) -> list[str]:
-    """Return the new last_probed queue after probing `probed` sections.
-
-    Queue invariant at rest: {normalize(s) for s in last_probed} == {normalize(s) for s in probe_sections}.
-    If drifted (empty, missing, or extras), reinitialize from probe_sections order.
-    Then move probed entries to the tail so the oldest-unprobed is next.
-    """
-    ps_norm_to_canon = {normalize_heading(s): s for s in probe_sections}
-    if norm_set(last_probed) != set(ps_norm_to_canon):
-        queue = list(probe_sections)
-    else:
-        queue = [ps_norm_to_canon[normalize_heading(s)] for s in last_probed]
-
-    probed_norms = norm_set(probed)
-    head = [s for s in queue if normalize_heading(s) not in probed_norms]
-    tail = [s for s in queue if normalize_heading(s) in probed_norms]
-    return head + tail
-
-
 def reschedule_page(
     page_path: Path,
     rating: int,
     today: str | None = None,
-    probed: list[str] | None = None,
 ) -> dict:
-    """Rewrite a wiki page's frontmatter with new schedule. Returns the new schedule.
-
-    If `probed` is given, rotates `last_probed` to move those sections to the end
-    of the queue (oldest-first ordering).
-    """
+    """Rewrite a wiki page's frontmatter with new schedule. Returns the new schedule."""
     content = page_path.read_text()
     meta, body = parse_frontmatter(content)
 
@@ -91,13 +58,6 @@ def reschedule_page(
 
     meta["review_interval"] = schedule["review_interval"]
     meta["next_review"] = schedule["next_review"]
-
-    if probed is not None:
-        meta["last_probed"] = rotate_last_probed(
-            meta.get("probe_sections") or [],
-            meta.get("last_probed") or [],
-            probed,
-        )
 
     page_path.write_text(dump_page(meta, body))
     return schedule

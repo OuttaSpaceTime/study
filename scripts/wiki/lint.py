@@ -9,14 +9,8 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from scripts.wiki.frontmatter import (
-    extract_h2s,
-    norm_set,
-    normalize_heading,
-    parse_frontmatter,
-    slugify,
-)
-from scripts.wiki.index import get_wiki_key, iter_wiki_pages, load_index
+from scripts.wiki.frontmatter import parse_frontmatter, slugify
+from scripts.wiki.index import iter_wiki_pages, load_index
 
 REQUIRED_FIELDS = {
     "title",
@@ -126,10 +120,8 @@ def lint_wiki(
     errors.extend(_check_alias_collisions(index))
     errors.extend(_check_slugs(pages))
     errors.extend(_check_flashcard_ids(pages, index))
-    errors.extend(_check_probe_sections(wiki_dir, pages, index))
     warnings.extend(_check_moc_coverage(wiki_dir, pages))
     warnings.extend(_check_moc_split_suggestion(wiki_dir, pages))
-    warnings.extend(_check_probe_section_count(pages))
     warnings.extend(_check_prose_quality(pages))
     warnings.extend(_check_sentence_fragments(pages))
     warnings.extend(_check_colon_connectors(pages))
@@ -200,7 +192,7 @@ def _apply_lint_ignore(
 ) -> list[str]:
     """Drop warnings a page opted out of via `lint_ignore`, unless the page is dirty.
 
-    `lint_ignore` is a frontmatter list of warning labels (e.g. `probe-section-count`).
+    `lint_ignore` is a frontmatter list of warning labels (e.g. `orphan`).
     The opt-out only holds while the page is committed: a page with uncommitted
     changes still gets all its warnings, so the decision to ignore must itself be
     committed before it takes effect, and editing the page re-surfaces the rule.
@@ -339,28 +331,6 @@ def _check_moc_split_suggestion(wiki_dir: Path, pages: list[ParsedPage]) -> list
             warnings.append(
                 f"moc-split-suggestion: folder '{folder}' has {len(folder_pages)} pages; "
                 f"tag '{tag}' clusters {count} — consider wiki/{folder}/{tag}/{tag}-index.md"
-            )
-    return warnings
-
-
-# A page probing this many distinct sections is usually two topics wearing one
-# page. The split is a judgment call (some topics are genuinely broad and
-# cohesive), so this is a warning that prompts a look, never a hard cap.
-PROBE_SECTION_SPLIT_THRESHOLD = 8
-
-
-def _check_probe_section_count(pages: list[ParsedPage]) -> list[str]:
-    """Warn when a page declares ≥8 probe_sections — consider splitting it.
-
-    A smell, not a mandate: split only when there is a real conceptual seam.
-    """
-    warnings: list[str] = []
-    for p in pages:
-        n = len(p.meta.get("probe_sections") or [])
-        if n >= PROBE_SECTION_SPLIT_THRESHOLD:
-            warnings.append(
-                f"probe-section-count: {p.rel} has {n} probe_sections "
-                f"(≥{PROBE_SECTION_SPLIT_THRESHOLD}) — consider splitting into two focused pages"
             )
     return warnings
 
@@ -676,49 +646,6 @@ def _check_slugs(pages: list[ParsedPage]) -> list[str]:
             errors.append(
                 f"slug-mismatch: {p.rel} filename '{actual}' doesn't match slugified title '{expected}'"
             )
-    return errors
-
-
-def _check_probe_sections(
-    wiki_dir: Path, pages: list[ParsedPage], index: dict
-) -> list[str]:
-    """Rules:
-    - probe-sections-missing: every page must declare non-empty probe_sections.
-    - probe-section-unresolved: each probe_sections entry must match an H2 heading.
-    - probe-rotation-drift: last_probed must equal probe_sections as a set.
-    - probe-index-drift: frontmatter probe_sections must match index probe_sections.
-    """
-    errors: list[str] = []
-    for p in pages:
-        if not p.meta:
-            continue
-
-        probe_sections = p.meta.get("probe_sections", [])
-        last_probed = p.meta.get("last_probed", [])
-
-        if not probe_sections:
-            errors.append(f"probe-sections-missing: {p.rel} has no probe_sections")
-            continue
-
-        ps_norms = norm_set(probe_sections)
-        h2_norms = norm_set(extract_h2s(p.body))
-        for sec in probe_sections:
-            if normalize_heading(sec) not in h2_norms:
-                errors.append(
-                    f"probe-section-unresolved: {p.rel} probe_sections entry '{sec}' has no matching H2"
-                )
-
-        if last_probed and norm_set(last_probed) != ps_norms:
-            errors.append(
-                f"probe-rotation-drift: {p.rel} last_probed does not match probe_sections"
-            )
-
-        entry = index.get(get_wiki_key(wiki_dir, p.path))
-        if entry is not None and norm_set(entry.get("probe_sections", [])) != ps_norms:
-            errors.append(
-                f"probe-index-drift: {p.rel} frontmatter probe_sections differs from index"
-            )
-
     return errors
 
 

@@ -10,18 +10,6 @@ tags:
 created: '2026-04-29'
 updated: '2026-07-01'
 source_skill: study-walkthrough
-probe_sections:
-- What an Origin Is
-- What SOP Actually Blocks
-- The Threat Model
-- SOP Is Not Configurable
-- Server-to-Server Requests
-last_probed:
-- Server-to-Server Requests
-- What an Origin Is
-- What SOP Actually Blocks
-- The Threat Model
-- SOP Is Not Configurable
 review_interval: 12
 next_review: '2026-07-13'
 flashcard_ids: []

@@ -12,26 +12,9 @@ tags:
 - embeddings
 - rag
 - retrieval
-- no-study
 created: '2026-05-05'
 updated: '2026-05-05'
 source_skill: study-walkthrough
-probe_sections:
-- The two meanings, untangled
-- Meaning 1 - the embedding layer
-- Meaning 2 - embedding models
-- Cost asymmetry vs generative LLMs
-- The RAG data flow
-- Why retrieval is necessary, not optional
-- Choosing between embedding layer and embedding model
-last_probed:
-- The two meanings, untangled
-- Why retrieval is necessary, not optional
-- Choosing between embedding layer and embedding model
-- Meaning 1 - the embedding layer
-- Meaning 2 - embedding models
-- Cost asymmetry vs generative LLMs
-- The RAG data flow
 review_interval: 12
 next_review: '2026-07-09'
 flashcard_ids: []

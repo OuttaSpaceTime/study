@@ -52,17 +52,6 @@ describe("dueForReview", () => {
     expect(dueForReview(pages, TODAY)).toEqual([]);
   });
 
-  it("excludes no-study pages even when overdue (mirrors get_due_entries)", () => {
-    const pages = [
-      makePage("rails/foreign-keys", "2026-07-07"),
-      makePage("llm/kv-cache", "2026-07-03", ["llm", "no-study"]),
-      makePage("sql/array-agg", "2026-07-15", ["sql", "no-study"]),
-    ];
-    expect(dueForReview(pages, TODAY).map((p) => p.path)).toEqual([
-      "rails/foreign-keys",
-    ]);
-  });
-
   it("sorts due pages by next_review ascending (most overdue first)", () => {
     const pages = [
       makePage("c", "2026-07-15"),

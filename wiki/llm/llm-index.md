@@ -6,14 +6,9 @@ aliases:
 tags:
 - moc
 - llm
-- no-study
 created: '2026-05-05'
 updated: '2026-05-05'
 source_skill: manual
-probe_sections:
-- Pages
-last_probed:
-- Pages
 allow_orphan: true
 flashcard_ids: []
 ---

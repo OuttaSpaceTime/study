@@ -19,28 +19,6 @@ flashcard_ids:
 - cmne7xwri02050mso5k9tqzu4
 next_review: '2026-07-07'
 review_interval: 38
-lint_ignore:
-- probe-section-count
-probe_sections:
-- The SSL Stripping Attack
-- 'The HSTS header fields: max-age, includeSubDomains, preload'
-- TOFU Problem (Trust On First Use)
-- Preload
-- Cross-Host Redirects
-- Full Defense Stack
-- What the HSTS header looks like on a real site
-- Browser Storage
-- Scheme Defaulting and HTTPS-First
-last_probed:
-- Scheme Defaulting and HTTPS-First
-- 'The HSTS header fields: max-age, includeSubDomains, preload'
-- TOFU Problem (Trust On First Use)
-- Preload
-- Cross-Host Redirects
-- Full Defense Stack
-- What the HSTS header looks like on a real site
-- Browser Storage
-- The SSL Stripping Attack
 ---
 
 # HSTS (HTTP Strict-Transport-Security)

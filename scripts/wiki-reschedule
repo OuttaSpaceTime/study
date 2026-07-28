@@ -16,17 +16,9 @@ def main() -> None:
     parser.add_argument("page_path", help="Path to wiki page")
     parser.add_argument("rating", type=int, choices=[1, 2, 3, 4], help="Rating: 1=Again, 2=Hard, 3=Good, 4=Easy")
     parser.add_argument("--wiki-dir", default="wiki", help="Wiki directory")
-    parser.add_argument(
-        "--probed",
-        action="append",
-        default=None,
-        metavar="SECTION",
-        help="Section heading probed this review; repeat per section (rotates last_probed queue)",
-    )
     args = parser.parse_args()
 
-    probed = [s.strip() for s in args.probed] if args.probed else None
-    schedule = reschedule_page(Path(args.page_path), args.rating, probed=probed)
+    schedule = reschedule_page(Path(args.page_path), args.rating)
     print(json.dumps(schedule, ensure_ascii=False))
 
     # Re-index after frontmatter change

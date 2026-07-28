@@ -12,18 +12,6 @@ tags:
 created: '2026-07-03'
 updated: '2026-07-03'
 source_skill: study-walkthrough
-probe_sections:
-- Why fast feedback from delegating is addictive
-- What passive delegation costs, the map you stop building
-- The context-switch tax that undoes parallel delegation
-- A checkpoint rule, read and test before starting the next thread
-- Tradeoffs and gotchas
-last_probed:
-- A checkpoint rule, read and test before starting the next thread
-- Tradeoffs and gotchas
-- Why fast feedback from delegating is addictive
-- What passive delegation costs, the map you stop building
-- The context-switch tax that undoes parallel delegation
 flashcard_ids:
 - cmruqtz2l0006qo0mqs7euwx0
 - cmruqu0wr0007qo0morqmixps

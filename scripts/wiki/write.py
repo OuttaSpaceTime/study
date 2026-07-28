@@ -26,9 +26,6 @@ def _fill_defaults(page_path: Path, meta: dict) -> bool:
         meta["flashcard_ids"] = []
         changed = True
 
-    if _seed_last_probed(meta):
-        changed = True
-
     if page_path.stem.endswith("-index"):
         return changed
 
@@ -41,17 +38,6 @@ def _fill_defaults(page_path: Path, meta: dict) -> bool:
         changed = True
 
     return changed
-
-
-def _seed_last_probed(meta: dict) -> bool:
-    """Seed last_probed from probe_sections when missing. Mutates meta; returns True iff changed."""
-    if "last_probed" in meta:
-        return False
-    probe_sections = meta.get("probe_sections")
-    if not probe_sections:
-        return False
-    meta["last_probed"] = list(probe_sections)
-    return True
 
 
 def _moc_path_for_folder(folder_path: Path) -> Path:

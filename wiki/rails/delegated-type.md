@@ -12,29 +12,9 @@ tags:
 created: '2026-04-17'
 updated: '2026-06-10'
 source_skill: study-walkthrough
-lint_ignore:
-- probe-section-count
 last_deepened: '2026-04-17'
 next_review: '2026-07-31'
 review_interval: 30
-probe_sections:
-- The Problem It Solves
-- Schema Shape
-- What the delegated_type declaration generates
-- What `delegated_type` Expands To
-- Direction of Delegation
-- 'Design Rule: Where Attributes Live'
-- STI vs Delegated Type
-- N+1 Gotcha
-last_probed:
-- What `delegated_type` Expands To
-- What the delegated_type declaration generates
-- Direction of Delegation
-- 'Design Rule: Where Attributes Live'
-- STI vs Delegated Type
-- N+1 Gotcha
-- The Problem It Solves
-- Schema Shape
 flashcard_ids: []
 ---
 

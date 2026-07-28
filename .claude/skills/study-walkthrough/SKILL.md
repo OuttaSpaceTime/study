@@ -139,7 +139,7 @@ The skill operates in two modes based on invocation and context:
 A separate axis from Mode Detection — sets *depth*, not *output type*. Default is **Learning**. **All three cadences are question-driven and never reveal the answer** (see Socratic Never-Reveal); cadence only sets how many questions and whether you loop on a miss.
 
 - **Learning** — predict-first mandatory on every concept, every concept gets an active challenge (the "Concrete example/challenge" bullet in Phase 2 is load-bearing here), loop on every failed recall (decompose into smaller questions, never reveal). This is today's default behavior.
-- **Refresh** — for previously-deepened pages (those with a `last_deepened` date) or when the developer says "just refresh this." Question only the `last_probed` queue, skip predictions on concepts calibrated as solid, no mandatory challenge on every concept — only on sections that were gap-flagged. Still never reveals.
+- **Refresh** — for previously-deepened pages (those with a `last_deepened` date) or when the developer says "just refresh this." Question only the sections flagged weak at calibration, skip predictions on concepts calibrated as solid, no mandatory challenge on every concept — only on sections that were gap-flagged. Still never reveals.
 - **Concise** — a fast question-driven pass with one calibration check, no looping on a miss. For when the developer wants speed: fewer questions, and you move on rather than decomposing when they miss — but you still never hand them the answer. Session log coda collapses to one sentence.
 
 Announce the active cadence in Phase 1 Step 3 after calibration. If calibration reveals a mismatch (developer keeps saying "I know this" → bump to Refresh; keeps saying "wait, walk me through that again" → bump to Learning), suggest a cadence change once. Do not switch silently.
@@ -164,7 +164,7 @@ Follow `references/srs-pressure-check.md` exactly. Summary:
 1. Run `scripts/srs-pressure --human` — it fetches accurate counts via the flashcard-mcp CLI itself. Do **not** call `mcp__flashcard-mcp__get_due_cards` or `mcp__flashcard-mcp__list_decks` for pressure signals (`get_due_cards` caps at 30 and will underreport).
 2. First message output:
    - `ok` → one line: `SRS pressure: ok — proceeding.`
-   - `warn` / `pause` → full script output verbatim, then the gate question. Wait for an explicit answer before Phase 1. **Exception:** if `--no-study` was already specified at invocation, skip the gate question — one status line, then proceed straight to Phase 1 (see `references/srs-pressure-check.md`).
+   - `warn` / `pause` → full script output verbatim, then the gate question. Wait for an explicit answer before Phase 1.
 3. Progress footer for this message: `Preflight — SRS Pressure Check`.
 
 **Contract:** skipping this step, folding it into Phase 1, or running other tool calls before the verdict is a contract violation — same severity as omitting the progress footer. The developer can always opt out of downstream steps (e.g., "just deepen, no wiki") mid-session — that does not justify skipping preflight.
@@ -287,9 +287,8 @@ If any of these are missing or vague, return to the relevant concept and discuss
 2. Present the full draft wiki page with frontmatter, wikilinks, and all sections
 3. For each section: ask the developer to explain it in their own words. If they cannot, discuss until they can.
 4. Adjust the page based on gaps surfaced during review
-5. **Probe sections:** Default `probe_sections` to all H2 headings except `Related Concepts`, `References`, `See also`, and `TL;DR`. Offer the developer a chance to mark any remaining sections as reference-only — but default-all is usually correct. Write `probe_sections` in frontmatter and seed `last_probed` with the same list (keeps the queue invariant `set(last_probed) == set(probe_sections)` true from day one; first review rotates as if fresh). **Heading quality gate:** before finalizing probe_sections, check each heading — if it doesn't tell you what to recall without re-reading the section, rename it first. `## Gotchas` is a weak prompt; `## nil on no match and chaining behavior` is a strong one.
-6. Follow `references/wiki-write-protocol.md` for the full write flow
-7. Log the session
+5. Follow `references/wiki-write-protocol.md` for the full write flow
+6. Log the session
 
 **Deepen-focused mode** -- offer choices:
 
@@ -297,8 +296,8 @@ If any of these are missing or vague, return to the relevant concept and discuss
 
 2. **"write wiki"** -- Follow `references/wiki-write-protocol.md`. (Preflight was already run up front — no re-run needed.)
    - **Before drafting:** present a brief outline of what the page will cover — title, proposed H2 sections, one-line description of each section. Wait for the developer to confirm or adjust before writing the full draft. This is the wiki entry preview; start writing from the top only after the outline is approved.
-   - If extending an existing page: add new sections for the deeper material, set `last_deepened` to today. If any new H2 sections were added, extend `probe_sections` to include them (excluding `Related Concepts`, `References`, `See also`, `TL;DR`) **and reset `last_probed` to match the new `probe_sections`** so the queue invariant holds (avoids a persistent `probe-rotation-drift` lint error between now and the next review).
-   - If creating new: draft a full page with everything covered. Set `probe_sections` to all H2s except the reference-only set; seed `last_probed` with the same list.
+   - If extending an existing page: add new sections for the deeper material, set `last_deepened` to today.
+   - If creating new: draft a full page with everything covered.
    - Include `flashcard_ids` for any related cards
    - Run `scripts/wiki-write`, append session log
 
@@ -315,9 +314,7 @@ When writing a wiki page, follow this structure:
   - **Pattern/Technique**: Jump into the pattern with descriptive H2/H3 headings
   - **Feature/Tool Overview**: What is possible, then H2 sections per feature
 - Always include: `## Related Concepts` with `[[absolute/path]]` wikilinks
-- **Always include `## References`**, plus a `## Tradeoffs & gotchas` H2 (or inline `> [Note]` callouts) when practitioner opinion is load-bearing. Build both per "Wiki Page Structure" sections 6 & 7 below: facts cite the authoritative lane, opinions stay attributed and labelled consensus/contested, `contradictsGroundTruth` opinions are dropped, and `## References` never enters `probe_sections`.
-
-**No-study capture (excluded from the study loop).** When the developer wants the topic in the wiki but **not** in the study loop — the `no-study` path chosen at the SRS pressure gate, or any "exclude from study loop" / "don't schedule it" / "just capture it, no review" at the walkthrough limit or later — write the page exactly as above (full content, `probe_sections`, links) but **add `no-study` to the frontmatter `tags`** (e.g. `tags: [security, no-study]`). Everything else is normal: `scripts/wiki-write` still fills `next_review`/`review_interval`, the page stays in the graph, search, and index, and it renders with a `not in study loop` marker; the `no-study` tag alone keeps it out of review and off the SRS pressure count. To toggle an existing page later, run `scripts/wiki-no-study <page>` (add `--include` to rejoin the study loop) rather than hand-editing the tag. See "Excluded from the study loop (`no-study`)" in `references/wiki-write-protocol.md`.
+- **Always include `## References`**, plus a `## Tradeoffs & gotchas` H2 (or inline `> [Note]` callouts) when practitioner opinion is load-bearing. Build both per "Wiki Page Structure" sections 6 & 7 below: facts cite the authoritative lane, opinions stay attributed and labelled consensus/contested, `contradictsGroundTruth` opinions are dropped.
 
 **Session log** -- always append to `logs/<MM>/<YYYY-MM-DD>.md` (zero-padded month folder):
 
@@ -366,7 +363,6 @@ Structure depends on the page type chosen in Phase 1.
 - Collects the workflow's practitioner `opinions`: tradeoffs, lived experience, architectural nuance, gotchas
 - Each point attributed to its source and marked consensus/contested; framed as opinion, never as ground truth
 - One-off nuances go inline as `> [Note]` callouts in the relevant section instead of here
-- This H2 is study-worthy — include it in `probe_sections` (unlike `References`)
 - Drop any opinion the workflow flagged `contradictsGroundTruth` — keep the authoritative fact it contradicts instead
 
 ### 7. References (H2)
@@ -374,7 +370,6 @@ Structure depends on the page type chosen in Phase 1.
 - Prefer official docs, RFCs, source code, canonical references for ground truth — facts cite this lane
 - When practitioner sources were used, list them under a `**Practitioner / opinion:**` sub-label, distinct from the authoritative URLs. **A factual claim in the body must never be cited only to a practitioner source.**
 - Inline-link specific version-specific, contested, or non-obvious claims in the body (`[per RFC 6797 §7.2](url)`) in addition to listing here
-- **Never put `## References` in `probe_sections` / `last_probed`** — it's a citation list, not study material (the probe-section default already excludes it)
 - If research was skipped (repo-internal topic) or unavailable, still write the section as `_None — repo-internal topic._` or `_Research unavailable at write time; verify before relying on this page._` so the gap is visible
 
 ### 8. Warnings/Notes

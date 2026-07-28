@@ -14,20 +14,6 @@ created: '2026-07-02'
 updated: '2026-07-02'
 source_skill: study-walkthrough
 last_deepened: '2026-07-02'
-probe_sections:
-- The signature is a contract
-- Preconditions, postconditions, and asymmetric blame
-- The name is part of the contract
-- Why review is the backstop
-- The ladder from documented to impossible
-- Tradeoffs and gotchas
-last_probed:
-- Why review is the backstop
-- The ladder from documented to impossible
-- Tradeoffs and gotchas
-- The signature is a contract
-- Preconditions, postconditions, and asymmetric blame
-- The name is part of the contract
 flashcard_ids:
 - cmr3mfpvn000avi0mwndjb23g
 - cmr3mfs9b000bvi0mqigj0v9j

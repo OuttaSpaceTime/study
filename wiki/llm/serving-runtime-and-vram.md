@@ -11,24 +11,9 @@ tags:
 - ollama
 - gpu
 - infrastructure
-- no-study
 created: '2026-05-05'
 updated: '2026-05-05'
 source_skill: study-walkthrough
-probe_sections:
-- The model is a file
-- VRAM and why GPUs
-- KEEP_ALIVE and the cold-start tax
-- Multi-tenancy - what is shared, what is per-slot
-- Same model, different num_ctx, two instances
-- Sizing VRAM and choosing KEEP_ALIVE strategy
-last_probed:
-- Multi-tenancy - what is shared, what is per-slot
-- Same model, different num_ctx, two instances
-- Sizing VRAM and choosing KEEP_ALIVE strategy
-- The model is a file
-- VRAM and why GPUs
-- KEEP_ALIVE and the cold-start tax
 review_interval: 28
 next_review: '2026-06-30'
 flashcard_ids: []

@@ -15,20 +15,6 @@ created: '2026-07-02'
 updated: '2026-07-02'
 source_skill: study-walkthrough
 last_deepened: '2026-07-02'
-probe_sections:
-- What SRP actually measures
-- Command-Query Separation and CQS vs CQRS
-- Connascence as a coupling vocabulary
-- The operative rule for connascence
-- Over-splitting can worsen coupling
-- Tradeoffs and gotchas
-last_probed:
-- The operative rule for connascence
-- Over-splitting can worsen coupling
-- Tradeoffs and gotchas
-- What SRP actually measures
-- Command-Query Separation and CQS vs CQRS
-- Connascence as a coupling vocabulary
 flashcard_ids:
 - cmr3h5scb0003vi0mlc9rdm2i
 - cmr3h5u7c0004vi0mk8acp5vl

@@ -1,10 +1,17 @@
-"""Tests for scripts.wiki.index — load/save index, update_entry."""
+"""Tests for scripts.wiki.index — load/save index, update_entry, reindex_all."""
 
 import json
 import textwrap
+from datetime import date
 from pathlib import Path
 
-from scripts.wiki.index import get_wiki_key, load_index, save_index, update_entry
+from scripts.wiki.index import (
+    get_wiki_key,
+    load_index,
+    reindex_all,
+    save_index,
+    update_entry,
+)
 
 
 class TestLoadSaveIndex:
@@ -115,9 +122,59 @@ class TestUpdateEntry:
         assert entry["created"] == "2026-04-09"
         assert entry["next_review"] == "2026-04-12"
         assert entry["review_interval"] == 3
+        assert "probe_sections" not in entry
+        assert "last_probed" not in entry
 
     def test_updated_field_set_to_today(self, wiki_dir: Path, sample_page: Path):
-        from datetime import date
-
         index = update_entry({}, wiki_dir, sample_page)
         assert index["git/test-page"]["updated"] == date.today().isoformat()
+
+
+class TestReindexAll:
+    def _stale_index(self, wiki_dir: Path, page_key: str) -> None:
+        save_index(
+            wiki_dir / ".wiki-index.json",
+            {
+                page_key: {
+                    "file": f"{page_key}.md",
+                    "title": "test page",
+                    "updated": "2026-04-09",
+                    "probe_sections": ["Section One"],
+                    "last_probed": ["Section One"],
+                },
+                "ghost/deleted-page": {"file": "ghost/deleted-page.md", "title": "Gone"},
+            },
+        )
+
+    def test_drops_fields_no_longer_written(self, wiki_dir: Path, sample_page: Path):
+        self._stale_index(wiki_dir, "git/test-page")
+        rebuilt = reindex_all(wiki_dir)
+        assert "probe_sections" not in rebuilt["git/test-page"]
+        assert "last_probed" not in rebuilt["git/test-page"]
+
+    def test_prunes_entries_for_pages_no_longer_on_disk(self, wiki_dir: Path, sample_page: Path):
+        self._stale_index(wiki_dir, "git/test-page")
+        assert "ghost/deleted-page" not in reindex_all(wiki_dir)
+
+    def test_preserves_existing_updated_stamp(self, wiki_dir: Path, sample_page: Path):
+        """A reindex derives from disk; it is not a write, so it must not restamp."""
+        self._stale_index(wiki_dir, "git/test-page")
+        assert reindex_all(wiki_dir)["git/test-page"]["updated"] == "2026-04-09"
+
+    def test_stamps_today_for_a_page_with_no_prior_entry(self, wiki_dir: Path, sample_page: Path):
+        rebuilt = reindex_all(wiki_dir)
+        assert rebuilt["git/test-page"]["updated"] == date.today().isoformat()
+
+    def test_rebuilds_content_fields_from_the_page(self, wiki_dir: Path, sample_page: Path):
+        self._stale_index(wiki_dir, "git/test-page")
+        entry = reindex_all(wiki_dir)["git/test-page"]
+        assert entry["tags"] == ["git", "testing"]
+        assert entry["next_review"] == "2026-04-12"
+
+    def test_survives_a_previous_entry_with_no_updated_key(self, wiki_dir: Path, sample_page: Path):
+        """A hand-edited or older-schema index must not crash the tool meant to fix it."""
+        save_index(
+            wiki_dir / ".wiki-index.json",
+            {"git/test-page": {"file": "git/test-page.md", "title": "test page"}},
+        )
+        assert reindex_all(wiki_dir)["git/test-page"]["updated"] == date.today().isoformat()

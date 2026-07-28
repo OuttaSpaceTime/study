@@ -13,17 +13,7 @@ updated: '2026-07-05'
 source_skill: study-walkthrough
 review_interval: 10
 next_review: '2026-07-11'
-probe_sections:
-- DNS resolution
-- DNS caching and TTL
-- Safe migration
-- Host header and virtual hosts
 flashcard_ids: []
-last_probed:
-- DNS resolution
-- DNS caching and TTL
-- Safe migration
-- Host header and virtual hosts
 ---
 
 # DNS

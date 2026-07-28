@@ -23,7 +23,7 @@ const EXPECTED_PATHS = [
   "embed-only",
   "inline-code-target",
   "linker",
-  "no-study/secret",
+  "notes/secret",
   "rails/alpha-page",
   "rails/routing/scope-vs-namespace",
   "rails/zeta-topic",
@@ -154,10 +154,9 @@ beforeAll(async () => {
   writeFixture("code-fenced-target.md", "Fenced target body.\n");
   writeFixture("inline-code-target.md", "Inline target body.\n");
 
-  // No-study page: full wiki member, only excluded from the study loop.
   writeFixture(
-    "no-study/secret.md",
-    ["---", "title: Secret Note", "tags:", "  - no-study", "---", "No-study body."].join(
+    "notes/secret.md",
+    ["---", "title: Secret Note", "tags:", "  - notes", "---", "Notes body."].join(
       "\n",
     ),
   );
@@ -247,15 +246,6 @@ describe("page meta", () => {
   });
 });
 
-describe("no-study pages", () => {
-  it("keeps a no-study-tagged page in the page list, tree, and graph, still flagged no-study", () => {
-    expect(index.pages.some((p) => p.path === "no-study/secret")).toBe(true);
-    expect(index.tree.folders.some((f) => f.name === "no-study")).toBe(true);
-    expect(index.graph.nodes.some((n) => n.id === "no-study/secret")).toBe(true);
-    expect(mustPage("no-study/secret").tags).toContain("no-study");
-  });
-});
-
 describe("link resolution", () => {
   it("resolves linker outbound: exact + pipe + anchor (deduped) + unique-slug fallback, sorted", () => {
     // Absolute and anchor forms of scope-vs-namespace collapse to one entry;
@@ -308,7 +298,7 @@ describe("tree", () => {
   it('has root named "wiki" with empty path and folders sorted by name', () => {
     expect(index.tree.name).toBe("wiki");
     expect(index.tree.path).toBe("");
-    expect(index.tree.folders.map((f) => f.name)).toEqual(["a", "b", "no-study", "rails", "tools"]);
+    expect(index.tree.folders.map((f) => f.name)).toEqual(["a", "b", "notes", "rails", "tools"]);
   });
 
   it("excludes the MOC from the tree and orders pages by title", () => {

@@ -14,18 +14,6 @@ created: '2026-05-07'
 updated: '2026-05-07'
 source_skill: study-walkthrough
 flashcard_ids: []
-probe_sections:
-- 'How error terminates a stream: subscription state after onError'
-- 'catchError: signature, recovery pattern, and re-throw'
-- 'retry vs retryWhen: immediate resubscription vs conditional backoff'
-- Error in inner vs outer observable (flatMap/switchMap)
-- 'Dead subscriber trap: subscribing after a subject has errored'
-last_probed:
-- 'catchError: signature, recovery pattern, and re-throw'
-- 'How error terminates a stream: subscription state after onError'
-- 'retry vs retryWhen: immediate resubscription vs conditional backoff'
-- Error in inner vs outer observable (flatMap/switchMap)
-- 'Dead subscriber trap: subscribing after a subject has errored'
 review_interval: 15
 next_review: '2026-07-10'
 ---

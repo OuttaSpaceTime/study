@@ -13,20 +13,6 @@ updated: '2026-04-16'
 source_skill: study-walkthrough
 next_review: '2026-08-24'
 review_interval: 75
-probe_sections:
-- The Three Knobs
-- Scope Picks and Chooses
-- Module Path Format
-- Per-Resource Options
-- 'The controller: Option'
-- When to use scope vs namespace vs module
-last_probed:
-- The Three Knobs
-- Scope Picks and Chooses
-- Module Path Format
-- Per-Resource Options
-- 'The controller: Option'
-- When to use scope vs namespace vs module
 flashcard_ids: []
 ---
 

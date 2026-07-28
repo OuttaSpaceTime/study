@@ -13,18 +13,6 @@ updated: '2026-04-14'
 source_skill: study-walkthrough
 next_review: '2026-07-07'
 review_interval: 30
-probe_sections:
-- The Decision Table
-- Declaring collection and member routes
-- Routing to a Different Controller
-- Param Naming Rules
-- When to use collection vs member
-last_probed:
-- When to use collection vs member
-- The Decision Table
-- Declaring collection and member routes
-- Routing to a Different Controller
-- Param Naming Rules
 flashcard_ids: []
 ---
 

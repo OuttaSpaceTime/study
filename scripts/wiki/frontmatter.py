@@ -33,10 +33,9 @@ def parse_frontmatter(content: str) -> tuple[dict, str]:
         if isinstance(val, datetime.date):
             meta[key] = val.isoformat()
 
-    for key in ("flashcard_ids", "probe_sections", "last_probed"):
-        if key in meta:
-            val = meta[key]
-            meta[key] = [str(x) for x in val] if isinstance(val, list) else []
+    if "flashcard_ids" in meta:
+        val = meta["flashcard_ids"]
+        meta["flashcard_ids"] = [str(x) for x in val] if isinstance(val, list) else []
 
     return meta, body
 
@@ -53,15 +52,6 @@ _H2_RE = re.compile(r"^## (.+)$", re.MULTILINE)
 def extract_h2s(body: str) -> list[str]:
     """Return H2 heading texts from a page body, in document order."""
     return [m.strip() for m in _H2_RE.findall(body)]
-
-
-def normalize_heading(s: str) -> str:
-    """Normalize for H2-heading matching: lowercase, strip trailing .?!: and whitespace."""
-    return s.strip().rstrip(".?!:").lower()
-
-
-def norm_set(sections: list[str]) -> set[str]:
-    return {normalize_heading(s) for s in sections}
 
 
 def slugify(title: str) -> str:

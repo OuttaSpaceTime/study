@@ -8,30 +8,9 @@ tags:
 - sql
 - postgres
 - aggregate
-- no-study
 created: '2026-04-17'
 updated: '2026-04-17'
 source_skill: study-walkthrough
-lint_ignore:
-- probe-section-count
-probe_sections:
-- What array_agg collects and the implicit single-group rule
-- No GROUP BY means one implicit group
-- Ordering is non-deterministic by default
-- NULLs are included by default
-- Empty input returns NULL, not {}
-- DISTINCT + ORDER BY must share the expression
-- array_agg vs jsonb_agg
-- Canonical shape for "safe" usage
-last_probed:
-- Empty input returns NULL, not {}
-- Ordering is non-deterministic by default
-- NULLs are included by default
-- DISTINCT + ORDER BY must share the expression
-- array_agg vs jsonb_agg
-- Canonical shape for "safe" usage
-- What array_agg collects and the implicit single-group rule
-- No GROUP BY means one implicit group
 review_interval: 20
 next_review: '2026-07-15'
 flashcard_ids: []

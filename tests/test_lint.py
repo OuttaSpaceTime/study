@@ -30,7 +30,6 @@ MINIMAL_PAGE = """\
     flashcard_ids: []
     next_review: '2026-05-01'
     review_interval: 3
-    probe_sections: [Section One]
     ---
 
     # test page
@@ -53,8 +52,6 @@ class TestCleanWiki:
             updated: 2026-04-09
             source_skill: manual
             flashcard_ids: []
-            probe_sections: [Pages]
-            last_probed: [Pages]
             allow_orphan: true
             ---
 
@@ -72,8 +69,6 @@ class TestCleanWiki:
                 "tags": ["git"],
                 "sections": ["Section One"],
                 "flashcard_ids": [],
-                "probe_sections": ["Section One"],
-                "last_probed": [],
                 "created": "2026-04-09",
                 "updated": "2026-04-09",
             }
@@ -157,8 +152,6 @@ class TestFrontmatter:
             created: 2026-04-09
             updated: 2026-04-09
             source_skill: manual
-            probe_sections: [Pages]
-            last_probed: [Pages]
             allow_orphan: true
             ---
 
@@ -182,7 +175,6 @@ class TestFrontmatter:
             source_skill: study-walkthrough
             flashcard_ids: []
             review_interval: 3
-            probe_sections: [Section One]
             allow_orphan: true
             ---
 
@@ -207,8 +199,6 @@ class TestFrontmatter:
             updated: 2026-04-09
             source_skill: manual
             flashcard_ids: []
-            probe_sections: [Pages]
-            last_probed: [Pages]
             allow_orphan: true
             ---
 
@@ -236,7 +226,6 @@ class TestFrontmatter:
             source_skill: study-walkthrough
             flashcard_ids: []
             next_review: '2026-05-01'
-            probe_sections: [Section One]
             allow_orphan: true
             ---
 
@@ -641,233 +630,6 @@ class TestSlugMismatch:
         assert slug_errors == []
 
 
-class TestProbeSections:
-    """Probe section lint rules for SRS wiki review."""
-
-    def test_probe_section_matches_heading(self, wiki_dir: Path):
-        """probe_sections entries must correspond to actual H2 headings."""
-        _write_page(wiki_dir, "git/test-page.md", """\
-            ---
-            title: "test page"
-            aliases: []
-            tags: [git]
-            created: 2026-04-09
-            updated: 2026-04-09
-            source_skill: study-walkthrough
-            next_review: 2026-05-01
-            review_interval: 3
-            probe_sections: ["Nonexistent Section"]
-            ---
-
-            # test page
-
-            ## Real Section
-
-            Content.
-        """)
-        _write_index(wiki_dir, {
-            "git/test-page": {
-                "file": "git/test-page.md",
-                "title": "test page",
-                "aliases": [],
-                "tags": ["git"],
-                "sections": ["Real Section"],
-                "flashcard_ids": [],
-                "probe_sections": ["Nonexistent Section"],
-                "last_probed": [],
-            }
-        })
-        errors, _ = lint_wiki(wiki_dir)
-        assert any("probe-section-unresolved" in e for e in errors), (
-            f"expected probe-section-unresolved: {errors}"
-        )
-
-    def test_probe_section_normalized_match(self, wiki_dir: Path):
-        """Matching is case-insensitive and ignores trailing punctuation."""
-        _write_page(wiki_dir, "git/test-page.md", """\
-            ---
-            title: "test page"
-            aliases: []
-            tags: [git]
-            created: 2026-04-09
-            updated: 2026-04-09
-            source_skill: study-walkthrough
-            next_review: 2026-05-01
-            review_interval: 3
-            probe_sections: ["when to use"]
-            last_probed: ["when to use"]
-            ---
-
-            # test page
-
-            ## When to use?
-
-            Content.
-        """)
-        _write_index(wiki_dir, {
-            "git/test-page": {
-                "file": "git/test-page.md",
-                "title": "test page",
-                "aliases": [],
-                "tags": ["git"],
-                "sections": ["When to use?"],
-                "flashcard_ids": [],
-                "probe_sections": ["when to use"],
-                "last_probed": ["when to use"],
-            }
-        })
-        errors, _ = lint_wiki(wiki_dir)
-        probe_errors = [e for e in errors if "probe-" in e]
-        assert probe_errors == [], f"unexpected probe errors: {probe_errors}"
-
-    def test_last_probed_must_match_probe_sections(self, wiki_dir: Path):
-        """If last_probed is non-empty, it must contain exactly the same elements as probe_sections."""
-        _write_page(wiki_dir, "git/test-page.md", """\
-            ---
-            title: "test page"
-            aliases: []
-            tags: [git]
-            created: 2026-04-09
-            updated: 2026-04-09
-            source_skill: study-walkthrough
-            next_review: 2026-05-01
-            review_interval: 3
-            probe_sections: ["A", "B"]
-            last_probed: ["A"]
-            ---
-
-            # test page
-
-            ## A
-
-            ## B
-        """)
-        _write_index(wiki_dir, {
-            "git/test-page": {
-                "file": "git/test-page.md",
-                "title": "test page",
-                "aliases": [],
-                "tags": ["git"],
-                "sections": ["A", "B"],
-                "flashcard_ids": [],
-                "probe_sections": ["A", "B"],
-                "last_probed": ["A"],
-            }
-        })
-        errors, _ = lint_wiki(wiki_dir)
-        assert any("probe-rotation-drift" in e for e in errors), (
-            f"expected probe-rotation-drift: {errors}"
-        )
-
-    def test_last_probed_empty_is_ok(self, wiki_dir: Path):
-        """Empty last_probed is valid — means not yet reviewed."""
-        _write_page(wiki_dir, "git/test-page.md", """\
-            ---
-            title: "test page"
-            aliases: []
-            tags: [git]
-            created: 2026-04-09
-            updated: 2026-04-09
-            source_skill: study-walkthrough
-            next_review: 2026-05-01
-            review_interval: 3
-            probe_sections: ["A", "B"]
-            last_probed: []
-            ---
-
-            # test page
-
-            ## A
-
-            ## B
-        """)
-        _write_index(wiki_dir, {
-            "git/test-page": {
-                "file": "git/test-page.md",
-                "title": "test page",
-                "aliases": [],
-                "tags": ["git"],
-                "sections": ["A", "B"],
-                "flashcard_ids": [],
-                "probe_sections": ["A", "B"],
-                "last_probed": [],
-            }
-        })
-        errors, _ = lint_wiki(wiki_dir)
-        probe_errors = [e for e in errors if "probe-" in e]
-        assert probe_errors == [], f"unexpected probe errors: {probe_errors}"
-
-    def test_all_pages_require_probe_sections(self, wiki_dir: Path):
-        """Every wiki page must declare non-empty probe_sections."""
-        _write_page(wiki_dir, "git/test-page.md", """\
-            ---
-            title: "test page"
-            aliases: []
-            tags: [git]
-            created: 2026-04-09
-            updated: 2026-04-09
-            source_skill: study-walkthrough
-            ---
-
-            # test page
-
-            ## A
-        """)
-        _write_index(wiki_dir, {
-            "git/test-page": {
-                "file": "git/test-page.md",
-                "title": "test page",
-                "aliases": [],
-                "tags": ["git"],
-                "sections": ["A"],
-                "flashcard_ids": [],
-            }
-        })
-        errors, _ = lint_wiki(wiki_dir)
-        assert any("probe-sections-missing" in e for e in errors), (
-            f"expected probe-sections-missing: {errors}"
-        )
-
-    def test_probe_sections_index_drift_detected(self, wiki_dir: Path):
-        """Frontmatter probe_sections must match index probe_sections."""
-        _write_page(wiki_dir, "git/test-page.md", """\
-            ---
-            title: "test page"
-            aliases: []
-            tags: [git]
-            created: 2026-04-09
-            updated: 2026-04-09
-            source_skill: study-walkthrough
-            next_review: 2026-05-01
-            review_interval: 3
-            probe_sections: ["A", "B"]
-            last_probed: ["A", "B"]
-            ---
-
-            # test page
-
-            ## A
-
-            ## B
-        """)
-        _write_index(wiki_dir, {
-            "git/test-page": {
-                "file": "git/test-page.md",
-                "title": "test page",
-                "aliases": [],
-                "tags": ["git"],
-                "sections": ["A", "B"],
-                "flashcard_ids": [],
-                "probe_sections": ["A"],
-                "last_probed": ["A", "B"],
-            }
-        })
-        errors, _ = lint_wiki(wiki_dir)
-        assert any("probe-index-drift" in e for e in errors), (
-            f"expected probe-index-drift: {errors}"
-        )
-
-
 class TestMocFrontmatter:
     """MOC pages have stricter frontmatter rules than content pages."""
 
@@ -881,8 +643,6 @@ class TestMocFrontmatter:
             updated: 2026-04-09
             source_skill: manual
             flashcard_ids: []
-            probe_sections: [Pages]
-            last_probed: [Pages]
             allow_orphan: true
             {body_extra_meta}---
 
@@ -908,8 +668,6 @@ class TestMocFrontmatter:
             updated: 2026-04-09
             source_skill: manual
             flashcard_ids: []
-            probe_sections: [Pages]
-            last_probed: [Pages]
             allow_orphan: true
             ---
 
@@ -932,8 +690,6 @@ class TestMocFrontmatter:
             updated: 2026-04-09
             source_skill: manual
             flashcard_ids: []
-            probe_sections: [Pages]
-            last_probed: [Pages]
             allow_orphan: true
             ---
 
@@ -956,8 +712,6 @@ class TestMocFrontmatter:
             updated: 2026-04-09
             source_skill: manual
             flashcard_ids: []
-            probe_sections: [Pages]
-            last_probed: [Pages]
             ---
 
             # Git Index
@@ -979,8 +733,6 @@ class TestMocFrontmatter:
             updated: 2026-04-09
             source_skill: manual
             flashcard_ids: []
-            probe_sections: [Pages]
-            last_probed: [Pages]
             allow_orphan: true
             next_review: 2026-05-01
             review_interval: 3
@@ -1013,7 +765,6 @@ class TestAliases:
             depth: 1
             next_review: 2026-05-01
             review_interval: 3
-            probe_sections: [Section One]
             allow_orphan: true
             ---
 
@@ -1103,7 +854,6 @@ _PROSE_PAGE_TEMPLATE = """\
     created: 2026-04-09
     updated: 2026-04-09
     source_skill: study-walkthrough
-    probe_sections: [Section One]
     allow_orphan: true
     ---
 
@@ -1193,7 +943,6 @@ class TestColonConnectors:
             created: 2026-04-09
             updated: 2026-04-09
             source_skill: study-walkthrough
-            probe_sections: ["What pick does: return first row"]
             allow_orphan: true
             ---
 
@@ -1218,7 +967,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-probe_sections: [Section One]
 allow_orphan: true
 ---
 
@@ -1244,7 +992,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-probe_sections: [Section One]
 allow_orphan: true
 ---
 
@@ -1273,7 +1020,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-probe_sections: [Section One]
 allow_orphan: true
 ---
 
@@ -1314,7 +1060,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-probe_sections: [Section One]
 allow_orphan: true
 ---
 
@@ -1341,7 +1086,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-probe_sections: [Section One]
 allow_orphan: true
 ---
 
@@ -1366,7 +1110,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-probe_sections: [Section One]
 allow_orphan: true
 ---
 
@@ -1391,7 +1134,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-probe_sections: [Section One]
 allow_orphan: true
 ---
 
@@ -1416,7 +1158,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-probe_sections: [Section One]
 allow_orphan: true
 ---
 
@@ -1426,7 +1167,7 @@ allow_orphan: true
 
 [[git/git-restore]]: restores working tree files without touching the index.
 """)
-        _write_index(wiki_dir, {"git/git-restore": {"file": "git/git-restore.md", "title": "git restore", "aliases": [], "sections": [], "tags": [], "flashcard_ids": [], "probe_sections": [], "last_probed": [], "created": "2026-04-09", "updated": "2026-04-09"}})
+        _write_index(wiki_dir, {"git/git-restore": {"file": "git/git-restore.md", "title": "git restore", "aliases": [], "sections": [], "tags": [], "flashcard_ids": [], "created": "2026-04-09", "updated": "2026-04-09"}})
         _, warnings = lint_wiki(wiki_dir)
         colon_warns = [w for w in warnings if "prose-colon" in w]
         assert colon_warns == [], f"colon after wikilink should not warn: {warnings}"
@@ -1441,7 +1182,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-probe_sections: [Section One]
 allow_orphan: true
 ---
 
@@ -1468,7 +1208,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-probe_sections: [Section One]
 allow_orphan: true
 ---
 
@@ -1493,7 +1232,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-probe_sections: [Section One]
 allow_orphan: true
 ---
 
@@ -1518,7 +1256,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-probe_sections: [Section One]
 allow_orphan: true
 ---
 
@@ -1543,7 +1280,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-probe_sections: [Section One]
 allow_orphan: true
 ---
 
@@ -1572,7 +1308,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-probe_sections: [Section One]
 allow_orphan: true
 ---
 
@@ -1597,7 +1332,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-probe_sections: [Section One]
 allow_orphan: true
 ---
 
@@ -1615,19 +1349,16 @@ Two changes vs. a regular unique index:
         assert frags == [], f"abbreviation period should not warn: {warnings}"
 
 
-def _page_with_n_probe_sections(n: int, lint_ignore: list[str] | None = None) -> str:
-    """Build a content page with `n` probe_sections and matching H2 headings."""
-    secs = [f"Section {i}" for i in range(1, n + 1)]
-    fm_list = "\n".join(f"    - {s}" for s in secs)
-    bodies = "\n\n".join(f"## {s}\n\nContent." for s in secs)
+def _orphan_page(lint_ignore: list[str] | None = None) -> str:
+    """Build a content page with no links and no allow_orphan, so it draws an `orphan` warning."""
     ignore_block = ""
     if lint_ignore is not None:
         rules = "\n".join(f"    - {r}" for r in lint_ignore)
         ignore_block = f"lint_ignore:\n{rules}\n"
     return (
         "---\n"
-        'title: "count page"\n'
-        "aliases: [count alias]\n"
+        'title: "orphan page"\n'
+        "aliases: [orphan alias]\n"
         "tags: [git]\n"
         "created: 2026-04-09\n"
         "updated: 2026-04-09\n"
@@ -1636,79 +1367,45 @@ def _page_with_n_probe_sections(n: int, lint_ignore: list[str] | None = None) ->
         "next_review: '2026-05-01'\n"
         "review_interval: 3\n"
         f"{ignore_block}"
-        "probe_sections:\n"
-        f"{fm_list}\n"
-        "last_probed:\n"
-        f"{fm_list}\n"
         "---\n\n"
-        "# count page\n\n"
-        f"{bodies}\n"
+        "# orphan page\n\n"
+        "Content with no links.\n"
     )
 
 
-class TestProbeSectionCount:
-    def test_warns_at_eight(self, wiki_dir: Path):
-        _write_page(wiki_dir, "git/count-page.md", _page_with_n_probe_sections(8))
-        _write_index(wiki_dir, {})
-        errors, warnings = lint_wiki(wiki_dir)
-        assert any("probe-section-count" in w for w in warnings), warnings
-        # The count check is a warning, never an error.
-        assert not any("probe-section-count" in e for e in errors), errors
-
-    def test_no_warn_at_seven(self, wiki_dir: Path):
-        _write_page(wiki_dir, "git/count-page.md", _page_with_n_probe_sections(7))
-        _write_index(wiki_dir, {})
-        _, warnings = lint_wiki(wiki_dir)
-        assert not any("probe-section-count" in w for w in warnings), warnings
-
-    def test_no_warn_at_five(self, wiki_dir: Path):
-        _write_page(wiki_dir, "git/count-page.md", _page_with_n_probe_sections(5))
-        _write_index(wiki_dir, {})
-        _, warnings = lint_wiki(wiki_dir)
-        assert not any("probe-section-count" in w for w in warnings), warnings
+def _orphan_warnings(warnings: list[str]) -> list[str]:
+    return [w for w in warnings if w.startswith("orphan:") and "orphan-page.md" in w]
 
 
 class TestLintIgnore:
     def test_ignore_suppresses_when_clean(self, wiki_dir: Path):
-        _write_page(
-            wiki_dir,
-            "git/count-page.md",
-            _page_with_n_probe_sections(8, lint_ignore=["probe-section-count"]),
-        )
+        _write_page(wiki_dir, "git/other-page.md", MINIMAL_PAGE)
+        _write_page(wiki_dir, "git/orphan-page.md", _orphan_page(lint_ignore=["orphan"]))
         _write_index(wiki_dir, {})
         # Clean working tree (nothing dirty) → suppression active.
         _, warnings = lint_wiki(wiki_dir, dirty_pages=set())
-        assert not any("probe-section-count" in w for w in warnings), warnings
+        assert _orphan_warnings(warnings) == [], warnings
 
     def test_ignore_inactive_when_dirty(self, wiki_dir: Path):
-        _write_page(
-            wiki_dir,
-            "git/count-page.md",
-            _page_with_n_probe_sections(8, lint_ignore=["probe-section-count"]),
-        )
+        _write_page(wiki_dir, "git/other-page.md", MINIMAL_PAGE)
+        _write_page(wiki_dir, "git/orphan-page.md", _orphan_page(lint_ignore=["orphan"]))
         _write_index(wiki_dir, {})
         # Page has uncommitted changes → ignore does not apply, warning fires.
-        _, warnings = lint_wiki(wiki_dir, dirty_pages={"git/count-page.md"})
-        assert any("probe-section-count" in w for w in warnings), warnings
+        _, warnings = lint_wiki(wiki_dir, dirty_pages={"git/orphan-page.md"})
+        assert _orphan_warnings(warnings) != [], warnings
 
     def test_ignore_wrong_rule_does_not_suppress(self, wiki_dir: Path):
-        _write_page(
-            wiki_dir,
-            "git/count-page.md",
-            _page_with_n_probe_sections(8, lint_ignore=["orphan"]),
-        )
+        _write_page(wiki_dir, "git/other-page.md", MINIMAL_PAGE)
+        _write_page(wiki_dir, "git/orphan-page.md", _orphan_page(lint_ignore=["prose-quality"]))
         _write_index(wiki_dir, {})
         _, warnings = lint_wiki(wiki_dir, dirty_pages=set())
-        assert any("probe-section-count" in w for w in warnings), warnings
+        assert _orphan_warnings(warnings) != [], warnings
 
     def test_ignore_default_path_clean_outside_repo(self, wiki_dir: Path):
         # No dirty_pages passed: the git probe runs and finds no repo here,
         # so it reports nothing dirty and the suppression applies.
-        _write_page(
-            wiki_dir,
-            "git/count-page.md",
-            _page_with_n_probe_sections(8, lint_ignore=["probe-section-count"]),
-        )
+        _write_page(wiki_dir, "git/other-page.md", MINIMAL_PAGE)
+        _write_page(wiki_dir, "git/orphan-page.md", _orphan_page(lint_ignore=["orphan"]))
         _write_index(wiki_dir, {})
         _, warnings = lint_wiki(wiki_dir)
-        assert not any("probe-section-count" in w for w in warnings), warnings
+        assert _orphan_warnings(warnings) == [], warnings

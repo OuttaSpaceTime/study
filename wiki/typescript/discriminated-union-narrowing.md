@@ -9,23 +9,10 @@ tags:
 - typescript
 - types
 - narrowing
-- no-study
 created: '2026-07-15'
 updated: '2026-07-15'
 source_skill: study-walkthrough
 flashcard_ids: []
-probe_sections:
-- Control-flow analysis and what it narrows
-- A discriminated union needs a top-level literal discriminant
-- Nested discriminants do not narrow the parent union
-- Cleaner fixes for a nested discriminant
-- strictNullChecks does not defeat a clean boolean discriminant
-last_probed:
-- Control-flow analysis and what it narrows
-- A discriminated union needs a top-level literal discriminant
-- Nested discriminants do not narrow the parent union
-- Cleaner fixes for a nested discriminant
-- strictNullChecks does not defeat a clean boolean discriminant
 review_interval: 3
 next_review: '2026-07-18'
 ---

@@ -18,20 +18,6 @@ flashcard_ids:
 - cmqu0ts1l0005150mcb26qlt0
 - cmqu0ttxx0006150myqedtn6q
 - cmqu0tvnw0007150msfy24wz5
-probe_sections:
-- What a transaction guarantees, and what it does not
-- Isolation levels and the anomalies each allows
-- Never put slow or external calls inside a transaction
-- Idempotency and effects outside the transaction
-- Rails rollback-on-exception
-- Nested transactions and savepoints
-last_probed:
-- Idempotency and effects outside the transaction
-- Rails rollback-on-exception
-- Nested transactions and savepoints
-- What a transaction guarantees, and what it does not
-- Isolation levels and the anomalies each allows
-- Never put slow or external calls inside a transaction
 review_interval: 8
 next_review: '2026-07-19'
 ---

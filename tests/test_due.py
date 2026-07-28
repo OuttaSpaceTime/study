@@ -61,14 +61,6 @@ class TestGetDueEntries:
         result = get_due_entries(index, today="2026-04-09")
         assert len(result) == 1
 
-    def test_no_study_tag_excluded(self):
-        index = _make_entry("llm/kv-cache", next_review="2026-04-09", tags=["llm", "no-study"])
-        assert get_due_entries(index, today="2026-04-09") == []
-
-    def test_no_study_excluded_even_when_overdue(self):
-        index = _make_entry("llm/kv-cache", next_review="2026-01-01", tags=["no-study", "llm"])
-        assert get_due_entries(index, today="2026-04-09") == []
-
     def test_result_fields(self):
         index = _make_entry("git/restore", next_review="2026-04-09", review_interval=5.0, title="git restore")
         result = get_due_entries(index, today="2026-04-09")
@@ -79,7 +71,7 @@ class TestGetDueEntries:
         assert entry["next_review"] == "2026-04-09"
         assert entry["review_interval"] == 5.0
         assert entry["tags"] == ["test"]
-        assert entry["sections"] == []
+        assert "sections" not in entry
 
 
 class TestDisplayTitle:

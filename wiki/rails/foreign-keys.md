@@ -18,20 +18,6 @@ flashcard_ids:
 - cmq8hw4vw0000j70mqz3fb339
 - cmq8hw75w0001j70mf0kbcv8t
 - cmq8hwa0t0002j70mfor6qqf7
-probe_sections:
-- Two layers - DB constraint vs app validation
-- Which row the constraint blocks from deletion
-- on_delete vs dependent and which side effects decide
-- The four referential actions and the real default
-- RESTRICT vs NO ACTION is only about deferrability
-- A foreign key does not create an index
-last_probed:
-- Two layers - DB constraint vs app validation
-- on_delete vs dependent and which side effects decide
-- The four referential actions and the real default
-- Which row the constraint blocks from deletion
-- RESTRICT vs NO ACTION is only about deferrability
-- A foreign key does not create an index
 next_review: '2026-07-07'
 review_interval: 12
 ---

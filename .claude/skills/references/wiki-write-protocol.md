@@ -48,8 +48,6 @@ created: YYYY-MM-DD
 updated: YYYY-MM-DD
 source_skill: study-flashcard|study|study-walkthrough
 flashcard_ids: [cuid1abc, cuid2def]
-probe_sections: [Section One, Section Two]
-last_probed: [Section One, Section Two]
 next_review: YYYY-MM-DD
 review_interval: 3
 ---
@@ -70,20 +68,6 @@ Content...
 
 - [[folder/page-name]]: brief explanation of relationship
 ```
-
-### Excluded from the study loop (`no-study`)
-
-When the developer wants the topic captured in the wiki but **not** added to the study loop — "exclude from study loop", "don't schedule it", or the `no-study` path chosen at the SRS pressure gate — add `no-study` to the frontmatter `tags` (e.g. `tags: [security, no-study]`). Draft everything else normally, including `probe_sections`; `scripts/wiki-write` still fills `next_review`/`review_interval`, but the `no-study` tag keeps `get_due_entries` from ever surfacing the page, so it stays out of review and off the SRS pressure count. The page remains a full wiki member (graph, search, index, links) and renders with a `not in study loop` marker. It rejoins review later via `scripts/wiki-no-study --include`.
-
-## Headings as SRS Prompts
-
-H2 headings become `probe_sections` — the quiz question at review time. Write them specific enough to self-grade without re-reading the page.
-
-- ❌ `## When to Use` → ✅ `## When to reach for pick over pluck`
-- ❌ `## Gotchas` → ✅ `## nil on no match and chaining behavior`
-- ❌ `## Overview` → ✅ `## What HSTS is and why the first visit is still vulnerable`
-
-If the heading doesn't tell you what to recall, rename it before setting `probe_sections`.
 
 ## Writing Style
 
@@ -295,8 +279,6 @@ tags: [moc, git]
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
 source_skill: manual
-probe_sections: [Pages]
-last_probed: [Pages]
 allow_orphan: true
 ---
 
@@ -353,4 +335,3 @@ If a folder has no MOC yet, `scripts/wiki-write` emits a stderr warning and the 
 | `last_deepened` | date | No | ISO date of last deepening session (set by `/study-walkthrough` when it extends a page) |
 | `next_review` | date | No | ISO date of next scheduled review. Auto-filled by `scripts/wiki-write` to `today + 3 days` if missing. Updated after each review by `/study`. Forbidden on `*-index.md` MOCs. |
 | `review_interval` | number | No | Current review interval in days. Auto-filled by `scripts/wiki-write` to `3` if missing. Updated after each review using spaced repetition scheduling. Forbidden on `*-index.md` MOCs. |
-| `last_probed` | array | No | Probe rotation queue. Auto-seeded by `scripts/wiki-write` to a copy of `probe_sections` if missing. |

@@ -13,16 +13,6 @@ updated: '2026-04-14'
 source_skill: study-walkthrough
 next_review: '2026-07-19'
 review_interval: 2
-probe_sections:
-- Renaming with `as:`
-- The `_index` Suffix
-- 'Fix: Set `as:` Explicitly'
-- How to verify path helper names at the console
-last_probed:
-- The `_index` Suffix
-- 'Fix: Set `as:` Explicitly'
-- How to verify path helper names at the console
-- Renaming with `as:`
 flashcard_ids: []
 ---
 

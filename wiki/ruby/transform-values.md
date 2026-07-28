@@ -8,24 +8,9 @@ tags:
 - ruby
 - hash
 - enumerable
-- no-study
 created: '2026-04-17'
 updated: '2026-04-17'
 source_skill: study-walkthrough
-probe_sections:
-- What transform_values does and why it preserves keys
-- vs map on a hash
-- The block receives only the value
-- Bang variant
-- with_index for positional info
-- When not to use it
-last_probed:
-- What transform_values does and why it preserves keys
-- with_index for positional info
-- When not to use it
-- vs map on a hash
-- The block receives only the value
-- Bang variant
 review_interval: 34
 next_review: '2026-07-17'
 flashcard_ids: []

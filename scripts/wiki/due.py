@@ -43,7 +43,7 @@ def get_due_entries(
         if nr > today:
             continue
         tags = entry.get("tags") or []
-        if "moc" in tags or "no-study" in tags:
+        if "moc" in tags:
             continue
         due.append(
             {
@@ -53,7 +53,6 @@ def get_due_entries(
                 "next_review": nr,
                 "review_interval": entry.get("review_interval"),
                 "tags": entry.get("tags", []),
-                "sections": entry.get("sections", []),
             }
         )
 

@@ -11,20 +11,6 @@ created: '2026-05-07'
 updated: '2026-05-07'
 source_skill: study-walkthrough
 flashcard_ids: []
-probe_sections:
-- Why the browser makes CSRF possible
-- Three preconditions for a successful CSRF attack
-- Why SameSite=Lax doesn't fully protect against subdomain attacks
-- Synchronizer token vs. signed double-submit cookie
-- Why CSRF tokens don't stop XSS
-- Login CSRF and the pre-session token fix
-last_probed:
-- Login CSRF and the pre-session token fix
-- Why the browser makes CSRF possible
-- Three preconditions for a successful CSRF attack
-- Why SameSite=Lax doesn't fully protect against subdomain attacks
-- Synchronizer token vs. signed double-submit cookie
-- Why CSRF tokens don't stop XSS
 review_interval: 18
 next_review: '2026-07-13'
 ---

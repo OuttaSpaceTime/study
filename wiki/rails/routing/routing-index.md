@@ -9,10 +9,6 @@ tags:
 created: '2026-05-07'
 updated: '2026-05-07'
 source_skill: manual
-probe_sections:
-- Pages
-last_probed:
-- Pages
 flashcard_ids: []
 ---
 
