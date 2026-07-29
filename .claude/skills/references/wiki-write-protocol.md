@@ -109,6 +109,24 @@ These rules are enforced by `scripts/lint`. **Internalize them before drafting**
 - End of line, before a fenced code block / list / table / blockquote / image
 - Heading text: not flagged for colons (em-dashes still are)
 
+### Headings are Title Case
+
+Capitalize every word except articles, coordinating conjunctions, and short prepositions (`a`, `an`, `the`, `and`, `but`, `or`, `for`, `of`, `to`, `in`, `on`, `at`, `by`, `with`, `from`, `vs`, ...). Capitalize the first word after a colon. Lint check: `heading-case`.
+
+Two rules override the casing, because headings routinely start with code:
+
+- **The first word keeps whatever case you wrote.** `## not as a Filter` and `## on_delete vs dependent` stay as-is, since Title Case would otherwise capitalize a case-sensitive identifier.
+- **Identifiers are never recased.** Anything in backticks, containing `_ ( ) . / @ #` or a digit, written in ALL CAPS, or carrying internal capitals is left verbatim: `` `delegated_type` ``, `inject()`, `Zone.js`, `NG0203`, `strictNullChecks`.
+
+Bare identifiers that read as ordinary words (`included`, `dependent`, `scope`, `namespace`, `module`) are also preserved. If a new one bites, add it to `KEEP_VERBATIM` in `scripts/wiki/headings.py` rather than reworking the heading.
+
+| ❌ wrong                                 | ✅ right                                  |
+| ---------------------------------------- | ----------------------------------------- |
+| `## two orthogonal axes`                 | `## Two Orthogonal Axes`                  |
+| `## Case Study: the CPython chain`       | `## Case Study: The CPython Chain`        |
+| `## Tradeoffs & gotchas`                 | `## Tradeoffs & Gotchas`                  |
+| `## depth-first post-order traversal`    | `## Depth-First Post-Order Traversal`     |
+
 ### Other banned patterns (full list)
 
 - **in order to** → `to`

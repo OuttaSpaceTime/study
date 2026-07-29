@@ -100,7 +100,7 @@ The workflow returns `{ confidence, authoritativeSources[], practitionerSources[
 
 - **Phase 2 grounding (facts).** `facts` / `loadBearing` equip *you* with the canonical answer so you can craft precise questions and judge the developer's answers — never read aloud (see Socratic Never-Reveal). If a source contradicts what you'd have said from memory, that sharpens the question you ask, not a spoken correction. When the developer's prediction is wrong, do not state the right answer; ask a smaller question that exposes the gap, and you may point them at the source URL to investigate themselves.
 - **Phase 2 grounding (opinions).** `opinions` and `divergence` unlock a class of question the docs cannot ground: tradeoff and judgement prompts. Pose them as open ("practitioners disagree about X — what do you think the tradeoff is?", "here's a gotcha someone hit in production — why might that happen?"). Never present an opinion as settled fact, and never reveal — the opinion shapes the *question*, the developer still produces the answer. An opinion flagged `contradictsGroundTruth` is not used to question at all; the authoritative fact it contradicts is.
-- **Phase 4 wiki write.** Fold facts and opinions into the page per the `## References` and `## Tradeoffs & gotchas` rules in "Wiki Page Structure" below: facts go to an authoritative `## References` (inline-link version-specific claims); load-bearing opinions go to a `## Tradeoffs & gotchas` H2 or inline `> [Note]` callouts, attributed and marked consensus/contested; drop any `contradictsGroundTruth` opinion.
+- **Phase 4 wiki write.** Fold facts and opinions into the page per the `## References` and `## Tradeoffs & Gotchas` rules in "Wiki Page Structure" below: facts go to an authoritative `## References` (inline-link version-specific claims); load-bearing opinions go to a `## Tradeoffs & Gotchas` H2 or inline `> [Note]` callouts, attributed and marked consensus/contested; drop any `contradictsGroundTruth` opinion.
 - **Confidence handling:** `confidence: low` means push extra probes in Phase 2 and add a `> [Note] Sources sparse. Verify before relying on this page.` callout in Phase 4. A `contested` opinion stance means present both sides; do not declare a winner the sources do not support.
 
 **Silent execution.** The workflow runs in the background — do not narrate "running research workflow", echo its `/workflows` progress tree, or paste its output. When the synthesis notification arrives, fold the findings into the next phase message. If the workflow errors or times out, fall back to a single background research subagent using the two-lane fallback prompt below; if that also fails, note one line ("research unavailable — proceeding from model knowledge, flagged in Phase 4 references") and continue — never block the developer.
@@ -314,7 +314,7 @@ When writing a wiki page, follow this structure:
   - **Pattern/Technique**: Jump into the pattern with descriptive H2/H3 headings
   - **Feature/Tool Overview**: What is possible, then H2 sections per feature
 - Always include: `## Related Concepts` with `[[absolute/path]]` wikilinks
-- **Always include `## References`**, plus a `## Tradeoffs & gotchas` H2 (or inline `> [Note]` callouts) when practitioner opinion is load-bearing. Build both per "Wiki Page Structure" sections 6 & 7 below: facts cite the authoritative lane, opinions stay attributed and labelled consensus/contested, `contradictsGroundTruth` opinions are dropped.
+- **Always include `## References`**, plus a `## Tradeoffs & Gotchas` H2 (or inline `> [Note]` callouts) when practitioner opinion is load-bearing. Build both per "Wiki Page Structure" sections 6 & 7 below: facts cite the authoritative lane, opinions stay attributed and labelled consensus/contested, `contradictsGroundTruth` opinions are dropped.
 
 **Session log** -- always append to `logs/<MM>/<YYYY-MM-DD>.md` (zero-padded month folder):
 
@@ -328,7 +328,7 @@ When writing a wiki page, follow this structure:
 - **Gaps filled:** projections (re-walked, now solid)
 - **Wiki updates:** [[architecture/event-sourcing]] extended with 2 new sections
 - **Flashcards:** 2 created for event versioning
-- **Research:** research-grounding workflow — 2 authoritative (Greg Young's CQRS doc, EventStore docs) + 2 practitioner (Martin Fowler's bliki, a production post-mortem); confidence: high. 1 blog claim flagged contradictsGroundTruth (dropped). Cited 2 authoritative inline; 1 tradeoff surfaced in `## Tradeoffs & gotchas`.
+- **Research:** research-grounding workflow — 2 authoritative (Greg Young's CQRS doc, EventStore docs) + 2 practitioner (Martin Fowler's bliki, a production post-mortem); confidence: high. 1 blog claim flagged contradictsGroundTruth (dropped). Cited 2 authoritative inline; 1 tradeoff surfaced in `## Tradeoffs & Gotchas`.
 - **Surprising:** upcasting was expected to be a compile-time transform; it's runtime-per-event
 - **Heuristic:** any change to a persisted event shape needs an upcaster, not a migration
 - **Next-time unblocker:** a small probe script that replays one serialized event through the upcaster chain
@@ -359,7 +359,7 @@ Structure depends on the page type chosen in Phase 1.
 ### 5. Related Concepts (H2)
 - `[[absolute/path]]` wikilinks with brief relationship descriptions
 
-### 6. Tradeoffs & gotchas (H2, optional — when practitioner opinion is load-bearing)
+### 6. Tradeoffs & Gotchas (H2, optional — when practitioner opinion is load-bearing)
 - Collects the workflow's practitioner `opinions`: tradeoffs, lived experience, architectural nuance, gotchas
 - Each point attributed to its source and marked consensus/contested; framed as opinion, never as ground truth
 - One-off nuances go inline as `> [Note]` callouts in the relevant section instead of here

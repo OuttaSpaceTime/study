@@ -33,7 +33,7 @@ next_review: '2026-07-29'
 - **Connascence** ranks coupling by **strength**, and weighs it by **locality** and **degree**. Weaken strong coupling, or keep it local.
 - **Over-splitting** backfires. Scattering cohesive logic across tiny classes worsens locality and raises total connascence.
 
-## What SRP actually measures
+## What SRP Actually Measures
 
 The Single Responsibility Principle is widely misquoted as "a class should do one thing." Robert Martin, who named it, explicitly disowns that reading. His precise form is **"a module should be responsible to one, and only one, actor,"** where an actor is a group of stakeholders who request changes. His alternate wording is **"gather together the things that change for the same reasons, and separate those that change for different reasons."** The lineage runs back to Parnas (information hiding, 1972) and Dijkstra (separation of concerns).
 
@@ -62,7 +62,7 @@ Three refinements:
 - **Sanctioned exceptions exist.** `stack.pop()`, `iterator.next()`, and `getAndIncrement()` deliberately mutate and return. The sin is the *hidden, undocumented* side effect, not the deliberate one.
 - CQS is method-level (Meyer). **CQRS** (Command Query Responsibility Segregation) lifts the same instinct to the architecture level with separate read and write models, often with eventual consistency. Same idea, different altitude. Do not conflate them.
 
-## Connascence as a coupling vocabulary
+## Connascence as a Coupling Vocabulary
 
 Connascence (Meilir Page-Jones, 1992) replaces the binary "coupled or not" with a scale. Two components are connascent if changing one forces a matching change in the other to stay correct. Ranked roughly weakest to strongest:
 
@@ -73,7 +73,7 @@ Connascence (Meilir Page-Jones, 1992) replaces the binary "coupled or not" with 
 
 Static forms (visible in the source) are generally weaker than dynamic forms (Execution, Timing, Value, Identity), which surface only at runtime and so are harder to catch. **Strength** is the effort it would take to refactor the coupling away, which tracks how badly a change can bite. Converting a magic `200` into a named constant is literally strength reduction.
 
-## The operative rule for connascence
+## The Operative Rule for Connascence
 
 Strength is only one of three axes. The other two decide whether you actually comment in review.
 
@@ -86,13 +86,13 @@ The rule you can apply cold:
 
 This reframes ordinary review notes. "Extract a constant" is strength reduction. "These two files must always change together" is a locality alarm.
 
-## Over-splitting can worsen coupling
+## Over-splitting Can Worsen Coupling
 
 SRP pushes you to separate. Taken too far, that becomes its own failure mode. If you split logic that genuinely changes together (one actor, one reason to change) into five tiny classes, the pieces stay tightly coupled, but now that coupling is spread across five files. You traded a cohesive class for **high strength plus poor locality**, which is *more* total connascence than you started with. A single conceptual change now touches five files, and the behavior is no longer readable in one place.
 
 The reviewer's test for "correctly separated" versus "shattered into confetti". Did the split put a real actor boundary between the pieces, or did it just push tightly-coupled code apart? Cohesion is the counterweight to SRP, and connascence is how you measure whether a split helped or hurt.
 
-## Tradeoffs and gotchas
+## Tradeoffs and Gotchas
 
 - **SRP is under-defined.** It never defines "reason," "change," or "responsibility," so two engineers can cite SRP to justify opposite decompositions. It gives little objective guidance at the exact decision point. (consensus)
 - **SRP is retroactive.** An axis of change only becomes visible once changes actually happen, so you often learn the correct split from the second or third change request, not up front. This rhymes with the Rule of Three. (contested)

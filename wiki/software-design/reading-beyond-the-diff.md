@@ -32,7 +32,7 @@ A diff shows the lines you changed. Whether those lines are correct, and whether
 - **Read by blast radius, not by diff size.** These defects are rare overall and cluster in high fan out code. A finite comprehension budget makes reading everything counterproductive, so aim the depth where being wrong is expensive.
 - **Green tests are the loudest read wider signal.** An implicit contract that no test encodes fails silently, so a passing suite is not evidence of correctness for that class of change.
 
-## Comprehension debt
+## Comprehension Debt
 
 When you edit code by hand you pay a comprehension cost as you go. You cannot change a method you have not located, and you cannot locate it without reading enough of the surrounding code to know where you are. That reading is a byproduct of authoring, so you rarely notice paying for it.
 
@@ -40,7 +40,7 @@ An agent produces the diff without navigating. The cost did not disappear, it we
 
 The debt has a second edge. Shipping a locally correct diff can still lower the health of the code, because a change that adapts one place but not the places that depend on it leaves a **half adapted shape**. A reader now has to reconstruct both the old design and the incomplete new one. That is more confusing than either the original or a fully finished change, even when every touched line is individually correct.
 
-## Two failure classes
+## Two Failure Classes
 
 Not all "read around the change" problems are the same, and the distinction decides which technique catches them.
 
@@ -60,7 +60,7 @@ Deleting one key looks safe in the diff. It is not, because three other call sit
 
 Reading the whole touched file does nothing here, because the interceptor is not in the touched file and there is no reference to follow to it.
 
-## The blast-radius dial
+## The Blast-Radius Dial
 
 How much surrounding code to read is set by **blast radius**, the fan out of what you touch multiplied by the cost of being wrong. It is not set by the size of the diff. A five line change to a global interceptor deserves far more reading than a two hundred line change to one leaf template.
 
@@ -72,7 +72,7 @@ Three facts make the dial the right tool rather than "read everything".
 
 **Green tests are the loudest signal to read wider.** When behavior changed, or is silently constrained, but no test moved, the suite is telling you nothing about the case that will actually break. Both the interceptor and the autocommit bug shared this tell.
 
-## Why reading more is not enough
+## Why Reading More Is not Enough
 
 Reading more of the touched files solves in file coupling. It cannot solve action at a distance, and the reason is an honest limit. **You cannot know to read what is not already in your head.** To decide to open the interceptor you would have to know it exists, and nothing in the change points at it.
 
@@ -88,7 +88,7 @@ The safe deletion is not "this looks redundant". It is "I traced why this existe
 
 Your own review shows both sides. The comment "why the transaction block if we have `with_lock`?" is a Chesterton's Fence question, not a delete instruction. It asks you to find the reason before removing it. And the identity entries in `order_mapping` were only safe to drop because a fact established elsewhere in the change, a migration that made `name` and `vendor` real columns, removed the reason they existed. Drop the same entries on a branch without that migration and you break sorting, reading, and filtering, because the fence is still load bearing.
 
-## Reading for absence
+## Reading for Absence
 
 Everything above is about reading code that is present. A distinct lens reads for what is missing, because a change is often incomplete not in its lines but in what it fails to include.
 
@@ -101,7 +101,7 @@ Ask what the change implies but does not carry:
 
 The related tell is when the story does not add up. When the description says "add logging" but the diff also moves business logic, or a "fix typo" changes a method signature, the mismatch is telling you the real change is not the stated one. Reading for absence and reading the surrounding code are complements. One asks whether what is present is correct in context, the other asks whether what is present is complete.
 
-## A decision procedure
+## A Decision Procedure
 
 A compact routine to run from "here is my diff" to "how much do I read".
 
@@ -115,7 +115,7 @@ A compact routine to run from "here is my diff" to "how much do I read".
 
 Step 5 resolves the opportunistic cleanup tension. The reviewer reading the whole neighborhood is judging health, not demanding you fix the neighborhood in this change.
 
-## Tradeoffs and gotchas
+## Tradeoffs and Gotchas
 
 - **Tier by risk, not by author reputation.** Match review depth to the cost of being wrong, and be aware that most published review advice was written for a very different blast radius than yours, so it can misapply. (consensus)
 - **Scope discipline beats opportunistic cleanup in the same change.** The canonical stance is to read the surrounding code to judge the change, but to defer unrelated cleanup to a filed issue with a TODO rather than combine it with the work. Reading wide and cleaning wide are different decisions. (consensus)

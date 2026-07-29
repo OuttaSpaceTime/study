@@ -18,7 +18,7 @@ flashcard_ids: []
 
 # DNS
 
-## DNS resolution
+## DNS Resolution
 
 The network stack only deals in IPs. DNS translates names to IPs through a delegated hierarchy. For `www.example.com`:
 
@@ -31,7 +31,7 @@ The network stack only deals in IPs. DNS translates names to IPs through a deleg
 
 Each level only knows the level immediately below. The `.com` registry doesn't know what `www.example.com` resolves to. Only that the domain's nameservers do. Ownership and knowledge are scoped to your delegation.
 
-## DNS caching and TTL
+## DNS Caching and TTL
 
 Every cached DNS answer carries a **TTL** (time-to-live, in seconds) set on the record itself. Caches keep the answer that long, then refetch.
 
@@ -44,7 +44,7 @@ Caches live at multiple layers:
 
 DNS changes "propagate over hours" only because old caches expire one by one. Nothing pushes invalidation.
 
-## Safe migration
+## Safe Migration
 
 **Naive failure mode:** flip the A record AND immediately decommission the old IP. Users with cached old answers fail until their TTL expires.
 
@@ -62,7 +62,7 @@ Production environments avoid the dance entirely by **not changing the IP**:
 
 Rule of thumb. **Never combine a DNS change with immediate teardown of the old endpoint.**
 
-## Host header and virtual hosts
+## Host Header and Virtual Hosts
 
 After DNS, the network only knows an IP. If many domains point to one IP (`chat.example.com` and `intranet.example.com` both at `1.2.3.4`), the server has to be told *which* site the user wanted.
 

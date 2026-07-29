@@ -28,7 +28,7 @@ next_review: '2026-07-19'
 
 A transaction is a **correctness** tool, not a performance or parallelism tool. It guarantees that a group of writes either all commit or all roll back (atomicity), and that each transaction sees a consistent view of the data (isolation). It is **not** a mutex and does not serialize concurrent work by itself. Reach for it when several dependent writes must succeed or fail together. Do not reach for it to "protect against parallelism" (that is the job of locking, see [[rails/row-locking-and-concurrency]]), and never put slow or external work inside one.
 
-## What a transaction guarantees, and what it does not
+## What a Transaction Guarantees, and What It Does not
 
 ```ruby
 ActiveRecord::Base.transaction do
@@ -48,7 +48,7 @@ What a transaction guarantees (ACID):
 
 What it does **not** guarantee is a lock. Opening a transaction does not keep other workers out of the database, and it does not by itself serialize concurrent work on the same data. If you need to coordinate concurrent access to a row, that is the job of explicit locking, not merely of being inside a transaction. See [[rails/row-locking-and-concurrency]].
 
-## Isolation levels and the anomalies each allows
+## Isolation Levels and the Anomalies Each Allows
 
 Postgres has [four named isolation levels but only two distinct behaviors](https://www.postgresql.org/docs/current/transaction-iso.html) (Read Uncommitted behaves as Read Committed).
 
@@ -58,7 +58,7 @@ Postgres has [four named isolation levels but only two distinct behaviors](https
 
 So if you run the same `SELECT count(*)` twice inside one Read Committed transaction and get different numbers, that is expected, not a bug. The default snapshot is per-statement.
 
-## Never put slow or external calls inside a transaction
+## Never Put Slow or External Calls Inside a Transaction
 
 ```ruby
 # bad
@@ -78,7 +78,7 @@ Under load this is how a slow third party becomes a site-wide outage. Every web 
 
 Move external and slow work **outside** the transaction. Do it before opening the transaction, or in an `after_commit` callback.
 
-## Idempotency and effects outside the transaction
+## Idempotency and Effects Outside the Transaction
 
 Moving the charge outside the transaction creates a new problem, and idempotency is the answer to it.
 
@@ -90,13 +90,13 @@ The failure mode looks like this. The `charge!` succeeds, then the network drops
 
 The relationship in one line. **Atomicity protects the DB side, and idempotency protects the non-DB side.** You need both precisely because external calls do not belong inside the transaction.
 
-## Rails rollback-on-exception
+## Rails Rollback-on-Exception
 
 - A `transaction` block rolls back when **any exception is raised** inside it, and re-raises that exception to the caller.
 - `raise ActiveRecord::Rollback` is the one exception that triggers a rollback but is **swallowed** by the block, so it does not propagate to your caller. Use it to abort a transaction without surfacing an error.
 - Rails uses a **connection pool**, one connection per thread. Keep your thread count at or below the pool size or you exhaust the pool.
 
-## Nested transactions and savepoints
+## Nested Transactions and Savepoints
 
 There is no such thing as a truly independent nested transaction in most databases. There is only ever **one** real transaction, and ActiveRecord emulates nesting with **savepoints**.
 

@@ -22,7 +22,7 @@ next_review: '2026-07-10'
 
 Errors in observables follow the [[reactive/observables]] contract. Once an error is emitted, the stream terminates. This shapes every error-handling pattern in reactive code.
 
-## How error terminates a stream: subscription state after onError
+## How Error Terminates a Stream: Subscription State After onError
 
 When a source calls `subscriber.error(err)`:
 1. The `error` callback on each subscriber fires
@@ -41,7 +41,7 @@ obs$.subscribe({
 
 If no `error` callback is provided, an unhandled observable error throws synchronously in some RxJS versions and is silently swallowed in others. Always provide an error handler.
 
-## catchError: signature, recovery pattern, and re-throw
+## catchError: Signature, Recovery Pattern, and Re-Throw
 
 `catchError` intercepts an error and returns a replacement observable. The resulting stream continues from the replacement rather than terminating.
 
@@ -63,7 +63,7 @@ catchError(err => {
 
 `catchError` only catches errors from operators upstream of it in the pipeline. Operators downstream are unaffected.
 
-## retry vs retryWhen: immediate resubscription vs conditional backoff
+## retry vs retryWhen: Immediate Resubscription vs Conditional Backoff
 
 `retry(n)` resubscribes to the source observable up to n times when it errors. If the nth retry also errors, the error propagates.
 
@@ -88,7 +88,7 @@ ajax('/api/data').pipe(
 
 Never use bare `retry()` without a count on observables that can error indefinitely. It will retry forever.
 
-## Error in inner vs outer observable (flatMap/switchMap)
+## Error in Inner vs Outer Observable (flatMap/switchMap)
 
 With `mergeMap` / `flatMap`, an error in an **inner** observable propagates to the outer by default and kills the entire pipeline.
 
@@ -114,7 +114,7 @@ This is the standard production pattern when processing a stream of requests whe
 
 The same applies to `switchMap` and `concatMap`. Inner errors propagate unless caught inside the mapping function.
 
-## Dead subscriber trap: subscribing after a subject has errored
+## Dead Subscriber Trap: Subscribing After a Subject Has Errored
 
 Cold observables re-execute the producer on each subscribe, so a new subscription may or may not hit the same error depending on the cause.
 

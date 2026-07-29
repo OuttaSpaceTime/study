@@ -78,7 +78,7 @@ resources(
 
 With `as:` set, the helper is `api_v2_inbox_items_read_markers_path`.
 
-## How to verify path helper names at the console
+## How to Verify Path Helper Names at the Console
 
 Always check with:
 

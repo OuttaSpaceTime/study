@@ -37,9 +37,9 @@ ActiveRecord offers four methods that interact with associations in a query. `jo
 
 **Default heuristic:** reach for `preload`. Switch to `eager_load` when (a) the association is `belongs_to` / `has_one`, or (b) you genuinely need to filter parents by child conditions. Treat `includes` as a tool you understand the auto-switch rule of, not as a magic safe choice.
 
-## The four methods
+## The Four Methods
 
-### `joins`: INNER JOIN, no preloading
+### `joins`: INNER JOIN, No Preloading
 
 ```ruby
 User.joins(:posts)
@@ -50,7 +50,7 @@ Records are **not** preloaded. Iterating `user.posts` after this fires a fresh N
 
 INNER JOIN means parents without children are excluded from the result. Use this when that's what you want; otherwise prefer `eager_load` (LEFT OUTER) or combine `joins` with an explicit `preload`.
 
-### `preload`: bulk-load via separate queries
+### `preload`: Bulk-Load via Separate Queries
 
 ```ruby
 User.preload(:posts).to_a
@@ -62,7 +62,7 @@ Two queries, no row blowup. The IN list grows linearly with the parent count. Th
 
 Cannot be combined with WHERE clauses that reference the joined table. There's no joined table in either statement. Trying to do so raises an error or silently fails to apply the filter.
 
-### `eager_load`: single LEFT OUTER JOIN
+### `eager_load`: Single LEFT OUTER JOIN
 
 ```ruby
 User.eager_load(:posts).to_a
@@ -74,7 +74,7 @@ One query, all data in one round trip. Aliased columns (`t0_*` for parents, `t1_
 
 Filters on the joined table work directly. `eager_load(:posts).where(posts: { published: true })` is a single SQL statement.
 
-### `includes`: auto-switches between preload and eager_load
+### `includes`: Auto-Switches Between Preload and eager_load
 
 ```ruby
 User.includes(:posts).to_a
@@ -86,7 +86,7 @@ User.includes(:posts).where(posts: { published: true }).to_a
 
 `includes` is a **strategy-deciding** method. It defaults to `preload` semantics and upgrades to `eager_load` semantics when the query would be impossible to satisfy as two separate statements.
 
-## How includes auto-switches
+## How Includes Auto-Switches
 
 The trigger is purely structural. **Does the query need the associated table in scope?**
 
@@ -105,11 +105,11 @@ User.includes(:posts).where(posts: { id: 1 })     # 1 JOIN (eager_load)
 
 The "magic" framing (`includes` "decides for you") is misleading. The behavior is mechanical. If the WHERE/ORDER needs the join, you get a JOIN; otherwise you get two queries.
 
-## Cost model: when JOIN multiplies rows
+## Cost Model: When JOIN Multiplies Rows
 
 The fundamental cost difference between `preload` and `eager_load` comes from JOIN cardinality.
 
-### `has_many` JOIN: row blowup
+### `has_many` JOIN: Row Blowup
 
 `User.eager_load(:posts).to_a` with 1,000 users averaging 50 posts each → **50,000 rows over the wire**, each carrying every `users.*` column duplicated. The blowup is `parents × avg_children`, and the duplication penalty is `parent_column_count × (avg_children − 1)` extra cells per parent.
 
@@ -117,7 +117,7 @@ The `preload` equivalent. 1,000 user rows + 50,000 post rows = 51,000 total. Eac
 
 Wire cost ratio scales with parent column width and children-per-parent. For wide parent tables and high `has_many` fan-out, `preload` is dramatically cheaper.
 
-### `belongs_to` JOIN: no row blowup
+### `belongs_to` JOIN: No Row Blowup
 
 `Post.eager_load(:author).to_a` with 10,000 posts and 5 distinct authors → **10,000 rows**. Same row count as `Post.all`. The JOIN doesn't multiply row count from the post side; it just attaches author columns to each post row. The duplication is on the *parent* (author) side. Alice's 5 columns are copy-pasted across every post she wrote.
 
@@ -125,7 +125,7 @@ Wire cost is `posts × (post_cols + author_cols)`. Compare to preload's `posts �
 
 This is why `belongs_to` / `has_one` JOINs are usually fine. They don't trigger row blowup.
 
-### Memory after instantiation: identical
+### Memory After Instantiation: Identical
 
 Persistent ActiveRecord objects are the same in both strategies. Rails dedupes parents by `t0_r0` (primary key) during result-set traversal. Duplicate rows produce one parent object, not many.
 
@@ -133,11 +133,11 @@ What's larger for `eager_load`:
 - **Transient memory** during result processing. Driver buffers full result set.
 - **Allocation churn.** Duplicate column strings are allocated and become garbage immediately. On large `has_many` JOINs this GC pressure can dominate end-to-end time even when wire cost is acceptable.
 
-### Round trips vs cell volume
+### Round Trips vs Cell Volume
 
 `preload` pays 2 round trips; `eager_load` pays 1. On low-latency LAN connections, RTT is negligible and cell volume dominates → `preload` wins for `has_many`. On high-latency WAN connections, RTT can swamp the duplication cost → `eager_load` can win even for `has_many`. The tradeoff is **cell volume vs round trips**, not "preload is always faster."
 
-## Choosing between joins, preload, eager_load, and includes
+## Choosing Between Joins, Preload, eager_load, and Includes
 
 | Situation                                                | Choice                                                  | Reason                                            |
 | -------------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------- |
@@ -151,7 +151,7 @@ What's larger for `eager_load`:
 
 The common "mainly use `preload`" advice is correct *for `has_many`* but oversimplified for `belongs_to`. The rule is to avoid `eager_load` when it would multiply rows. This is `has_many`-specific.
 
-## Polymorphic associations
+## Polymorphic Associations
 
 `eager_load` cannot JOIN a polymorphic `belongs_to`. The associated table is unknown at SQL build time: `entry.entryable` could be a `Message` or a `Comment`, and a single JOIN can't union arbitrary tables. So:
 

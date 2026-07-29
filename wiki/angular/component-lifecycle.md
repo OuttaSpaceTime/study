@@ -31,7 +31,7 @@ The lifecycle hooks answer three operational questions. *When does a hook fire?*
 - `inject()` requires an injection context. Constructor body, field initializer, factory, and `runInInjectionContext` are valid. `ngOnInit` and the other lifecycle methods are not.
 - `afterNextRender` runs after the browser commits the DOM. `ngAfterViewInit` runs before paint.
 
-## Init order: depth-first post-order across the tree
+## Init Order: Depth-First Post-Order Across the Tree
 
 On first render, hooks fire in this order on a component with decorator inputs.
 
@@ -62,7 +62,7 @@ The *Checked* hooks (`ngDoCheck`, `ngAfterContentChecked`, `ngAfterViewChecked`)
 
 > [Note] Signal-based `input()` does not trigger `ngOnChanges`. Migrating an `@Input()` to `input()` silently disables the hook for that input. Use `effect()` or `computed()` to react to signal input changes.
 
-## constructor vs ngOnInit: why @Input is undefined in the constructor
+## constructor vs ngOnInit: Why @Input Is Undefined in the Constructor
 
 The constructor runs at JS class instantiation time. Angular instantiates the component, then applies `@Input` bindings, then fires `ngOnChanges`, then `ngOnInit`. Reading an `@Input`-decorated property in the constructor returns `undefined` because the binding has not been applied yet.
 
@@ -86,7 +86,7 @@ Use the constructor for DI and field defaults that do not depend on inputs. Use 
 
 > [Note] Signal-based inputs (`input()`, stable since Angular 17.2) ARE readable in field initializers, since they are signals and reading the signal in the initializer just returns the initial value. Code that uses `input()` exclusively often skips `ngOnInit` entirely.
 
-## ngOnChanges: fires on first render and batches all input changes
+## ngOnChanges: Fires on First Render and Batches All Input Changes
 
 Two things developers commonly get wrong about `ngOnChanges`.
 
@@ -105,7 +105,7 @@ ngOnChanges(changes: SimpleChanges) {
 
 `firstChange` on a `SimpleChange` distinguishes the initial binding from a later update.
 
-## Content vs View hooks: which decorator becomes available where
+## Content vs View Hooks: Which Decorator Becomes Available Where
 
 | Decorator | Where the queried element lives | First available in |
 |---|---|---|
@@ -118,7 +118,7 @@ The reason they differ. Content is "what the parent passed in via `<ng-content>`
 
 Querying a `@ViewChild` inside `ngAfterContentInit` returns `undefined`. Querying a `@ContentChild` inside `ngOnInit` returns `undefined` for the same reason.
 
-## Injection context: where inject() is valid and where it throws NG0203
+## Injection Context: Where inject() Is Valid and Where It Throws NG0203
 
 `inject()` is a plain function that reads from a "current injector" pointer Angular maintains. The pointer is only valid inside specific call frames. Outside them, `inject()` throws `NG0203: inject() must be called from an injection context`.
 
@@ -147,7 +147,7 @@ export class FooComponent {
 
 This pattern is rarely needed. The cleaner approach is to inject everything you might need in the constructor or a field initializer.
 
-## afterNextRender vs ngAfterViewInit: post-paint vs pre-paint timing
+## afterNextRender vs ngAfterViewInit: Post-Paint vs Pre-Paint Timing
 
 `ngAfterViewInit` fires after Angular has built the component's view in memory but **before** the browser has painted. DOM measurements taken inside `ngAfterViewInit` may be pre-layout and trigger forced reflows when read.
 

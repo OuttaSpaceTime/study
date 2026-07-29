@@ -22,7 +22,7 @@ next_review: '2026-08-01'
 
 An Observable is a lazy, push-based data source. It emits values, errors, and a completion signal to subscribers over time.
 
-## Why observables are lazy and what subscribe triggers
+## Why Observables Are Lazy and What Subscribe Triggers
 
 The producer function inside an Observable does not run when the Observable is created. It runs when `subscribe` is called.
 
@@ -40,7 +40,7 @@ obs$.subscribe(v => console.log(v));
 
 Each `subscribe` call creates an independent execution. Two subscribers get two separate runs of the producer with no shared state. This contrasts with a Promise, which runs its executor immediately on construction and shares the result with all `.then` handlers.
 
-## The Observable Contract: grammar and serial delivery rule
+## The Observable Contract: Grammar and Serial Delivery Rule
 
 Every Observable must obey:
 
@@ -59,7 +59,7 @@ Violations such as emitting after `complete` or concurrent `next` calls cause un
 
 **Source:** [ReactiveX Observable Contract](https://reactivex.io/documentation/contract.html)
 
-## Cold vs hot observables: independent vs shared execution
+## Cold vs Hot Observables: Independent vs Shared Execution
 
 **Cold:** the producer is created fresh per subscriber. Each subscriber gets the full sequence from the start. HTTP request observables are cold. Each subscriber fires its own request.
 
@@ -74,7 +74,7 @@ req$.subscribe(b => console.log('B', b)); // second independent request
 
 The distinction matters when you want to avoid duplicate side effects. Use `share()` or `shareReplay()` to convert a cold observable to hot so multiple subscribers share one execution.
 
-## Subscription lifecycle: what subscribe returns and how teardown works
+## Subscription Lifecycle: What Subscribe Returns and How Teardown Works
 
 `subscribe` returns a `Subscription` object with an `unsubscribe()` method. Calling it stops delivery and runs any teardown logic registered inside the producer.
 

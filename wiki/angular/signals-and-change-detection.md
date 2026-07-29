@@ -25,7 +25,7 @@ flashcard_ids: []
 
 Signals give Angular a data-driven CD trigger. Instead of Zone.js watching the browser for any async task, signal writes notify Angular exactly which components need updating.
 
-## How signal writes mark ancestors: traversal flag vs dirty flag
+## How Signal Writes Mark Ancestors: Traversal Flag vs Dirty Flag
 
 When a component's template reads a signal, the component registers as a reactive consumer of that signal.
 
@@ -36,7 +36,7 @@ When the signal's value changes:
 
 During the CD walk, `HasChildViewsToRefresh` tells Angular to traverse into that subtree to find the flagged leaf. Angular does not re-check the ancestor's own bindings.
 
-## Semi-local CD: which nodes are traversed vs which re-evaluate bindings
+## Semi-local CD: Which Nodes Are Traversed vs Which Re-Evaluate Bindings
 
 Only the signal-consuming leaf component fully re-evaluates its template bindings. Ancestors between root and the leaf are traversed but not re-checked.
 
@@ -44,7 +44,7 @@ This is semi-local CD. One component re-evaluates its bindings; many ancestors a
 
 The `async` pipe differs. It calls `markForCheck()`, which uses the full dirty path. Every ancestor from root to the leaf re-evaluates its own bindings on each emission.
 
-## Why change detection walks top-down
+## Why Change Detection Walks Top-Down
 
 The reactive graph knows the exact set of views that consume a changed signal, so why not refresh those leaves directly? Because *knowing* the dirty leaf and *refreshing* it are separate machines. The refresh is executed by a CD pass that recursively walks the component view tree from the root down. There is no path to teleport into an arbitrary view and refresh it in isolation.
 
@@ -59,7 +59,7 @@ The three flags involved are distinct. `HasChildViewsToRefresh` (ancestors) is p
 
 So the signal graph supplies *targeting* (which leaves, and the spine to reach them); the top-down walk supplies *ordering*. Traversing the spine is a cheap per-node flag check. Re-running binding expressions, the expensive part, still happens only at the flagged leaf.
 
-## The click-event caveat: two independent mechanisms
+## The Click-Event Caveat: Two Independent Mechanisms
 
 When a signal is mutated from inside a template event handler (`<button (click)="count.set(...)">`), two *independent* mechanisms fire, and conflating them hides what actually happens:
 
@@ -68,7 +68,7 @@ When a signal is mutated from inside a template event handler (`<button (click)=
 
 The determinant is split two ways. `markViewDirty` is driven by **where the `(click)` binding lives** (dirties up to root); traversal is driven by **where the signal is read**. Both markings poke the CD scheduler, which **coalesces them into a single tick**; where they overlap on the same view, `Dirty` wins (recompute beats traverse-through).
 
-## When the caveat bites vs when semi-local CD survives
+## When the Caveat Bites vs When Semi-Local CD Survives
 
 The caveat only bites when the signal is read **at or above** the button's host: the click's dirty-walk already runs up to root, so any consumer on that upward path recomputes as a side effect of the click, not because the signal asked for it. The signal's careful leaf-targeting is wasted there.
 
@@ -76,7 +76,7 @@ If the signal is read in the *same* component as the button, that component is `
 
 Semi-local CD survives in full only when the signal mutation comes from **outside** a template event (a service, a timer, a WebSocket callback), where mechanism 1 never fires and only `markAncestorsForTraversal` runs.
 
-## Why semi-local CD only matters in zoneless
+## Why Semi-Local CD Only Matters in Zoneless
 
 The signal markings (`markAncestorsForTraversal`) run identically whether or not Zone.js is loaded. The *benefit*, though, only materializes in **zoneless** mode.
 

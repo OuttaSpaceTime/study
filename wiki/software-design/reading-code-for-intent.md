@@ -34,7 +34,7 @@ Most subtle review misses are not logic bugs. They are intent mismatches. The co
 - Types are honest about returns and tests assert only expected behavior, so **hidden-intent defects need a human**. Review is the backstop.
 - Fixes climb a ladder: **document, fail loud, make impossible**. Push misuse toward a compile error (make illegal states unrepresentable, the pit of success).
 
-## The signature is a contract
+## The Signature Is a Contract
 
 A type signature is a promise. In a codebase where a user sometimes does not exist:
 
@@ -50,7 +50,7 @@ function getUser(id: string): User | undefined
 
 Now the compiler makes every caller confront the missing case. Reading for intent starts here. **Read the signature as a set of promises, then check whether the body keeps them.**
 
-## Preconditions, postconditions, and asymmetric blame
+## Preconditions, Postconditions, and Asymmetric Blame
 
 Design by Contract (Bertrand Meyer, from Eiffel) models an interface as a contract with three assertions:
 
@@ -67,7 +67,7 @@ Map a failure to whichever side of the contract broke and the "whose bug is this
 
 > [Note] Design by Contract is the offensive inverse of defensive programming. By Meyer's non-redundancy principle a function must NOT re-check its own precondition. Double-guarding is an anti-pattern, not extra safety, because it blurs whose obligation the check was.
 
-## The name is part of the contract
+## The Name Is Part of the Contract
 
 Not all of the contract is in the types. The **name** sets the caller's mental model, and violating that model is the **Principle of Least Astonishment** breach.
 
@@ -77,7 +77,7 @@ user.hasPermission('edit')   // returns boolean, and also writes an audit-log ro
 
 The return type is an honest `boolean`. Tests pass. Yet the name promises a *question*, so the only reasonable expectation is "I get an answer and nothing changes." The hidden write betrays that. Calling it twice double-logs, and calling it in a log line or debugger silently mutates data. A name that promises a query must not command (this is command-query separation seen from the intent side, see [[software-design/splitting-responsibilities]]). Astonishment is relative to the audience's existing mental model, so the test is "what would a competent caller reading this name assume?"
 
-## Why review is the backstop
+## Why Review Is the Backstop
 
 This defect class is invisible to the tools:
 
@@ -86,7 +86,7 @@ This defect class is invisible to the tools:
 
 So the gap sits exactly where expectation and reality diverge silently, and only a human reading the implementation against the name and signature closes it. This is why intent review is a distinct skill from testing, and why "the obvious use should be the correct use" is a review standard, not a nicety. Practitioners are blunt about it. Developers will not read a manual to learn an API's real behavior, so surprises are caught socially, in review, or not at all.
 
-## The ladder from documented to impossible
+## The Ladder from Documented to Impossible
 
 When an API can be misused, the fixes are not equal. Ranked weakest to strongest:
 
@@ -96,7 +96,7 @@ When an API can be misused, the fixes are not equal. Ranked weakest to strongest
 
 The axis is *when misuse is caught* and *how little it relies on the human choosing correctly*. Climbing it is **"make illegal states unrepresentable"**, pushing enforcement into the type system (a `User | undefined`, a discriminated union, a `PostId` nominal type that cannot be swapped with a `PostTitle`). The design goal of landing everyone in correct usage by default is the **pit of success**. Easy to do right, hard to do wrong. The reviewer's upgrade is to stop at "this could be misused" and instead ask "can we move this up the ladder?" And when you cannot reach compile-time (level 3), reach for loud failure (level 2). Silent tolerance of a contract violation is the worst option.
 
-## Tradeoffs and gotchas
+## Tradeoffs and Gotchas
 
 - **Contracts can be stripped in production.** Eiffel and .NET Code Contracts often compile precondition and postcondition checks out of release builds, so a contract that catches misuse in debug can silently permit it once real inputs arrive. Do not assume the assertion runs. (consensus)
 - **Least astonishment is audience-relative.** The same behavior astonishes a novice and not an expert, so "obvious" is defined by the intended reader, not in the abstract. (consensus)

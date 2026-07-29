@@ -48,7 +48,7 @@ The `entries` row holds:
 
 Both are needed. An id alone is ambiguous across multiple subtype tables.
 
-## What the delegated_type declaration generates
+## What the delegated_type Declaration Generates
 
 ```ruby
 class Entry < ApplicationRecord
@@ -79,7 +79,7 @@ end
 
 It does **not** generate atomic creators. `Entry.create_with_message!(...)` is **not** a default method. The macro produces no `create_with_*` at all. The Rails docs show it as a factory method you define yourself; if you want atomic subtype-plus-parent creation, you write it (see below).
 
-## What `delegated_type` Expands To
+## What `delegated_type` Expands to
 
 `delegated_type` is a **declaration macro**, not an association itself. But it generates one. The hand-rolled equivalent of `delegated_type :entryable, types: %w[Message Comment], dependent: :destroy`:
 

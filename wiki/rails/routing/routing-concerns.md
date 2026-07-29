@@ -19,7 +19,7 @@ flashcard_ids: []
 
 A concern extracts a reusable block of route definitions. It's purely DRY -- the generated routes are identical to writing them inline.
 
-## The problem: duplicated route blocks across resources
+## The Problem: Duplicated Route Blocks Across Resources
 
 Multiple resources sharing the same nested structure:
 
@@ -75,7 +75,7 @@ resources :posts, concerns: [:social, :taggable]
 resources :articles, concerns: [:social]
 ```
 
-## When to extract a routing concern
+## When to Extract a Routing Concern
 
 Worth it when 3+ resources share the same nested structure. For just 2, the duplication is tolerable and easier to read.
 

@@ -26,7 +26,7 @@ flashcard_ids: []
 
 Marking a column nullable is a one-character schema change that ripples through every query, constraint, index, and migration that touches it forever. The cost is not in writing `NULL`. It comes from the asymmetric three-valued logic, the constraints that silently don't apply, and the future migration that may be impossible because the source data is gone. **Default to `NOT NULL` with a sensible default; reach for `NULL` only when the *absence* of a value is semantically distinct from any value the column could hold.**
 
-## Three-valued logic is the root cause
+## Three-valued Logic Is the Root Cause
 
 SQL does not use boolean logic. It uses **three-valued logic** (3VL). Every predicate evaluates to `TRUE`, `FALSE`, or `UNKNOWN`. Any comparison involving `NULL` returns `UNKNOWN`. Including `NULL = NULL`. `WHERE` only keeps rows where the predicate is `TRUE`, so `UNKNOWN` rows are dropped just like `FALSE` rows.
 
@@ -50,7 +50,7 @@ To test for NULL itself, use the special two-valued operators `IS NULL` / `IS NO
 
 `COUNT` follows the same rule. `COUNT(*)` counts rows; `COUNT(col)` counts non-NULL values in `col`. The two diverge whenever the column is nullable.
 
-## The NOT IN trap
+## The NOT IN Trap
 
 `NOT IN` against a nullable column is much worse than `!=`. A single NULL in the right-hand list silently empties the entire result.
 
@@ -79,7 +79,7 @@ WHERE NOT EXISTS (
 
 > [Heuristic] If the subquery column is nullable, `NOT IN` is a bug. Reach for `NOT EXISTS` or `LEFT JOIN ... WHERE x IS NULL`.
 
-## UNIQUE does not constrain NULLs
+## UNIQUE Does not Constrain NULLs
 
 A `UNIQUE` constraint on a nullable column does not prevent multiple NULLs. Two NULLs are not "equal" under SQL semantics, so the database considers them distinct:
 
@@ -104,7 +104,7 @@ The intent is "at most one active subscription per user," but the constraint doe
 
 > [Note] SQL Server's default is the opposite. It treats NULLs as equal in UNIQUE constraints. Postgres 15+ added `UNIQUE NULLS NOT DISTINCT` to opt into that behavior. Behavior varies by engine; do not rely on a default that is not in the standard.
 
-## Partial unique indexes
+## Partial Unique Indexes
 
 The right tool for "unique among rows matching some predicate" is a **partial unique index**. An index built only on the subset of rows that satisfy a `WHERE` clause:
 
@@ -125,7 +125,7 @@ Plain `UNIQUE` cannot scope to a subset of rows. It is all-or-nothing across the
 
 > [Note] A partial index can only satisfy a query whose `WHERE` clause logically implies the index's predicate. `WHERE status = 'closed'` cannot use an index defined `WHERE status = 'open'`.
 
-## Nullable foreign keys
+## Nullable Foreign Keys
 
 A nullable FK conflates two semantically different states the database cannot distinguish:
 
@@ -149,7 +149,7 @@ The fix is `LEFT JOIN`, but `LEFT JOIN` then yields NULL columns for the unmatch
 
 If "no relation" is rare or only valid in a specific state, prefer modeling it differently. A separate table, an `is_*` flag, or a sentinel "system user" are all better than a nullable FK that has to be handled correctly at every read site.
 
-## Migrating to NOT NULL is expensive
+## Migrating to NOT NULL Is Expensive
 
 Tightening a nullable column to `NOT NULL` later is three stacked problems, not one:
 
@@ -178,7 +178,7 @@ ALTER TABLE users ALTER COLUMN status SET NOT NULL;
 
 Compare to the easy case. A `NOT NULL` column with a default added on day one has none of this work. The cost of `NULL` is mostly paid later, by the team trying to enforce a real constraint after the table has 50M rows and the source data is gone.
 
-## When NULL is the right choice
+## When NULL Is the Right Choice
 
 The danger story is one-sided. NULL is the correct modeling choice when **the absence of a value is semantically distinct from any value the column could hold**:
 
@@ -193,7 +193,7 @@ The decision question:
 - Yes → NULL is appropriate.
 - No (you are reaching for NULL because you could not think of a default) → use `NOT NULL` with a default, a separate table, or a richer enum.
 
-## Sentinels masquerading as values
+## Sentinels Masquerading as Values
 
 A common reflex after reading the above is "always `NOT NULL`, use a sentinel." This is worse than NULL when the sentinel looks like real data:
 

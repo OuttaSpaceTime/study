@@ -29,7 +29,7 @@ flashcard_ids: []
 
 Added in Ruby 2.4.
 
-## What transform_values does and why it preserves keys
+## What transform_values Does and Why It Preserves Keys
 
 A hash is a set of `key => value` pairs. Most hash operations want one of:
 
@@ -39,7 +39,7 @@ A hash is a set of `key => value` pairs. Most hash operations want one of:
 
 `transform_values` exists because "keep keys, change values" is extremely common, and the alternatives (`each_with_object`, `map` + `to_h`) mix concerns. You end up writing code about *rebuilding a hash* instead of code about *transforming values*.
 
-## vs map on a hash
+## vs Map on a Hash
 
 `map` escapes to Array-land. `transform_values` stays in Hash-land.
 
@@ -58,7 +58,7 @@ h.map { |k, v| [k, v * 2] }.to_h
 
 The `map { ... }.to_h` pattern was the pre-2.4 workaround. `transform_values` replaces it with a single, intention-revealing call.
 
-## The block receives only the value
+## The Block Receives Only the Value
 
 The block yields **just the value**. Not the key:
 
@@ -78,7 +78,7 @@ h.each_with_object({}) { |(k, v), memo| memo[k] = "#{k}=#{v}" }
 h.map { |k, v| [k, "#{k}=#{v}"] }.to_h
 ```
 
-## Bang variant
+## Bang Variant
 
 `transform_values!` mutates the receiver in place; non-bang returns a new hash.
 
@@ -88,7 +88,7 @@ h.transform_values { |v| v * 2 }   # => { a: 2, b: 4 }, h unchanged
 h.transform_values! { |v| v * 2 }  # => { a: 2, b: 4 }, h mutated
 ```
 
-## with_index for positional info
+## with_index for Positional Info
 
 Calling `transform_values` without a block returns an Enumerator, which chains with `with_index`:
 
@@ -99,7 +99,7 @@ Calling `transform_values` without a block returns an Enumerator, which chains w
 
 Handy when the transform depends on the value *and* its position.
 
-## When not to use it
+## When not to Use It
 
 - **Need the key** in the transform → `each_with_object` or `map` + `to_h`
 - **Want to drop pairs** (filter) → `select` first, then `transform_values`; or `filter_map` + `to_h`

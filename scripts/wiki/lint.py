@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from scripts.wiki.frontmatter import parse_frontmatter, slugify
+from scripts.wiki.headings import titlecase
 from scripts.wiki.index import iter_wiki_pages, load_index
 
 REQUIRED_FIELDS = {
@@ -151,6 +152,7 @@ def lint_wiki(
     warnings.extend(_check_prose_quality(pages))
     warnings.extend(_check_sentence_fragments(pages))
     warnings.extend(_check_prose_density(pages))
+    warnings.extend(_check_heading_case(pages))
     warnings.extend(_check_colon_connectors(pages))
 
     warnings = _apply_lint_ignore(warnings, pages, dirty_pages)
@@ -389,13 +391,34 @@ def _check_prose_quality(pages: list[ParsedPage]) -> list[str]:
 
 
 _HEDGE_RE = re.compile(
-    r"\b(?:may|might|could|would|can|tends? to|typically|generally|often"
+    r"\b(?:may|might|could|would|can(?!['’]t)|tends? to|typically|generally|often"
     r"|usually|in some cases|depending on|arguably|somewhat|relatively)\b",
     re.IGNORECASE,
 )
 MAX_HEDGES_PER_1000_WORDS = 15
+# Below this count one hedge word swings the rate by more than the threshold's own
+# precision, so the rate is not resolvable enough to act on.
+MIN_HEDGES_FOR_RATE = 8
 UNIFORM_MEAN_WORDS = 16
 UNIFORM_STDEV_WORDS = 6.5
+_BULLET_RE = re.compile(r"^\s*(?:[-*+] |\d+\. )")
+MAX_BULLET_SHARE = 0.60
+MIN_WORDS_FOR_BULLET_SHARE = 400
+
+
+def _bullet_share(body: str) -> tuple[int, float]:
+    """Return (non-code word count, fraction of those words sitting in list items)."""
+    bullet = other = 0
+    for ln in _strip_code(body).splitlines():
+        s = ln.strip()
+        if not s or s.startswith(("#", ">", "|")):
+            continue
+        if _BULLET_RE.match(ln):
+            bullet += _word_count_prose(s)
+        else:
+            other += _word_count_prose(s)
+    total = bullet + other
+    return total, (bullet / total if total else 0.0)
 
 
 def _prose_sentences(body: str) -> tuple[str, list[int]]:
@@ -408,6 +431,28 @@ def _prose_sentences(body: str) -> tuple[str, list[int]]:
     return prose, lengths
 
 
+def _check_heading_case(pages: list[ParsedPage]) -> list[str]:
+    """Warn on headings that are not in Title Case.
+
+    A heading passes when it is already a fixed point of `titlecase`, so the linter
+    and `scripts/wiki/headings.py` can never disagree about what conforms.
+    """
+    warnings: list[str] = []
+    for p in pages:
+        bad = [
+            m.group(1)
+            for ln in _FENCED_CODE_RE.sub("", p.body).splitlines()
+            if (m := re.match(r"^#{2,}\s+(.+?)\s*$", ln))
+            and titlecase(m.group(1)) != m.group(1)
+        ]
+        if bad:
+            warnings.append(
+                f"heading-case: {p.rel} ({len(bad)}x) — use Title Case, e.g. "
+                f"'{bad[0]}' -> '{titlecase(bad[0])}'"
+            )
+    return warnings
+
+
 def _check_prose_density(pages: list[ParsedPage]) -> list[str]:
     """Warn on per-page prose statistics that no single-phrase pattern can see.
 
@@ -417,12 +462,19 @@ def _check_prose_density(pages: list[ParsedPage]) -> list[str]:
     """
     warnings: list[str] = []
     for p in pages:
+        total, share = _bullet_share(p.body)
+        if total >= MIN_WORDS_FOR_BULLET_SHARE and share > MAX_BULLET_SHARE:
+            warnings.append(
+                f"bullet-dominance: {p.rel} ({share:.0%} of words in list items) — "
+                f"write the connections between the points as prose"
+            )
         prose, lengths = _prose_sentences(p.body)
         words = _word_count_prose(prose)
         if words < 80 or len(lengths) < 8:
             continue
-        rate = 1000 * len(_HEDGE_RE.findall(prose)) / words
-        if rate > MAX_HEDGES_PER_1000_WORDS:
+        hedges = len(_HEDGE_RE.findall(prose))
+        rate = 1000 * hedges / words
+        if hedges >= MIN_HEDGES_FOR_RATE and rate > MAX_HEDGES_PER_1000_WORDS:
             warnings.append(
                 f"hedge-density: {p.rel} ({rate:.0f} per 1000 words) — "
                 f"cut modals and qualifiers; state what happens"

@@ -26,7 +26,7 @@ next_review: '2026-07-11'
 
 A URL is a chain of narrowing handoffs. Each layer answers one question and passes the rest down. Scheme → host → port → path → query. Turning the host name into an IP is DNS's job. Resolution, TTL caching, and the `Host` header that picks a site when many share one IP all live in [[networking/dns]]. Everything else (TLDs, subdomains) follows from these handoffs.
 
-## URL anatomy at a glance
+## URL Anatomy at a Glance
 
 ```
   https://www.example.com:443/pixel?utm=foo
@@ -49,7 +49,7 @@ Each piece narrows the target:
 
 The **authority** (`host[:port]`, optionally `userinfo@host:port`) is the chunk between `://` and the next `/`.
 
-## Scheme vs protocol
+## Scheme vs Protocol
 
 Same word in different jobs:
 
@@ -63,7 +63,7 @@ For most schemes the two coincide (`https://` selects HTTP-over-TLS as the wire 
 
 Keep the layers straight. The parser cares about schemes; the network stack cares about protocols.
 
-## Host - subdomain, SLD, TLD
+## Host - Subdomain, SLD, TLD
 
 Read host names **right-to-left**. That mirrors how DNS delegates ownership.
 
@@ -85,7 +85,7 @@ A **host** in URL syntax can be:
 - an IP literal (`192.168.1.10`, `[2001:db8::1]`: IPv6 needs the brackets)
 - a special name (`localhost`, resolved locally to `127.0.0.1`)
 
-## Port: default ports and when the URL includes one
+## Port: Default Ports and When the URL Includes One
 
 A port is a 16-bit number (0–65535) the OS uses as a per-program mailbox.
 
@@ -109,7 +109,7 @@ When the URL omits the port, the browser uses the scheme default. The browser do
 
 Practical consequence. `http://localhost` connects to `:80`. If your dev server is on `:3000`, you get `ECONNREFUSED` because nothing's listening on `:80`. You must write `http://localhost:3000`.
 
-## Path and query
+## Path and Query
 
 After the authority comes:
 

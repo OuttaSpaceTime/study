@@ -31,7 +31,7 @@ There are four reserved query-parameter families (`fields`, `include`, `page`, `
 - Sort grammar is precise (`sort=-created,title`); filter grammar is reserved-but-undefined. Pick one and document it.
 - Custom query parameters MUST contain a non-`a-z` character (e.g. a `[`) to avoid colliding with future reserved names.
 
-## The envelope-vs-strategy split
+## The Envelope-vs-Strategy Split
 
 The recurring meta-rule across `page`, `filter`, and `sort`:
 
@@ -46,7 +46,7 @@ The split exists because uniform response envelopes buy you generic tooling (cac
 
 **One heuristic to remember:** the response shape is the contract; the URL grammar inside reserved families is yours.
 
-## Sparse fieldsets are per-type, not per-path
+## Sparse Fieldsets Are Per-Type, not Per-Path
 
 ```
 GET /articles?include=comments.author&fields[people]=name&fields[comments]=body
@@ -60,7 +60,7 @@ This is **intentional non-flexibility**. JSON:API is not GraphQL. When you need 
 
 > [Note] Authorization is not sparse fieldsets. `fields[]` is a *client preference*, not a *security boundary*. If a field must be hidden from non-admins, server-side authz must omit it before serialisation; do not rely on the client requesting it away.
 
-## Pagination URLs are opaque to the client
+## Pagination URLs Are Opaque to the Client
 
 The spec mandates the envelope:
 
@@ -79,7 +79,7 @@ The strategy is server-chosen. All three of these are spec-compliant:
 
 For cursor pagination, `links.last: null` is normal, because computing the last cursor requires a full count, which defeats the point of cursors. `prev` and `next` are the load-bearing keys.
 
-## Cursor vs offset under concurrent inserts
+## Cursor vs Offset Under Concurrent Inserts
 
 Why the strategy choice matters:
 
@@ -88,7 +88,7 @@ Why the strategy choice matters:
 
 Cursor wins for high-churn collections (feeds, comments, logs). Offset is acceptable for slowly-changing data and admin tables. The spec stays out of this choice because the right answer depends on the resource.
 
-## Sort is precise, filter is deliberately undefined
+## Sort Is Precise, Filter Is Deliberately Undefined
 
 **Sort grammar is exact:**
 
@@ -117,7 +117,7 @@ Three practical rules:
 2. **Whitelist filterable attributes.** Same DoS reasoning as sort. Forces you to think about which queries you want to support before clients depend on them.
 3. **Audit relationship-traversing filters.** `filter[author.name]=Dan` (dot paths through relationships) is convenient, but it commits you to a JOIN you must maintain and can N+1 silently.
 
-## Custom query parameters need a non-alpha character
+## Custom Query Parameters Need a Non-Alpha Character
 
 Per v1.1, any query parameter your server defines outside the reserved families MUST contain at least one non-`a-z` character. This is to avoid colliding with future reserved family names.
 

@@ -34,7 +34,7 @@ next_review: '2026-07-25'
 - **Two kinds of parsing.** Wire-to-domain lives once at the data-access boundary; domain-to-display lives in the presentation layer.
 - **Interceptors and guards detect and delegate.** They never compute view-models.
 
-## The placement axis: how much a piece depends on
+## The Placement Axis: How Much a Piece Depends on
 
 The four pieces of the example feature are not just different topics, they form a gradient by *how much each depends on*:
 
@@ -51,7 +51,7 @@ The four pieces of the example feature are not just different topics, they form 
 
 The placement rule follows. **Push logic down to the layer that depends on the least it can get away with.** The bottom layer has the least coupling to the framework, so it is the cheapest to change, the easiest to reuse, and the fastest to test (no `TestBed`, no providers). The canonical Angular style-guide instruction, "keep components presentation-focused, refactor complex logic out into pure functions or services," is this rule applied.
 
-## Dependency direction is one-way
+## Dependency Direction Is One-Way
 
 Higher layers import lower ones. Lower layers never import upward, and two layers never import each other.
 
@@ -59,7 +59,7 @@ The reason is a reasons-to-change argument (see [[software-design/splitting-resp
 
 This is not etiquette. In Nx the four library types (`feature`, `ui`, `data-access`, `util`) carry a strictly one-directional allowed-import list, and `@nx/enforce-module-boundaries` fails the build when a `ui` or `util` layer imports from a `feature`. The machine guards the arrow so humans cannot quietly reverse it.
 
-## Smart vs dumb is about data access, not tree position
+## Smart vs Dumb Is About Data Access, not Tree Position
 
 A **smart** (container) component reaches out for its data. It injects a service, holds state, handles user intent. A **dumb** (presentational) component receives everything through `@Input` and reports back through outputs, and injects nothing.
 
@@ -67,7 +67,7 @@ The common trap is to key this on size or tree depth ("top-level is smart, neste
 
 > [Note] Practitioners debate whether smart components may sit deep in the tree (to avoid prop-drilling through many dumb layers). Keying the split on data-source access rather than tree position resolves it. A component that injects a service is smart wherever it sits.
 
-## Where the two kinds of parsing live
+## Where the Two Kinds of Parsing Live
 
 "Parsing" hides two different jobs with different homes.
 
@@ -76,13 +76,13 @@ The common trap is to key this on size or tree depth ("top-level is smart, neste
 
 The example feature blurred these. The service stored the raw `HttpErrorResponse` and both the container and the child re-derived display rows from it (the double-parse). That was a deliberate trade. Storing the raw framework type keeps derivation local to each view (**locality of behaviour**), but it means every derive site depends on Angular's HTTP types, so a change to `HttpRequest.urlWithParams` is felt in several components. The **isolation** alternative parses once at the boundary into an app-owned model, so only the boundary feels such a change, at the cost of a layer of indirection. Both are defensible. The point is to make the call on purpose and note it in the review.
 
-## Interceptors and guards detect and delegate
+## Interceptors and Guards Detect and Delegate
 
 Interceptors and route guards are cross-cutting plumbing at the very top of the stack. Their job is limited to **detect and delegate**. Catch the request or navigation, decide whether it applies, and hand off. A functional interceptor is literally `(req, next) => next(req)`, so the shape *is* delegation.
 
 Because they depend on the whole pipeline, they must not compute or build view-models. The example's original interceptor parsed the response body and reshaped the request into display structures. That is the smell. The fix pushed the parsing down into a pure function and cut the interceptor to `errorNotifications.notify(error, request)`. If you catch an interceptor, guard, or resolver building a view-model, the logic wants to move down into a service or a pure function.
 
-## Deciding where new code goes
+## Deciding Where New Code Goes
 
 Ask, in order, and stop at the first yes:
 
@@ -102,7 +102,7 @@ The smells that say a boundary is wrong:
 - A `shared` or `util` module imports from a `feature`. It is misfiled, or the arrow is reversed.
 - You cannot describe a unit's job in one sentence without "and". It has two responsibilities.
 
-## Tradeoffs and gotchas
+## Tradeoffs and Gotchas
 
 - **Do not pre-split.** The gradient is the target shape, not a mandate. A 30-line feature can be one component and one service. Apply the split when a file starts doing two jobs or a spec starts fighting you, not before. (consensus)
 - **Locality vs isolation is unsettled.** Keeping derivation next to the view (locality) versus parsing once at the boundary (isolation) is a real trade with no universal winner. Decide per feature and by how volatile the wire format is. (consensus on the trade, contested on the default)

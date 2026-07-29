@@ -30,27 +30,27 @@ Delegating to an AI agent removes the requirement to hold a system's state in yo
 - Parallel agent threads look like a pure speed win on paper, but each thread still needs a human to reload its context before reviewing it. That reload cost tends to cancel out the apparent time saved.
 - A workable floor. Do not open a second feature or a second agent thread until you can read through the current change and run its tests yourself.
 
-## Why fast feedback from delegating is addictive
+## Why Fast Feedback from Delegating Is Addictive
 
 Code volume outruns understanding volume by roughly an order of magnitude. Addy Osmani puts rough numbers on it. AI can generate on the order of 140 to 200 lines of code per minute, while a human comprehends something closer to 20 to 40 lines per minute in the same span. That gap compounds silently, because a green test suite gives no signal about the behaviors nobody wrote a test for, so confidence rises even as real understanding falls behind.
 
-## What passive delegation costs, the map you stop building
+## What Passive Delegation Costs, the Map You Stop Building
 
 An Anthropic study Osmani cites found AI-assisted developers scored 17 percentage points lower on codebase comprehension quizzes than developers who wrote the code themselves, worst specifically on debugging tasks. The gap was not universal, though. Developers who engaged with the AI actively, asking why a piece of code works, probing tradeoffs, requesting walkthroughs, did not show the drop. Passive delegation, accepting output without interrogating it, was the actual driver, not AI use itself.
 
 See [[software-design/judging-abstractions]] for the review-specific version of this cost, lost provenance and why AI-generated seams are harder to catch, and [[software-design/software-complexity]] for why a working diff carries no signal about whether it hides accidental complexity.
 
-## The context-switch tax that undoes parallel delegation
+## The Context-Switch Tax That Undoes Parallel Delegation
 
 Running several agent threads in parallel looks like a pure speed win on paper, three features advancing at once instead of one. In practice each thread still needs a human to reload its context before reviewing or steering it, and that reload is not free. The tax shows up as the same minutes spent re-orienting to thread B that were supposedly saved by not waiting on thread A, and it recurs every time attention switches back. The apparent parallelism gain and the real context-switch cost tend to cancel out, which is why practitioners who do this for a living converge on small, sequential, human-directed steps over large autonomous or parallel runs. [Simon Willison describes exactly this shape](https://simonw.substack.com/p/agentic-engineering-patterns): hundreds of small steered prompts rather than one large parallel run, specifically to keep review cost bounded.
 
-## A checkpoint rule, read and test before starting the next thread
+## A Checkpoint Rule, Read and Test Before Starting the Next Thread
 
 A workable boundary follows from the tax above. Do not open a second feature or a second agent thread until you can read through the current change and run its tests yourself. This is not a claim that reading and testing catch everything, Ousterhout's unknown unknowns and the obscurity point on [[software-design/software-complexity]] still apply. It is a floor, a minimum act of engagement that keeps the map current before it goes stale.
 
 Willison's related practice follows the same shape. Request a structured walkthrough of anything vibe-coded before trusting it, and keep automated tests non-negotiable, written before generation when possible, so the check exists independent of whether you remember to run it manually. The mechanism worth naming is this. It is not about slowing down for its own sake. The context-switch tax above means the seemingly fast parallel path is frequently not actually faster once the reload cost is counted, so the checkpoint and the speed argument point the same direction.
 
-## Tradeoffs and gotchas
+## Tradeoffs and Gotchas
 
 - Willison and Osmani argue full delegation is fine if verification, tests, specs, structured walkthroughs, stays in place and engagement is active rather than passive. Other practitioners, Max Woolf among them, go further and reserve specific categories of work for manual writing regardless of how good the tooling is, treating the boundary as a hard category rather than only a rigor question. (contested)
 - Handing an agent bounded, well-scoped tasks, the way you would hand a junior engineer a ticket, plus review, is a recurring practitioner pattern. The durable human skill in that pattern is task decomposition and checkpoint design, not prompting technique. (consensus, recurring across multiple 2026 practitioner threads)

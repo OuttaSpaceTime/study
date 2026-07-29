@@ -19,7 +19,7 @@ flashcard_ids: []
 
 Nested resources produce long URLs like `/posts/:post_id/comments/:id`. Once you have the comment's `:id`, the parent prefix is redundant. `shallow: true` flattens the routes that don't need the parent.
 
-## How shallow routing splits member vs collection routes
+## How Shallow Routing Splits Member vs Collection Routes
 
 ```ruby
 resources :posts do

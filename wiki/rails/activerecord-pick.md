@@ -23,7 +23,7 @@ flashcard_ids: []
 `pick(*columns)` fetches column values from the **first matching row** with `LIMIT 1`.
 Returns a scalar (one column) or flat array (multiple columns). Returns `nil` on no match.
 
-## What pick returns and when it stops scanning
+## What Pick Returns and When It Stops Scanning
 
 ```ruby
 # single column → scalar
@@ -39,7 +39,7 @@ User.where(active: false).pick(:email)
 # => nil
 ```
 
-## vs pluck
+## vs Pluck
 
 | | `pick` | `pluck` |
 |---|---|---|
@@ -49,7 +49,7 @@ User.where(active: false).pick(:email)
 
 `pick` is equivalent to `pluck(...).first` but more efficient. The database stops after one row rather than fetching all matching rows into Ruby.
 
-## Raw SQL expressions
+## Raw SQL Expressions
 
 Use `Arel.sql` to pass SQL expressions instead of column names:
 
@@ -62,7 +62,7 @@ Without `Arel.sql`, Rails quotes the string as a column name (`SELECT "SUM(point
 
 Prefer built-in AR methods over `Arel.sql` when they exist. `pick(Arel.sql("COUNT(*)"))` is redundant since `scope.count` is cleaner and equivalent.
 
-## Multiple aggregates in one query
+## Multiple Aggregates in One Query
 
 `pick` shines when you need several aggregate values in a single DB round-trip:
 
@@ -87,7 +87,7 @@ message_count = row["message_count"]
 unread_count  = row["unread_count"]
 ```
 
-## nil on no match and chaining with scopes
+## nil on No Match and Chaining with Scopes
 
 - Returns `nil` on no match: guard before calling methods on the result
 - Chainable with scopes, `where`, `order`: `LIMIT 1` appends to the full query

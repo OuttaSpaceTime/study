@@ -26,7 +26,7 @@ next_review: '2026-07-18'
 - `filter(Boolean)` does not get an inferred predicate. Use `x => x != null`.
 - Checking `arr[0]` and asserting about the whole array is unsound. A `.every` check is sound and narrows the array on its own.
 
-## User-defined type guards are unchecked assertions
+## User-defined Type Guards Are Unchecked Assertions
 A function returning `param is T` narrows its argument to `T` in the true branch. TypeScript takes the `is T` claim on faith and never verifies the body actually proves it.
 
 ```ts
@@ -38,7 +38,7 @@ function isNotif(item: Item): item is Notif {
 
 That is the power and the danger. Guards force narrowing that control-flow analysis cannot derive, for example a nested discriminant (see [[typescript/discriminated-union-narrowing]]). In exchange you take on the correctness the compiler normally guarantees.
 
-## Inferred type predicates and the four conditions
+## Inferred Type Predicates and the Four Conditions
 Since TypeScript 5.5 a function that returns a boolean is given an inferred type predicate when ALL of these hold.
 
 1. No explicit return type or predicate annotation.
@@ -52,7 +52,7 @@ const isNum = (x: unknown) => typeof x === 'number' // inferred as `x is number`
 
 Break any condition (add a second return, annotate `: boolean`, mutate the parameter) and inference silently reverts to `boolean` with no error. That fragility is why many teams still write guards explicitly.
 
-## filter and every narrow, filter(Boolean) does not
+## filter and Every Narrow, filter(Boolean) Does not
 An inferred predicate composes with array methods that carry a predicate overload.
 
 ```ts
@@ -68,7 +68,7 @@ if (xs.every((e) => e.type === 'n')) {
 
 The famous trap is `filter(Boolean)`. `Boolean` is not itself a predicate, so the result stays `(T | null)[]`. Falsy-but-valid values (`0`, `''`, `false`) break the "false implies not-T" half of the predicate contract. Write `xs.filter((x) => x != null)` instead.
 
-## Unsound shortcut versus sound check
+## Unsound Shortcut Versus Sound Check
 A guard that inspects only `entries[0]` and asserts about the whole array is unsound. It promises homogeneity it never checked.
 
 ```ts
@@ -82,7 +82,7 @@ TypeScript can never infer this promise, because it is false in general and infe
 
 Make it sound with `.every` and the guard becomes unnecessary. An inline `if (es.every((e) => e.type === 'n'))` narrows `es` to `N[]` on its own (inferred predicate plus the `every` overload). The `arr[0]` version survives only as an O(1) shortcut that trades soundness for speed.
 
-## Generic guards with Extract
+## Generic Guards with Extract
 When you need the same narrowing across several members, one generic guard beats N hand-written ones.
 
 ```ts

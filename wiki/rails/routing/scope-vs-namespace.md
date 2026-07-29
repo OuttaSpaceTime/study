@@ -87,7 +87,7 @@ resources :posts, path: :articles      # changes URL segment
 resources :posts, as: :blog_posts      # changes helper name
 ```
 
-## The controller: Option
+## The Controller: Option
 
 `controller:` pins all routes to a specific controller, unlike `module:` which sets the namespace. It is supported by:
 
@@ -120,7 +120,7 @@ get "/users/:id", controller: "users", action: :show
 
 Use directory notation for namespaced controllers (`"admin/posts"` not `"Admin::Posts"`).
 
-## When to use scope vs namespace vs module
+## When to Use scope vs namespace vs module
 
 - **`namespace`**: you want all three knobs (typical for admin panels, API versions)
 - **`scope`**: you want to change one knob without the others

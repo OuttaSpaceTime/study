@@ -22,13 +22,13 @@ flashcard_ids: []
 
 Angular's change detection determines which DOM nodes need updating. The mechanism has two distinct phases. The trigger phase decides when CD runs. The check phase decides what CD evaluates.
 
-## Zone.js: what triggers CD and what it cannot know
+## Zone.js: What Triggers CD and What It Cannot Know
 
 Zone.js patches browser async APIs at startup. Patched APIs include `setTimeout`, `setInterval`, `addEventListener`, `Promise.then`, and XHR callbacks. When any patched task finishes, Zone notifies Angular to schedule a CD cycle.
 
 Zone.js triggers CD unconditionally after every task, whether or not anything changed. It cannot know what your code did inside the task. Angular is reactive to browser events, not to data changes.
 
-## Default strategy: full DFS tree walk every cycle
+## Default Strategy: Full DFS Tree Walk Every Cycle
 
 `ChangeDetectionStrategy.Default` (CheckAlways) visits every component in the tree on every CD cycle, depth-first top-to-bottom.
 
@@ -36,7 +36,7 @@ At each component, Angular re-evaluates every template binding expression and co
 
 Mutation works fine under Default. `this.user.name = 'Bob'` in a click handler updates the DOM because `user.name` evaluates to the new string value regardless of the object reference.
 
-## OnPush: four conditions that dirty a component
+## OnPush: Four Conditions That Dirty a Component
 
 `ChangeDetectionStrategy.OnPush` (CheckOnce) skips a component and its entire subtree unless the component is marked dirty. A component becomes dirty when any of four conditions are met:
 
@@ -47,7 +47,7 @@ Mutation works fine under Default. `this.user.name = 'Bob'` in a click handler u
 
 When a component is marked dirty, Angular also marks every ancestor up to root dirty, so the tree walk can reach the dirty leaf.
 
-## Mutation on @Input: why the child's view goes stale
+## Mutation on @Input: Why the Child's View Goes Stale
 
 The `@Input` dirty trigger checks `===` on the bound expression, not on individual properties. If a parent mutates a property on an object it passes down:
 
@@ -66,7 +66,7 @@ this.user = { ...this.user, name: 'Bob' };
 
 The parent's own bindings still update under Default, because Default always re-evaluates template expressions directly. `{{ user.name }}` in the parent yields the new string, which differs from the rendered value. The `===` gate only applies to the child's `@Input` dirty-marking, not to how the parent evaluates its own bindings.
 
-## setTimeout and manual subscribe silently miss OnPush
+## setTimeout and Manual Subscribe Silently Miss OnPush
 
 **setTimeout inside an OnPush component:**
 

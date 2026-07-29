@@ -34,7 +34,7 @@ How PostgreSQL handles two background jobs racing to insert the same row, what `
 - Rails: `create!` / `insert_all!` raise on conflict, `insert_all` does `DO NOTHING`, `upsert_all` does `DO UPDATE`.
 - `insert_all` / `upsert_all` skip validations and callbacks. DB constraints, not Ruby validations, are the guarantee.
 
-## The race between two concurrent inserts
+## The Race Between Two Concurrent Inserts
 
 Two jobs run the identical statement a millisecond apart against a table with a unique index on `(user_id, event_key)`:
 
@@ -80,7 +80,7 @@ DO UPDATE SET count = event_counts.count + excluded.count;
 
 Two more rules worth knowing. `DO UPDATE` **requires** a `conflict_target`, while `DO NOTHING` may omit it (then any usable constraint applies). And a *partial* unique index can only be the arbiter if the statement's predicate matches or implies the index `WHERE`. See [[sql/nullable-columns]] for partial unique indexes.
 
-## RETURNING returns only touched rows
+## RETURNING Returns Only Touched Rows
 
 `RETURNING` gives back only the rows actually **inserted or updated**, not the rows your statement skipped.
 
@@ -98,7 +98,7 @@ ids = Event.insert_all(
 
 Because `insert_all` emits `ON CONFLICT DO NOTHING`, the conflicting `signup` row is skipped and so is absent from `RETURNING`. **Never assume `returning` gives one row per input row.** If you need the IDs of the skipped rows too, re-`SELECT` them by their keys. `upsert_all` (which does `DO UPDATE`) does not have this hole in the same way, because conflicting rows are touched and therefore returned.
 
-## Rails create!, insert_all, insert_all!, upsert_all
+## Rails Create!, insert_all, insert_all!, upsert_all
 
 Each Rails write maps onto a specific SQL conflict behavior:
 
@@ -118,7 +118,7 @@ Options on the bulk methods:
 - `returning:` controls the `RETURNING` columns (PostgreSQL and SQLite only; defaults to the primary key, `false` to omit).
 - `record_timestamps:` Since Rails 7.0, `created_at` / `updated_at` are set automatically by default for these methods. Before 7.0 you had to pass them yourself.
 
-## Bulk methods bypass validations and callbacks
+## Bulk Methods Bypass Validations and Callbacks
 
 `insert_all` and `upsert_all` are fast because they talk straight to the database with one round-trip and no per-row model instantiation. That speed comes from skipping the model layer entirely.
 
@@ -135,7 +135,7 @@ The `presence` validation does **not** fire, the `before_create` callback does *
 
 This is the thesis of the whole topic. Once you bypass the ORM, application-level guarantees evaporate, so **integrity has to live at the database level** through unique indexes, `NOT NULL`, check and foreign-key constraints (see [[rails/foreign-keys]]). A Ruby validation is a UX nicety; the constraint is the guarantee.
 
-## find_or_create_by is not atomic
+## find_or_create_by Is not Atomic
 
 The idiom people actually write looks safe but is not:
 
@@ -157,7 +157,7 @@ Once the failure is catchable you have two clean responses:
 
 Both are only *possible* because the constraint exists.
 
-## Tradeoffs and gotchas
+## Tradeoffs and Gotchas
 
 - **"No locks" is imprecise (contested).** Practitioner write-ups sometimes sell upsert as lock-free ([coorasse](https://coorasse.com/blog/from-three-queries-to-one-with-upsert/)). The accurate claim is that there is no *application-level* lock and no retry loop. PostgreSQL still briefly waits on the uncommitted conflicting row at the row level ([index uniqueness checks](https://www.postgresql.org/docs/current/index-unique-checks.html)).
 - **Idempotent jobs via a unique key (consensus).** At-least-once delivery means a job *will* sometimes re-run. A unique constraint on an idempotency key plus `upsert` or `DO NOTHING` is atomic at the database, unlike a Redis guard clause, which has its own check-then-act race.

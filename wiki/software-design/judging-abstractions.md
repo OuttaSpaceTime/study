@@ -34,7 +34,7 @@ The reviewer's hardest calls are not bugs. They are seams. Is this the right abs
 - **All non-trivial abstractions leak** (Spolsky). An abstraction saves you time working, not time learning. When it leaks you must understand the layer beneath anyway.
 - AI codegen amplifies wrong and premature abstractions, and strips the provenance you would normally use to catch them.
 
-## The wrong-abstraction signal
+## The Wrong-Abstraction Signal
 
 The signal is not "this function is long" or "this has many `if`s". A parser legitimately branches a lot. The specific tell is **flag or boolean parameters that callers pass in, with the function branching on them**.
 
@@ -60,7 +60,7 @@ Each flag is a fingerprint of a caller who reused `send_notification` because it
 
 Reviewer's move. When flags accrete through shared code, do not ask "is this flag correct?". Ask "how many *unrelated concerns* have been merged here?". In the example, `sms` is channel, `urgent` is message formatting, `skip_if_unsubscribed` is delivery policy. Three concerns, one function. Splitting by the most visible axis (channel) absorbs only one of them.
 
-## The remedy is re-inline, then re-derive
+## The Remedy Is Re-Inline, Then Re-Derive
 
 Once you have decided the abstraction is wrong, the instinct is to refactor *forward* into a cleaner class hierarchy. That is a trap. The only map you have of "what belongs together" is the tangled function itself, and you already agreed it is distorted. Carving a new design from a distorted template inherits the bad assumptions.
 
@@ -75,7 +75,7 @@ The barrier is psychological, not technical. The more elaborate and battle-scarr
 
 > [Note] Metz's maxim is conditional. It applies once the abstraction is *proven wrong*. It does not supersede DRY and is not a licence to copy-paste. It bounds when DRY applies.
 
-## Rule of Three and the two motives for extraction
+## Rule of Three and the Two Motives for Extraction
 
 There are two different reasons to pull code into a function, and they have different thresholds.
 
@@ -86,7 +86,7 @@ The number is not superstition. Three concrete instances give you enough *variat
 
 A practitioner altitude check from Arpit Bhayani is the **name test**. If you cannot give the extracted thing a clear, honest name, it is not a clear abstraction yet. The Rule of Three is Fowler's popularization in *Refactoring* (1999), attributed there to Don Roberts. It is a heuristic for *when*, not an enforced threshold.
 
-## Leaky abstractions and the working-vs-learning cost
+## Leaky Abstractions and the Working-vs-Learning Cost
 
 Joel Spolsky's Law of Leaky Abstractions states that **"all non-trivial abstractions, to some degree, are leaky."** Leaking is not a quality defect. Even a well-chosen abstraction leaks, because it sits on a layer it cannot fully hide.
 
@@ -100,7 +100,7 @@ That yields the portable cost formula. An abstraction **saves you time working**
 
 This is independent of the wrong-abstraction idea. The Rule of Three answers *when to extract*. The Law of Leaky Abstractions answers *why no abstraction is ever perfect*. Do not conflate them.
 
-## Why this bites harder in AI-generated code
+## Why This Bites Harder in AI-generated Code
 
 You said reviewing AI output is where subtle design problems slip past you. Two mechanisms, both reported by practitioners (treat as field observation, not settled law).
 
@@ -110,7 +110,7 @@ You said reviewing AI output is where subtle design problems slip past you. Two 
 
 The defense is boring and real. Slow down specifically at seams. Ask the "couldn't you just...?" question the model never asks itself.
 
-## Tradeoffs and gotchas
+## Tradeoffs and Gotchas
 
 - **The maxim is contested as an absolute.** Jason Swett argues "duplication cheaper than wrong abstraction" is a false binary. He says the better move for an over-fit abstraction is often to **split it into two** rather than re-inline to duplication, and that reluctance to refactor is an organizational symptom (thin tests, unclear ownership) fixable by tests and collective ownership, not by tolerating duplication. This refines the timing heuristic. It does not contradict Metz, whose claim is explicitly conditional on the abstraction being wrong. (contested)
 - **Root-cause of the sunk-cost trap.** Metz frames the reluctance to delete as inherent psychology. Swett frames it as an org problem. Both diagnoses are live. (contested)

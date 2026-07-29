@@ -33,13 +33,13 @@ GROUP BY user_id;
 --  2       | {apple}
 ```
 
-## What array_agg collects and the implicit single-group rule
+## What array_agg Collects and the Implicit Single-Group Rule
 
 Aggregates collapse N rows into 1 row per group. `SUM`, `AVG`, `COUNT` collapse to a scalar. `array_agg` collapses to a **collection**. It is the aggregate that *doesn't throw away the individual values*.
 
 This lets a single query return both "the group" and "its members" without a second round-trip or client-side grouping.
 
-## No GROUP BY means one implicit group
+## No GROUP BY Means One Implicit Group
 
 Like every aggregate, `array_agg` without `GROUP BY` treats the whole (possibly filtered) table as a single group and returns one row:
 
@@ -48,7 +48,7 @@ SELECT array_agg(product) FROM orders;
 -- => {apple, pear, apple}    -- one array containing every row's product
 ```
 
-## Ordering is non-deterministic by default
+## Ordering Is Non-Deterministic by Default
 
 The array reflects whatever order the executor happened to emit rows in. That order can shift with query plan changes (new index, updated stats), parallel scan chunking, version upgrades, or primary vs. replica. So an ordering that looks fine locally can flip in production.
 
@@ -60,7 +60,7 @@ array_agg(product ORDER BY created_at)
 
 This ordering is per-aggregate and independent of any outer `ORDER BY` on the query.
 
-## NULLs are included by default
+## NULLs Are Included by Default
 
 Unlike `SUM`/`AVG`, which ignore NULLs, `array_agg` includes them:
 
@@ -74,7 +74,7 @@ Filter them out with `FILTER`:
 array_agg(product) FILTER (WHERE product IS NOT NULL)
 ```
 
-## Empty input returns NULL, not {}
+## Empty Input Returns NULL, not {}
 
 > [Warning] When an aggregate receives zero input rows (empty group, or everything filtered out), it returns **`NULL`**. Not an empty array. `COUNT` is the only aggregate that returns `0` on empty input.
 
@@ -102,7 +102,7 @@ COALESCE(
 
 The explicit `::text[]` cast is required. Postgres cannot infer the element type of a bare `ARRAY[]`.
 
-## DISTINCT + ORDER BY must share the expression
+## DISTINCT + ORDER BY Must Share the Expression
 
 When combining `DISTINCT` and `ORDER BY` inside `array_agg`, the sort expression must match the distinct expression:
 
@@ -135,7 +135,7 @@ array_agg(product)
 jsonb_agg(jsonb_build_object('product', product, 'at', created_at))
 ```
 
-## Canonical shape for "safe" usage
+## Canonical Shape for "safe" Usage
 
 When order, NULLs, duplicates, and empty input all matter:
 

@@ -53,7 +53,7 @@ So on a current browser the "plaintext first request on first visit" is increasi
 
 **HSTS preload is still stronger.** HTTPS-First is *best-effort with fallback*. If HTTPS fails, it downgrades to HTTP. A preloaded HSTS entry is *strict*. It hard-refuses HTTP entirely, with no fallback. Browser HTTPS-First narrows the attack surface; preload closes it.
 
-## The HSTS header fields: max-age, includeSubDomains, preload
+## The HSTS Header Fields: Max-Age, includeSubDomains, Preload
 
 ```
 Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
@@ -65,7 +65,7 @@ Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
 
 The header **must be served over HTTPS**. Browsers ignore it over HTTP (otherwise an attacker could forge it).
 
-## TOFU Problem (Trust On First Use)
+## TOFU Problem (Trust on First Use)
 
 HSTS only protects after the browser has seen the header once. The very first visit is still vulnerable. The browser doesn't yet know to upgrade. This gap is the TOFU problem.
 
@@ -99,7 +99,7 @@ The middle hop lets `example.com` serve its own HSTS header. This reduces the vu
 2. **HSTS with `max-age` + `includeSubDomains`**. Protects returning visitors
 3. **`preload`**. Protects first-time visitors
 
-## What the HSTS header looks like on a real site
+## What the HSTS Header Looks Like on a Real Site
 
 The header is just a plain response header on an HTTPS response. No middleware magic at the protocol level. Inspecting a real site:
 

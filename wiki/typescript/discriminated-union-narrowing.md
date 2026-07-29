@@ -25,7 +25,7 @@ next_review: '2026-07-18'
 - CFA does not recurse. A nested discriminant like `item.attributes.kind` never narrows the parent `item`.
 - To fix a nested case soundly, hoist the discriminant to the top level or narrow the inner object directly. A `x is T` guard also works but is an unchecked assertion.
 
-## Control-flow analysis and what it narrows
+## Control-flow Analysis and What It Narrows
 CFA is how TypeScript refines a variable's type as it follows the code. Inside a branch guarded by `typeof`, `===`, `instanceof`, `in`, or a truthiness check, the variable is narrowed to what the check proves.
 
 ```ts
@@ -38,7 +38,7 @@ function f(x: string | number) {
 
 CFA only ever concludes what it can prove from the checks in front of it. That single property explains every limitation below.
 
-## A discriminated union needs a top-level literal discriminant
+## A Discriminated Union Needs a Top-Level Literal Discriminant
 A union is discriminated when its members share a property whose value is a distinct literal per member. The `===` check can then eliminate members.
 
 ```ts
@@ -65,7 +65,7 @@ This is the trap behind a JSON:API generic that declares `type: string`. Paramet
 
 Since TypeScript 5.5 an inline `arr.filter(e => e.type === 'notif')` narrows the result to the matching member on its own, because the callback gets an inferred type predicate. That only works once the union is genuinely discriminated. See [[typescript/type-guards-and-inferred-predicates]].
 
-## Nested discriminants do not narrow the parent union
+## Nested Discriminants Do not Narrow the Parent Union
 Discriminant analysis looks only at the **direct** properties of the union members. It does not dig into nested objects, so a discriminant one level down never narrows the parent.
 
 ```ts
@@ -82,7 +82,7 @@ if (item.attributes.itemType === 'ml_notification') {
 
 This was verified by compiling under both `--strict` and non-strict. The nested check fails to narrow in both modes, so nesting itself is the blocker, not the compiler flags.
 
-## Cleaner fixes for a nested discriminant
+## Cleaner Fixes for a Nested Discriminant
 Ranked from most to least sound.
 
 1. **Hoist a top-level literal discriminant.** Give each member a direct literal property and narrow on that. It makes the object a real discriminated union with no assertion and no guard. Best when you own the type.
@@ -91,7 +91,7 @@ Ranked from most to least sound.
 
 Two things do not work. Extracting the discriminant **value** to a local (`const k = item.attributes.itemType`) narrows `k`, never `item`. `satisfies` does nothing for narrowing, it is an assignability check only.
 
-## strictNullChecks does not defeat a clean boolean discriminant
+## strictNullChecks Does not Defeat a Clean Boolean Discriminant
 A boolean literal (`deleted: false | true`) is a perfectly good discriminant, and a clean union narrows on it with or without `strictNullChecks`.
 
 ```ts

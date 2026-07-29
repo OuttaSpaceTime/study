@@ -23,7 +23,7 @@ flashcard_ids: []
 
 Signals are Angular's reactivity primitive; RxJS observables model async workflows. They are complementary, and `toSignal()` is the bridge that lets observables drive rendering through the signal path.
 
-## Signals push-pull model vs Zone.js passive patching
+## Signals Push-Pull Model vs Zone.js Passive Patching
 
 A signal pushes invalidation. Calling `.set()` notifies all registered consumers that the value changed. Consumers pull the current value when they read it. The model is push-pull. The consumer is told when to re-read and pulls the value on demand.
 
@@ -31,7 +31,7 @@ Zone.js is passive. It patches async APIs and fires CD after every task, whether
 
 With signals, your code owns the trigger. `signal.set(x)` is the trigger. No Zone patching required.
 
-## toSignal(): observable-to-signal bridge and what it buys
+## toSignal(): Observable-to-Signal Bridge and What It Buys
 
 `toSignal()` wraps an observable in a signal at the component boundary:
 
@@ -48,7 +48,7 @@ users  = toSignal(this.users$);     // signal at the template boundary
 
 This keeps RxJS for async workflows and gives signals the rendering boundary.
 
-## Signals vs async pipe: when to use which
+## Signals vs Async Pipe: When to Use Which
 
 | | `async` pipe | `toSignal()` |
 |---|---|---|

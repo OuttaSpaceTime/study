@@ -25,13 +25,13 @@ You compose streams with operators rather than writing imperative control flow. 
 
 See [The Introduction to Reactive Programming You've Been Missing](https://gist.github.com/staltz/868e7e9bc2a7b8c1f754) by André Staltz.
 
-## Reactive programming definition: streams as first-class values
+## Reactive Programming Definition: Streams as First-Class Values
 
 A stream emits three types of events. It emits a **value** (next), an **error**, or a **completion** signal. You attach observers to react to each type asynchronously.
 
 The core shift is to move from pulling data when you need it (calling a function, reading a variable) to declaring how data transforms as it flows through. Push-based rather than pull-based.
 
-## Stream anatomy: values, errors, and completion over time
+## Stream Anatomy: Values, Errors, and Completion over Time
 
 A stream can be visualized on a timeline:
 
@@ -43,7 +43,7 @@ A stream can be visualized on a timeline:
 
 Each event arrives asynchronously. You handle each type with a separate callback. Pass `next`, `error`, and `complete` handlers to `subscribe`. The contract governing these is in [[reactive/observables]].
 
-## Core operator categories: transform, filter, combine, flatten
+## Core Operator Categories: Transform, Filter, Combine, Flatten
 
 Operators are pure functions that take a stream and return a new stream.
 
@@ -63,7 +63,7 @@ Operators are pure functions that take a stream and return a new stream.
 **Flatten:**
 - `flatMap` / `mergeMap(fn)`: for each value, call fn to get a new stream, then merge all resulting streams into one
 
-## flatMap/mergeMap: collapsing a stream of streams
+## flatMap/mergeMap: Collapsing a Stream of Streams
 
 When mapping each value to an Observable, `map` produces a stream-of-streams (metastream). `flatMap` collapses it by subscribing to each inner observable and merging the results.
 
@@ -81,7 +81,7 @@ Related variants:
 - `concatMap`: queues inner observables; waits for each to complete before starting the next
 - `exhaustMap`: ignores new values while an inner observable is active
 
-## Mental model shift from imperative to reactive
+## Mental Model Shift from Imperative to Reactive
 
 In imperative code you write "when X happens, do Y, then check Z."
 

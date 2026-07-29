@@ -20,7 +20,7 @@ allow_orphan: true
 
 Entry point for the JSON:API reference set. The sub-pages cover document structure, query conventions, the meta-vs-resource decision, and operational details. This page carries the mental model so the others stay focused on practical reference.
 
-## The mental model, graph protocol wearing REST clothes
+## The Mental Model, Graph Protocol Wearing REST Clothes
 
 Every JSON:API response is **a slice of a graph**, not a record. The response envelope reflects that.
 
@@ -44,7 +44,7 @@ Once that frame clicks, every other rule falls out of it:
 
 JSON:API takes REST seriously. It commits to one envelope shape so generic clients (caching layers, deserialisers, dev tools) can work uniformly across any compliant API.
 
-## The envelope-vs-strategy throughline
+## The Envelope-vs-Strategy Throughline
 
 The recurring meta-rule across the spec:
 
@@ -55,7 +55,7 @@ This split is deliberate. Uniformity buys generic tooling where it pays off (res
 
 **One heuristic that decides most JSON:API design questions:** the response shape is the contract; the URL grammar inside reserved families is yours.
 
-## When to reach for JSON:API vs GraphQL vs plain REST
+## When to Reach for JSON:API vs GraphQL vs Plain REST
 
 | Axis              | JSON:API                                           | GraphQL                                              | Plain REST                |
 | ----------------- | -------------------------------------------------- | ---------------------------------------------------- | ------------------------- |

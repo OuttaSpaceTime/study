@@ -956,6 +956,38 @@ class TestProseQuality:
         assert prose == [], f"expected no prose-quality warnings, got: {warnings}"
 
 
+class TestHeadingCase:
+    def _page(self, wiki_dir: Path, heading: str) -> list[str]:
+        _write_page(wiki_dir, "git/heads.md", textwrap.dedent(
+            _PROSE_PAGE_TEMPLATE.format(title="heads", body=f"## {heading}")
+        ))
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        return [w for w in warnings if "heading-case" in w]
+
+    @pytest.mark.parametrize("heading", [
+        "a heading in sentence case",
+        "Mostly Title Case but one lowercase word",
+    ])
+    def test_sentence_case_heading_flagged(self, wiki_dir: Path, heading: str):
+        """Headings not in Title Case → heading-case warning."""
+        assert self._page(wiki_dir, heading), f"expected heading-case for {heading!r}"
+
+    @pytest.mark.parametrize("heading", [
+        "A Heading in Title Case",
+        "not as a Filter",
+        "on_delete vs dependent and Which Side Effects Decide",
+        "Zone.js: What Triggers CD and What It Cannot Know",
+        "Injection Context: Where inject() Is Valid and Where It Throws NG0203",
+        "relationships Hold Pointers, included Holds Payloads",
+        "What `delegated_type` Expands to",
+        "The `_path` Suffix and When It Disappears",
+    ])
+    def test_conforming_heading_not_flagged(self, wiki_dir: Path, heading: str):
+        """Title Case headings, and preserved identifiers, do not warn."""
+        assert self._page(wiki_dir, heading) == [], f"unexpected warning for {heading!r}"
+
+
 class TestProseDensity:
     def _page(self, wiki_dir: Path, sentence: str, times: int) -> list[str]:
         _write_page(wiki_dir, "git/density.md", textwrap.dedent(
@@ -974,6 +1006,48 @@ class TestProseDensity:
         """Short declarative sentences with no hedges → no density warnings."""
         warnings = self._page(wiki_dir, "The parser skips the lookup entirely.", 12)
         assert not any("hedge-density" in w or "sentence-uniformity" in w for w in warnings)
+
+    def _bullet_page(self, wiki_dir: Path, bullets: int) -> list[str]:
+        lines = ["The parser walks each row."] + [
+            "- The parser reads the header and writes the row into the audit table."
+        ] * bullets
+        body = "\n".join(lines[:1] + ["    " + ln for ln in lines[1:]])
+        _write_page(wiki_dir, "git/bullets.md", textwrap.dedent(
+            _PROSE_PAGE_TEMPLATE.format(title="bullets", body=body)
+        ))
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        return warnings
+
+    def test_bullet_dominated_page_flagged(self, wiki_dir: Path):
+        """Most of a long page's words sitting in list items → bullet-dominance warning."""
+        warnings = self._bullet_page(wiki_dir, 40)
+        assert any("bullet-dominance" in w for w in warnings), f"expected dominance: {warnings}"
+
+    def test_short_bullet_page_not_flagged(self, wiki_dir: Path):
+        """Same shape below the word floor → no warning; the share is not resolvable."""
+        warnings = self._bullet_page(wiki_dir, 5)
+        assert not any("bullet-dominance" in w for w in warnings), f"too short to act: {warnings}"
+
+    def test_few_hedges_not_flagged_despite_high_rate(self, wiki_dir: Path):
+        """Short page whose rate clears the threshold on only 5 hedges → no warning.
+
+        One hedge word moves the rate by several points on a page this short, so the
+        rate is not resolvable enough to act on until enough hedges accumulate.
+        """
+        hedged = "The parser can skip the lookup for cached rows."
+        clean = "The parser reads the header and writes the row."
+        _write_page(wiki_dir, "git/few.md", textwrap.dedent(
+            _PROSE_PAGE_TEMPLATE.format(title="few", body=" ".join([hedged] * 5 + [clean] * 6))
+        ))
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        assert not any("hedge-density" in w for w in warnings), f"5 hedges is noise: {warnings}"
+
+    def test_negated_can_not_counted_as_hedge(self, wiki_dir: Path):
+        """"can't" states a definite limit, so it is not a hedge."""
+        warnings = self._page(wiki_dir, "The site can't tell where the request came from.", 12)
+        assert not any("hedge-density" in w for w in warnings), f"can't is not a hedge: {warnings}"
 
     def test_uniform_mid_length_sentences_flagged(self, wiki_dir: Path):
         """Long sentences all the same length → sentence-uniformity warning."""

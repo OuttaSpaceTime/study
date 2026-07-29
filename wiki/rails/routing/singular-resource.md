@@ -42,7 +42,7 @@ No `index` -- there's only one. No `:id` in any URL -- identity comes from conte
 
 `resource :profile` routes to `ProfilesController`, not `ProfileController`. Rails convention. Controllers are always plural regardless of route singularity.
 
-## When to declare a singular resource
+## When to Declare a Singular Resource
 
 Use `resource` when the current user (or current context) implies which record:
 

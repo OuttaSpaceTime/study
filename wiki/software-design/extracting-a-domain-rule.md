@@ -34,7 +34,7 @@ When an inline compound condition encodes a real rule, the question is not "mode
 - **Moving a method fixes Demeter only if every hop lands on a direct component** or the collaborator's own public method. If the extracted body still reaches through a foreign chain, you relocated the coupling, you did not remove it.
 - **Coverage is not documentation.** Integration coverage proves the code ran. A unit test on the named predicate is an executable specification of the rule. They prove different things.
 
-## Extract for a name, not for reuse
+## Extract for a Name, not for Reuse
 
 Extracting for a *name* and extracting for *reuse* are different decisions with different thresholds ([[software-design/judging-abstractions]] covers the split). Only reuse (DRY) waits for the Rule of Three. Naming is legitimate at a single call site.
 
@@ -64,7 +64,7 @@ They overlap but are not the same. A call can satisfy one and violate the other.
 
 > [Note] Both are heuristics, not laws. Fowler treats Tell, Don't Ask as a guideline and keeps legitimate query methods. In his words, "good design is all about trade-offs."
 
-## Information Expert decides where it lives
+## Information Expert Decides Where It Lives
 
 GRASP's Information Expert assigns a responsibility to the class that already holds the data to fulfill it. The rule needs three facts, the membership's user, the membership's `admin?` flag, and the report's organization.
 
@@ -79,7 +79,7 @@ end
 
 The mail holds both the membership (user, `admin?`) and the archived report (organization), so it is the only object that can express the whole rule. Putting the predicate on `ArchivedReport` instead is weaker, because the report knows only its own organization, not the membership. It would have to accept `membership` as an argument, and the `user ==` identity check would leak back into the controller, splitting one rule across two files. The rule lands where the most of its data already lives.
 
-## A real Demeter fix vs relocating the coupling
+## A Real Demeter Fix vs Relocating the Coupling
 
 Moving a method does not automatically fix a Demeter violation. Copeland's critique is that extraction often just relocates it.
 
@@ -99,7 +99,7 @@ delegate :organization, to: :consumption_period
 
 Now trace the hops. The mail messages `archived_report`, its own direct component. `ArchivedReport` reaches into `consumption_period`, *its* own direct component, inside its own class. No single class reaches through a foreign object anymore, and the mail's body never even names `consumption_period`. That is what makes it a real fix rather than a shuffle. The delegate moved the reach into the class that owns the data.
 
-## Coverage is not documentation
+## Coverage Is not Documentation
 
 The original argument was that extensive integration tests give better coverage on a critical path, so a unit test is redundant. Grant the first half completely. Integration tests *are* the better coverage of that path, and nothing here proposes dropping them. The error is the word "redundant." A unit test on the predicate is not a weaker coverage tool competing with them. It is not a coverage tool at all, it answers a different question. The two roles:
 
@@ -114,7 +114,7 @@ end
 
 They are not substitutes. The unit test documents the rule, the integration test proves the wiring (the redirect target, the session, the token). A reviewer asking "what makes a report downloadable?" reads three assertions, not a request spec.
 
-## When extraction is ceremony, not a fix
+## When Extraction Is Ceremony, not a Fix
 
 The "just indirection" instinct is right in a bounded set of cases. An extraction earns its keep only when it names a real domain concept and reduces coupling. It is ceremony when:
 
@@ -127,7 +127,7 @@ The name test catches most of these. If you cannot give the extracted thing a cl
 
 `downloadable_by?` passes on both counts. It names a real rule, and it reduces coupling in a concrete way. Before, the controller reproduced the rule's logic, the org-equality sequence, so any change to the rule forced a matching change in the controller. That is connascence of *algorithm*, a strong form. After, the controller only has to agree on what the method is *called*. That is connascence of *name*, the weakest form. The refactor reads two ways at once, and they agree. As coupling, it is the connascence strength reduction just described. As responsibility, it removed a reason-to-change from the controller, which had been answering to two actors, transport and authorization policy, so the rule now has a single home. That is equally an SRP win (see [[software-design/splitting-responsibilities]]), because connascence measures the very cohesion SRP is about. The one caveat is narrow. Co-editing both classes to add a feature like this is not an SRP violation, since reasons-to-change are the test, not which files you touch.
 
-## Tradeoffs and gotchas
+## Tradeoffs and Gotchas
 
 - **These are heuristics, not laws.** Their own authors say so. Fowler calls Tell, Don't Ask a guideline and warns against dogmatic use, and Lieberherr frames Demeter as a style suggestion. Mechanical application does more harm than good. (consensus)
 - **Do not dot-count.** Demeter forbids depending on a returned collaborator's internal structure, not multiple dots. Fluent and query-builder chains (ActiveRecord scopes) return the same type and are fine. Blindly adding wrapper delegators to kill dots can worsen the design. (consensus)
