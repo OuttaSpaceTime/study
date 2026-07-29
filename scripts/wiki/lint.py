@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import statistics
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -60,6 +61,31 @@ _PROSE_PATTERNS: list[tuple[str, str, str]] = [
     (r"\bholistic\b", "holistic", "be specific"),
     (r"\bcutting.edge\b", "cutting-edge", "name the technology"),
     (r"\bharness(?:es|ed|ing)?\b", "harness-verb", "use 'use'"),
+    (
+        r"(?i)\bnot (?:just|only|merely|simply)\b[^.]{0,60}\bbut\b"
+        r"|\b(?:it|this|that)(?:'s| is) not\b[^.]{0,40}\.\s+(?:it|this|that)(?:'s| is)\b",
+        "negative-parallelism",
+        "state what it is; drop the contrast scaffold",
+    ),
+    (
+        r",\s+(?:ensuring|allowing|enabling|providing|highlighting|underscoring"
+        r"|reflecting|showcasing|emphasizing|resulting in|making it)\b",
+        "trailing-participle",
+        "make it its own sentence or cut it",
+    ),
+    (r"\b(?:serves|functions|acts) as\b|\bboasts\b", "copula-avoidance", "use 'is' or 'has'"),
+    (
+        r"(?i)^(?:however|therefore|thus|consequently|ultimately|crucially"
+        r"|importantly|interestingly|overall|in summary|instead),",
+        "conjunctive-opener",
+        "cut the connector or restructure",
+    ),
+    (
+        r"(?i)\b(?:studies show|research shows|experts (?:say|argue|agree)"
+        r"|industry reports suggest|it is widely (?:regarded|considered|believed))\b",
+        "vague-attribution",
+        "name the source or cut the claim",
+    ),
 ]
 # Wikilink not preceded by `!` (image embed). Captures target before any `|display`.
 _WIKILINK_RE = re.compile(r"(?<!!)\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|[^\]]*)?\]\]")
@@ -124,6 +150,7 @@ def lint_wiki(
     warnings.extend(_check_moc_split_suggestion(wiki_dir, pages))
     warnings.extend(_check_prose_quality(pages))
     warnings.extend(_check_sentence_fragments(pages))
+    warnings.extend(_check_prose_density(pages))
     warnings.extend(_check_colon_connectors(pages))
 
     warnings = _apply_lint_ignore(warnings, pages, dirty_pages)
@@ -358,6 +385,54 @@ def _check_prose_quality(pages: list[ParsedPage]) -> list[str]:
                 warnings.append(
                     f"prose-quality: {p.rel} [{label}] ({n}x) — {fix}"
                 )
+    return warnings
+
+
+_HEDGE_RE = re.compile(
+    r"\b(?:may|might|could|would|can|tends? to|typically|generally|often"
+    r"|usually|in some cases|depending on|arguably|somewhat|relatively)\b",
+    re.IGNORECASE,
+)
+MAX_HEDGES_PER_1000_WORDS = 15
+UNIFORM_MEAN_WORDS = 16
+UNIFORM_STDEV_WORDS = 6.5
+
+
+def _prose_sentences(body: str) -> tuple[str, list[int]]:
+    """Return (flowing prose, sentence word counts) with code, headings and lists removed."""
+    prose = "\n".join(
+        ln for ln in _strip_code(body).splitlines()
+        if ln.strip() and not ln.lstrip().startswith(("#", ">", "|", "-", "*"))
+    )
+    lengths = [n for s in _SENT_SPLIT_RE.split(prose) if (n := _word_count_prose(s)) >= 3]
+    return prose, lengths
+
+
+def _check_prose_density(pages: list[ParsedPage]) -> list[str]:
+    """Warn on per-page prose statistics that no single-phrase pattern can see.
+
+    Both checks need enough flowing prose to be a signal, so short and list-heavy
+    pages are skipped. Uniformity requires a high mean length as well as a low
+    spread: terse pages are meant to have short, even sentences.
+    """
+    warnings: list[str] = []
+    for p in pages:
+        prose, lengths = _prose_sentences(p.body)
+        words = _word_count_prose(prose)
+        if words < 80 or len(lengths) < 8:
+            continue
+        rate = 1000 * len(_HEDGE_RE.findall(prose)) / words
+        if rate > MAX_HEDGES_PER_1000_WORDS:
+            warnings.append(
+                f"hedge-density: {p.rel} ({rate:.0f} per 1000 words) — "
+                f"cut modals and qualifiers; state what happens"
+            )
+        mean, stdev = statistics.mean(lengths), statistics.stdev(lengths)
+        if mean >= UNIFORM_MEAN_WORDS and stdev < UNIFORM_STDEV_WORDS:
+            warnings.append(
+                f"sentence-uniformity: {p.rel} (mean {mean:.0f} words, stdev {stdev:.1f}) — "
+                f"vary sentence length; break up the long ones"
+            )
     return warnings
 
 

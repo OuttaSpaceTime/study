@@ -30,9 +30,9 @@ JSON Schema provides four keywords for combining schemas. OpenAPI inherits all f
 
 ## anyOf vs oneOf
 
-`anyOf` passes when one or more schemas match. It doesn't care about overlap, and validation can short-circuit on the first match. `oneOf` is strict. It must validate the payload against **every** listed schema to confirm exactly one matches. If two or more match, validation fails.
+`anyOf` passes when one or more schemas match. It doesn't care about overlap, and validation short-circuits on the first match. `oneOf` is strict. It must validate the payload against **every** listed schema to confirm exactly one matches. If two or more match, validation fails.
 
-Practical distinction. Use `anyOf` when formats may overlap (e.g., a field accepting ISO date string or Unix timestamp). Use `oneOf` when types are truly exclusive (e.g., polymorphic API responses).
+Practical distinction. Use `anyOf` when formats overlap (e.g., a field accepting ISO date string or Unix timestamp). Use `oneOf` when types are truly exclusive (e.g., polymorphic API responses).
 
 ## The oneOf Shared-Field Trap
 
@@ -56,11 +56,11 @@ discriminator:
   propertyName: payment_type
 ```
 
-Each schema declares `payment_type` as required with a fixed value (`"credit_card"` or `"bank_transfer"`). The validator can jump directly to the right schema instead of trying all of them.
+Each schema declares `payment_type` as required with a fixed value (`"credit_card"` or `"bank_transfer"`). The validator jumps directly to the right schema instead of trying all of them.
 
 ## allOf Is Not Inheritance
 
-`allOf` means "validate against every listed schema simultaneously." It's often used to extend a base schema, but it's pure composition. Not OOP inheritance.
+`allOf` means "validate against every listed schema simultaneously." It's used to extend a base schema, but it's pure composition. Not OOP inheritance.
 
 ```yaml
 allOf:
@@ -112,7 +112,7 @@ Now `{ "id": "abc", "name": "widget" }` validates, and unknown keys still get re
 
 ## not as a Filter
 
-`not` rejects values matching a schema. Combined with other keywords it acts as a filter:
+`not` rejects values matching a schema. Combined with other keywords it is a filter:
 
 ```yaml
 allOf:

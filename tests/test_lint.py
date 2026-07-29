@@ -4,6 +4,8 @@ import json
 import textwrap
 from pathlib import Path
 
+import pytest
+
 from scripts.wiki.lint import lint_wiki
 
 
@@ -906,6 +908,40 @@ class TestProseQuality:
         prose = [w for w in warnings if "prose-quality" in w and "em-dash" in w]
         assert prose == [], f"em dash in code block should not warn, got: {warnings}"
 
+    @pytest.mark.parametrize(("body", "label"), [
+        ("This is not just a cache, but a durability layer.", "negative-parallelism"),
+        ("It is not a lock. It is a hint.", "negative-parallelism"),
+        ("The parser normalizes input, ensuring callers see one shape.", "trailing-participle"),
+        ("The token is signed, allowing the server to skip a lookup.", "trailing-participle"),
+        ("The module serves as the entry point.", "copula-avoidance"),
+        ("However, the token expires after an hour.", "conjunctive-opener"),
+        ("Studies show that indexes speed up reads.", "vague-attribution"),
+    ])
+    def test_structural_tell_flagged(self, wiki_dir: Path, body: str, label: str):
+        """Documented LLM structural tells → prose-quality warning with that label."""
+        _write_page(wiki_dir, "git/tell.md", textwrap.dedent(
+            _PROSE_PAGE_TEMPLATE.format(title="tell", body=body)
+        ))
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        hits = [w for w in warnings if "prose-quality" in w and label in w]
+        assert len(hits) == 1, f"expected one {label} warning, got: {warnings}"
+
+    @pytest.mark.parametrize("body", [
+        "Use a join rather than a subquery.",
+        "The migration runs first, leaving the index for later.",
+        "Postgres represents each row with a tuple header.",
+    ])
+    def test_ordinary_prose_not_flagged(self, wiki_dir: Path, body: str):
+        """Constructions that are ordinary technical English → no prose-quality warning."""
+        _write_page(wiki_dir, "git/ordinary.md", textwrap.dedent(
+            _PROSE_PAGE_TEMPLATE.format(title="ordinary", body=body)
+        ))
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        prose = [w for w in warnings if "prose-quality" in w]
+        assert prose == [], f"expected no prose-quality warnings, got: {warnings}"
+
     def test_clean_page_no_warning(self, wiki_dir: Path):
         """Page with none of the banned patterns → no prose-quality warnings."""
         _write_page(wiki_dir, "git/clean.md", textwrap.dedent(
@@ -918,6 +954,37 @@ class TestProseQuality:
         _, warnings = lint_wiki(wiki_dir)
         prose = [w for w in warnings if "prose-quality" in w]
         assert prose == [], f"expected no prose-quality warnings, got: {warnings}"
+
+
+class TestProseDensity:
+    def _page(self, wiki_dir: Path, sentence: str, times: int) -> list[str]:
+        _write_page(wiki_dir, "git/density.md", textwrap.dedent(
+            _PROSE_PAGE_TEMPLATE.format(title="density", body=" ".join([sentence] * times))
+        ))
+        _write_index(wiki_dir, {})
+        _, warnings = lint_wiki(wiki_dir)
+        return warnings
+
+    def test_high_hedge_rate_flagged(self, wiki_dir: Path):
+        """Modals and qualifiers far above the corpus rate → hedge-density warning."""
+        warnings = self._page(wiki_dir, "The parser can often skip the lookup.", 12)
+        assert any("hedge-density" in w for w in warnings), f"expected hedge-density: {warnings}"
+
+    def test_terse_prose_not_flagged(self, wiki_dir: Path):
+        """Short declarative sentences with no hedges → no density warnings."""
+        warnings = self._page(wiki_dir, "The parser skips the lookup entirely.", 12)
+        assert not any("hedge-density" in w or "sentence-uniformity" in w for w in warnings)
+
+    def test_uniform_mid_length_sentences_flagged(self, wiki_dir: Path):
+        """Long sentences all the same length → sentence-uniformity warning."""
+        long_sentence = "The request handler reads the header and then writes a fresh row into the audit table."
+        warnings = self._page(wiki_dir, long_sentence, 10)
+        assert any("sentence-uniformity" in w for w in warnings), f"expected uniformity: {warnings}"
+
+    def test_short_page_low_signal_skipped(self, wiki_dir: Path):
+        """Too few words or sentences to be a signal → no density warnings."""
+        warnings = self._page(wiki_dir, "The parser can often skip the lookup.", 3)
+        assert not any("hedge-density" in w or "sentence-uniformity" in w for w in warnings)
 
 
 class TestColonConnectors:
