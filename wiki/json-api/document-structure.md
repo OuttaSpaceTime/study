@@ -10,7 +10,7 @@ tags:
 - json-api
 - rest
 created: '2026-05-08'
-updated: '2026-05-08'
+updated: '2026-07-29'
 source_skill: study-walkthrough
 flashcard_ids: []
 review_interval: 10
@@ -23,13 +23,11 @@ JSON:API is a graph protocol wearing REST clothes. Every response is a slice of 
 
 ## TL;DR
 
-- `data` and `errors` are mutually exclusive at the top level. `included` requires `data`.
-- Every resource has the same shape wherever it appears: `{type, id, attributes, relationships}`.
-- `relationships` holds **resource identifiers** (`{type, id}` pairs only). Full attributes for related resources live in top-level `included`, and only when the client asks via `?include=`.
-- Compound documents must satisfy **full linkage**: every resource in `included` is reachable from `data` by walking relationship pointers.
-- `?include=a.b.c` includes **every node along the path**, not just the leaf.
+`data` and `errors` are mutually exclusive at the top level, and `included` requires `data`. Every resource has the same shape wherever it appears, `{type, id, attributes, relationships}`.
 
-## Top-level keys and their mutual exclusions
+`relationships` holds **resource identifiers** and nothing else, so its `data` fields carry `{type, id}` pairs only. Full attributes for related resources live in top-level `included`, and only when the client asks via `?include=`. Compound documents must satisfy **full linkage**, so every resource in `included` is reachable from `data` by walking relationship pointers. A path like `?include=a.b.c` includes **every node along the path** rather than only the leaf.
+
+## Top-level Keys and Their Mutual Exclusions
 
 Five top-level keys. A document MUST contain at least one of `data`, `errors`, `meta`.
 
@@ -47,7 +45,7 @@ Three rules fall out:
 2. `included` requires `data`. A graph slice with no entry point is meaningless.
 3. `data` is either a single resource object, an array, or `null` (for to-one relationships that resolve to no resource).
 
-## Resource object shape
+## Resource Object Shape
 
 A resource has the same shape everywhere (top-level `data`, inside an array, or inside `included`):
 
@@ -77,12 +75,11 @@ Three rules:
 - `attributes`, `relationships`, `type`, and `id` share **one namespace**, with no key collisions. You cannot have an attribute named `type` or a relationship named `id`.
 - v1.1 added `lid` (local id) for client-generated identifiers in atomic operations. Useful when creating multiple linked resources in one request.
 
-## relationships hold pointers, included holds payloads
+## relationships Hold Pointers, included Holds Payloads
 
 This is the single most-misunderstood piece of the spec.
 
-- **`relationships`** lives *inside* a resource object. Each member contains a `data` field that holds **resource identifiers only**, i.e. `{type, id}` pairs. Think of it as a foreign key, not a join.
-- **`included`** lives at the *top level* of the document. It holds **full resource objects** for related resources the client asked for via `?include=`.
+**`relationships`** lives *inside* a resource object. Each member contains a `data` field that holds **resource identifiers only**, i.e. `{type, id}` pairs. Think of it as a foreign key, not a join. **`included`**, by contrast, lives at the *top level* of the document, and it holds **full resource objects** for related resources the client asked for via `?include=`.
 
 Without `?include=author`, the `included` array is absent. But `relationships.author.data` is still there. Clients always know *what* the author is; they only know the author's *attributes* if they asked.
 
@@ -104,7 +101,7 @@ Without `?include=author`, the `included` array is absent. But `relationships.au
 
 The split exists so the relationship graph (cheap, always present) is decoupled from attribute payloads (expensive, opt-in). Generic clients can render relationship structure without fetching anything they did not ask for.
 
-## Compound documents and the full-linkage rule
+## Compound Documents and the Full-Linkage Rule
 
 A document with `included` is a **compound document**. Two rules govern it:
 
@@ -113,7 +110,7 @@ A document with `included` is a **compound document**. Two rules govern it:
 
 These together mean clients reconstruct the full graph by following `relationships.X.data → {type, id}` pointers back into `included`, which is just a flat lookup table. No tree traversal, no nested payloads.
 
-## Every node on an include path is included
+## Every Node on an Include Path Is Included
 
 `?include=` takes comma-separated relationship paths, with dots for nesting:
 

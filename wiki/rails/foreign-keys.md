@@ -18,8 +18,8 @@ flashcard_ids:
 - cmq8hw4vw0000j70mqz3fb339
 - cmq8hw75w0001j70mf0kbcv8t
 - cmq8hwa0t0002j70mfor6qqf7
-next_review: '2026-07-07'
-review_interval: 12
+next_review: '2026-08-28'
+review_interval: 30
 ---
 
 # Foreign keys
@@ -33,7 +33,7 @@ A foreign key is a database constraint that says "this column must point at a re
 - For cascading deletes, pick the layer by the child's **side effects**: callbacks to run means Rails `dependent:`, pure data means DB `on_delete: :cascade`. Using both is the common belt-and-suspenders setup.
 - A foreign key does **not** create an index on the referencing column in Postgres. You must add it yourself, or parent deletes seq-scan the child table.
 
-## Two layers - DB constraint vs app validation
+## Two Layers - DB Constraint vs App Validation
 
 The Rails validation is Ruby code that only runs when a write goes through ActiveRecord's validation path. The foreign key is enforced by Postgres on every write, no matter how the row got there.
 
@@ -48,7 +48,7 @@ Item.where(id: 1).update_all(event_id: 999)   # skips validation
 
 `update_column`, `insert_all`, and `update_all` are deliberate "skip callbacks and validations" tools. Add a raw `psql` session, a data migration, or a second app on the same database, and the Rails guard is bypassed entirely. The foreign key is the only thing standing behind all of those paths. So the rule. Validate in the app for UX, enforce in the DB for truth.
 
-## Which row the constraint blocks from deletion
+## Which Row the Constraint Blocks from Deletion
 
 The constraint lives as a column on the **referencing (child)** table and guarantees that column points at a live row in the **referenced (parent)** table. That asymmetry decides which delete is blocked, and it is the part people most often get backwards.
 
@@ -59,7 +59,7 @@ So with a foreign key on `items.event_id` referencing `events`, deleting an `eve
 
 The trap is reading "importance" into it. The rule is purely structural. The foreign key protects the pointed-at row from vanishing, so it constrains deletion of whatever is **referenced**, never the row that holds the column.
 
-## on_delete vs dependent and which side effects decide
+## on_delete vs dependent and Which Side Effects Decide
 
 Both of these make "delete a parent, its children go too" happen:
 
@@ -87,7 +87,7 @@ The deciding property is whether the child has **side effects**. If `Item` has `
 
 Using **both** is common and composes cleanly. Rails always acts first (`dependent: :destroy` deletes children, running callbacks), and the foreign key is the integrity net that catches every delete path Rails cannot see.
 
-## The four referential actions and the real default
+## The Four Referential Actions and the Real Default
 
 `on_delete` (and `on_update`) chooses what Postgres does when the parent is deleted:
 
@@ -100,7 +100,7 @@ Rails' `on_delete:` accepts exactly three symbols, `:cascade`, `:nullify`, `:res
 
 > [Note] A common reference claim is that the default is `RESTRICT`. It is not. With no clause emitted, Postgres uses `NO ACTION`. They look identical in everyday use, which is why the myth survives.
 
-## RESTRICT vs NO ACTION is only about deferrability
+## RESTRICT vs NO ACTION Is Only About Deferrability
 
 `RESTRICT` and `NO ACTION` both block a parent delete while children exist. In the everyday case they are indistinguishable. There are two independent switches on a constraint:
 
@@ -135,7 +135,7 @@ end
 
 `deferrable:` takes `:deferred` (`DEFERRABLE INITIALLY DEFERRED`, postponed to COMMIT automatically), `:immediate` or `true` (`DEFERRABLE INITIALLY IMMEDIATE`, capable but you opt in per transaction with `SET CONSTRAINTS ALL DEFERRED`), or `false` (the default, not deferrable at all). Pairing `on_delete: :restrict` with `deferrable: :deferred` does nothing, because `RESTRICT` ignores deferral.
 
-## A foreign key does not create an index
+## A Foreign Key Does not Create an Index
 
 In Postgres, declaring a foreign key does **not** create an index on the referencing column. The referenced side (`events.id`) is indexed because it is the primary key, but the referencing side (`items.event_id`) is on you.
 

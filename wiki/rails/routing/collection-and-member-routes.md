@@ -11,8 +11,8 @@ tags:
 created: '2026-04-14'
 updated: '2026-04-14'
 source_skill: study-walkthrough
-next_review: '2026-07-07'
-review_interval: 30
+next_review: '2026-11-26'
+review_interval: 120
 flashcard_ids: []
 ---
 
@@ -30,7 +30,7 @@ flashcard_ids: []
 
 Rule of thumb. If the URL doesn't need a specific record's ID, it's a collection route.
 
-## Declaring collection and member routes
+## Declaring Collection and Member Routes
 
 ```ruby
 resources :posts do
@@ -88,7 +88,7 @@ resources :posts do
 end
 ```
 
-## When to use collection vs member
+## When to Use Collection vs Member
 
 - **One-off action on a single record** (archive, publish, flag) -> `member`
 - **Action across the collection** (search, export CSV, bulk delete) -> `collection`

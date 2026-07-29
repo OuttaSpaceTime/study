@@ -34,11 +34,11 @@
       "change-detection"
     ],
     "sections": [
-      "Zone.js: what triggers CD and what it cannot know",
-      "Default strategy: full DFS tree walk every cycle",
-      "OnPush: four conditions that dirty a component",
-      "Mutation on @Input: why the child's view goes stale",
-      "setTimeout and manual subscribe silently miss OnPush",
+      "Zone.js: What Triggers CD and What It Cannot Know",
+      "Default Strategy: Full DFS Tree Walk Every Cycle",
+      "OnPush: Four Conditions That Dirty a Component",
+      "Mutation on @Input: Why the Child's View Goes Stale",
+      "setTimeout and Manual Subscribe Silently Miss OnPush",
       "markForCheck vs detectChanges",
       "Related Concepts",
       "References"
@@ -66,12 +66,12 @@
     ],
     "sections": [
       "TL;DR",
-      "Init order: depth-first post-order across the tree",
-      "constructor vs ngOnInit: why @Input is undefined in the constructor",
-      "ngOnChanges: fires on first render and batches all input changes",
-      "Content vs View hooks: which decorator becomes available where",
-      "Injection context: where inject() is valid and where it throws NG0203",
-      "afterNextRender vs ngAfterViewInit: post-paint vs pre-paint timing",
+      "Init Order: Depth-First Post-Order Across the Tree",
+      "constructor vs ngOnInit: Why @Input Is Undefined in the Constructor",
+      "ngOnChanges: Fires on First Render and Batches All Input Changes",
+      "Content vs View Hooks: Which Decorator Becomes Available Where",
+      "Injection Context: Where inject() Is Valid and Where It Throws NG0203",
+      "afterNextRender vs ngAfterViewInit: Post-Paint vs Pre-Paint Timing",
       "Related Concepts",
       "References"
     ],
@@ -98,12 +98,12 @@
       "rxjs"
     ],
     "sections": [
-      "How signal writes mark ancestors: traversal flag vs dirty flag",
-      "Semi-local CD: which nodes are traversed vs which re-evaluate bindings",
-      "Why change detection walks top-down",
-      "The click-event caveat: two independent mechanisms",
-      "When the caveat bites vs when semi-local CD survives",
-      "Why semi-local CD only matters in zoneless",
+      "How Signal Writes Mark Ancestors: Traversal Flag vs Dirty Flag",
+      "Semi-local CD: Which Nodes Are Traversed vs Which Re-Evaluate Bindings",
+      "Why Change Detection Walks Top-Down",
+      "The Click-Event Caveat: Two Independent Mechanisms",
+      "When the Caveat Bites vs When Semi-Local CD Survives",
+      "Why Semi-Local CD Only Matters in Zoneless",
       "Related Concepts",
       "References"
     ],
@@ -128,9 +128,9 @@
       "rxjs"
     ],
     "sections": [
-      "Signals push-pull model vs Zone.js passive patching",
-      "toSignal(): observable-to-signal bridge and what it buys",
-      "Signals vs async pipe: when to use which",
+      "Signals Push-Pull Model vs Zone.js Passive Patching",
+      "toSignal(): Observable-to-Signal Bridge and What It Buys",
+      "Signals vs Async Pipe: When to Use Which",
       "Related Concepts",
       "References"
     ],
@@ -157,13 +157,13 @@
     ],
     "sections": [
       "TL;DR",
-      "The placement axis: how much a piece depends on",
-      "Dependency direction is one-way",
-      "Smart vs dumb is about data access, not tree position",
-      "Where the two kinds of parsing live",
-      "Interceptors and guards detect and delegate",
-      "Deciding where new code goes",
-      "Tradeoffs and gotchas",
+      "The Placement Axis: How Much a Piece Depends on",
+      "Dependency Direction Is One-Way",
+      "Smart vs Dumb Is About Data Access, not Tree Position",
+      "Where the Two Kinds of Parsing Live",
+      "Interceptors and Guards Detect and Delegate",
+      "Deciding Where New Code Goes",
+      "Tradeoffs and Gotchas",
       "Related Concepts",
       "References"
     ],
@@ -250,17 +250,17 @@
     ],
     "sections": [
       "TL;DR",
-      "Top-level keys and their mutual exclusions",
-      "Resource object shape",
-      "relationships hold pointers, included holds payloads",
-      "Compound documents and the full-linkage rule",
-      "Every node on an include path is included",
+      "Top-level Keys and Their Mutual Exclusions",
+      "Resource Object Shape",
+      "relationships Hold Pointers, included Holds Payloads",
+      "Compound Documents and the Full-Linkage Rule",
+      "Every Node on an Include Path Is Included",
       "Related Concepts",
       "References"
     ],
     "flashcard_ids": [],
     "created": "2026-05-08",
-    "updated": "2026-07-11",
+    "updated": "2026-07-29",
     "next_review": "2026-07-21",
     "review_interval": 10
   },
@@ -279,9 +279,9 @@
       "rest"
     ],
     "sections": [
-      "The mental model, graph protocol wearing REST clothes",
-      "The envelope-vs-strategy throughline",
-      "When to reach for JSON:API vs GraphQL vs plain REST",
+      "The Mental Model, Graph Protocol Wearing REST Clothes",
+      "The Envelope-vs-Strategy Throughline",
+      "When to Reach for JSON:API vs GraphQL vs Plain REST",
       "Pages",
       "Related Concepts",
       "References"
@@ -310,12 +310,12 @@
     ],
     "sections": [
       "TL;DR",
-      "The envelope-vs-strategy split",
-      "Sparse fieldsets are per-type, not per-path",
-      "Pagination URLs are opaque to the client",
-      "Cursor vs offset under concurrent inserts",
-      "Sort is precise, filter is deliberately undefined",
-      "Custom query parameters need a non-alpha character",
+      "The Envelope-vs-Strategy Split",
+      "Sparse Fieldsets Are Per-Type, not Per-Path",
+      "Pagination URLs Are Opaque to the Client",
+      "Cursor vs Offset Under Concurrent Inserts",
+      "Sort Is Precise, Filter Is Deliberately Undefined",
+      "Custom Query Parameters Need a Non-Alpha Character",
       "Related Concepts",
       "References"
     ],
@@ -339,10 +339,10 @@
       "dns"
     ],
     "sections": [
-      "DNS resolution",
-      "DNS caching and TTL",
-      "Safe migration",
-      "Host header and virtual hosts",
+      "DNS Resolution",
+      "DNS Caching and TTL",
+      "Safe Migration",
+      "Host Header and Virtual Hosts",
       "Related Concepts"
     ],
     "flashcard_ids": [],
@@ -389,11 +389,11 @@
     ],
     "sections": [
       "TL;DR",
-      "URL anatomy at a glance",
-      "Scheme vs protocol",
-      "Host - subdomain, SLD, TLD",
-      "Port: default ports and when the URL includes one",
-      "Path and query",
+      "URL Anatomy at a Glance",
+      "Scheme vs Protocol",
+      "Host - Subdomain, SLD, TLD",
+      "Port: Default Ports and When the URL Includes One",
+      "Path and Query",
       "Related Concepts"
     ],
     "flashcard_ids": [
@@ -471,15 +471,15 @@
     ],
     "sections": [
       "TL;DR",
-      "Compiler vs interpreter: roles, not languages",
-      "Two orthogonal axes: type checking ⊥ compile target",
-      "Case study: the CPython chain",
-      "JIT: when bytecode becomes machine code at runtime",
+      "Compiler vs Interpreter: Roles, not Languages",
+      "Two Orthogonal Axes: Type Checking ⊥ Compile Target",
+      "Case Study: The CPython Chain",
+      "JIT: When Bytecode Becomes Machine Code at Runtime",
       "Related Concepts"
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-07-17",
+    "updated": "2026-07-29",
     "next_review": "2026-07-22",
     "review_interval": 5
   },
@@ -518,11 +518,11 @@
     ],
     "sections": [
       "TL;DR",
-      "What pick returns and when it stops scanning",
-      "vs pluck",
-      "Raw SQL expressions",
-      "Multiple aggregates in one query",
-      "nil on no match and chaining with scopes"
+      "What Pick Returns and When It Stops Scanning",
+      "vs Pluck",
+      "Raw SQL Expressions",
+      "Multiple Aggregates in One Query",
+      "nil on No Match and Chaining with Scopes"
     ],
     "flashcard_ids": [],
     "created": "2026-04-09",
@@ -548,11 +548,11 @@
     ],
     "sections": [
       "TL;DR",
-      "The four methods",
-      "How includes auto-switches",
-      "Cost model: when JOIN multiplies rows",
-      "Choosing between joins, preload, eager_load, and includes",
-      "Polymorphic associations",
+      "The Four Methods",
+      "How Includes Auto-Switches",
+      "Cost Model: When JOIN Multiplies Rows",
+      "Choosing Between Joins, Preload, eager_load, and Includes",
+      "Polymorphic Associations",
       "Related Concepts"
     ],
     "flashcard_ids": [
@@ -581,12 +581,12 @@
     ],
     "sections": [
       "TL;DR",
-      "What a transaction guarantees, and what it does not",
-      "Isolation levels and the anomalies each allows",
-      "Never put slow or external calls inside a transaction",
-      "Idempotency and effects outside the transaction",
-      "Rails rollback-on-exception",
-      "Nested transactions and savepoints",
+      "What a Transaction Guarantees, and What It Does not",
+      "Isolation Levels and the Anomalies Each Allows",
+      "Never Put Slow or External Calls Inside a Transaction",
+      "Idempotency and Effects Outside the Transaction",
+      "Rails Rollback-on-Exception",
+      "Nested Transactions and Savepoints",
       "Related Concepts",
       "References"
     ],
@@ -618,8 +618,8 @@
     "sections": [
       "The Problem It Solves",
       "Schema Shape",
-      "What the delegated_type declaration generates",
-      "What `delegated_type` Expands To",
+      "What the delegated_type Declaration Generates",
+      "What `delegated_type` Expands to",
       "Direction of Delegation",
       "Design Rule: Where Attributes Live",
       "STI vs Delegated Type",
@@ -650,12 +650,12 @@
     ],
     "sections": [
       "TL;DR",
-      "Two layers - DB constraint vs app validation",
-      "Which row the constraint blocks from deletion",
-      "on_delete vs dependent and which side effects decide",
-      "The four referential actions and the real default",
-      "RESTRICT vs NO ACTION is only about deferrability",
-      "A foreign key does not create an index",
+      "Two Layers - DB Constraint vs App Validation",
+      "Which Row the Constraint Blocks from Deletion",
+      "on_delete vs Dependent and Which Side Effects Decide",
+      "The Four Referential Actions and the Real Default",
+      "RESTRICT vs NO ACTION Is Only About Deferrability",
+      "A Foreign Key Does not Create an Index",
       "Related Concepts",
       "References"
     ],
@@ -665,9 +665,9 @@
       "cmq8hwa0t0002j70mfor6qqf7"
     ],
     "created": "2026-06-10",
-    "updated": "2026-06-25",
-    "next_review": "2026-07-07",
-    "review_interval": 12
+    "updated": "2026-07-29",
+    "next_review": "2026-08-28",
+    "review_interval": 30
   },
   "rails/index-with": {
     "file": "rails/index-with.md",
@@ -730,17 +730,17 @@
     ],
     "sections": [
       "The Decision Table",
-      "Declaring collection and member routes",
+      "Declaring Collection and Member Routes",
       "Routing to a Different Controller",
       "Param Naming Rules",
-      "When to use collection vs member",
+      "When to Use Collection vs Member",
       "Related Concepts"
     ],
     "flashcard_ids": [],
     "created": "2026-04-14",
-    "updated": "2026-06-07",
-    "next_review": "2026-07-07",
-    "review_interval": 30
+    "updated": "2026-07-29",
+    "next_review": "2026-11-26",
+    "review_interval": 120
   },
   "rails/routing/path-helper-naming": {
     "file": "rails/routing/path-helper-naming.md",
@@ -759,7 +759,7 @@
       "Renaming with `as:`",
       "The `_index` Suffix",
       "Fix: Set `as:` Explicitly",
-      "How to verify path helper names at the console",
+      "How to Verify Path Helper Names at the Console",
       "Related Concepts"
     ],
     "flashcard_ids": [],
@@ -805,10 +805,10 @@
       "routing"
     ],
     "sections": [
-      "The problem: duplicated route blocks across resources",
+      "The Problem: Duplicated Route Blocks Across Resources",
       "Extract a Concern",
       "Multiple Concerns",
-      "When to extract a routing concern",
+      "When to Extract a Routing Concern",
       "Related Concepts"
     ],
     "flashcard_ids": [],
@@ -855,8 +855,8 @@
       "Scope Picks and Chooses",
       "Module Path Format",
       "Per-Resource Options",
-      "The controller: Option",
-      "When to use scope vs namespace vs module",
+      "The Controller: Option",
+      "When to Use Scope vs Namespace vs Module",
       "Related Concepts"
     ],
     "flashcard_ids": [],
@@ -878,7 +878,7 @@
       "routing"
     ],
     "sections": [
-      "How shallow routing splits member vs collection routes",
+      "How Shallow Routing Splits Member vs Collection Routes",
       "Why This Split",
       "Named Helpers Change Too",
       "Applying to All Nested Resources",
@@ -905,7 +905,7 @@
     "sections": [
       "6 Routes, Not 7",
       "Controller Is Still Plural",
-      "When to declare a singular resource",
+      "When to Declare a Singular Resource",
       "How Identity Is Resolved",
       "Nesting Works the Same",
       "Related Concepts"
@@ -936,12 +936,14 @@
     ],
     "sections": [
       "TL;DR",
-      "MVCC means readers and writers never block each other",
-      "Implicit row locks make writers block writers",
-      "Lost updates and why with_lock fixes them",
-      "with_lock, lock!, and lock",
-      "Why a transaction does not speed up parallel work",
-      "Optimistic versus pessimistic locking",
+      "MVCC Means Readers and Writers Never Block Each Other",
+      "Implicit Row Locks Make Writers Block Writers",
+      "Lost Updates and Why with_lock Fixes Them",
+      "with_lock, Lock!, and Lock",
+      "with_lock Locks One Row, not the Block",
+      "Why a Transaction Does not Speed up Parallel Work",
+      "Optimistic Versus Pessimistic Locking",
+      "Advisory Locks Lock a Name, Not a Row",
       "Related Concepts",
       "References"
     ],
@@ -953,9 +955,9 @@
       "cmqu0u3eu000c150m44rrl72z"
     ],
     "created": "2026-06-25",
-    "updated": "2026-07-03",
-    "next_review": "2026-07-07",
-    "review_interval": 4
+    "updated": "2026-07-29",
+    "next_review": "2026-08-03",
+    "review_interval": 5
   },
   "rails/upsert-and-concurrent-inserts": {
     "file": "rails/upsert-and-concurrent-inserts.md",
@@ -977,13 +979,13 @@
     ],
     "sections": [
       "TL;DR",
-      "The race between two concurrent inserts",
+      "The Race Between Two Concurrent Inserts",
       "ON CONFLICT DO NOTHING vs DO UPDATE",
-      "RETURNING returns only touched rows",
-      "Rails create!, insert_all, insert_all!, upsert_all",
-      "Bulk methods bypass validations and callbacks",
-      "find_or_create_by is not atomic",
-      "Tradeoffs and gotchas",
+      "RETURNING Returns Only Touched Rows",
+      "Rails Create!, insert_all, insert_all!, upsert_all",
+      "Bulk Methods Bypass Validations and Callbacks",
+      "find_or_create_by Is not Atomic",
+      "Tradeoffs and Gotchas",
       "Related Concepts",
       "References"
     ],
@@ -1009,11 +1011,11 @@
       "error-handling"
     ],
     "sections": [
-      "How error terminates a stream: subscription state after onError",
-      "catchError: signature, recovery pattern, and re-throw",
-      "retry vs retryWhen: immediate resubscription vs conditional backoff",
-      "Error in inner vs outer observable (flatMap/switchMap)",
-      "Dead subscriber trap: subscribing after a subject has errored",
+      "How Error Terminates a Stream: Subscription State After onError",
+      "catchError: Signature, Recovery Pattern, and Re-Throw",
+      "retry vs retryWhen: Immediate Resubscription vs Conditional Backoff",
+      "Error in Inner vs Outer Observable (flatMap/switchMap)",
+      "Dead Subscriber Trap: Subscribing After a Subject Has Errored",
       "Related Concepts"
     ],
     "flashcard_ids": [],
@@ -1038,10 +1040,10 @@
       "observables"
     ],
     "sections": [
-      "Why observables are lazy and what subscribe triggers",
-      "The Observable Contract: grammar and serial delivery rule",
-      "Cold vs hot observables: independent vs shared execution",
-      "Subscription lifecycle: what subscribe returns and how teardown works",
+      "Why Observables Are Lazy and What Subscribe Triggers",
+      "The Observable Contract: Grammar and Serial Delivery Rule",
+      "Cold vs Hot Observables: Independent vs Shared Execution",
+      "Subscription Lifecycle: What Subscribe Returns and How Teardown Works",
       "Related Concepts"
     ],
     "flashcard_ids": [],
@@ -1085,11 +1087,11 @@
       "streams"
     ],
     "sections": [
-      "Reactive programming definition: streams as first-class values",
-      "Stream anatomy: values, errors, and completion over time",
-      "Core operator categories: transform, filter, combine, flatten",
-      "flatMap/mergeMap: collapsing a stream of streams",
-      "Mental model shift from imperative to reactive",
+      "Reactive Programming Definition: Streams as First-Class Values",
+      "Stream Anatomy: Values, Errors, and Completion over Time",
+      "Core Operator Categories: Transform, Filter, Combine, Flatten",
+      "flatMap/mergeMap: Collapsing a Stream of Streams",
+      "Mental Model Shift from Imperative to Reactive",
       "Related Concepts"
     ],
     "flashcard_ids": [],
@@ -1133,12 +1135,12 @@
     ],
     "sections": [
       "TL;DR",
-      "What transform_values does and why it preserves keys",
-      "vs map on a hash",
-      "The block receives only the value",
-      "Bang variant",
-      "with_index for positional info",
-      "When not to use it",
+      "What transform_values Does and Why It Preserves Keys",
+      "vs Map on a Hash",
+      "The Block Receives Only the Value",
+      "Bang Variant",
+      "with_index for Positional Info",
+      "When not to Use It",
       "Related Concepts"
     ],
     "flashcard_ids": [],
@@ -1160,12 +1162,12 @@
       "web"
     ],
     "sections": [
-      "Why the browser makes CSRF possible",
-      "Three preconditions for a successful CSRF attack",
-      "Why SameSite=Lax doesn't fully protect against subdomain attacks",
-      "Synchronizer token vs. signed double-submit cookie",
-      "Why CSRF tokens don't stop XSS",
-      "Login CSRF and the pre-session token fix",
+      "Why the Browser Makes CSRF Possible",
+      "Three Preconditions for a Successful CSRF Attack",
+      "Why SameSite=Lax Doesn't Fully Protect Against Subdomain Attacks",
+      "Synchronizer Token vs. Signed Double-Submit Cookie",
+      "Why CSRF Tokens Don't Stop XSS",
+      "Login CSRF and the Pre-Session Token Fix",
       "Related Concepts",
       "References"
     ],
@@ -1191,12 +1193,12 @@
     "sections": [
       "The SSL Stripping Attack",
       "Scheme Defaulting and HTTPS-First",
-      "The HSTS header fields: max-age, includeSubDomains, preload",
-      "TOFU Problem (Trust On First Use)",
+      "The HSTS Header Fields: Max-Age, includeSubDomains, Preload",
+      "TOFU Problem (Trust on First Use)",
       "Preload",
       "Cross-Host Redirects",
       "Full Defense Stack",
-      "What the HSTS header looks like on a real site",
+      "What the HSTS Header Looks Like on a Real Site",
       "Browser Storage"
     ],
     "flashcard_ids": [
@@ -1226,12 +1228,12 @@
       "cryptography"
     ],
     "sections": [
-      "Secret, salt, and KDF: what each term means",
-      "Why a KDF stretches instead of concatenating",
-      "Encrypting vs signing: confidentiality vs integrity",
-      "Why reusing one derived key for two purposes weakens both",
-      "The salt does not need to be secret, only the underlying secret does",
-      "Purpose strings in Rails as domain separators",
+      "Secret, Salt, and KDF: What Each Term Means",
+      "Why a KDF Stretches Instead of Concatenating",
+      "Encrypting vs Signing: Confidentiality vs Integrity",
+      "Why Reusing One Derived Key for Two Purposes Weakens Both",
+      "The Salt Does not Need to Be Secret, Only the Underlying Secret Does",
+      "Purpose Strings in Rails as Domain Separators",
       "Related Concepts"
     ],
     "flashcard_ids": [
@@ -1309,11 +1311,11 @@
     ],
     "sections": [
       "TL;DR",
-      "Why fast feedback from delegating is addictive",
-      "What passive delegation costs, the map you stop building",
-      "The context-switch tax that undoes parallel delegation",
-      "A checkpoint rule, read and test before starting the next thread",
-      "Tradeoffs and gotchas",
+      "Why Fast Feedback from Delegating Is Addictive",
+      "What Passive Delegation Costs, the Map You Stop Building",
+      "The Context-Switch Tax That Undoes Parallel Delegation",
+      "A Checkpoint Rule, Read and Test Before Starting the Next Thread",
+      "Tradeoffs and Gotchas",
       "Related Concepts",
       "References"
     ],
@@ -1343,13 +1345,13 @@
     ],
     "sections": [
       "TL;DR",
-      "Extract for a name, not for reuse",
+      "Extract for a Name, not for Reuse",
       "Tell, Don't Ask vs Law of Demeter",
-      "Information Expert decides where it lives",
-      "A real Demeter fix vs relocating the coupling",
-      "Coverage is not documentation",
-      "When extraction is ceremony, not a fix",
-      "Tradeoffs and gotchas",
+      "Information Expert Decides Where It Lives",
+      "A Real Demeter Fix vs Relocating the Coupling",
+      "Coverage Is not Documentation",
+      "When Extraction Is Ceremony, not a Fix",
+      "Tradeoffs and Gotchas",
       "Related Concepts",
       "References"
     ],
@@ -1381,12 +1383,12 @@
     ],
     "sections": [
       "TL;DR",
-      "The wrong-abstraction signal",
-      "The remedy is re-inline, then re-derive",
-      "Rule of Three and the two motives for extraction",
-      "Leaky abstractions and the working-vs-learning cost",
-      "Why this bites harder in AI-generated code",
-      "Tradeoffs and gotchas",
+      "The Wrong-Abstraction Signal",
+      "The Remedy Is Re-Inline, Then Re-Derive",
+      "Rule of Three and the Two Motives for Extraction",
+      "Leaky Abstractions and the Working-vs-Learning Cost",
+      "Why This Bites Harder in AI-generated Code",
+      "Tradeoffs and Gotchas",
       "Related Concepts",
       "References"
     ],
@@ -1414,14 +1416,14 @@
     ],
     "sections": [
       "TL;DR",
-      "Comprehension debt",
-      "Two failure classes",
-      "The blast-radius dial",
-      "Why reading more is not enough",
+      "Comprehension Debt",
+      "Two Failure Classes",
+      "The Blast-Radius Dial",
+      "Why Reading More Is not Enough",
       "Chesterton's Fence",
-      "Reading for absence",
-      "A decision procedure",
-      "Tradeoffs and gotchas",
+      "Reading for Absence",
+      "A Decision Procedure",
+      "Tradeoffs and Gotchas",
       "Related Concepts",
       "References"
     ],
@@ -1453,12 +1455,12 @@
     ],
     "sections": [
       "TL;DR",
-      "The signature is a contract",
-      "Preconditions, postconditions, and asymmetric blame",
-      "The name is part of the contract",
-      "Why review is the backstop",
-      "The ladder from documented to impossible",
-      "Tradeoffs and gotchas",
+      "The Signature Is a Contract",
+      "Preconditions, Postconditions, and Asymmetric Blame",
+      "The Name Is Part of the Contract",
+      "Why Review Is the Backstop",
+      "The Ladder from Documented to Impossible",
+      "Tradeoffs and Gotchas",
       "Related Concepts",
       "References"
     ],
@@ -1488,12 +1490,12 @@
     ],
     "sections": [
       "TL;DR",
-      "Essential versus accidental complexity, and why the split matters",
-      "Why the cost lands on change, not on reading",
-      "Complecting, when two simple things become one expensive one",
-      "Guarantee ownership at the trust boundary",
-      "Triaging defensive checks, especially in AI-generated code",
-      "Tradeoffs and gotchas",
+      "Essential Versus Accidental Complexity, and Why the Split Matters",
+      "Why the Cost Lands on Change, not on Reading",
+      "Complecting, When Two Simple Things Become One Expensive One",
+      "Guarantee Ownership at the Trust Boundary",
+      "Triaging Defensive Checks, Especially in AI-generated Code",
+      "Tradeoffs and Gotchas",
       "Related Concepts",
       "References"
     ],
@@ -1544,12 +1546,12 @@
     ],
     "sections": [
       "TL;DR",
-      "What SRP actually measures",
+      "What SRP Actually Measures",
       "Command-Query Separation and CQS vs CQRS",
-      "Connascence as a coupling vocabulary",
-      "The operative rule for connascence",
-      "Over-splitting can worsen coupling",
-      "Tradeoffs and gotchas",
+      "Connascence as a Coupling Vocabulary",
+      "The Operative Rule for Connascence",
+      "Over-splitting Can Worsen Coupling",
+      "Tradeoffs and Gotchas",
       "Related Concepts",
       "References"
     ],
@@ -1577,14 +1579,14 @@
     ],
     "sections": [
       "TL;DR",
-      "What array_agg collects and the implicit single-group rule",
-      "No GROUP BY means one implicit group",
-      "Ordering is non-deterministic by default",
-      "NULLs are included by default",
-      "Empty input returns NULL, not {}",
-      "DISTINCT + ORDER BY must share the expression",
+      "What array_agg Collects and the Implicit Single-Group Rule",
+      "No GROUP BY Means One Implicit Group",
+      "Ordering Is Non-Deterministic by Default",
+      "NULLs Are Included by Default",
+      "Empty Input Returns NULL, not {}",
+      "DISTINCT + ORDER BY Must Share the Expression",
       "array_agg vs jsonb_agg",
-      "Canonical shape for \"safe\" usage",
+      "Canonical Shape for \"safe\" Usage",
       "Related Concepts"
     ],
     "flashcard_ids": [],
@@ -1612,14 +1614,14 @@
     ],
     "sections": [
       "TL;DR",
-      "Three-valued logic is the root cause",
-      "The NOT IN trap",
-      "UNIQUE does not constrain NULLs",
-      "Partial unique indexes",
-      "Nullable foreign keys",
-      "Migrating to NOT NULL is expensive",
-      "When NULL is the right choice",
-      "Sentinels masquerading as values",
+      "Three-valued Logic Is the Root Cause",
+      "The NOT IN Trap",
+      "UNIQUE Does not Constrain NULLs",
+      "Partial Unique Indexes",
+      "Nullable Foreign Keys",
+      "Migrating to NOT NULL Is Expensive",
+      "When NULL Is the Right Choice",
+      "Sentinels Masquerading as Values",
       "Related Concepts"
     ],
     "flashcard_ids": [],
@@ -1664,11 +1666,11 @@
     ],
     "sections": [
       "TL;DR",
-      "Control-flow analysis and what it narrows",
-      "A discriminated union needs a top-level literal discriminant",
-      "Nested discriminants do not narrow the parent union",
-      "Cleaner fixes for a nested discriminant",
-      "strictNullChecks does not defeat a clean boolean discriminant",
+      "Control-flow Analysis and What It Narrows",
+      "A Discriminated Union Needs a Top-Level Literal Discriminant",
+      "Nested Discriminants Do not Narrow the Parent Union",
+      "Cleaner Fixes for a Nested Discriminant",
+      "strictNullChecks Does not Defeat a Clean Boolean Discriminant",
       "Related Concepts",
       "References"
     ],
@@ -1694,11 +1696,11 @@
     ],
     "sections": [
       "TL;DR",
-      "User-defined type guards are unchecked assertions",
-      "Inferred type predicates and the four conditions",
-      "filter and every narrow, filter(Boolean) does not",
-      "Unsound shortcut versus sound check",
-      "Generic guards with Extract",
+      "User-defined Type Guards Are Unchecked Assertions",
+      "Inferred Type Predicates and the Four Conditions",
+      "filter and Every Narrow, filter(Boolean) Does not",
+      "Unsound Shortcut Versus Sound Check",
+      "Generic Guards with Extract",
       "Related Concepts",
       "References"
     ],
