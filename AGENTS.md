@@ -37,7 +37,7 @@ Applies to every skill in this repo.
 
 The wiki content lives in `wiki/`, organized by topic folders (e.g., `wiki/javascript/react/`, `wiki/security/`). The Obsidian vault is the **repo root** (name `study`); non-wiki content is hidden from it — see [Hiding non-wiki content](#hiding-non-wiki-content).
 
-Flashcards are the study lever; the wiki is for reading. Pages still carry `next_review`/`review_interval` and still count toward the SRS pressure wiki axis: `/study` Phase 3 opens each due page in the browser for the developer to read (and optionally ask questions or request refinements), then reschedules it as if rated Good (interval × 2.5) on "next".
+Flashcards are the study lever; the wiki is for reading. Pages still carry `next_review`/`review_interval` and still count toward the SRS pressure wiki axis: `/study` Phase 2 (before the flashcard loop) opens each due page in the browser for the developer to read (and optionally ask questions or request refinements), then reschedules it as if rated Good (interval × 2.5) on "next".
 
 ### Page Format
 

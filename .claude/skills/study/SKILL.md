@@ -77,19 +77,19 @@ This skill requires the `flashcard-mcp` MCP server running from `~/Code/Misc/fla
 
 `scripts/srs-pressure --human` is the **single source of truth** for flashcard due counts and the pressure verdict. Do **not** call `mcp__flashcard-mcp__get_due_cards` for pressure counts — it caps at 30 and underreports.
 
-**Report the verdict token verbatim — never infer it from the prose.** The first line of `scripts/srs-pressure --human` is the canonical verdict: `SRS pressure: OK`, `SRS pressure: WARN`, or `SRS pressure: PAUSE`. Use exactly that word (`ok` / `warn` / `pause`) in your opening line. Do **not** read the level off the recommendation prose — the `warn` header contains the phrase "we recommend pausing", which is *not* the `pause` verdict. (`warn` = "we recommend pausing"; `pause` = "Danger! …well past the recommended pause point".) The verdict token you report is also the one that sets `maxNewCards` in Phase 2 — no axis-level reinterpretation.
+**Report the verdict token verbatim — never infer it from the prose.** The first line of `scripts/srs-pressure --human` is the canonical verdict: `SRS pressure: OK`, `SRS pressure: WARN`, or `SRS pressure: PAUSE`. Use exactly that word (`ok` / `warn` / `pause`) in your opening line. Do **not** read the level off the recommendation prose — the `warn` header contains the phrase "we recommend pausing", which is *not* the `pause` verdict. (`warn` = "we recommend pausing"; `pause` = "Danger! …well past the recommended pause point".) The verdict token you report is also the one that sets `maxNewCards` in Phase 3 — no axis-level reinterpretation.
 
 **Always surface the clearance numbers.** When the verdict is `warn` or `pause`, the script prints a `To clear pressure:` block stating, per axis, how many flashcards / wiki pages must be reviewed to drop below the warn line (and, in `pause`, below the pause line first). Carry these numbers into your opening message verbatim so the developer always knows the exact count to clear to leave the pressure phase — e.g. "clear 12 wiki pages to exit warn". The same numbers are in the `clearance` object of `--json` if you need them programmatically.
 
-`scripts/wiki-due --human` returns the full formatted list of due wiki entries. Print it directly in the opening message — this is informational only, wiki review happens after flashcards (Phase 3).
+`scripts/wiki-due --human` returns the full formatted list of due wiki entries. Print it directly in the opening message — wiki review is the first study phase (Phase 2), before flashcards.
 
-**Calibration.** `scripts/study-calibration --human` reports true retention over the trailing window and a verdict token: `OVER-DIFFICULT`, `CALIBRATED`, `UNDER-DIFFICULT`, or `LOW-SIGNAL`. Report the token verbatim — never infer it from the retention number, and never recompute retention yourself. It drives the difficulty levers in Phase 2. Surface it as one line in the opening message; if the script is missing or errors, treat the session as `LOW-SIGNAL` (levers stay at their `CALIBRATED` defaults) and note it in one line.
+**Calibration.** `scripts/study-calibration --human` reports true retention over the trailing window and a verdict token: `OVER-DIFFICULT`, `CALIBRATED`, `UNDER-DIFFICULT`, or `LOW-SIGNAL`. Report the token verbatim — never infer it from the retention number, and never recompute retention yourself. It drives the difficulty levers in Phase 3. Surface it as one line in the opening message; if the script is missing or errors, treat the session as `LOW-SIGNAL` (levers stay at their `CALIBRATED` defaults) and note it in one line.
 
-**Leech list.** `scripts/study-leeches --human` returns the leech candidates, silently. A card with **5 or more lapses** is a leech: repeated failure at this count means the *card* is the problem, not the recall. The script owns the whole filter — threshold, the suspended-card exclusion, and the ordering — so do not re-derive any of it and do not substitute a `get_stats` call. Hold the returned card ids for the session and act per the leech rule in Phase 2. Do not print the list in the opening message — a count is enough (`3 leeches flagged`), and only when non-zero. If the script is missing or errors, note it in one line and run the session without a leech list.
+**Leech list.** `scripts/study-leeches --human` returns the leech candidates, silently. A card with **5 or more lapses** is a leech: repeated failure at this count means the *card* is the problem, not the recall. The script owns the whole filter — threshold, the suspended-card exclusion, and the ordering — so do not re-derive any of it and do not substitute a `get_stats` call. Hold the returned card ids for the session and act per the leech rule in Phase 3. Do not print the list in the opening message — a count is enough (`3 leeches flagged`), and only when non-zero. If the script is missing or errors, note it in one line and run the session without a leech list.
 
 **The list is already in priority order** — lapses descending, then lowest FSRS `stability`. Walk it in order; the tie-break is applied for you.
 
-Emit one opening message with the pressure verdict, the clearance numbers, the wiki due list, then **immediately start Phase 2 (flashcard loop)** — no confirmation gate, no "ready?", no "say open N".
+Emit one opening message with the pressure verdict, the clearance numbers, the wiki due list, then **immediately start Phase 2 (wiki review)** — no confirmation gate, no "ready?", no "say open N". If nothing is due on the wiki axis, that means going straight into the flashcard loop.
 
 Example when the verdict is `warn` (driven by the wiki axis):
 
@@ -109,7 +109,48 @@ Example when nothing is due:
 > **Pressure:** clear — nothing due today. You're all caught up!
 > Want to: add new cards, revisit a wiki page with /study-walkthrough, or call it a day?
 
-### Phase 2: Flashcard Study Loop (1 card per message)
+### Phase 2: Wiki Review (before flashcards)
+
+Wiki reading comes **first**, while attention is freshest. Present the due wiki pages **in the order `scripts/wiki-due` returned them — most due first, least due last.** Do not ask the developer which page to open; do not present the list again as a menu. Start immediately with the most-due page and open it in the browser — the developer reads it, at their own pace, and can ask questions or request refinements. The only choices the developer makes are per-page actions (next / keep it close / push it out / discuss / walkthrough / skip) and the global escape ("skip wiki" / "done with wiki" → Phase 3).
+
+> **11 wiki pages are due** — reading those first, most-due first. Say "skip wiki" any time to jump straight to the flashcards.
+>
+> First up: [[llm/embeddings-vs-embedding-layer]] (due 3d ago, interval: 8d). Opened in the browser — read through it whenever you're ready. Say "next" to move on, "keep it close" / "push it out" to adjust the reschedule, "discuss" to dig into something, or "skip" to leave its schedule untouched.
+
+If there were no due wiki entries, go straight to Phase 3.
+
+**Review loop for each entry** (start at the top of the due list, advance down it):
+
+1. Take the next page in due order automatically — no "which one?" prompt.
+2. **Open it in the browser first** — before any discussion, not after — using the "Show in browser" flow from `references/wiki-write-protocol.md`. Name the page (wikilink, due date, current interval) in the same message.
+3. **Stay available while the developer reads.** They may ask questions ("discuss") or request a deeper pass ("walkthrough") about the page's content — handle those via Mid-Session Actions, then return to the same page rather than advancing.
+4. **Wait for explicit "next" before advancing.** Hard pause — no auto-advance, no per-section questions, no rating.
+5. On "next", run `scripts/wiki-reschedule wiki/<path>.md 3` — reading counts as Good. Confirm briefly: `Rescheduled at Good (3) — next review in 12 days (2026-08-09)`. Then advance to the next page.
+6. "keep it close" / "push it out" (see Mid-review actions) substitute a different rating for that one page instead of the default 3, then advance the same way.
+7. After all entries are read (or "done with wiki"), go to Phase 3 (flashcards).
+
+**Wiki scheduling algorithm** (`scripts/wiki-reschedule`, source `scripts/wiki/reschedule.py`) — unchanged, just always invoked at rating 3 unless overridden:
+
+| Rating | Formula | Min |
+|--------|---------|-----|
+| Again (1) | reset to 1 | — |
+| Hard (2) | interval × 1.2 | 3 |
+| Good (3) | interval × 2.5 | — |
+| Easy (4) | interval × 4.0 | — |
+
+**Mid-review actions:**
+- "next" — Reschedule at Good (3) and advance
+- "keep it close" — Reschedule at Hard (2) instead — a smaller bump, for a page that needs to resurface soon — and advance
+- "push it out" — Reschedule at Easy (4) instead — a bigger bump, for a page that's solid — and advance
+- "discuss" / "tell me more" — Explain in depth, then stay on the same page
+- "walkthrough" / "go deeper" — Chain into `/study-walkthrough`, then return to the same page
+- "skip" — Advance without rescheduling (the page's `next_review`/`review_interval` stay as they were)
+- "done with wiki" / "skip wiki" — End wiki review, go to Phase 3
+
+**Track wiki pages read** internally for the session log:
+- Pages read, the rating used per page (and whether it was an override), pages skipped
+
+### Phase 3: Flashcard Study Loop (1 card per message)
 
 **`start_session` config — derive `maxNewCards` from the Phase 1 pressure verdict.**
 
@@ -121,7 +162,7 @@ Example when nothing is due:
 
 **The trigger is the overall verdict, whichever axis raised it — never a single axis.** A `pause` driven only by the wiki backlog still means `maxNewCards: 0`. New cards are new load on the same developer, so a wiki backlog counts against them exactly like a flashcard backlog does; over-adding under load is the recurring failure mode (see `feedback_srs_over_adding`). Do not reason from `flashcards due` in isolation to justify pulling new cards. The developer can override explicitly ("include new cards anyway") — pass their requested number and note the override in the session log.
 
-**Surface the cap in the opening line of Phase 2** so the developer never wonders where the new cards went. Example:
+**Surface the cap in the opening line of Phase 3** so the developer never wonders where the new cards went. Example:
 
 > Starting session — 4 due (3 relearning + 1 review), 18 new held back (pressure: warn). `maxNewCards: 0`.
 
@@ -138,7 +179,7 @@ Example when nothing is due:
 
 **The rating rubric is never a lever.** The Again/Hard/Good/Easy definitions in step 4 are fixed and must not shift with the verdict. The loop is self-referential — Claude's own ratings produce the retention number that tunes Claude — so the cheapest way to raise retention would be to grade more leniently. Adjusting *which questions get asked* is in scope; adjusting *what counts as correct* is not, and that boundary is what keeps the metric meaningful.
 
-**State the adjustment when it moves off `CALIBRATED`.** One clause in the Phase 2 opening line, so every automatic softening or sharpening is visible and can be overridden: `Retention 74% (over-difficult) — follow-ups and generation prompts off this session.` The developer can override any lever explicitly ("keep the follow-ups"); honor it and note the override in the session log.
+**State the adjustment when it moves off `CALIBRATED`.** One clause in the Phase 3 opening line, so every automatic softening or sharpening is visible and can be overridden: `Retention 74% (over-difficult) — follow-ups and generation prompts off this session.` The developer can override any lever explicitly ("keep the follow-ups"); honor it and note the override in the session log.
 
 If cards span multiple decks, **interleave** them — don't exhaust one deck before starting the next. Mix topics to strengthen cross-domain connections.
 
@@ -162,7 +203,7 @@ If cards span multiple decks, **interleave** them — don't exhaust one deck bef
 
 Then loop:
 
-1. **Call `get_next_card`** — if null, go to Phase 3 (Wiki Review)
+1. **Call `get_next_card`** — if null, go to Phase 4 (Session Summary)
 2. **Present the card front**, followed by a small italic footer listing mid-session actions:
    > *(discuss · edit · split · delete · reschedule · show in browser)*
 2a. **Stage the front as a concrete scenario, not a bare prompt.** Default to a fenced snippet, a real header, a JSON payload, or plausible values the developer must reason over, then ask what happens / what breaks / what the output is / what's wrong with a stated claim. Putting a wrong opinion in a colleague's mouth ("A colleague says: …") is a good shape for judgment cards. Example contrast:
@@ -222,47 +263,6 @@ Then loop:
 **Track session data** internally for the log:
 - Cards reviewed (unique cards), repeats served, ratings given, lapses (Again ratings), start time
 
-### Phase 3: Wiki Review (after flashcards)
-
-When the flashcard queue is exhausted, present the due wiki pages **in the order `scripts/wiki-due` returned them — most due first, least due last.** Do not ask the developer which page to open; do not present the list again as a menu. Start immediately with the most-due page and open it in the browser — the developer reads it, at their own pace, and can ask questions or request refinements. The only choices the developer makes are per-page actions (next / keep it close / push it out / discuss / walkthrough / skip) and the global escape ("skip wiki" / "done with wiki" → Phase 4).
-
-> **Flashcards done.** 11 wiki pages are due. Going through them most-due first — say "skip wiki" any time to jump to the summary.
->
-> First up: [[llm/embeddings-vs-embedding-layer]] (due 3d ago, interval: 8d). Opened in the browser — read through it whenever you're ready. Say "next" to move on, "keep it close" / "push it out" to adjust the reschedule, "discuss" to dig into something, or "skip" to leave its schedule untouched.
-
-If there were no due wiki entries, go straight to Phase 4.
-
-**Review loop for each entry** (start at the top of the due list, advance down it):
-
-1. Take the next page in due order automatically — no "which one?" prompt.
-2. **Open it in the browser first** — before any discussion, not after — using the "Show in browser" flow from `references/wiki-write-protocol.md`. Name the page (wikilink, due date, current interval) in the same message.
-3. **Stay available while the developer reads.** They may ask questions ("discuss") or request a deeper pass ("walkthrough") about the page's content — handle those via Mid-Session Actions, then return to the same page rather than advancing.
-4. **Wait for explicit "next" before advancing.** Hard pause — no auto-advance, no per-section questions, no rating.
-5. On "next", run `scripts/wiki-reschedule wiki/<path>.md 3` — reading counts as Good. Confirm briefly: `Rescheduled at Good (3) — next review in 12 days (2026-08-09)`. Then advance to the next page.
-6. "keep it close" / "push it out" (see Mid-review actions) substitute a different rating for that one page instead of the default 3, then advance the same way.
-7. After all entries are read (or "done with wiki"), go to Phase 4.
-
-**Wiki scheduling algorithm** (`scripts/wiki-reschedule`, source `scripts/wiki/reschedule.py`) — unchanged, just always invoked at rating 3 unless overridden:
-
-| Rating | Formula | Min |
-|--------|---------|-----|
-| Again (1) | reset to 1 | — |
-| Hard (2) | interval × 1.2 | 3 |
-| Good (3) | interval × 2.5 | — |
-| Easy (4) | interval × 4.0 | — |
-
-**Mid-review actions:**
-- "next" — Reschedule at Good (3) and advance
-- "keep it close" — Reschedule at Hard (2) instead — a smaller bump, for a page that needs to resurface soon — and advance
-- "push it out" — Reschedule at Easy (4) instead — a bigger bump, for a page that's solid — and advance
-- "discuss" / "tell me more" — Explain in depth, then stay on the same page
-- "walkthrough" / "go deeper" — Chain into `/study-walkthrough`, then return to the same page
-- "skip" — Advance without rescheduling (the page's `next_review`/`review_interval` stay as they were)
-- "done with wiki" / "skip wiki" — End wiki review, go to Phase 4
-
-**Track wiki pages read** internally for the session log:
-- Pages read, the rating used per page (and whether it was an override), pages skipped
-
 ### Phase 4: Session Summary (1 message)
 
 > **Session complete** — 12 cards in 11 minutes
@@ -277,7 +277,7 @@ If there were no due wiki entries, go straight to Phase 4.
 - Over 2 hours, or interrupted by a long gap → report cards and accuracy, and mark the span as inclusive of breaks: `17 cards over 5h56m (with breaks)`. Never present an idle-inflated span as study time.
 - Never invent a duration you didn't observe. If the session's start is unknown (resumed context, unclear first card), omit the duration line rather than estimating.
 
-**Close the session with `end_session`.** After the summary, call `end_session` with the session id. Reviews do not close a session — `submit_review` no longer stamps `endTime`, so `endTime` now means "this session was ended" and nothing else. Call it here and on every exit path: "done" / "stop" / "end", and when a session is abandoned mid-way. The call is idempotent, so calling it twice is harmless. Also don't call `start_session` until Phase 2 actually begins — never speculatively in Phase 1.
+**Close the session with `end_session`.** After the summary, call `end_session` with the session id. Reviews do not close a session — `submit_review` no longer stamps `endTime`, so `endTime` now means "this session was ended" and nothing else. Call it here and on every exit path: "done" / "stop" / "end", and when a session is abandoned mid-way. The call is idempotent, so calling it twice is harmless. Also don't call `start_session` until Phase 3 actually begins — never speculatively in Phase 1 or during wiki review.
 
 A session that reviewed nothing is discarded automatically the next time `start_session` runs, so abandoned empty rows no longer pile up. A session that *did* review cards and was never closed keeps `endTime: null` on purpose — we don't know when it ended, and stamping it later would invent a duration.
 
@@ -395,7 +395,7 @@ If developer says "actually harder" or "actually easier" after feedback, acknowl
 
 **Never:**
 - Author a cloze-deletion card (`{{c1::…}}`) — cards are question/answer style, and existing clozes get offered a Q/A rewrite
-- Let the calibration verdict touch the rating rubric — see "The rating rubric is never a lever" in Phase 2
+- Let the calibration verdict touch the rating rubric — see "The rating rubric is never a lever" in Phase 3
 - Stack more than one follow-up onto a Good answer — see the precedence list in step 5
 - Report a duration you didn't measure — see the duration rule in Phase 4
 - Show the answer before the developer attempts a response
