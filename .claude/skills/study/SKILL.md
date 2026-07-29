@@ -77,7 +77,7 @@ This skill requires the `flashcard-mcp` MCP server running from `~/Code/Misc/fla
 
 `scripts/srs-pressure --human` is the **single source of truth** for flashcard due counts and the pressure verdict. Do **not** call `mcp__flashcard-mcp__get_due_cards` for pressure counts — it caps at 30 and underreports.
 
-**Report the verdict token verbatim — never infer it from the prose.** The first line of `scripts/srs-pressure --human` is the canonical verdict: `SRS pressure: OK`, `SRS pressure: WARN`, or `SRS pressure: PAUSE`. Use exactly that word (`ok` / `warn` / `pause`) in your opening line. Do **not** read the level off the recommendation prose — the `warn` header contains the phrase "we recommend pausing", which is *not* the `pause` verdict. (`warn` = "we recommend pausing"; `pause` = "Danger! …well past the recommended pause point".) When the level matters for `maxNewCards`, it is driven by the `flashcards due` axis per the Phase 2 table, independent of which axis triggered the overall verdict.
+**Report the verdict token verbatim — never infer it from the prose.** The first line of `scripts/srs-pressure --human` is the canonical verdict: `SRS pressure: OK`, `SRS pressure: WARN`, or `SRS pressure: PAUSE`. Use exactly that word (`ok` / `warn` / `pause`) in your opening line. Do **not** read the level off the recommendation prose — the `warn` header contains the phrase "we recommend pausing", which is *not* the `pause` verdict. (`warn` = "we recommend pausing"; `pause` = "Danger! …well past the recommended pause point".) The verdict token you report is also the one that sets `maxNewCards` in Phase 2 — no axis-level reinterpretation.
 
 **Always surface the clearance numbers.** When the verdict is `warn` or `pause`, the script prints a `To clear pressure:` block stating, per axis, how many flashcards / wiki pages must be reviewed to drop below the warn line (and, in `pause`, below the pause line first). Carry these numbers into your opening message verbatim so the developer always knows the exact count to clear to leave the pressure phase — e.g. "clear 12 wiki pages to exit warn". The same numbers are in the `clearance` object of `--json` if you need them programmatically.
 
@@ -115,11 +115,11 @@ Example when nothing is due:
 
 | Pressure verdict | `maxNewCards` | `maxReviewCards` |
 |------------------|--------------:|-----------------:|
-| `ok` (< 20 due) | 5 (default) | 15 (default) |
-| `warn` (≥ 20 due) | **0** | 15 |
-| `pause` (≥ 50 due) | **0** | 15 |
+| `ok` | 5 (default) | 15 (default) |
+| `warn` | **0** | 15 |
+| `pause` | **0** | 15 |
 
-The warn-threshold cap exists because over-adding under load is the recurring failure mode (see `feedback_srs_over_adding`). The pressure script's `flashcards due` count is the trigger — not the wiki/new-today axes. Note `flashcards due` is the **review backlog only** (learning + review + relearning); it excludes the new-card pool, which the script reports separately as `new available`. So a deck with many new cards and no backlog reads `ok` and pulls the default 5 new — new material is meant to be learned, not held back. The developer can override explicitly ("include new cards anyway") — pass their requested number and note the override in the session log.
+**The trigger is the overall verdict, whichever axis raised it — never a single axis.** A `pause` driven only by the wiki backlog still means `maxNewCards: 0`. New cards are new load on the same developer, so a wiki backlog counts against them exactly like a flashcard backlog does; over-adding under load is the recurring failure mode (see `feedback_srs_over_adding`). Do not reason from `flashcards due` in isolation to justify pulling new cards. The developer can override explicitly ("include new cards anyway") — pass their requested number and note the override in the session log.
 
 **Surface the cap in the opening line of Phase 2** so the developer never wonders where the new cards went. Example:
 
