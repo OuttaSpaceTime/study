@@ -120,8 +120,8 @@ class TestUpdateEntry:
         assert entry["aliases"] == ["test alias", "another alias"]
         assert entry["tags"] == ["git", "testing"]
         assert entry["created"] == "2026-04-09"
-        assert entry["next_review"] == "2026-04-12"
-        assert entry["review_interval"] == 3
+        assert "next_review" not in entry
+        assert "review_interval" not in entry
         assert "probe_sections" not in entry
         assert "last_probed" not in entry
 
@@ -169,7 +169,7 @@ class TestReindexAll:
         self._stale_index(wiki_dir, "git/test-page")
         entry = reindex_all(wiki_dir)["git/test-page"]
         assert entry["tags"] == ["git", "testing"]
-        assert entry["next_review"] == "2026-04-12"
+        assert entry["sections"] == ["Section One", "Section Two"]
 
     def test_survives_a_previous_entry_with_no_updated_key(self, wiki_dir: Path, sample_page: Path):
         """A hand-edited or older-schema index must not crash the tool meant to fix it."""

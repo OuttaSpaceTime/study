@@ -1,31 +1,15 @@
-"""Tests for scripts.wiki.write._fill_defaults."""
+"""Tests for scripts.wiki.write._ensure_flashcard_ids."""
 
-from datetime import date, timedelta
-from pathlib import Path
-
-from scripts.wiki.write import _fill_defaults
+from scripts.wiki.write import _ensure_flashcard_ids
 
 
-def test_fills_review_fields_on_content_page(tmp_path: Path):
-    page = tmp_path / "git" / "test-page.md"
-    page.parent.mkdir(parents=True)
-    page.touch()
+def test_fills_flashcard_ids_when_missing():
     meta: dict = {}
-    changed = _fill_defaults(page, meta)
-    assert changed is True
-    assert meta["review_interval"] == 3
-    assert meta["next_review"] == (date.today() + timedelta(days=3)).isoformat()
-    assert "depth" not in meta
-    assert meta["flashcard_ids"] == []
+    assert _ensure_flashcard_ids(meta) is True
+    assert meta == {"flashcard_ids": []}
 
 
-def test_skips_review_fields_on_index_page(tmp_path: Path):
-    page = tmp_path / "git" / "git-index.md"
-    page.parent.mkdir(parents=True)
-    page.touch()
-    meta: dict = {}
-    _fill_defaults(page, meta)
-    assert "review_interval" not in meta
-    assert "next_review" not in meta
-    assert "depth" not in meta
-    assert meta["flashcard_ids"] == []
+def test_leaves_existing_flashcard_ids_untouched():
+    meta: dict = {"flashcard_ids": ["cmne7xz9202lx0msonsbfhp3j"]}
+    assert _ensure_flashcard_ids(meta) is False
+    assert meta["flashcard_ids"] == ["cmne7xz9202lx0msonsbfhp3j"]

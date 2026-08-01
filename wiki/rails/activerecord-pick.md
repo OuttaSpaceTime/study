@@ -11,8 +11,6 @@ tags:
 created: '2026-04-09'
 updated: '2026-04-09'
 source_skill: study-card
-next_review: '2026-08-28'
-review_interval: 75
 flashcard_ids: []
 ---
 

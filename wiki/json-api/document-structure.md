@@ -13,8 +13,6 @@ created: '2026-05-08'
 updated: '2026-07-29'
 source_skill: study-walkthrough
 flashcard_ids: []
-review_interval: 10
-next_review: '2026-07-21'
 ---
 
 # JSON:API document structure

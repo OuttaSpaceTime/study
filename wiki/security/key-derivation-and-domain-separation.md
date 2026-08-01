@@ -18,8 +18,6 @@ flashcard_ids:
 - cmrq07etm000fgl0m8ceqwt7m
 - cmrq07g3m000ggl0mvxnqgddj
 - cmne7xtdc015z0msomwlu8l9d
-review_interval: 3
-next_review: '2026-07-21'
 ---
 
 # Key Derivation and Domain Separation

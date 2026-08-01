@@ -12,8 +12,6 @@ created: '2026-04-10'
 updated: '2026-04-10'
 source_skill: study-walkthrough
 flashcard_ids: []
-next_review: '2026-08-06'
-review_interval: 30
 ---
 
 # index_with

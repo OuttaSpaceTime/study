@@ -10,14 +10,11 @@ tags:
 created: '2026-07-24'
 updated: '2026-07-24'
 source_skill: study-walkthrough
-last_deepened: '2026-07-24'
 flashcard_ids:
 - cmryjbp5600004a0mvoh3k398
 - cmryjbr2d00014a0mqbyls1e7
 - cmryjbszm00024a0mleqwrfsr
 - cmryjbulo00034a0mxj33riwf
-review_interval: 3
-next_review: '2026-07-27'
 ---
 
 # Reading beyond the diff

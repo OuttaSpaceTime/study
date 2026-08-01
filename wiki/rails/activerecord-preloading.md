@@ -17,8 +17,6 @@ source_skill: study-walkthrough
 flashcard_ids:
 - cmosqcwsg0000h30mvfne2v51
 - cmosqd3r80001h30mwd2tbpht
-review_interval: 45
-next_review: '2026-07-23'
 ---
 
 # ActiveRecord preloading: joins, preload, eager_load, includes

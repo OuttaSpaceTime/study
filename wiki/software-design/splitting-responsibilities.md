@@ -14,12 +14,9 @@ tags:
 created: '2026-07-02'
 updated: '2026-07-02'
 source_skill: study-walkthrough
-last_deepened: '2026-07-02'
 flashcard_ids:
 - cmr3h5scb0003vi0mlc9rdm2i
 - cmr3h5u7c0004vi0mk8acp5vl
-review_interval: 8
-next_review: '2026-07-29'
 ---
 
 # Splitting responsibilities

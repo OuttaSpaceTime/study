@@ -17,8 +17,6 @@ created: '2026-06-14'
 updated: '2026-06-14'
 source_skill: study-walkthrough
 flashcard_ids: []
-review_interval: 20
-next_review: '2026-07-24'
 ---
 
 # Upsert and concurrent inserts

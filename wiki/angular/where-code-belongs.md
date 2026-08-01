@@ -13,13 +13,10 @@ tags:
 created: '2026-07-02'
 updated: '2026-07-21'
 source_skill: study-walkthrough
-last_deepened: '2026-07-02'
 flashcard_ids:
 - cmr3kzoif0005vi0m6saz3h2t
 - cmr3kzuq10007vi0ml2cjtub2
 - cmr3kzwwp0008vi0macw7zben
-review_interval: 4
-next_review: '2026-07-25'
 ---
 
 # Where code belongs

@@ -13,8 +13,6 @@ created: '2026-04-09'
 updated: '2026-04-09'
 source_skill: study-walkthrough
 flashcard_ids: []
-next_review: '2026-08-10'
-review_interval: 24
 ---
 
 # Schema Composition

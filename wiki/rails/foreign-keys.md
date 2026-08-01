@@ -18,8 +18,6 @@ flashcard_ids:
 - cmq8hw4vw0000j70mqz3fb339
 - cmq8hw75w0001j70mf0kbcv8t
 - cmq8hwa0t0002j70mfor6qqf7
-next_review: '2026-08-28'
-review_interval: 30
 ---
 
 # Foreign keys

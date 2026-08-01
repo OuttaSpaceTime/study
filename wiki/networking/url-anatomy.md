@@ -16,8 +16,6 @@ updated: '2026-05-04'
 source_skill: study-walkthrough
 flashcard_ids:
 - cmoqrprzu0000ld0mfbwqly5v
-review_interval: 10
-next_review: '2026-07-11'
 ---
 
 # URL Anatomy

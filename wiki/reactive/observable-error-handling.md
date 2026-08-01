@@ -14,8 +14,6 @@ created: '2026-05-07'
 updated: '2026-07-31'
 source_skill: study-walkthrough
 flashcard_ids: []
-review_interval: 38
-next_review: '2026-09-07'
 ---
 
 # Observable Error Handling

@@ -18,8 +18,6 @@ flashcard_ids:
 - cmqu0ts1l0005150mcb26qlt0
 - cmqu0ttxx0006150myqedtn6q
 - cmqu0tvnw0007150msfy24wz5
-review_interval: 8
-next_review: '2026-07-19'
 ---
 
 # Database transactions

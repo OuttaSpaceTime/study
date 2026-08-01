@@ -15,8 +15,6 @@ source_skill: study-walkthrough
 flashcard_ids:
 - cmruqtu290004qo0meh4jat6l
 - cmruqtwrm0005qo0m1zn2mdei
-review_interval: 4
-next_review: '2026-07-25'
 ---
 
 # Software complexity

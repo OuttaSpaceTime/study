@@ -13,13 +13,10 @@ tags:
 created: '2026-07-02'
 updated: '2026-07-02'
 source_skill: study-walkthrough
-last_deepened: '2026-07-02'
 flashcard_ids:
 - cmr352mhn0000vi0my4yi3fk0
 - cmr352oou0001vi0m2ma2kmqz
 - cmr352qkt0002vi0mmvsrf7ou
-review_interval: 8
-next_review: '2026-07-28'
 ---
 
 # Judging abstractions

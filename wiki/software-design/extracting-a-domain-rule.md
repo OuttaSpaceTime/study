@@ -18,8 +18,6 @@ flashcard_ids:
 - cmruqe6da0001qo0mj1zcggx0
 - cmruqe9fe0002qo0mx0jabxcf
 - cmruqebt50003qo0mufs2q74k
-review_interval: 3
-next_review: '2026-07-24'
 ---
 
 # Extracting a domain rule

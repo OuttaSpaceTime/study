@@ -16,9 +16,6 @@ class TestParseFrontmatter:
             updated: 2026-04-09
             source_skill: study-walkthrough
             flashcard_ids: [cmne7xz9202lx0msonsbfhp3j, cmne7xz1y02k30msouw64srcz]
-            last_deepened: 2026-04-09
-            next_review: 2026-04-12
-            review_interval: 3
             ---
 
             # git restore
@@ -31,8 +28,6 @@ class TestParseFrontmatter:
         assert meta["tags"] == ["git", "version-control"]
         assert meta["created"] == "2026-04-09"
         assert meta["updated"] == "2026-04-09"
-        assert meta["next_review"] == "2026-04-12"
-        assert meta["review_interval"] == 3
         assert "# git restore" in body
 
     def test_flashcard_ids_are_strings(self):
@@ -71,13 +66,13 @@ class TestParseFrontmatter:
             title: "test"
             tags: [test]
             created: 2026-04-09
-            review_interval: 38
+            word_count: 38
             ---
 
             Body.
         """)
         meta, _ = parse_frontmatter(content)
-        assert meta["review_interval"] == 38
+        assert meta["word_count"] == 38
 
     def test_empty_flashcard_ids(self):
         content = textwrap.dedent("""\
@@ -98,8 +93,7 @@ class TestParseFrontmatter:
             ---
             title: "test"
             created: 2026-04-09
-            updated: 2026-04-09
-            next_review: 2026-04-12
+            updated: 2026-04-12
             tags: [test]
             ---
 
@@ -108,7 +102,8 @@ class TestParseFrontmatter:
         meta, _ = parse_frontmatter(content)
         assert isinstance(meta["created"], str)
         assert meta["created"] == "2026-04-09"
-        assert isinstance(meta["next_review"], str)
+        assert isinstance(meta["updated"], str)
+        assert meta["updated"] == "2026-04-12"
 
     def test_no_frontmatter(self):
         content = "# Just a heading\n\nSome content.\n"
@@ -135,7 +130,6 @@ class TestParseFrontmatter:
         meta, _ = parse_frontmatter(content)
         assert meta["title"] == "minimal page"
         assert "flashcard_ids" not in meta
-        assert "next_review" not in meta
 
 
 class TestSlugify:

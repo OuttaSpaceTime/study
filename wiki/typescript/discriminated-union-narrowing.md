@@ -13,8 +13,6 @@ created: '2026-07-15'
 updated: '2026-07-15'
 source_skill: study-walkthrough
 flashcard_ids: []
-review_interval: 3
-next_review: '2026-07-18'
 ---
 
 # Discriminated union narrowing

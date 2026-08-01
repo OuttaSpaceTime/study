@@ -31,8 +31,6 @@ def sample_page(wiki_dir: Path) -> Path:
         updated: 2026-04-09
         source_skill: study-walkthrough
         flashcard_ids: [cmne7xz9202lx0msonsbfhp3j, cmne7xz1y02k30msouw64srcz, cmne7xyv602if0msoa0ryw0o7]
-        next_review: 2026-04-12
-        review_interval: 3
         ---
 
         # test page

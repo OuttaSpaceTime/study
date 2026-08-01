@@ -11,8 +11,6 @@ created: '2026-05-07'
 updated: '2026-05-07'
 source_skill: study-walkthrough
 flashcard_ids: []
-review_interval: 18
-next_review: '2026-07-13'
 ---
 
 # CSRF (Cross-Site Request Forgery)

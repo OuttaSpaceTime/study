@@ -13,13 +13,10 @@ tags:
 created: '2026-07-02'
 updated: '2026-07-02'
 source_skill: study-walkthrough
-last_deepened: '2026-07-02'
 flashcard_ids:
 - cmr3mfpvn000avi0mwndjb23g
 - cmr3mfs9b000bvi0mqigj0v9j
 - cmr3mfu74000cvi0mp1wy11c5
-review_interval: 8
-next_review: '2026-07-29'
 ---
 
 # Reading code for intent

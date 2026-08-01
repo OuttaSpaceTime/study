@@ -13,8 +13,6 @@ created: '2026-05-07'
 updated: '2026-05-07'
 source_skill: study-walkthrough
 flashcard_ids: []
-review_interval: 50
-next_review: '2026-08-30'
 ---
 
 # Reactive Programming

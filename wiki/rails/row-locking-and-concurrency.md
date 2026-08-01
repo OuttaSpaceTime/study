@@ -22,8 +22,6 @@ flashcard_ids:
 - cmqu0u0ef000a150muv3hmvrl
 - cmqu0u1ur000b150m6ttrks13
 - cmqu0u3eu000c150m44rrl72z
-review_interval: 5
-next_review: '2026-08-03'
 ---
 
 # Row locking and concurrency

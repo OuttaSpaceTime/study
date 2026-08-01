@@ -15,8 +15,6 @@ source_skill: study-walkthrough
 flashcard_ids:
 - cmruqtz2l0006qo0mqs7euwx0
 - cmruqu0wr0007qo0morqmixps
-review_interval: 8
-next_review: '2026-07-30'
 ---
 
 # Delegating to agents without losing the map

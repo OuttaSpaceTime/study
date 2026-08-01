@@ -16,9 +16,6 @@ tags:
 created: '2026-05-05'
 updated: '2026-07-29'
 source_skill: study-walkthrough
-last_deepened: '2026-05-05'
-review_interval: 5
-next_review: '2026-07-22'
 allow_orphan: true
 flashcard_ids: []
 ---

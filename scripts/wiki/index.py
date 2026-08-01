@@ -90,8 +90,6 @@ def derive_entry(wiki_dir: Path, page_path: Path) -> dict:
         "flashcard_ids": meta.get("flashcard_ids", []),
         "created": meta.get("created", today),
         "updated": today,
-        "next_review": meta.get("next_review", ""),
-        "review_interval": meta.get("review_interval"),
     }
 
 
