@@ -12,11 +12,11 @@ tags:
 - signals
 - rxjs
 created: '2026-05-07'
-updated: '2026-06-25'
+updated: '2026-07-31'
 source_skill: study-walkthrough
 last_deepened: '2026-05-07'
-next_review: '2026-07-10'
-review_interval: 14
+next_review: '2026-08-17'
+review_interval: 17
 flashcard_ids: []
 ---
 
@@ -54,6 +54,18 @@ The walk is top-down for correctness, not just convenience:
 
 - **Data flows down.** A parent's bindings feed child `@Input()`s, so parents must update before children (the same invariant behind `ExpressionChangedAfterChecked`). A leaf refreshed in isolation could read stale inputs.
 - **Structural dependence.** A child's existence can depend on its parent (`@if`, `@for`), so the parent's structural state must settle first.
+
+```ts
+@Component({ selector: 'app-parent', template: `<app-child [label]="'Total: ' + total()" />` })
+class Parent { total = signal(1); }
+
+@Component({ selector: 'app-child', template: `{{ label }}` })
+class Child { @Input() label = ''; }
+```
+
+`total()` is read in the *parent's* template, so the parent is the consumer even though the child displays the value. On `total.set(2)` the parent's view re-runs the binding expression and **assigns** the result into the child's `label` field; only then does the child re-render.
+
+An `@Input()` is not a live link back to the parent, it is a plain property the parent's view writes on every check. So a child refreshed in isolation would repaint with `label` still holding `'Total: 1'`, because the only code that can update it never ran.
 
 The three flags involved are distinct. `HasChildViewsToRefresh` (ancestors) is pure routing with no binding check. `RefreshView` (the consuming leaf) means re-run this view's bindings. `Dirty` (set by `markViewDirty`) is the separate OnPush path. `markAncestorsForTraversal` always terminates at a leaf flagged `RefreshView` (traversal with no refresh target would be pointless), but the ancestors it marks are never re-checked. That asymmetry is the whole saving.
 

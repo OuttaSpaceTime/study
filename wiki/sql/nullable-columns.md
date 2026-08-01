@@ -13,10 +13,10 @@ tags:
 - data-modeling
 - null
 created: '2026-05-05'
-updated: '2026-05-05'
+updated: '2026-07-31'
 source_skill: study-walkthrough
-review_interval: 14
-next_review: '2026-07-10'
+review_interval: 17
+next_review: '2026-08-17'
 flashcard_ids: []
 ---
 
@@ -38,7 +38,7 @@ SELECT * FROM users WHERE status != 'active';  -- only inactive rows; NULL rows 
 SELECT * FROM users WHERE status = NULL;       -- ALWAYS empty; NULL = NULL is UNKNOWN
 ```
 
-The second is the trap: a developer who writes "give me everyone who isn't active" silently loses every row whose status is *unknown*. The fix is explicit:
+The second is the trap: a developer who writes "give me everyone who isn't active" silently loses every row whose status is *unknown*. Wrapping the predicate in `NOT` does not rescue it, because negation propagates unknown rather than flipping it. `NOT (UNKNOWN)` is `UNKNOWN`, so `WHERE NOT status = 'active'` drops the NULL rows exactly like `!=` does. The fix is explicit:
 
 ```sql
 WHERE status != 'active' OR status IS NULL
@@ -46,9 +46,41 @@ WHERE status != 'active' OR status IS NULL
 WHERE status IS DISTINCT FROM 'active'
 ```
 
+A third option is to erase the NULL before comparing, with `COALESCE`:
+
+```sql
+WHERE COALESCE(status, '') != 'active'
+```
+
+This works, but wrapping the column in a function makes the predicate non-sargable. The planner can no longer use a plain index on `status` and falls back to a scan. That is the reason to prefer `IS DISTINCT FROM`, which stays sargable. Reach for `COALESCE` when the fallback value is meaningful in itself, or on tables small enough that the scan does not matter.
+
 To test for NULL itself, use the special two-valued operators `IS NULL` / `IS NOT NULL`. Plain `=` and `!=` will never work.
 
 `COUNT` follows the same rule. `COUNT(*)` counts rows; `COUNT(col)` counts non-NULL values in `col`. The two diverge whenever the column is nullable.
+
+## IS DISTINCT FROM Is Null-Safe Comparison
+
+`IS DISTINCT FROM` is a comparison *predicate*, not an ordinary operator. Its defining property is that it always returns a boolean and never `UNKNOWN`, so it cannot leak the 3VL trap into a `WHERE` clause:
+
+| Expression | `=` / `<>` | `IS [NOT] DISTINCT FROM` |
+| --- | --- | --- |
+| `1 = NULL` / `1 IS NOT DISTINCT FROM NULL` | `NULL` | `f` |
+| `NULL = NULL` / `NULL IS NOT DISTINCT FROM NULL` | `NULL` | `t` |
+| `1 <> NULL` / `1 IS DISTINCT FROM NULL` | `NULL` | `t` |
+
+The positive form `IS NOT DISTINCT FROM` is null-safe **equality**. It is the tool for comparing two nullable columns to each other, where "both unknown" should count as a match. Plain `=` can never express that:
+
+```sql
+WHERE a.status IS NOT DISTINCT FROM b.status  -- true when both are NULL
+```
+
+The wider point is that SQL gives **three different answers** to "are two NULLs equal?", depending on where you ask:
+
+1. `=` and `<>` say **unknown** (the 3VL section above).
+2. `IS NOT DISTINCT FROM`, `SELECT DISTINCT`, `GROUP BY`, and `UNION` say **equal**. `SELECT DISTINCT` collapses many NULL rows into one; `GROUP BY status` puts every NULL in a single group.
+3. `UNIQUE` says **distinct**, which is why it fails to constrain NULLs at all.
+
+Those are not three traps but one inconsistency seen from three angles, and it is what the `NULLS NOT DISTINCT` clause is named after. It opts a `UNIQUE` constraint out of answer 3 and into answer 2.
 
 ## The NOT IN Trap
 
@@ -103,6 +135,23 @@ CREATE TABLE subscriptions (
 The intent is "at most one active subscription per user," but the constraint does not enforce it. `(7, NULL)` is not equal to `(7, NULL)` because of the NULL component, so a user can accumulate any number of active rows.
 
 > [Note] SQL Server's default is the opposite. It treats NULLs as equal in UNIQUE constraints. Postgres 15+ added `UNIQUE NULLS NOT DISTINCT` to opt into that behavior. Behavior varies by engine; do not rely on a default that is not in the standard.
+
+Postgres 15+ can enforce the intended constraint directly by declaring NULLs equal for uniqueness purposes:
+
+```sql
+CREATE TABLE subscriptions (
+  user_id INT,
+  cancelled_at TIMESTAMP,
+  UNIQUE NULLS NOT DISTINCT (user_id, cancelled_at)
+);
+
+INSERT INTO subscriptions VALUES (7, NULL);  -- ok
+INSERT INTO subscriptions VALUES (7, NULL);  -- ERROR: duplicate key value
+```
+
+The clause is `UNIQUE [ NULLS [ NOT ] DISTINCT ]`, valid as both a column and a table constraint, and the default remains `NULLS DISTINCT`. It also applies to `CREATE UNIQUE INDEX ... NULLS NOT DISTINCT`.
+
+This differs from the partial unique index below. `NULLS NOT DISTINCT` makes every NULL collide with every other NULL in the same column set, whereas a partial index scopes uniqueness to a filtered subset of rows and says nothing about NULL equality.
 
 ## Partial Unique Indexes
 

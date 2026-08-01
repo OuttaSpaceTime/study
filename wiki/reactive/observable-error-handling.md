@@ -11,11 +11,11 @@ tags:
 - rxjs
 - error-handling
 created: '2026-05-07'
-updated: '2026-05-07'
+updated: '2026-07-31'
 source_skill: study-walkthrough
 flashcard_ids: []
-review_interval: 15
-next_review: '2026-07-10'
+review_interval: 38
+next_review: '2026-09-07'
 ---
 
 # Observable Error Handling
@@ -63,7 +63,7 @@ catchError(err => {
 
 `catchError` only catches errors from operators upstream of it in the pipeline. Operators downstream are unaffected.
 
-## retry vs retryWhen: Immediate Resubscription vs Conditional Backoff
+## retry: Immediate Resubscription vs Conditional Backoff
 
 `retry(n)` resubscribes to the source observable up to n times when it errors. If the nth retry also errors, the error propagates.
 
@@ -85,6 +85,8 @@ ajax('/api/data').pipe(
   })
 ).subscribe(handler);
 ```
+
+Before RxJS 7 this was `retryWhen(notifier)`, which took a notifier observable instead of a delay function. It is deprecated and slated for removal in v9/v10; `retryWhen(() => notify$)` becomes `retry({ delay: () => notify$ })`.
 
 Never use bare `retry()` without a count on observables that can error indefinitely. It will retry forever.
 

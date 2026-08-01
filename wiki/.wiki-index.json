@@ -109,9 +109,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-06-26",
-    "next_review": "2026-07-10",
-    "review_interval": 14
+    "updated": "2026-07-31",
+    "next_review": "2026-08-17",
+    "review_interval": 17
   },
   "angular/signals-and-rxjs-interop": {
     "file": "angular/signals-and-rxjs-interop.md",
@@ -1013,16 +1013,16 @@
     "sections": [
       "How Error Terminates a Stream: Subscription State After onError",
       "catchError: Signature, Recovery Pattern, and Re-Throw",
-      "retry vs retryWhen: Immediate Resubscription vs Conditional Backoff",
+      "retry: Immediate Resubscription vs Conditional Backoff",
       "Error in Inner vs Outer Observable (flatMap/switchMap)",
       "Dead Subscriber Trap: Subscribing After a Subject Has Errored",
       "Related Concepts"
     ],
     "flashcard_ids": [],
     "created": "2026-05-07",
-    "updated": "2026-06-25",
-    "next_review": "2026-07-10",
-    "review_interval": 15
+    "updated": "2026-07-31",
+    "next_review": "2026-09-07",
+    "review_interval": 38
   },
   "reactive/observables": {
     "file": "reactive/observables.md",
@@ -1209,9 +1209,9 @@
       "cmne7xwri02050mso5k9tqzu4"
     ],
     "created": "2026-04-10",
-    "updated": "2026-07-28",
-    "next_review": "2026-07-07",
-    "review_interval": 38
+    "updated": "2026-07-31",
+    "next_review": "2026-11-03",
+    "review_interval": 95
   },
   "security/key-derivation-and-domain-separation": {
     "file": "security/key-derivation-and-domain-separation.md",
@@ -1615,6 +1615,7 @@
     "sections": [
       "TL;DR",
       "Three-valued Logic Is the Root Cause",
+      "IS DISTINCT FROM Is Null-Safe Comparison",
       "The NOT IN Trap",
       "UNIQUE Does not Constrain NULLs",
       "Partial Unique Indexes",
@@ -1626,9 +1627,9 @@
     ],
     "flashcard_ids": [],
     "created": "2026-05-05",
-    "updated": "2026-06-26",
-    "next_review": "2026-07-10",
-    "review_interval": 14
+    "updated": "2026-07-31",
+    "next_review": "2026-08-17",
+    "review_interval": 17
   },
   "sql/sql-index": {
     "file": "sql/sql-index.md",
