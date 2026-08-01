@@ -24,7 +24,7 @@ Applies to every skill in this repo.
 
 ### Study & Knowledge
 
-- `/study` — Interactive study session. Flashcards are the lever: Claude evaluates answers and rates them. Also opens due wiki pages in the browser for the developer to read and explore, rescheduling each on "next". Logs sessions.
+- `/study` — Interactive study session. Flashcards are the only thing reviewed: Claude evaluates answers and rates them. Closes by suggesting wiki pages related to the cards just studied (or the index view for free browsing). Logs sessions.
 - `/study-flashcard` — Create new flashcards through a guided walkthrough with duplicate detection. Optionally writes companion wiki pages.
 - `/study-walkthrough` — Interactive walkthrough that calibrates to current understanding, fills gaps, pushes deeper. Optionally writes wiki pages. Use `--write` to default to producing a wiki page.
 - `/canvas` — Interactively edit an Obsidian `.canvas` in a tight edit→show→react loop. Two modes: **live** (`eval` against the running app, reads your GUI selection) and **file** (Read/Write the JSON on disk, git-trackable). Same JSON schema either way.
@@ -37,11 +37,11 @@ Applies to every skill in this repo.
 
 The wiki content lives in `wiki/`, organized by topic folders (e.g., `wiki/javascript/react/`, `wiki/security/`). The Obsidian vault is the **repo root** (name `study`); non-wiki content is hidden from it — see [Hiding non-wiki content](#hiding-non-wiki-content).
 
-Flashcards are the study lever; the wiki is for reading. Pages still carry `next_review`/`review_interval` and still count toward the SRS pressure wiki axis: `/study` Phase 2 (before the flashcard loop) opens each due page in the browser for the developer to read (and optionally ask questions or request refinements), then reschedules it as if rated Good (interval × 2.5) on "next".
+**Flashcards are the only thing studied; the wiki is for exploration.** Pages carry no review schedule and never become "due" — after the flashcard loop, `/study` Phase 4 offers pages connected to the cards actually studied (matched on `flashcard_ids`, falling back to tag overlap), or opens the index view to browse when nothing matches. The wiki-viewer surfaces the same link in reverse: each page has a flashcard modal, and `/flashcards` browses the whole deck.
 
 ### Page Format
 
-Every wiki page has YAML frontmatter. Required on **all pages**: `title`, `aliases`, `tags`, `created`, `updated`, `source_skill`, `flashcard_ids` (list, empty `[]` is fine). Required on **content pages** (non-`*-index.md`): `next_review` (ISO date), `review_interval` (days). `scripts/wiki-write` auto-fills `flashcard_ids`, `next_review`, `review_interval` when missing; the remaining fields (`title`, `aliases`, `tags`, `created`, `updated`, `source_skill`) must be set by the calling skill. Optional: `last_deepened`, `allow_orphan` (set to `true` to suppress the orphan warning for pages that are intentionally standalone — required on MOCs), `lint_ignore` (list of lint **warning** labels to suppress for this page — see [Suppressing warnings per page](#suppressing-warnings-per-page)).
+Every wiki page has YAML frontmatter. Required on **all pages**: `title`, `aliases`, `tags`, `created`, `updated`, `source_skill`, `flashcard_ids` (list, empty `[]` is fine). `scripts/wiki-write` auto-fills `flashcard_ids` when missing; the rest must be set by the calling skill. Frontmatter is a **closed schema**: `scripts/lint` reports any key outside the required set plus `allow_orphan` / `lint_ignore` as a `forbidden-field` error. That covers the retired scheduling fields (`next_review`, `review_interval`, `last_deepened`) and every earlier retirement (`depth`, `probe_sections`, `last_probed`) without a list to maintain. Optional: `allow_orphan` (set to `true` to suppress the orphan warning for pages that are intentionally standalone — required on MOCs), `lint_ignore` (list of lint **warning** labels to suppress for this page — see [Suppressing warnings per page](#suppressing-warnings-per-page)).
 
 ### Linking Rules
 
@@ -65,7 +65,7 @@ All skills follow the shared protocol in `.claude/skills/references/wiki-write-p
 
 ### Linting
 
-`scripts/lint` checks: broken wikilinks, absolute path enforcement, frontmatter completeness, orphan pages, alias collisions, slug/filename consistency, and flashcard ID drift between frontmatter and index. Runs automatically after every wiki write.
+`scripts/lint` checks: broken wikilinks, absolute path enforcement, frontmatter completeness, unknown/retired frontmatter fields, orphan pages, alias collisions, slug/filename consistency, and flashcard ID drift between frontmatter and index. Runs automatically after every wiki write.
 
 Results are split into **errors** (block clean status, exit 1) and **warnings** (informational, exit 0). Orphan pages are warnings — suppress per-page with `allow_orphan: true` in frontmatter. Wikilink parsing ignores fenced code blocks, inline code, and image embeds (`![[...]]`), and strips `#heading` anchors and `|display` pipes before resolving targets. Self-links do not count as inbound.
 
@@ -106,6 +106,17 @@ xdg-open "http://localhost:4777/wiki/<key>"
 
 The viewer reads pages straight off `wiki/` and resolves the same absolute `[[topic/slug]]` wikilinks Obsidian uses. Obsidian remains installed but is used **only by `/canvas`** (`.canvas` files have no browser equivalent); its socket-check launch flow lives in that skill.
 
+Open the dashboard itself (`xdg-open "http://localhost:4777/"`) when you want the developer browsing rather than reading one page — its **Last studied** list ranks the pages behind the last 100 reviewed cards, most recent first, then by how many of those cards a page covers.
+
+### Flashcards in the viewer
+
+The viewer reads flashcards **straight from flashcard-mcp's SQLite file** (`~/Code/Misc/flashcard-mcp/prisma/master.db`) via `node:sqlite`, opened **read-only** — the MCP server owns all writes, and an accidental write here would corrupt review history that Anki sync treats as append-only. Override the path with `FLASHCARD_DB`. Two surfaces:
+
+- **Per page** — a button in the article header opens a large modal with the page's cards, in two modes: an **overview** grid (fronts, answers revealed individually) and **flip-through** (one card at a time, 3D flip on click/space, arrow keys, progress bar). Cards come from the page's `flashcard_ids`; a page without any falls back to tag overlap.
+- **Whole deck** — `/flashcards` (sidebar card icon) browses everything: true retention over a trailing 30 days with the calibration verdict, a clickable state bar (new / learning / review / relearning / suspended) that filters the list, plus deck, tag, and text filters, and the same flip-through over whatever the filters leave.
+
+Retention is **not** recomputed in the viewer — `/flashcards` shells out to `scripts/study-calibration` (~50ms) and renders the verdict it returns, so the browser and `/study` can never disagree. An earlier TypeScript reimplementation drifted from the script within a day (wrong min-review floor, no rating-discrimination guard, UTC instead of local days), which is why the rule has exactly one home. Retune bands in `scripts/calibration.py` alone.
+
 ### Hiding non-wiki content
 
 The vault is the whole repo, but only `wiki/` is knowledge content. Hiding the rest takes **two layers**, because Obsidian's core "Excluded files" setting only *dims* explorer entries — it never removes them:
@@ -123,7 +134,7 @@ To change what's hidden: edit the list in **both** `app.json` (`userIgnoreFilter
 
 `.claude/workflows/*.js` are reusable multi-agent workflow definitions invoked via the **Workflow tool** (background, deterministic fan-out + synthesis). A skill instructing you to call one IS the opt-in — no separate confirmation needed.
 
-- `research-grounding` — two-lane research for `/study-walkthrough` (and reusable standalone). The **authoritative lane** (docs/RFC/source agents) establishes facts; the **practitioner lane** (blog/talk/forum agents) gathers opinion (tradeoffs, lived experience, architectural nuance, gotchas). A synthesis agent reconciles them under a hard rule — **authoritative wins for facts** — flagging any practitioner claim that contradicts ground truth and keeping opinions labelled `consensus`/`contested`/`single-voice`, never promoted to facts. `args: { topic, cadence?, thoroughness?, lastDeepened?, fromUrl? }`; fan-out is `2+2+1` by default, `1+1+1` on concise/refresh, `3+3+1` on `thoroughness: deep`. This replaces the walkthrough's former single background research subagent (which remains the fallback when the workflow cannot run).
+- `research-grounding` — two-lane research for `/study-walkthrough` (and reusable standalone). The **authoritative lane** (docs/RFC/source agents) establishes facts; the **practitioner lane** (blog/talk/forum agents) gathers opinion (tradeoffs, lived experience, architectural nuance, gotchas). A synthesis agent reconciles them under a hard rule — **authoritative wins for facts** — flagging any practitioner claim that contradicts ground truth and keeping opinions labelled `consensus`/`contested`/`single-voice`, never promoted to facts. `args: { topic, cadence?, thoroughness?, fromUrl? }`; fan-out is `2+2+1` by default, `1+1+1` on concise/refresh, `3+3+1` on `thoroughness: deep`. This replaces the walkthrough's former single background research subagent (which remains the fallback when the workflow cannot run).
 
 ## Query Protocol
 
@@ -191,6 +202,8 @@ The `flashcard-mcp` MCP server must be running. It starts automatically via `.mc
 
 If tools aren't available, check that `~/Code/Misc/flashcard-mcp` has dependencies installed (`npm install` in that directory).
 
+**`check_pressure` is the SRS pressure source of truth**, and it lives in the MCP server rather than this repo — the verdict and the enforcement have to agree, so they share one implementation. Two axes: `flashcardsDue` (review backlog, excluding the new-card pool) warns at 20 / pauses at 50, and `newToday` (intake) warns at 5 / pauses at 10. The server **enforces** the pause itself: `create_card` throws for a fresh card while the verdict is `pause`. `update_card` and splits (`create_card` with `inheritFrom`) are always allowed, and a split off a studied card does not count as intake — under a backlog, fixing the deck you already carry is exactly the right move. (A split off a never-reviewed parent inherits no maturity, so it does count.) Skills read the verdict via `references/srs-pressure-check.md`; nothing recomputes it locally.
+
 ## Development
 
 Managed by **uv**. Run `uv sync` to install dependencies into `.venv/`.
@@ -214,10 +227,8 @@ Available scripts:
 - `scripts/wiki-reindex [--wiki-dir DIR]` — Rebuild `.wiki-index.json` from every page: drops fields the current schema no longer writes, prunes entries for deleted pages, and carries each page's `updated` stamp over (a reindex is a derive, not a write). Use after any index schema change
 - `scripts/lint` — Check broken wikilinks, frontmatter, orphans, alias collisions
 - `scripts/wiki-search "<query>"` — Semantic search against wiki embeddings
-- `scripts/wiki-due` — List wiki pages due for review
 - `scripts/study-calibration` — True retention over a trailing window + difficulty verdict (`over-difficult` / `calibrated` / `under-difficult` / `low-signal`, with `(MARGINAL)` near a band edge). Drives `/study`'s Phase 2 difficulty levers; never the rating rubric. `--human` or JSON
 - `scripts/study-leeches` — Leech candidates: cards at 5+ lapses (`--threshold` overrides), suspended cards excluded, ordered lapses-descending then lowest FSRS `stability`. Read by `/study` Phase 1; *which* leech a session raises depends on the cards actually served, so that selection stays in Phase 2. `--human` or JSON
-- `scripts/wiki-reschedule <page> <rating>` — Reschedule a wiki page after review (1-4), rewrites frontmatter and re-indexes
 - `scripts/anki-sync <login|sync|status>` — Sync flashcards to AnkiWeb (see [Anki Sync](#anki-sync)). `sync --dry-run` previews, `--local` skips AnkiWeb
 - `scripts/card-htmlize` — Convert markdown/plain card text in master.db to simple Anki HTML (dry-run by default, `--apply` writes after backing up master.db)
 
@@ -227,5 +238,5 @@ Python modules live in `scripts/wiki/`. The top-level scripts are thin entry poi
 
 - **TreeSearch**: `uv tool install pytreesearch` — FTS5 search for wiki
 - **Ollama**: Local LLM runtime with `nomic-embed-text` model — semantic embeddings
-- **wiki-viewer**: Next.js app in-repo at `wiki-viewer/` — the browser surface for wiki pages (`http://localhost:4777`, health at `/api/health`). Run `npm install` in `wiki-viewer/`, then `npm run dev` (binds 127.0.0.1). See [Show in browser](#show-in-browser).
+- **wiki-viewer**: Next.js app in-repo at `wiki-viewer/` — the browser surface for wiki pages (`http://localhost:4777`, health at `/api/health`). Run `npm install` in `wiki-viewer/`, then `npm run dev` (binds 127.0.0.1). See [Show in browser](#show-in-browser) and [Flashcards in the viewer](#flashcards-in-the-viewer).
 - **Obsidian**: used only by `/canvas` (`.canvas` editing). Installed from the Debian package at `/opt/Obsidian/obsidian`; official CLI (`obsidian`) at `~/.local/bin/obsidian`. Launch detached with `setsid -f /opt/Obsidian/obsidian >/dev/null 2>&1 < /dev/null`; open files with `obsidian open vault="study" file="<slug>"`.

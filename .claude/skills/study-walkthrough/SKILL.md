@@ -25,7 +25,7 @@ For additional shared interactive principles (scope, handling disagreement, non-
 - Pause after each phase -- ask whether to continue or discuss. Never auto-advance.
 - If the developer says "skip" or "I know this," fast-forward immediately.
 - If the developer fails a recall question, do NOT skip -- walk through it again until internalized.
-- **Read silently, never cat.** Run `scripts/wiki-search`, `scripts/wiki-due`, `Read` of wiki/index/log files, and `mcp__flashcard-mcp__*` calls without preamble narration and without echoing their stdout, JSON, or file contents into chat. The chat shows only synthesized output — the calibration question, the gap surfaced, the next phase prompt. See AGENTS.md "Skill Design Principles → Read silently, never cat."
+- **Read silently, never cat.** Run `scripts/wiki-search`, `Read` of wiki/index/log files, and `mcp__flashcard-mcp__*` calls without preamble narration and without echoing their stdout, JSON, or file contents into chat. The chat shows only synthesized output — the calibration question, the gap surfaced, the next phase prompt. See AGENTS.md "Skill Design Principles → Read silently, never cat."
 
 ## Socratic Never-Reveal — The Developer Produces Every Answer (always on; not a selectable mode; overrides every reveal-style step below)
 
@@ -85,7 +85,6 @@ The walkthrough must not rely solely on model-internal knowledge. At Phase 1 Ste
 | `topic` | the walkthrough topic |
 | `cadence` | `learning` \| `refresh` \| `concise` — trims the fan-out (`concise`/`refresh` → 1+1, `learning` → 2+2 authoritative+practitioner agents) |
 | `thoroughness` | optional `lite` \| `normal` \| `deep` — pass `deep` (3+3) for architecture/pattern topics where practitioner opinion matters most |
-| `lastDeepened` | the existing page's `last_deepened`, if any (drives refresh narrowing) |
 | `fromUrl` | the URL (or a note that source text was pasted) for `--from` / pasted-text invocations |
 
 The workflow returns `{ confidence, authoritativeSources[], practitionerSources[], facts[], loadBearing[], misconceptions[], opinions[], divergence[] }` — where each opinion carries `{ claim, kind, source, stance, contradictsGroundTruth, note? }`.
@@ -93,7 +92,7 @@ The workflow returns `{ confidence, authoritativeSources[], practitionerSources[
 **Variants (set via args):**
 
 - `--from <url>` or pasted text: pass `fromUrl`. The authoritative lane cross-checks that source's factual claims against other authoritative references; the practitioner lane treats it as one opinion among several.
-- Refresh cadence on previously-deepened pages (those with a `last_deepened` date): pass `lastDeepened`. Both lanes narrow to "what changed since then" — deprecations, version drift, and any newer practitioner consensus.
+- Refresh cadence on an existing page: both lanes narrow to "what changed" — deprecations, version drift, and any newer practitioner consensus — anchored on the page's `updated` date.
 - Concise cadence: pass `cadence: "concise"`. Fan-out drops to 1+1; the result only needs to confirm-or-correct the one-pass restatement.
 
 **Using the findings:**
@@ -139,7 +138,7 @@ The skill operates in two modes based on invocation and context:
 A separate axis from Mode Detection — sets *depth*, not *output type*. Default is **Learning**. **All three cadences are question-driven and never reveal the answer** (see Socratic Never-Reveal); cadence only sets how many questions and whether you loop on a miss.
 
 - **Learning** — predict-first mandatory on every concept, every concept gets an active challenge (the "Concrete example/challenge" bullet in Phase 2 is load-bearing here), loop on every failed recall (decompose into smaller questions, never reveal). This is today's default behavior.
-- **Refresh** — for previously-deepened pages (those with a `last_deepened` date) or when the developer says "just refresh this." Question only the sections flagged weak at calibration, skip predictions on concepts calibrated as solid, no mandatory challenge on every concept — only on sections that were gap-flagged. Still never reveals.
+- **Refresh** — for pages that already cover the topic, or when the developer says "just refresh this." Question only the sections flagged weak at calibration, skip predictions on concepts calibrated as solid, no mandatory challenge on every concept — only on sections that were gap-flagged. Still never reveals.
 - **Concise** — a fast question-driven pass with one calibration check, no looping on a miss. For when the developer wants speed: fewer questions, and you move on rather than decomposing when they miss — but you still never hand them the answer. Session log coda collapses to one sentence.
 
 Announce the active cadence in Phase 1 Step 3 after calibration. If calibration reveals a mismatch (developer keeps saying "I know this" → bump to Refresh; keeps saying "wait, walk me through that again" → bump to Learning), suggest a cadence change once. Do not switch silently.
@@ -161,10 +160,10 @@ This matters because the walkthrough compounds: a wrong explanation in Phase 2 p
 
 Follow `references/srs-pressure-check.md` exactly. Summary:
 
-1. Run `scripts/srs-pressure --human` — it fetches accurate counts via the flashcard-mcp CLI itself. Do **not** call `mcp__flashcard-mcp__get_due_cards` or `mcp__flashcard-mcp__list_decks` for pressure signals (`get_due_cards` caps at 30 and will underreport).
+1. Call `mcp__flashcard-mcp__check_pressure` — it computes the counts and verdict server-side. Do **not** call `mcp__flashcard-mcp__get_due_cards` or `mcp__flashcard-mcp__list_decks` for pressure signals (`get_due_cards` caps at 30 and will underreport).
 2. First message output:
    - `ok` → one line: `SRS pressure: ok — proceeding.`
-   - `warn` / `pause` → full script output verbatim, then the gate question. Wait for an explicit answer before Phase 1.
+   - `warn` / `pause` → the counts, the reasons, and the clearance numbers, then the gate question. Wait for an explicit answer before Phase 1.
 3. Progress footer for this message: `Preflight — SRS Pressure Check`.
 
 **Contract:** skipping this step, folding it into Phase 1, or running other tool calls before the verdict is a contract violation — same severity as omitting the progress footer. The developer can always opt out of downstream steps (e.g., "just deepen, no wiki") mid-session — that does not justify skipping preflight.
@@ -181,12 +180,12 @@ Follow `references/srs-pressure-check.md` exactly. Summary:
 2. Run `treesearch search --query "<topic>" --index_dir wiki/indexes` for keyword matches
 3. Run `scripts/wiki-search "<topic>"` for semantic matches (if Ollama running)
 4. Call `find_similar_cards` from MCP to find related flashcards
-5. **Run the `research-grounding` workflow in the background** per the "Research Grounding" section above (passing `topic`, `cadence`, and — if a page exists — `lastDeepened`). Do this at the same time as steps 1-4 — it should be running while calibration happens, so the synthesised two-lane findings are ready by Phase 2. Skip only for repo-internal topics (note the skip in the session log).
+5. **Run the `research-grounding` workflow in the background** per the "Research Grounding" section above (passing `topic` and `cadence`). Do this at the same time as steps 1-4 — it should be running while calibration happens, so the synthesised two-lane findings are ready by Phase 2. Skip only for repo-internal topics (note the skip in the session log).
 
 **Step 2 -- Present existing knowledge:**
 
-If wiki pages exist, check their `last_deepened` frontmatter:
-> You have a wiki page `[[architecture/event-sourcing]]` (last deepened 2026-03-15) covering: Core Concepts, Projections, Related Concepts.
+If wiki pages exist, name them with their `updated` date:
+> You have a wiki page `[[architecture/event-sourcing]]` (updated 2026-03-15) covering: Core Concepts, Projections, Related Concepts.
 > You also have 4 flashcards on this topic.
 > Let me check what you actually remember.
 
@@ -296,7 +295,7 @@ If any of these are missing or vague, return to the relevant concept and discuss
 
 2. **"write wiki"** -- Follow `references/wiki-write-protocol.md`. (Preflight was already run up front — no re-run needed.)
    - **Before drafting:** present a brief outline of what the page will cover — title, proposed H2 sections, one-line description of each section. Wait for the developer to confirm or adjust before writing the full draft. This is the wiki entry preview; start writing from the top only after the outline is approved.
-   - If extending an existing page: add new sections for the deeper material, set `last_deepened` to today.
+   - If extending an existing page: add new sections for the deeper material, and set `updated` to today.
    - If creating new: draft a full page with everything covered.
    - Include `flashcard_ids` for any related cards
    - Run `scripts/wiki-write`, append session log
@@ -340,7 +339,7 @@ When writing a wiki page, follow this structure:
 
 ### 1. Frontmatter (YAML)
 Required fields: `title`, `aliases`, `tags`, `created`, `updated`, `source_skill`
-Optional: `flashcard_ids`, `last_deepened`, `next_review`, `review_interval`
+Optional: `flashcard_ids`
 
 ### 2. Title (H1)
 - Clear, descriptive title identifying the topic

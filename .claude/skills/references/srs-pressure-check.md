@@ -17,41 +17,44 @@ If you realize mid-flow that the preflight was skipped, stop immediately, run th
 
 ## Protocol
 
-1. **Run the pressure script — it is the single source of truth:**
+1. **Call `mcp__flashcard-mcp__check_pressure` — it is the single source of truth.**
 
-   ```bash
-   scripts/srs-pressure --human
-   ```
+   The tool computes everything server-side from the deck database and returns a structured report. **Do not** call `mcp__flashcard-mcp__get_due_cards` or `mcp__flashcard-mcp__list_decks` for pressure signals — `get_due_cards` caps at 30 and will underreport. The report already includes the per-deck breakdown; reuse that in your status summary instead of a separate `list_decks` call.
 
-   The script fetches accurate due/new/learning/review counts itself via the flashcard-mcp CLI. **Do not** call `mcp__flashcard-mcp__get_due_cards` or `mcp__flashcard-mcp__list_decks` for pressure signals — `get_due_cards` caps at 30 and will underreport. The script's output already includes a per-deck breakdown; reuse that in your status summary instead of making a separate `list_decks` call.
+   Pressure has **two axes**, both global across all decks:
 
-   Exit codes: `0` ok, `1` warn, `2` pause. Pressure is computed globally across all decks (no category filter).
+   | Axis | Field | warn | pause |
+   |---|---|---|---|
+   | Review backlog | `flashcardsDue` | 20 | 50 |
+   | Intake today | `newToday` | 5 | 10 |
 
-   **`flashcards due` is the review backlog only — it excludes new cards.** New cards are an optional pool you draw from, not a scheduled backlog, so they never drive review pressure (intake is policed by the separate `cards added today` axis). The script reports the new pool on its own `new available:` line for visibility. Consequence: a large pile of *new* cards with no review backlog reads as `ok`, not `warn` — that is correct; you should learn new cards, not be blocked from starting them.
+   **`flashcardsDue` is the review backlog only — it excludes new cards.** New cards are an optional pool you draw from, not a scheduled backlog, so they never drive review pressure: warning on a pile of fresh material with zero backlog would force `maxNewCards: 0` and you could never start it. Intake is policed by the separate `newToday` axis. The pool is reported on its own as `newAvailable`, for visibility. Consequence: a large pile of *new* cards with no review backlog reads as `ok`, not `warn` — that is correct.
 
-   **The verdict token is the first line of the output, stated literally:** `SRS pressure: OK` / `SRS pressure: WARN` / `SRS pressure: PAUSE`. Read the level from that token (or from the exit code), **never** from the recommendation prose — the `warn` header reads "we recommend pausing", which is the `warn` level, **not** `pause`. When the verdict is `warn` or `pause`, the output also includes a `To clear pressure:` block giving the exact number of flashcards / wiki pages to review to drop below the warn (and pause) line; carry those numbers through when you surface the result so the developer always knows the count needed to leave the pressure phase.
+   **Splits of studied cards do not count as intake.** A card created with `inheritFrom` copies its parent's schedule, so it is already-seen material and `newToday` excludes it — splitting a bad card under load is deck maintenance and must never push the verdict up. The one exception is a split off a parent that was never reviewed: it inherits no maturity, so it counts as new material, which is correct.
+
+   **Read the level from the `verdict` field, verbatim** — `ok`, `warn`, or `pause`. Never infer it from prose. When the verdict is `warn` or `pause`, `clearance` gives the exact number of reviews needed to drop the backlog below the warn (and pause) line — `toExitWarn` / `toExitPause`. Carry those numbers through so the developer always knows the count needed to leave the pressure phase. Clearance covers the backlog axis only: no amount of reviewing lowers `newToday`, which resets at the start of the next day.
 
 2. **Surface the result in the first assistant message:**
    - `ok` — one line is sufficient: `SRS pressure: ok — proceeding.` Do not expand. Do not bury it inside a larger message.
-   - `warn` — print the **full script output verbatim** (do not summarize or reword — the numbers and reasons are the point), then ask: "Continue adding new content, or pause and review first?" Wait for an explicit answer before proceeding.
-   - `pause` — print the full script output verbatim, then: "I'd recommend pausing here. Want to run `/study` to clear some review load, or continue anyway?" The developer can override with explicit consent ("continue anyway", "I know, keep going"). Do not proceed without that explicit override.
+   - `warn` — report the counts, the reasons, and the clearance numbers, then ask: "Continue adding new content, or pause and review first?" Wait for an explicit answer before proceeding.
+   - `pause` — report the same, then: "I'd recommend pausing here. Want to run `/study` to clear some review load, or continue anyway?" The developer can override with explicit consent ("continue anyway", "I know, keep going") for everything **except** creating new cards — see below.
 
-   **New, unseen cards are hard-blocked at `pause` — not overridable.** While the verdict is `pause`, do **not** create a new, unseen flashcard (a fresh `create_card`: state `new`, `reps 0`, **no** `inheritFrom`). The "continue anyway" override above never covers creating brand-new cards. Still allowed at `pause`: **editing** an existing card and **splitting** one (`inheritFrom` copies the parent's schedule, so the result is already-seen material, not new). This mirrors the flashcard-mcp, whose `create_card` throws once `flashcards due ≥ 50`; the skill rule extends the same refusal to the `wiki pages due ≥ 20` and `cards added today ≥ 10` pause axes, which the MCP cannot see. When `pause` is driven only by the wiki axis, redirect the developer to `/study` or a split/edit.
+   **New, unseen cards are hard-blocked at `pause` — not overridable, and not by you.** The flashcard-mcp enforces this itself: `create_card` throws when the verdict is `pause` unless `inheritFrom` is set. The "continue anyway" override never covers a fresh `create_card`, and there is no point attempting one — the server refuses. Still allowed at `pause`, by design: **editing** an existing card (`update_card`) and **splitting** one (`inheritFrom`). Both improve the health of the deck the developer is already carrying, which is exactly what should happen under load. When the verdict is `pause`, redirect to `/study`, an edit, or a split.
 
 3. **Progress footer for the preflight message:** `Preflight — SRS Pressure Check`. (Skills that already have a footer contract follow their own format; this is the footer to emit for this specific step.)
 
-4. **Log it** in the session log if a warning was shown, even if the developer continued. One line: `SRS pressure: <verdict> (<flashcards_due> cards, <wiki_due> wiki due) — continued | paused`.
+4. **Log it** in the session log if a warning was shown, even if the developer continued. One line: `SRS pressure: <verdict> (<flashcardsDue> due, <newToday> added today) — continued | paused`.
 
 ## Where to run it
 
 - `/study-flashcard` — as the **Preflight**, before Checkpoint 1. The first assistant message of the invocation.
 - `/study-walkthrough` — as the **Preflight**, before Phase 1. The first assistant message of the invocation. **Regardless of mode** (write-focused or deepen-focused) and regardless of whether a wiki page will ultimately be written. The developer may opt out of the wiki-write at the end of the session, but the preflight still runs up front.
-- `/study` — as the Phase 1 opener. The script output is the status summary.
+- `/study` — as the Phase 1 opener. The report is the status summary.
 
 ## Do not
 
 - Do not skip the check on the argument that "this is just one card/page". The warning exists because the developer explicitly asked for this guard.
-- Do not re-implement the thresholds inline. Always call `scripts/srs-pressure`.
-- Do not call `mcp__flashcard-mcp__get_due_cards` for the pressure count — it caps at 30. Use the script.
-- Do not query the flashcard SQLite DB directly.
-- Do not fold the preflight into the first checkpoint — it is a separate, prior step.
+- Do not re-implement the thresholds inline, and do not recompute due counts yourself. Always call `check_pressure`.
+- Do not call `mcp__flashcard-mcp__get_due_cards` for the pressure count — it caps at 30.
+- Do not query the flashcard SQLite DB directly from a skill. (The wiki-viewer reads it directly to *render* cards; that is a read-only display path, not the pressure path.)
+- Do not treat a wiki backlog as pressure. Wiki pages are no longer scheduled — the wiki is for exploration, and only flashcards are studied.

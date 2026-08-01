@@ -25,7 +25,7 @@ For additional shared interactive principles (scope, handling disagreement, non-
 - Start each checkpoint with `Checkpoint X/4: <title>`.
 - Pause after each checkpoint — ask whether to continue or discuss. Never auto-advance.
 - At each checkpoint, blend guided and unguided modes.
-- **Read silently, never cat.** Run `scripts/srs-pressure`, `scripts/wiki-search`, `mcp__flashcard-mcp__find_similar_cards`, and any `Read` calls without preamble narration and without echoing their stdout, JSON, or file contents into chat. The chat shows only synthesized output — the pressure verdict, similar-card warnings, draft cards, the next checkpoint prompt. See AGENTS.md "Skill Design Principles → Read silently, never cat."
+- **Read silently, never cat.** Run `mcp__flashcard-mcp__check_pressure`, `scripts/wiki-search`, `mcp__flashcard-mcp__find_similar_cards`, and any `Read` calls without preamble narration and without echoing their stdout, JSON, or file contents into chat. The chat shows only synthesized output — the pressure verdict, similar-card warnings, draft cards, the next checkpoint prompt. See AGENTS.md "Skill Design Principles → Read silently, never cat."
 
 ## Correction Primitive
 
@@ -71,10 +71,10 @@ When invoked with a block of text or URL, treat it as source material. The flash
 
 Follow `references/srs-pressure-check.md` exactly. Summary:
 
-1. Run `scripts/srs-pressure --human` — it fetches accurate counts via the flashcard-mcp CLI itself. Do **not** call `mcp__flashcard-mcp__get_due_cards` or `mcp__flashcard-mcp__list_decks` for pressure signals (`get_due_cards` caps at 30 and will underreport).
+1. Call `mcp__flashcard-mcp__check_pressure` — it computes the counts and verdict server-side. Do **not** call `mcp__flashcard-mcp__get_due_cards` or `mcp__flashcard-mcp__list_decks` for pressure signals (`get_due_cards` caps at 30 and will underreport).
 2. First message output:
    - `ok` → one line: `SRS pressure: ok — proceeding.`
-   - `warn` / `pause` → full script output verbatim, then the gate question from the reference. Wait for an explicit answer before Checkpoint 1.
+   - `warn` / `pause` → the counts, the reasons, and the clearance numbers, then the gate question from the reference. Wait for an explicit answer before Checkpoint 1.
 3. Progress footer for this message: `Preflight — SRS Pressure Check`.
 
 **Contract:** skipping this step, folding it into Checkpoint 1, or running other tool calls before the verdict is a contract violation — same severity as omitting the progress footer. "Just one card" / "we already ran it earlier" / "the developer told me what they want" are **not** valid reasons to skip.

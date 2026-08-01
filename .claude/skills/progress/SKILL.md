@@ -154,5 +154,4 @@ Otherwise — brief sign-off.
 - Evidence before hypothesis — never open with the read.
 - Revise the hypothesis when the developer pushes back; don't defend it.
 - Observe and name, don't prescribe ("you should…"); skip feedback rather than give vague praise.
-- Don't read wiki due-lists into the evidence — noise for a trajectory read.
 - Don't touch `todo.md` — progression is observation, not planning. Today's block is `/end`, not here.
