@@ -58,8 +58,8 @@ beforeAll(async () => {
     fs.mkdtempSync(path.join(os.tmpdir(), "wiki-viewer-test-")),
   );
 
-  // Page exercising every link form. Unquoted created/next_review become
-  // Date objects in gray-matter; updated is quoted and stays a string.
+  // Page exercising every link form. Unquoted created becomes a Date object
+  // in gray-matter; updated is quoted and stays a string.
   writeFixture(
     "linker.md",
     [
@@ -73,9 +73,7 @@ beforeAll(async () => {
       "  - links",
       "created: 2026-01-05",
       'updated: "2026-02-03"',
-      "next_review: 2026-03-15",
-      "review_interval: 5",
-      "depth: 2",
+      "flashcard_ids: [cardone, cardtwo]",
       "---",
       "Absolute: [[rails/routing/scope-vs-namespace]]",
       "Pipe: [[rails/rails-index|Rails MOC]]",
@@ -96,7 +94,7 @@ beforeAll(async () => {
     ].join("\n"),
   );
 
-  // MOC index page; no created/updated/next_review (missing optional fields).
+  // MOC index page; no created/updated (missing optional fields).
   writeFixture(
     "rails/rails-index.md",
     ["---", "title: Rails Index", "tags:", "  - moc", "---", "- [[rails/alpha-page]]"].join(
@@ -191,7 +189,6 @@ describe("page meta", () => {
   it('normalizes unquoted YAML dates (Date objects) to "YYYY-MM-DD" strings', () => {
     const linker = mustPage("linker");
     expect(linker.created).toBe("2026-01-05");
-    expect(linker.nextReview).toBe("2026-03-15");
     expect(mustPage("rails/routing/scope-vs-namespace").created).toBe("2026-04-01");
   });
 
@@ -201,8 +198,7 @@ describe("page meta", () => {
     expect(linker.title).toBe("Linker Page");
     expect(linker.aliases).toEqual(["linkz", "the-linker"]);
     expect(linker.tags).toEqual(["testing", "links"]);
-    expect(linker.reviewInterval).toBe(5);
-    expect(linker.depth).toBe(2);
+    expect(linker.flashcardIds).toEqual(["cardone", "cardtwo"]);
   });
 
   it("falls back to slug for title and defaults optionals when frontmatter is missing", () => {
@@ -212,9 +208,7 @@ describe("page meta", () => {
     expect(page.tags).toEqual([]);
     expect(page.created).toBe("");
     expect(page.updated).toBe("");
-    expect(page.nextReview).toBe("");
-    expect(page.reviewInterval).toBeNull();
-    expect(page.depth).toBeNull();
+    expect(page.flashcardIds).toEqual([]);
     expect(page.isIndex).toBe(false);
   });
 

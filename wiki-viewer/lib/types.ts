@@ -12,10 +12,8 @@ export interface PageMeta {
   tags: string[];
   created: string;
   updated: string;
-  /** ISO date or "" (index/MOC pages have none). */
-  nextReview: string;
-  reviewInterval: number | null;
-  depth: number | null;
+  /** SRS card ids this page covers, from frontmatter `flashcard_ids`. */
+  flashcardIds: string[];
   /** True for *-index.md MOC pages. */
   isIndex: boolean;
   /** H2 headings in document order, for the sidebar mini-TOC. */
@@ -61,4 +59,45 @@ export interface WikiPage {
   meta: PageMeta;
   /** Raw markdown body, frontmatter stripped. Wikilinks are NOT yet converted. */
   markdown: string;
+}
+
+/** FSRS scheduling state, mirroring flashcard-mcp's numeric Card.state. */
+export type CardState = "new" | "learning" | "review" | "relearning";
+
+export interface Card {
+  id: string;
+  deck: string;
+  /** Simple HTML, as authored for Anki. */
+  front: string;
+  back: string;
+  tags: string[];
+  /** Local calendar date (yyyy-mm-dd). */
+  due: string;
+  stability: number;
+  difficulty: number;
+  reps: number;
+  lapses: number;
+  state: CardState;
+  /** Days until the next review. */
+  interval: number;
+  lastReview: string | null;
+  suspended: boolean;
+}
+
+export interface DeckOverview {
+  total: number;
+  deckCount: number;
+  states: { label: CardState; count: number }[];
+}
+
+/** Verdict from `scripts/study-calibration` — never recomputed here. */
+export interface Calibration {
+  verdict: "over-difficult" | "calibrated" | "under-difficult" | "low-signal";
+  /** Within 2 points of a band edge, so one review could flip the verdict. */
+  marginal: boolean;
+  retention: number | null;
+  reviews: number;
+  passed: number;
+  windowDays: number;
+  reason: string;
 }

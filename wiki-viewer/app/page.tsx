@@ -1,15 +1,13 @@
-// Dashboard: review queue, recent activity, topic overview.
+// Dashboard: flashcard entry point, recent activity, topic overview.
 import Link from "next/link";
 import { getWikiIndex } from "@/lib/wiki";
 import { topicColor } from "@/lib/colors";
-import { dueForReview } from "@/app/lib";
+import { getDeckOverview, getRecentlyStudied } from "@/lib/flashcards";
+import { STATE_COLORS } from "@/components/flashcards/lib";
+import { recentlyStudiedPages } from "@/app/lib";
 import type { PageMeta, TreeFolder } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
-
-// Rose from lib/colors.ts PALETTE — the theme has no red token and the
-// overdue tag needs to read as a warning.
-const OVERDUE_COLOR = "#c2405a";
 
 function countPages(folder: TreeFolder): number {
   return (
@@ -46,10 +44,14 @@ const ROW_CLASS =
   "flex items-center gap-3 rounded-md px-2 py-1 text-muted transition-colors hover:bg-panel-2 hover:text-fg";
 
 export default async function Home() {
-  const index = await getWikiIndex();
-  const today = new Date().toISOString().slice(0, 10);
+  // Start the wiki read before the synchronous deck queries so the fs work and
+  // the sqlite work overlap on a cold index.
+  const indexPromise = getWikiIndex();
+  const overview = getDeckOverview();
+  const recentCards = getRecentlyStudied();
 
-  const due = dueForReview(index.pages, today);
+  const index = await indexPromise;
+  const studied = recentlyStudiedPages(index.pages, recentCards);
 
   const recent = [...index.pages]
     .sort((a, b) => b.updated.localeCompare(a.updated))
@@ -68,43 +70,65 @@ export default async function Home() {
       </header>
 
       <section className="mb-10">
-        <SectionLabel>Due for review</SectionLabel>
-        {due.length === 0 ? (
-          <p className="px-2 text-sm text-faint">Nothing due. ✨</p>
+        <SectionLabel>Last studied</SectionLabel>
+        {studied.length === 0 ? (
+          <p className="px-2 text-sm text-faint">
+            No recent reviews touch a wiki page yet.
+          </p>
         ) : (
           <ul>
-            {due.map((page) => {
-              const overdueDays = Math.round(
-                (Date.parse(today) - Date.parse(page.nextReview)) / 86_400_000,
-              );
-              return (
-                <li key={page.path}>
-                  <Link href={`/wiki/${page.path}`} className={ROW_CLASS}>
-                    <span className="truncate text-sm text-fg">
-                      {page.title}
-                    </span>
-                    <TopicChip folder={page.folder} />
-                    <span className="ml-auto shrink-0 font-mono text-xs text-faint">
-                      {page.nextReview}
-                    </span>
-                    {overdueDays > 0 && (
-                      <span
-                        className="shrink-0 rounded-full px-1.5 py-px text-[10px] font-medium"
-                        style={{
-                          color: OVERDUE_COLOR,
-                          backgroundColor: `${OVERDUE_COLOR}1f`,
-                        }}
-                      >
-                        {overdueDays}d overdue
-                      </span>
-                    )}
-                  </Link>
-                </li>
-              );
-            })}
+            {studied.map(({ page, cards, lastStudied }) => (
+              <li key={page.path}>
+                <Link href={`/wiki/${page.path}`} className={ROW_CLASS}>
+                  <span className="truncate text-sm text-fg">{page.title}</span>
+                  <TopicChip folder={page.folder} />
+                  <span className="ml-auto shrink-0 rounded-full bg-accent-soft px-1.5 py-px text-[10px] font-medium text-accent">
+                    {cards} card{cards === 1 ? "" : "s"}
+                  </span>
+                  <span className="shrink-0 font-mono text-xs text-faint">
+                    {lastStudied}
+                  </span>
+                </Link>
+              </li>
+            ))}
           </ul>
         )}
       </section>
+
+      {overview && (
+        <section className="mb-10">
+          <SectionLabel>Flashcards</SectionLabel>
+          <Link
+            href="/flashcards"
+            className="flex items-center gap-4 rounded-lg border border-border bg-panel p-4 transition-colors hover:bg-panel-2"
+          >
+            <div className="min-w-0">
+              <div className="text-sm font-medium text-fg">
+                {overview.total} cards across {overview.deckCount}{" "}
+                {overview.deckCount === 1 ? "deck" : "decks"}
+              </div>
+              <div className="mt-0.5 text-xs text-faint">
+                Browse, filter by topic, and flip through the deck
+              </div>
+            </div>
+            <div className="ml-auto flex shrink-0 items-center gap-3">
+              {overview.states.map((state) => (
+                <div key={state.label} className="text-center">
+                  <div
+                    className="text-sm font-semibold tabular-nums"
+                    style={{ color: STATE_COLORS[state.label] }}
+                  >
+                    {state.count}
+                  </div>
+                  <div className="text-[10px] uppercase tracking-wide text-faint">
+                    {state.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Link>
+        </section>
+      )}
 
       <section className="mb-10">
         <SectionLabel>Recently updated</SectionLabel>

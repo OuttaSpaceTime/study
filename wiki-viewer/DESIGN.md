@@ -5,8 +5,8 @@ Read this whole file before writing any code.
 
 ## The wiki being rendered
 
-- ~49 markdown pages in topic folders, up to 3 levels deep (`rails/foreign-keys`, `rails/routing/scope-vs-namespace`).
-- Every page has YAML frontmatter (title, aliases, tags, created, updated, next_review, review_interval, depth, …).
+- ~66 markdown pages in topic folders, up to 3 levels deep (`rails/foreign-keys`, `rails/routing/scope-vs-namespace`).
+- Every page has YAML frontmatter (title, aliases, tags, created, updated, source_skill, flashcard_ids). Pages are **not** scheduled — there is no review state on a page.
 - Body is GitHub-flavored markdown: headings, tables, fenced code blocks (ruby/ts/sql/bash), blockquotes.
 - Internal links are Obsidian wikilinks with **absolute paths**: `[[rails/foreign-keys]]`, optionally `[[path#Heading]]` and `[[path|display text]]`. Embeds `![[...]]` are rare and may be ignored.
 - `*-index.md` pages are MOCs (maps of content) for their topic. They are NOT rendered as
@@ -14,6 +14,14 @@ Read this whole file before writing any code.
   as ghost nodes in the graph (translucent dashed; click opens the folder view). Wikilinks
   targeting a MOC resolve to its folder view via the `mocs` param of `createWikilinkResolver`.
 - The wiki is **read-only** for this app; the viewer writes nothing anywhere.
+
+## The flashcard deck
+
+- `lib/flashcards.ts` reads flashcard-mcp's SQLite file directly (`FLASHCARD_DB`, default `~/Code/Misc/flashcard-mcp/prisma/master.db`) through `node:sqlite`, opened **read-only** — the MCP server owns writes.
+- A page links to cards through its `flashcard_ids`; pages without any fall back to tag overlap.
+- Surfaces: a per-page modal from the article header, and `/flashcards` for the whole deck (retention, state filters, tag/deck/text filters, flip-through).
+- The calibration verdict is **not** computed here. `lib/calibration.ts` runs `scripts/study-calibration` and renders its JSON, so the viewer and `/study` always agree.
+- Datetime columns in master.db hold both epoch-ms integers and ISO text. Every read normalizes via the `epochMs` helper in `lib/flashcards.ts`; comparing such a column against a string silently drops ~75% of the rows.
 
 ## Stack (already installed — do not add dependencies)
 

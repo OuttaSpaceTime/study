@@ -103,10 +103,7 @@ async function loadRawPages(): Promise<RawPage[]> {
         tags: asStringArray(data.tags),
         created: asDateString(data.created),
         updated: asDateString(data.updated),
-        nextReview: asDateString(data.next_review),
-        reviewInterval:
-          typeof data.review_interval === "number" ? data.review_interval : null,
-        depth: typeof data.depth === "number" ? data.depth : null,
+        flashcardIds: asStringArray(data.flashcard_ids),
         isIndex: slug.endsWith("-index"),
         sections: extractSections(content),
         outbound: [],

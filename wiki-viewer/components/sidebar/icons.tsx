@@ -58,6 +58,15 @@ export function TreeIcon(props: IconProps) {
   );
 }
 
+export function CardsIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="2.5" y="4.5" width="8" height="9" rx="1.5" />
+      <path d="M6 2.5h6a1.5 1.5 0 0 1 1.5 1.5v7" />
+    </Icon>
+  );
+}
+
 export function CollapseIcon(props: IconProps) {
   return (
     <Icon {...props}>

@@ -35,9 +35,7 @@ beforeAll(async () => {
       "tags: [rails, db]",
       "created: 2026-01-01",
       "updated: 2026-01-02",
-      "next_review: 2026-06-15",
-      "review_interval: 7",
-      "depth: 1",
+      "flashcard_ids: [cmne7xz9202lx0msonsbfhp3j]",
       "---",
       "",
       "See [[rails/rails-index]] and the bare-slug link [[hsts]].",
@@ -121,9 +119,7 @@ describe("GET /api/index", () => {
     expect(page.aliases).toEqual(["fk"]);
     expect(page.tags).toEqual(["rails", "db"]);
     expect(page.created).toBe("2026-01-01");
-    expect(page.nextReview).toBe("2026-06-15");
-    expect(page.reviewInterval).toBe(7);
-    expect(page.depth).toBe(1);
+    expect(page.flashcardIds).toEqual(["cmne7xz9202lx0msonsbfhp3j"]);
     expect(page.isIndex).toBe(false);
   });
 

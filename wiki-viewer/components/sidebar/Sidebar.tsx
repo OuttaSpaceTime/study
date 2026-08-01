@@ -13,6 +13,7 @@ import { ResizeHandle, usePanelResize } from "@/components/panel-resize";
 import ContextPanel from "./ContextPanel";
 import TreePanel from "./TreePanel";
 import {
+  CardsIcon,
   CollapseIcon,
   ExpandIcon,
   GlyphIcon,
@@ -27,6 +28,13 @@ const RAIL_WIDTH = 52;
 
 function openPalette() {
   window.dispatchEvent(new CustomEvent("wiki:open-palette"));
+}
+
+function iconClass(active: boolean): string {
+  return clsx(
+    "flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors",
+    active ? "bg-accent-soft text-accent" : "text-muted hover:bg-panel-2 hover:text-fg",
+  );
 }
 
 function IconButton({
@@ -46,15 +54,26 @@ function IconButton({
       title={title}
       aria-label={title}
       onClick={onClick}
-      className={clsx(
-        "flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors",
-        active
-          ? "bg-accent-soft text-accent"
-          : "text-muted hover:bg-panel-2 hover:text-fg",
-      )}
+      className={iconClass(active)}
     >
       {children}
     </button>
+  );
+}
+
+function IconLink({
+  title,
+  href,
+  children,
+}: {
+  title: string;
+  href: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link href={href} title={title} aria-label={title} className={iconClass(false)}>
+      {children}
+    </Link>
   );
 }
 
@@ -142,6 +161,9 @@ export default function Sidebar() {
           <IconButton title="Search ⌘K" onClick={openPalette}>
             <SearchIcon />
           </IconButton>
+          <IconLink title="Flashcards" href="/flashcards">
+            <CardsIcon />
+          </IconLink>
           <IconButton
             title="Expand sidebar"
             onClick={() => switchMode(lastExpanded.current)}
@@ -166,6 +188,9 @@ export default function Sidebar() {
             <IconButton title="Search ⌘K" onClick={openPalette}>
               <SearchIcon />
             </IconButton>
+            <IconLink title="Flashcards" href="/flashcards">
+              <CardsIcon />
+            </IconLink>
             <IconButton
               title={mode === "tree" ? "Context view" : "Tree view"}
               active={mode === "tree"}
