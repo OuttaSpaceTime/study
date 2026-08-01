@@ -90,7 +90,7 @@ export interface DeckOverview {
   states: { label: CardState; count: number }[];
 }
 
-/** Verdict from `scripts/study-calibration` — never recomputed here. */
+/** Verdict from flashcard-mcp's calibration core — never recomputed here. */
 export interface Calibration {
   verdict: "over-difficult" | "calibrated" | "under-difficult" | "low-signal";
   /** Within 2 points of a band edge, so one review could flip the verdict. */

@@ -115,7 +115,7 @@ The viewer reads flashcards **straight from flashcard-mcp's SQLite file** (`~/Co
 - **Per page** — a button in the article header opens a large modal with the page's cards, in two modes: an **overview** grid (fronts, answers revealed individually) and **flip-through** (one card at a time, 3D flip on click/space, arrow keys, progress bar). Cards come from the page's `flashcard_ids`; a page without any falls back to tag overlap.
 - **Whole deck** — `/flashcards` (sidebar card icon) browses everything: true retention over a trailing 30 days with the calibration verdict, a clickable state bar (new / learning / review / relearning / suspended) that filters the list, plus deck, tag, and text filters, and the same flip-through over whatever the filters leave.
 
-Retention is **not** recomputed in the viewer — `/flashcards` shells out to `scripts/study-calibration` (~50ms) and renders the verdict it returns, so the browser and `/study` can never disagree. An earlier TypeScript reimplementation drifted from the script within a day (wrong min-review floor, no rating-discrimination guard, UTC instead of local days), which is why the rule has exactly one home. Retune bands in `scripts/calibration.py` alone.
+Retention is **not** recomputed in the viewer — `/flashcards` shells out to flashcard-mcp's CLI (`npm run dev:cli -- calibration`, ~0.5s) and renders the verdict it returns, so the browser and `/study` can never disagree. An earlier reimplementation drifted within a day (wrong min-review floor, no rating-discrimination guard, UTC instead of local days), which is why the rule has exactly one home. Retune bands in `src/core/calibration.ts` alone.
 
 ### Hiding non-wiki content
 
@@ -202,6 +202,8 @@ The `flashcard-mcp` MCP server must be running. It starts automatically via `.mc
 
 If tools aren't available, check that `~/Code/Misc/flashcard-mcp` has dependencies installed (`npm install` in that directory).
 
+**Calibration and leeches live in the MCP too.** `check_calibration` returns true retention over a trailing 30 days plus a verdict (`over-difficult` / `calibrated` / `under-difficult` / `low-signal`, with a `marginal` flag near a band edge), and drives `/study`'s difficulty levers — never the rating rubric. Leeches are no longer surveyed: `get_next_card` stamps any card it serves at 5+ lapses and the next `get_next_card` **throws** until that card is rewritten (`update_card`, which also resets `lapses`), split, deleted, or explicitly kept via `resolve_leech(id, "defer")` — which stops blocking until the card lapses again. Suspend is deliberately not offered: it hides the card instead of fixing it.
+
 **`check_pressure` is the SRS pressure source of truth**, and it lives in the MCP server rather than this repo — the verdict and the enforcement have to agree, so they share one implementation. Two axes: `flashcardsDue` (review backlog, excluding the new-card pool) warns at 20 / pauses at 50, and `newToday` (intake) warns at 5 / pauses at 10. The server **enforces** the pause itself: `create_card` throws for a fresh card while the verdict is `pause`. `update_card` and splits (`create_card` with `inheritFrom`) are always allowed, and a split off a studied card does not count as intake — under a backlog, fixing the deck you already carry is exactly the right move. (A split off a never-reviewed parent inherits no maturity, so it does count.) Skills read the verdict via `references/srs-pressure-check.md`; nothing recomputes it locally.
 
 ## Development
@@ -227,8 +229,6 @@ Available scripts:
 - `scripts/wiki-reindex [--wiki-dir DIR]` — Rebuild `.wiki-index.json` from every page: drops fields the current schema no longer writes, prunes entries for deleted pages, and carries each page's `updated` stamp over (a reindex is a derive, not a write). Use after any index schema change
 - `scripts/lint` — Check broken wikilinks, frontmatter, orphans, alias collisions
 - `scripts/wiki-search "<query>"` — Semantic search against wiki embeddings
-- `scripts/study-calibration` — True retention over a trailing window + difficulty verdict (`over-difficult` / `calibrated` / `under-difficult` / `low-signal`, with `(MARGINAL)` near a band edge). Drives `/study`'s Phase 2 difficulty levers; never the rating rubric. `--human` or JSON
-- `scripts/study-leeches` — Leech candidates: cards at 5+ lapses (`--threshold` overrides), suspended cards excluded, ordered lapses-descending then lowest FSRS `stability`. Read by `/study` Phase 1; *which* leech a session raises depends on the cards actually served, so that selection stays in Phase 2. `--human` or JSON
 - `scripts/anki-sync <login|sync|status>` — Sync flashcards to AnkiWeb (see [Anki Sync](#anki-sync)). `sync --dry-run` previews, `--local` skips AnkiWeb
 - `scripts/card-htmlize` — Convert markdown/plain card text in master.db to simple Anki HTML (dry-run by default, `--apply` writes after backing up master.db)
 

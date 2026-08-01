@@ -20,7 +20,7 @@ Read this whole file before writing any code.
 - `lib/flashcards.ts` reads flashcard-mcp's SQLite file directly (`FLASHCARD_DB`, default `~/Code/Misc/flashcard-mcp/prisma/master.db`) through `node:sqlite`, opened **read-only** — the MCP server owns writes.
 - A page links to cards through its `flashcard_ids`; pages without any fall back to tag overlap.
 - Surfaces: a per-page modal from the article header, and `/flashcards` for the whole deck (retention, state filters, tag/deck/text filters, flip-through).
-- The calibration verdict is **not** computed here. `lib/calibration.ts` runs `scripts/study-calibration` and renders its JSON, so the viewer and `/study` always agree.
+- The calibration verdict is **not** computed here. `lib/calibration.ts` runs flashcard-mcp's `dev:cli calibration` and renders its JSON, so the viewer and `/study` always agree. Override the repo path with `FLASHCARD_MCP_DIR`.
 - Datetime columns in master.db hold both epoch-ms integers and ISO text. Every read normalizes via the `epochMs` helper in `lib/flashcards.ts`; comparing such a column against a string silently drops ~75% of the rows.
 
 ## Stack (already installed — do not add dependencies)

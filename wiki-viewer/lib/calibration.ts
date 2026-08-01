@@ -1,16 +1,18 @@
-// Server-only. The calibration verdict has one implementation, and it is
-// `scripts/study-calibration` — the same one `/study` reads. Re-deriving
-// retention here in TypeScript drifted within a day of being written (wrong
-// min-review floor, no rating-discrimination guard, UTC instead of local days),
-// so the viewer shells out (~50ms) rather than keep a second copy honest.
+// Server-only. The calibration verdict has one implementation, and it lives in
+// flashcard-mcp next to the deck it reads — the same code `/study` calls
+// through `check_calibration`. Re-deriving retention here drifted within a day
+// of being written (wrong min-review floor, no rating-discrimination guard, UTC
+// instead of local days), so the viewer shells out to that repo's CLI rather
+// than keep a second copy honest. Going through the MCP protocol instead would
+// mean spawning a stdio client per request.
 import { execFile } from "node:child_process";
-import path from "node:path";
 import { promisify } from "node:util";
 import type { Calibration } from "./types";
 
 const run = promisify(execFile);
 
-const REPO_ROOT = process.env.STUDY_ROOT ?? path.resolve(process.cwd(), "..");
+const MCP_DIR = process.env.FLASHCARD_MCP_DIR ??
+  "/home/felix/Code/Misc/flashcard-mcp";
 
 interface CalibrationJson {
   verdict: Calibration["verdict"];
@@ -25,7 +27,11 @@ interface CalibrationJson {
 /** Null when the script is unavailable — the panel degrades instead of 500ing. */
 export async function getCalibration(): Promise<Calibration | null> {
   try {
-    const { stdout } = await run("scripts/study-calibration", [], { cwd: REPO_ROOT });
+    const { stdout } = await run(
+      "npm",
+      ["run", "dev:cli", "--silent", "--", "calibration"],
+      { cwd: MCP_DIR },
+    );
     const data = JSON.parse(stdout) as CalibrationJson;
     return {
       verdict: data.verdict,

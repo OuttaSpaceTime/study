@@ -27,7 +27,7 @@ See `~/.claude/skills/references/interactive-principles.md` for shared interacti
 
 ## Output Discipline
 
-**Run all lookups silently.** `mcp__flashcard-mcp__check_pressure`, `scripts/study-calibration`, `scripts/study-leeches`, `Read` of wiki pages or the index, `mcp__flashcard-mcp__*` calls — these execute without preamble narration ("Starting Phase 1…", "Let me check…") and without any echoing of their stdout, JSON, or file contents into chat. The chat shows only synthesized output: the pressure verdict line, the question, the rating, the next prompt. If a script exits non-zero or errors, surface a one-line summary, not the stderr blob. This generalizes the existing "read logs, never tail" rule to every tool the skill calls.
+**Run all lookups silently.** `mcp__flashcard-mcp__check_pressure`, `mcp__flashcard-mcp__check_calibration`, `Read` of wiki pages or the index, `mcp__flashcard-mcp__*` calls — these execute without preamble narration ("Starting Phase 1…", "Let me check…") and without any echoing of their stdout, JSON, or file contents into chat. The chat shows only synthesized output: the pressure verdict line, the question, the rating, the next prompt. If a script exits non-zero or errors, surface a one-line summary, not the stderr blob. This generalizes the existing "read logs, never tail" rule to every tool the skill calls.
 
 ## Anti-Overload Principle
 
@@ -71,7 +71,7 @@ This skill requires the `flashcard-mcp` MCP server running from `~/Code/Misc/fla
 
 ### Phase 1: Pressure Check & Status (1 message)
 
-**Four calls, nothing else.** Run `scripts/anki-sync sync` first, then `mcp__flashcard-mcp__check_pressure`, `scripts/study-calibration --human`, and `scripts/study-leeches --human`. No `get_stats` call, no log reads, no index reads, no extra Bash calls.
+**Three calls, nothing else.** Run `scripts/anki-sync sync` first, then `mcp__flashcard-mcp__check_pressure` and `mcp__flashcard-mcp__check_calibration`. No `get_stats` call, no log reads, no index reads, no extra Bash calls.
 
 `scripts/anki-sync sync` runs **before** the pressure check so reviews done on the phone (via AnkiWeb) land in master.db before due counts are computed. It runs silently; mention it only when it pulled or pushed something (one line, e.g. `Anki sync: pulled 6 phone reviews.`) or when it failed — a failure (offline, not logged in) is a one-line note and the session continues; sync never blocks studying.
 
@@ -81,11 +81,9 @@ This skill requires the `flashcard-mcp` MCP server running from `~/Code/Misc/fla
 
 **Always surface the clearance numbers.** When the verdict is `warn` or `pause`, the `clearance` object states how many reviews drop the backlog below the warn line (`toExitWarn`) and, in `pause`, below the pause line first (`toExitPause`). Carry these into your opening message so the developer always knows the exact count to clear — e.g. "review 12 to exit warn". Clearance is backlog-only: reviewing never lowers `newToday`, which resets at the start of the next day, so say that instead of quoting a number when `newToday` raised the verdict.
 
-**Calibration.** `scripts/study-calibration --human` reports true retention over the trailing window and a verdict token: `OVER-DIFFICULT`, `CALIBRATED`, `UNDER-DIFFICULT`, or `LOW-SIGNAL`. Report the token verbatim — never infer it from the retention number, and never recompute retention yourself. It drives the difficulty levers in Phase 2. Surface it as one line in the opening message; if the script is missing or errors, treat the session as `LOW-SIGNAL` (levers stay at their `CALIBRATED` defaults) and note it in one line.
+**Calibration.** `mcp__flashcard-mcp__check_calibration` reports true retention over the trailing window and a `verdict`: `over-difficult`, `calibrated`, `under-difficult`, or `low-signal`, plus a `marginal` flag. Report the verdict verbatim — never infer it from the retention number, and never recompute retention yourself. It drives the difficulty levers in Phase 2. Surface it as one line in the opening message; if the tool errors, treat the session as `low-signal` (levers stay at their `calibrated` defaults) and note it in one line.
 
-**Leech list.** `scripts/study-leeches --human` returns the leech candidates, silently. A card with **5 or more lapses** is a leech: repeated failure at this count means the *card* is the problem, not the recall. The script owns the whole filter — threshold, the suspended-card exclusion, and the ordering — so do not re-derive any of it and do not substitute a `get_stats` call. Hold the returned card ids for the session and act per the leech rule in Phase 2. Do not print the list in the opening message — a count is enough (`3 leeches flagged`), and only when non-zero. If the script is missing or errors, note it in one line and run the session without a leech list.
-
-**The list is already in priority order** — lapses descending, then lowest FSRS `stability`. Walk it in order; the tie-break is applied for you.
+**No leech list is fetched.** Leeches are not surveyed up front any more — the server flags one the moment it serves it and blocks the queue until it is dealt with. See the leech rule in Phase 2.
 
 Emit one opening message with the pressure verdict, the clearance numbers, and the calibration line, then **immediately start Phase 2 (the flashcard loop)** — no confirmation gate, no "ready?".
 
@@ -93,7 +91,7 @@ Example when the verdict is `warn`:
 
 > **Pressure: warn** — 31 flashcards due, 2 added today. `maxNewCards: 0`.
 > **To clear:** review 12 to exit warn (31 → 19).
-> **Calibration: calibrated** — true retention 87%. 3 leeches flagged.
+> **Calibration: calibrated** — true retention 87%.
 >
 > Starting flashcard session.
 
@@ -118,20 +116,20 @@ Example when nothing is due:
 
 > Starting session — 4 due (3 relearning + 1 review), 18 new held back (pressure: warn). `maxNewCards: 0`.
 
-**Difficulty levers — derive from the Phase 1 calibration verdict.** The band percentages below and the 2-point margin restate the constants in `scripts/calibration.py` — retune them there, then update this table to match.
+**Difficulty levers — derive from the Phase 1 calibration verdict.** The band percentages below and the 2-point margin restate the constants in flashcard-mcp's `src/core/calibration.ts` — retune them there, then update this table to match.
 
 | Verdict | Staging (`2a`) | Missing-half follow-up | Generation prompt |
 |---|---|---|---|
-| `OVER-DIFFICULT` (<80%) | on | **off** | off |
-| `CALIBRATED` (80-90%) | on | once per card | ~1 in 4 |
-| `UNDER-DIFFICULT` (>90%) | on, harder framings | up to twice | ~1 in 3, plus "teach it back" |
-| `LOW-SIGNAL` | on | once per card | ~1 in 4 |
+| `over-difficult` (<80%) | on | **off** | off |
+| `calibrated` (80-90%) | on | once per card | ~1 in 4 |
+| `under-difficult` (>90%) | on, harder framings | up to twice | ~1 in 3, plus "teach it back" |
+| `low-signal` | on | once per card | ~1 in 4 |
 
-**`MARGINAL` is a modifier on any of those rows, not a row of its own.** The script sets it when retention is within 2 points of a band edge; since the bands are hard cutoffs on a noisy estimator, a single review can flip the verdict. When marginal, move **one step back toward the `CALIBRATED` row** rather than applying the verdict's row in full — so a marginal `OVER-DIFFICULT` keeps the follow-up and drops only the generation prompt. `LOW-SIGNAL` is never marginal: that verdict already says retention isn't trustworthy, so distance-to-a-band-edge means nothing there. Never read a marginal verdict as a mandate to strip difficulty.
+**`marginal` is a modifier on any of those rows, not a row of its own.** The tool sets it when retention is within 2 points of a band edge; since the bands are hard cutoffs on a noisy estimator, a single review can flip the verdict. When marginal, move **one step back toward the `calibrated` row** rather than applying the verdict's row in full — so a marginal `over-difficult` keeps the follow-up and drops only the generation prompt. `low-signal` is never marginal: that verdict already says retention isn't trustworthy, so distance-to-a-band-edge means nothing there. Never read a marginal verdict as a mandate to strip difficulty.
 
 **The rating rubric is never a lever.** The Again/Hard/Good/Easy definitions in step 4 are fixed and must not shift with the verdict. The loop is self-referential — Claude's own ratings produce the retention number that tunes Claude — so the cheapest way to raise retention would be to grade more leniently. Adjusting *which questions get asked* is in scope; adjusting *what counts as correct* is not, and that boundary is what keeps the metric meaningful.
 
-**State the adjustment when it moves off `CALIBRATED`.** One clause in the Phase 2 opening line, so every automatic softening or sharpening is visible and can be overridden: `Retention 74% (over-difficult) — follow-ups and generation prompts off this session.` The developer can override any lever explicitly ("keep the follow-ups"); honor it and note the override in the session log.
+**State the adjustment when it moves off `calibrated`.** One clause in the Phase 2 opening line, so every automatic softening or sharpening is visible and can be overridden: `Retention 74% (over-difficult) — follow-ups and generation prompts off this session.` The developer can override any lever explicitly ("keep the follow-ups"); honor it and note the override in the session log.
 
 If cards span multiple decks, **interleave** them — don't exhaust one deck before starting the next. Mix topics to strengthen cross-domain connections.
 
@@ -142,16 +140,28 @@ If cards span multiple decks, **interleave** them — don't exhaust one deck bef
 - On a repeat, **vary the probe** — don't re-ask identically. Ask from a different angle or with a different concrete example so the developer recalls the concept, not your previous phrasing.
 - **Stuck-card escape:** if a card fails its 3rd pass in one session, don't keep looping. Rate it honestly, and when it resurfaces, offer `/study-walkthrough <topic>`, call `skip_card`, and move on — it stays due in minutes and returns next session.
 
-**Leech rule (cross-session, distinct from the stuck-card escape above).** The stuck-card escape handles failure *within* one session; this handles a card that keeps failing *across* sessions. When a card from the Phase 1 leech list (5+ lapses) comes up, review it normally first — rate it honestly, don't pre-empt the answer. Then, instead of advancing, stop and name it:
+**Leech rule (cross-session, distinct from the stuck-card escape above).** The stuck-card escape handles failure *within* one session; this handles a card that keeps failing *across* sessions.
 
-> That card is at 7 lapses. Five-plus means the card is fighting you, not the concept — usually the front is too abstract to retrieve against. Want to rewrite it grounded, split it, or drop it?
+**The server enforces this one — you cannot skip it.** When `get_next_card` serves a card at **5 or more lapses** it stamps the card as a leech and returns `leech: { lapses, mustResolve: true }` alongside it. The *next* `get_next_card` throws until that card is resolved. There is no leech list to consult and no judgement call about whether this one counts: if the payload carries `mustResolve`, the session is blocked until you act.
+
+Review the card normally first — rate it honestly, don't pre-empt the answer. Then, instead of advancing, stop and name it:
+
+> That card is at 7 lapses. Five-plus means the card is fighting you, not the concept — usually the front is too abstract to retrieve against. Rewrite it grounded, split it, or drop it? (Or keep it as-is and I'll stop asking until it fails again.)
+
+The four ways out, and what each does:
+
+| Action | Call | Effect |
+|---|---|---|
+| **Rewrite** (default) | `update_card` | clears the flag and resets `lapses` to 0 — the failure history belonged to the old wording |
+| **Split** | `create_card` with `inheritFrom`, then `delete_card` | new cards keep the schedule but not the flag or the lapse count |
+| **Drop** | `delete_card` | card is gone |
+| **Keep as-is** | `resolve_leech(cardId, "defer")` | stops blocking until the card lapses *again* |
 
 - **Rewrite is the default fix, not deletion.** Most leeches in this deck are bare definitional fronts (*"What is a parser for a programming language?"*) — the fix is a concrete front per the staging rule in `2a`, baked into the card rather than improvised each session.
-- **Pass `inheritFrom: <original id>`** on any rewrite or split so the replacement keeps the original's FSRS block. Do not let a leech rewrite reset to a fresh card.
-- **Suspend is not the headline.** Offer rewrite / split / delete. Only mention suspend if the developer asks for it.
-- **At most one leech raised per session** — the highest lapse count among the cards actually served. A session that flags five cards is a session about card maintenance, not studying. The rest keep their flags for next time.
-- **Ties are already broken by the Phase 1 list order** — equal lapse counts fall to the lowest FSRS `stability`, since equal failure history means the weaker current memory is the more urgent card. Take whichever served card sits highest in that list; don't re-rank them yourself.
-- Record the leech action in the session log (`Leeches:` line).
+- **Do not offer suspend.** It hides the card without fixing it, and a suspended card is never served, so the problem simply stops being visible. Only act on suspend if the developer asks for it by name.
+- **Do not propose "defer" first.** It is the escape hatch for a card the developer judges fine as written, not the easy way past the block.
+- Since the block is per-card and clears on resolution, a session that hits several leeches will stop several times. That is the intended pressure: it means the deck needs maintenance more than it needs review.
+- Record each leech action in the session log (`Leeches:` line).
 
 Then loop:
 
@@ -191,7 +201,7 @@ Then loop:
    - **Missing-half follow-up — ask for the gap, don't fill it.** When the answer is *correct* but covers only one of two things the back requires (one of a pair, one of two conditions, one side of a contrast), do not supply the other half as feedback. Confirm the half they got in one clause, then ask for the missing one as a fresh question — best done by moving the goalposts to a case that isolates it. Example: the card asks why a copied CSP nonce fails; the developer says *"the nonce is unique per request"* (freshness, but not unpredictability) →
      > Right that it's fresh per response — so the attacker's copied value is already stale. One more: suppose the server regenerated it per request but used `nonce-` plus a 3-digit counter (001, 002, …). Per-request unique, still. Is that safe?
 
-     This does not violate the 2-3 sentence cap above — the cap governs *explaining*, and this is asking. Rate once, after the follow-up, on the whole exchange: producing the missing half unaided is still Good; needing it decomposed further is Hard. Fire it at the rate the calibration verdict sets (**at most once per card** on `CALIBRATED`, off on `OVER-DIFFICULT`), and only when the gap is a real second dimension — not to extract a synonym or a detail the back doesn't ask for. A second miss goes to Socratic recovery below.
+     This does not violate the 2-3 sentence cap above — the cap governs *explaining*, and this is asking. Rate once, after the follow-up, on the whole exchange: producing the missing half unaided is still Good; needing it decomposed further is Hard. Fire it at the rate the calibration verdict sets (**at most once per card** on `calibrated`, off on `over-difficult`), and only when the gap is a real second dimension — not to extract a synonym or a detail the back doesn't ask for. A second miss goes to Socratic recovery below.
    - **Again/Hard answer:** do NOT reveal the back. Enter Socratic recovery — decompose into smaller guiding questions until the developer produces the missing piece themselves, then confirm. Never volunteer the answer to close the loop.
    - State what was correct and what was missing (1-2 sentences)
    - **Do not state the rating yet.** The rating line is emitted *once*, after `submit_review` returns (step 6), so it can carry the next interval. Decide the rating here (needing recovery hints means Again/Hard) but do not print a bare "Rated: …" line in this step — printing it here and again in step 6 double-states it.
@@ -205,7 +215,7 @@ Then loop:
      - **Cloze format:** front contains `{{c1::…}}`. Cards must be question/answer style — a cloze hands over the sentence frame, so it tests recognition of a missing word rather than a full retrieval attempt. Offer to rewrite it as one or more Q/A cards with `inheritFrom`. A cloze carrying **two facts in one deletion** (e.g. `{{c1::all requests}}` … `{{c1::the Secure attribute}}`) is also a one-fact-per-card violation and splits into separate cards.
      - Do NOT flag cards that are intentionally minimal — simple recall cards with precise, correct backs are fine.
      - **When a quality issue is detected: stop advancing.** Explicitly describe the problem and ask the developer to fix it before continuing. Example: "This card's front is ambiguous — it could mean X or Y. Want to edit it to be more specific, or split it?" Wait for the developer to edit, split, or explicitly say "skip" before moving on.
-   - **Generation prompt** (on Good/Easy cards, at the rate the calibration verdict sets — see the difficulty-lever table; off entirely on `OVER-DIFFICULT`): Ask the developer to generate their own example or analogy: "Can you give me a real-world scenario where this applies?" This strengthens encoding. Keep it brief — one sentence is enough.
+   - **Generation prompt** (on Good/Easy cards, at the rate the calibration verdict sets — see the difficulty-lever table; off entirely on `over-difficult`): Ask the developer to generate their own example or analogy: "Can you give me a real-world scenario where this applies?" This strengthens encoding. Keep it brief — one sentence is enough.
    - One-liner reminder: *(harder/easier · discuss · edit · split · delete · show in browser)*
 6. **Call `submit_review`** with the rating, then state the rating line **once** — complete with the next interval from the returned schedule (`due`, `interval`, `state`, `intraDay`). This is the only place the rating is printed. Read the schedule silently; show only the formatted phrase, never the raw JSON. Format:
    - `intraDay: true` (interval `0`) → "Rated: **Again (1)** — repeats this session". Don't invent a minute count.
