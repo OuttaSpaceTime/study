@@ -24,8 +24,19 @@ REQUIRED_FIELDS = {
     "flashcard_ids",
 }
 
-# Fields required on content pages only (not on *-index.md MOC files)
-CONTENT_REQUIRED_FIELDS = {"next_review", "review_interval"}
+OPTIONAL_FIELDS = {"allow_orphan", "lint_ignore"}
+ALLOWED_FIELDS = REQUIRED_FIELDS | OPTIONAL_FIELDS
+
+# Named so the error can say what replaced them. Anything else unrecognized is
+# reported generically by the same check.
+RETIRED_FIELDS = {
+    "next_review": "wiki pages are no longer scheduled",
+    "review_interval": "wiki pages are no longer scheduled",
+    "last_deepened": "use 'updated'",
+    "depth": "dropped with the old walkthrough depth model",
+    "probe_sections": "probe sections were removed",
+    "last_probed": "probe sections were removed",
+}
 
 _FENCED_CODE_RE = re.compile(r"```.*?```", re.DOTALL)
 _INLINE_CODE_RE = re.compile(r"``[^`\n]+``|`[^`\n]+`")
@@ -139,6 +150,7 @@ def lint_wiki(
     warnings: list[str] = []
 
     errors.extend(_check_frontmatter(pages))
+    errors.extend(_check_forbidden_fields(pages))
     errors.extend(_check_moc_frontmatter(wiki_dir, pages))
     errors.extend(_check_aliases(pages))
     link_errors, inbound = _check_wikilinks(wiki_dir, pages)
@@ -640,23 +652,30 @@ def _check_frontmatter(pages: list[ParsedPage]) -> list[str]:
         for field in REQUIRED_FIELDS:
             if field not in p.meta:
                 errors.append(f"missing-field: {p.rel} missing frontmatter field '{field}'")
-        if not p.path.stem.endswith("-index"):
-            for field in CONTENT_REQUIRED_FIELDS:
-                if field not in p.meta:
-                    errors.append(f"missing-field: {p.rel} missing frontmatter field '{field}'")
     return errors
 
 
-_MOC_FORBIDDEN_FIELDS = ("next_review", "review_interval")
+def _check_forbidden_fields(pages: list[ParsedPage]) -> list[str]:
+    """Frontmatter is a closed schema, so retired fields cannot quietly return.
+
+    An allowlist rather than a denylist: every retirement so far (scheduling,
+    probe sections, depth) would otherwise have needed its own entry, and the
+    one that got missed is the one that comes back.
+    """
+    errors: list[str] = []
+    for p in pages:
+        for field in sorted(set(p.meta) - ALLOWED_FIELDS):
+            reason = RETIRED_FIELDS.get(field, "not part of the page schema")
+            errors.append(f"forbidden-field: {p.rel} carries '{field}' ({reason})")
+    return errors
 
 
 def _check_moc_frontmatter(wiki_dir: Path, pages: list[ParsedPage]) -> list[str]:
     """MOC pages (`<folder>/<folder>-index.md`) have stricter rules than content pages.
 
-    - moc-tag-missing: tags must include 'moc' (the exclusion marker for study-selection).
+    - moc-tag-missing: tags must include 'moc' (the marker distinguishing hubs from content).
     - moc-folder-tag-missing: tags must include the parent folder name.
     - moc-allow-orphan-missing: must declare allow_orphan: true (MOCs have no inbound links by design).
-    - moc-forbidden-field: must not include next_review / review_interval (MOCs are not studyable).
     """
     errors: list[str] = []
     for p in pages:
@@ -680,11 +699,6 @@ def _check_moc_frontmatter(wiki_dir: Path, pages: list[ParsedPage]) -> list[str]
         # Top-level MOCs are orphans by design; sub-MOCs are linked from their parent MOC.
         if not is_sub_moc and p.meta.get("allow_orphan") is not True:
             errors.append(f"moc-allow-orphan-missing: {p.rel} must declare allow_orphan: true")
-        for field in _MOC_FORBIDDEN_FIELDS:
-            if field in p.meta:
-                errors.append(
-                    f"moc-forbidden-field: {p.rel} must not include '{field}' (MOCs are not studyable)"
-                )
     return errors
 
 

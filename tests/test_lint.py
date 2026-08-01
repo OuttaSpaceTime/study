@@ -30,8 +30,6 @@ MINIMAL_PAGE = """\
     updated: 2026-04-09
     source_skill: study-walkthrough
     flashcard_ids: []
-    next_review: '2026-05-01'
-    review_interval: 3
     ---
 
     # test page
@@ -165,8 +163,8 @@ class TestFrontmatter:
         errors, _ = lint_wiki(wiki_dir)
         assert any("missing-field" in e and "flashcard_ids" in e for e in errors)
 
-    def test_missing_next_review_on_content_page_is_error(self, wiki_dir: Path):
-        """next_review is required on non-index content pages."""
+    def test_scheduling_field_on_content_page_is_error(self, wiki_dir: Path):
+        """Retired scheduling fields must not reappear on any page."""
         _write_page(wiki_dir, "git/some-page.md", """\
             ---
             title: "some page"
@@ -176,6 +174,7 @@ class TestFrontmatter:
             updated: 2026-04-09
             source_skill: study-walkthrough
             flashcard_ids: []
+            next_review: '2026-05-01'
             review_interval: 3
             allow_orphan: true
             ---
@@ -188,36 +187,10 @@ class TestFrontmatter:
         """)
         _write_index(wiki_dir, {})
         errors, _ = lint_wiki(wiki_dir)
-        assert any("missing-field" in e and "next_review" in e for e in errors)
+        for field in ("next_review", "review_interval"):
+            assert any("forbidden-field" in e and field in e for e in errors), errors
 
-    def test_missing_next_review_on_index_page_not_error(self, wiki_dir: Path):
-        """next_review, review_interval are not required on *-index.md pages."""
-        _write_page(wiki_dir, "git/git-index.md", """\
-            ---
-            title: "Git Index"
-            aliases: [git-moc]
-            tags: [moc, git]
-            created: 2026-04-09
-            updated: 2026-04-09
-            source_skill: manual
-            flashcard_ids: []
-            allow_orphan: true
-            ---
-
-            # Git Index
-
-            ## Pages
-        """)
-        _write_index(wiki_dir, {})
-        errors, _ = lint_wiki(wiki_dir)
-        content_field_errors = [
-            e for e in errors
-            if any(f in e for f in ("next_review", "review_interval"))
-        ]
-        assert content_field_errors == [], f"index page should not require content fields: {content_field_errors}"
-
-    def test_missing_review_interval_on_content_page_is_error(self, wiki_dir: Path):
-        """review_interval is required on non-index content pages."""
+    def test_last_deepened_is_error(self, wiki_dir: Path):
         _write_page(wiki_dir, "git/some-page.md", """\
             ---
             title: "some page"
@@ -227,7 +200,7 @@ class TestFrontmatter:
             updated: 2026-04-09
             source_skill: study-walkthrough
             flashcard_ids: []
-            next_review: '2026-05-01'
+            last_deepened: 2026-04-09
             allow_orphan: true
             ---
 
@@ -239,7 +212,55 @@ class TestFrontmatter:
         """)
         _write_index(wiki_dir, {})
         errors, _ = lint_wiki(wiki_dir)
-        assert any("missing-field" in e and "review_interval" in e for e in errors)
+        assert any("forbidden-field" in e and "last_deepened" in e for e in errors), errors
+
+    def test_unknown_field_is_error(self, wiki_dir: Path):
+        """The schema is closed, so a field nobody declared is caught too."""
+        _write_page(wiki_dir, "git/some-page.md", """\
+            ---
+            title: "some page"
+            aliases: []
+            tags: [git]
+            created: 2026-04-09
+            updated: 2026-04-09
+            source_skill: study-walkthrough
+            flashcard_ids: []
+            probe_sections: [Section One]
+            allow_orphan: true
+            ---
+
+            # some page
+
+            ## Section One
+
+            Content.
+        """)
+        _write_index(wiki_dir, {})
+        errors, _ = lint_wiki(wiki_dir)
+        assert any("forbidden-field" in e and "probe_sections" in e for e in errors), errors
+
+    def test_page_without_scheduling_fields_is_clean(self, wiki_dir: Path):
+        _write_page(wiki_dir, "git/some-page.md", """\
+            ---
+            title: "some page"
+            aliases: []
+            tags: [git]
+            created: 2026-04-09
+            updated: 2026-04-09
+            source_skill: study-walkthrough
+            flashcard_ids: []
+            allow_orphan: true
+            ---
+
+            # some page
+
+            ## Section One
+
+            Content.
+        """)
+        _write_index(wiki_dir, {})
+        errors, _ = lint_wiki(wiki_dir)
+        assert [e for e in errors if "forbidden-field" in e] == []
 
 
 class TestWikilinks:
@@ -748,8 +769,8 @@ class TestMocFrontmatter:
         _write_index(wiki_dir, {})
         errors, _ = lint_wiki(wiki_dir)
         for field in ("next_review", "review_interval"):
-            assert any("moc-forbidden-field" in e and field in e for e in errors), (
-                f"expected moc-forbidden-field for {field}: {errors}"
+            assert any("forbidden-field" in e and field in e for e in errors), (
+                f"expected forbidden-field for {field}: {errors}"
             )
 
 
@@ -764,9 +785,6 @@ class TestAliases:
             updated: 2026-04-09
             source_skill: study-walkthrough
             flashcard_ids: []
-            depth: 1
-            next_review: 2026-05-01
-            review_interval: 3
             allow_orphan: true
             ---
 
@@ -1505,8 +1523,6 @@ def _orphan_page(lint_ignore: list[str] | None = None) -> str:
         "updated: 2026-04-09\n"
         "source_skill: study-walkthrough\n"
         "flashcard_ids: []\n"
-        "next_review: '2026-05-01'\n"
-        "review_interval: 3\n"
         f"{ignore_block}"
         "---\n\n"
         "# orphan page\n\n"
