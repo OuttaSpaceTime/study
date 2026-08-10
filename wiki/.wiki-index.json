@@ -1523,7 +1523,8 @@
     "tags": [
       "software-design",
       "code-review",
-      "contracts"
+      "contracts",
+      "legacy-code"
     ],
     "sections": [
       "TL;DR",
@@ -1532,17 +1533,18 @@
       "The Name Is Part of the Contract",
       "Why Review Is the Backstop",
       "The Ladder from Documented to Impossible",
+      "Changing Inherited Code",
       "Tradeoffs and Gotchas",
       "Related Concepts",
       "References"
     ],
     "flashcard_ids": [
       "cmr3mfpvn000avi0mwndjb23g",
-      "cmr3mfs9b000bvi0mqigj0v9j",
-      "cmr3mfu74000cvi0mp1wy11c5"
+      "cmr3mfu74000cvi0mp1wy11c5",
+      "cmsnp5cgz0000fg0msajjyd08"
     ],
     "created": "2026-07-02",
-    "updated": "2026-07-21"
+    "updated": "2026-08-10"
   },
   "software-design/software-complexity": {
     "file": "software-design/software-complexity.md",

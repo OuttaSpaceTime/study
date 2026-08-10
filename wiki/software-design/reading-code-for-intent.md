@@ -10,13 +10,14 @@ tags:
 - software-design
 - code-review
 - contracts
+- legacy-code
 created: '2026-07-02'
-updated: '2026-07-02'
+updated: '2026-08-10'
 source_skill: study-walkthrough
 flashcard_ids:
 - cmr3mfpvn000avi0mwndjb23g
-- cmr3mfs9b000bvi0mqigj0v9j
 - cmr3mfu74000cvi0mp1wy11c5
+- cmsnp5cgz0000fg0msajjyd08
 ---
 
 # Reading code for intent
@@ -92,6 +93,36 @@ When an API can be misused, the fixes are not equal. Ranked weakest to strongest
 3. **Make it not compile** by changing the types. Caught at compile time, and impossible to ignore.
 
 The axis is *when misuse is caught* and *how little it relies on the human choosing correctly*. Climbing it is **"make illegal states unrepresentable"**, pushing enforcement into the type system (a `User | undefined`, a discriminated union, a `PostId` nominal type that cannot be swapped with a `PostTitle`). The design goal of landing everyone in correct usage by default is the **pit of success**. Easy to do right, hard to do wrong. The reviewer's upgrade is to stop at "this could be misused" and instead ask "can we move this up the ladder?" And when you cannot reach compile-time (level 3), reach for loud failure (level 2). Silent tolerance of a contract violation is the worst option.
+
+## Changing Inherited Code
+
+Reading for intent asks whose obligation a given assertion is. Changing inherited code asks a sharper question. Whose obligation am I about to move, and does the new owner actually meet it?
+
+Take a method you did not write:
+
+```ruby
+def archive_order(order_id)
+  order = Order.find(order_id)             # blows up if absent
+  raise ArgumentError, "no shipment" unless order.shipment
+  order.update!(archived: true)
+end
+```
+
+The two guards look like defensive noise once you notice the callers already load the order and check the shipment. So you simplify:
+
+```ruby
+def archive_order(order)
+  order.update!(archived: true)
+end
+```
+
+The constraint did not go away. It changed owner. What was enforced inside the callee is now a **precondition every caller must establish**, and the signature does not say so. It got shorter, not more honest. Nothing marks the one callsite that loads the order but never looks at the shipment.
+
+The failure mode gets worse in the direction that matters. Before, a shipment-less order raised at the boundary, on the first line, with the bad input in the stack trace. After, `update!` succeeds and an archived order with no shipment is persisted. The invariant is broken in the database, and it surfaces later in a report, a nightly job, or a customer complaint, far from the change that caused it. This is the ladder from the previous section walked **downwards**, from level 2 back to level 0, while the diff reads as a cleanup.
+
+The tension with the non-redundancy principle is real but resolvable. Meyer is right that a function should not re-check its own precondition. That licenses deleting the guard only once the precondition is genuinely established by every caller. In legacy code the contract is unwritten, so nothing tells you whether it is. Enumerating the callsites and confirming each one establishes what you are about to stop enforcing **is the work**, not a formality before it. If you cannot finish that enumeration, keep the guard, because a redundant check costs a little clarity and a missing one costs an invalid record.
+
+Two habits follow. Recover the contract before you touch the body, by reading what the method assumes on entry, what it guarantees on return, and what it keeps true about the object. And when you move an obligation outward, make the new signature say so, by taking a type that cannot be constructed in the invalid state or by failing loudly at the new boundary. Silence is the option that turned your refactor into a data bug.
 
 ## Tradeoffs and Gotchas
 
