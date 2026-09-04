@@ -190,6 +190,42 @@ Avoid cards about:
 
 If a drafted card is pure syntax recall, flag it and ask whether there's a higher-level concept underneath worth capturing instead. When in doubt, ask — don't create the syntax card on assumption.
 
+## Card Size & Scope — one question, short answer
+
+Two limits are **enforced at write time** by `create_card`/`update_card`. They are not style advice; a violating card is rejected.
+
+| Rule | Limit | Measured on |
+| --- | --- | --- |
+| Answer length | **200 characters** | Visible text — markup and entities are not counted |
+| Answer shape | **4 sentences** | Terminal punctuation, plus each `<li>` and `<br>` |
+| Front | **one question** | Heuristic: 2+ question marks, or `and`/`or` + a question word |
+
+Markup is free, so `<code>`, `<b>` and `<ul>` never cost budget — only the words a reviewer reads. Fronts have **no** length limit: a grounded scenario front is good and should stay concrete.
+
+**Write the answer like this:** the answer first, then at most one clause of why. Simple, direct language. No throat-clearing ("In REST, statelessness improves…"), no restating the question, no summarising sentence at the end.
+
+Too long (300 chars), and the last clause is filler:
+
+> Access and manipulate sensitive data, make authenticated requests, and interact with the DOM. For example, a malicious script running on evil.com could extract banking details from your authenticated bank.com session, effectively seeing everything you can see and stealing your sensitive information.
+
+On point (161 chars):
+
+> It acts as the user. It can read the DOM, make authenticated requests, and exfiltrate data from the target origin. Anything the user can see or do, the script can.
+
+### When a write is rejected
+
+The error names the field and states both remedies. Pick in this order:
+
+1. **Reduce.** Cut filler, restated question, and trailing summary. Most rejections are padding, not two ideas. This is the default and the developer's stated preference.
+2. **Drop the extra question.** If the front asks two things, keep the one the card is really about.
+3. **Split** — only when the dropped idea is genuinely not covered by another card. Check with `search_cards` first. A split off a reviewed parent must pass `inheritFrom: <parent id>` so it keeps the parent's FSRS schedule instead of arriving as a new card.
+
+Splitting is the last resort, not the first: every split adds review load, and the deck is usually better served by a tighter answer. Never work around the validation by rephrasing to dodge the heuristic.
+
+### The heuristic is a flag, not a verdict
+
+The single-question check is a regex, so it can misfire. If it rejects a front you believe asks **one** question, say so to the developer with the flagged phrase and your reasoning, and let them decide — do not silently reword the card to slip past the check. It correctly allows conjunctions that join subjects rather than questions ("how do Bundler <b>and</b> Yarn resolve…", "what directive <b>and</b> value…").
+
 ## Card Content Format — simple HTML, never markdown
 
 Cards sync to AnkiWeb, and Anki note fields are **HTML**: markdown renders literally, raw newlines collapse, and unescaped `<`/`>` are parsed as markup. Author every `create_card`/`update_card` front and back in the simple HTML subset (it renders correctly on desktop, AnkiDroid, and AnkiWeb):
@@ -205,4 +241,4 @@ Cards sync to AnkiWeb, and Anki note fields are **HTML**: markdown renders liter
 
 When presenting a card draft in chat, show it rendered (readable), not as raw HTML. `scripts/card-htmlize` exists as a safety net that converts any markdown stragglers (dry-run by default, `--apply` to write), but new cards should be born clean.
 
-These rules are **enforced at write time**: `create_card`/`update_card` reject markdown, bare newlines, wikilinks, and em dashes with a per-field error message. If a write is rejected, fix the draft per the error and retry — do not work around the validation.
+These rules are **enforced at write time**: `create_card`/`update_card` reject markdown, bare newlines, wikilinks, and em dashes with a per-field error message, alongside the length and one-question limits in [Card Size & Scope](#card-size--scope--one-question-short-answer). If a write is rejected, fix the draft per the error and retry — do not work around the validation.
