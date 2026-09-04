@@ -33,7 +33,7 @@ def read_cards(con: sqlite3.Connection) -> list[MasterCard]:
     rows = con.execute(
         """SELECT c.id, c.front, c.back, c.tags, d.name, c.suspended,
                   c.due, c.stability, c.difficulty, c.reps, c.lapses,
-                  c.state, c.lastReview, c.interval
+                  c.state, c.lastReview, c.interval, c.inheritedFrom
            FROM Card c JOIN Deck d ON d.id = c.deckId"""
     ).fetchall()
     return [
@@ -44,6 +44,7 @@ def read_cards(con: sqlite3.Connection) -> list[MasterCard]:
             tags=tuple(split_tags(r[3] or "")),
             deck=r[4],
             suspended=bool(r[5]),
+            inherited=bool(r[14]),
             sched=Sched(
                 due=parse_master_dt(r[6]),
                 stability=r[7],

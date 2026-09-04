@@ -41,8 +41,23 @@ def _col_crt(col: Collection) -> datetime:
     return datetime.fromtimestamp(col.db.scalar("select crt from col"), tz=UTC)
 
 
+def _newest_reviews(col: Collection) -> dict[int, int]:
+    """Newest real review per Anki card id, in epoch ms (the revlog id).
+
+    Authoritative over the card's last_review_time wherever it exists: an
+    AnkiWeb sync-down delivers a remote review as a revlog row without setting
+    last_review_time, and write_sched overwrites that field from master on
+    every push, so the field alone can read as null or stale on a card Anki
+    reviewed most recently. Ease 0 rows are reschedules, not reviews.
+    """
+    return dict(
+        col.db.all("select cid, max(id) from revlog where ease between 1 and 4 group by cid")
+    )
+
+
 def read_anki_cards(col: Collection) -> list[AnkiCard]:
     crt = _col_crt(col)
+    newest_review = _newest_reviews(col)
     out = []
     for nid in col.find_notes(""):
         note = col.get_note(nid)
@@ -51,11 +66,13 @@ def read_anki_cards(col: Collection) -> list[AnkiCard]:
             continue
         card = col.get_card(cids[0])
         ms = card.memory_state
-        last_review = (
-            datetime.fromtimestamp(card.last_review_time, tz=UTC)
-            if card.last_review_time
-            else None
-        )
+        reviewed_ms = newest_review.get(card.id)
+        if reviewed_ms:
+            last_review = datetime.fromtimestamp(reviewed_ms / 1000, tz=UTC)
+        elif card.last_review_time:
+            last_review = datetime.fromtimestamp(card.last_review_time, tz=UTC)
+        else:
+            last_review = None
         out.append(
             AnkiCard(
                 note_id=nid,

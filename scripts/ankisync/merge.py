@@ -49,6 +49,7 @@ class MasterCard:
     deck: str
     suspended: bool
     sched: Sched
+    inherited: bool = False  # split off an existing card, so reps came with it
 
 
 @dataclass(frozen=True)
@@ -125,8 +126,8 @@ def plan_sync(master_cards: list[MasterCard], anki_cards: list[AnkiCard]) -> Syn
 
 
 def _plan_sched(plan: SyncPlan, card: MasterCard, anki: AnkiCard) -> None:
-    # whole-second resolution: Anki stores last_review_time in seconds,
-    # master keeps milliseconds — sub-second deltas are not a newer review
+    # whole-second resolution: both sides carry millisecond precision but round
+    # trip through second-granularity fields — sub-second deltas are not a newer review
     ours = int(card.sched.last_review.timestamp()) if card.sched.last_review else None
     theirs = int(anki.sched.last_review.timestamp()) if anki.sched.last_review else None
     if ours is None and theirs is None:

@@ -58,6 +58,14 @@ def _warn_format(cards) -> None:
         print(f"format: {bad} card(s) not in simple-HTML form — run scripts/card-htmlize")
 
 
+def _reinstated(plan) -> int:
+    """Creates that are really undeletes: master cards with reviews of their own
+    that Anki no longer has a note for. Master owns existence, so a card deleted
+    on the phone comes back on the next sync — worth saying out loud. A split
+    inherits its parent's reps without ever having been pushed, so it is new."""
+    return sum(1 for c in plan.create if c.sched.reps > 0 and not c.inherited)
+
+
 def _summary(plan, hist) -> str:
     parts = []
     for label, items in (
@@ -72,6 +80,8 @@ def _summary(plan, hist) -> str:
     ):
         if items:
             parts.append(f"{label} {len(items)}")
+            if label == "create" and _reinstated(plan):
+                parts[-1] += f" ({_reinstated(plan)} deleted on Anki, reinstated)"
     if plan.unknown_anki:
         parts.append(f"unknown(ignored) {len(plan.unknown_anki)}")
     return ", ".join(parts) if parts else "nothing to do"
