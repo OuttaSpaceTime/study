@@ -237,7 +237,7 @@ Cards sync to AnkiWeb, and Anki note fields are **HTML**: markdown renders liter
 - Literal angle brackets (e.g. a `<script>` XSS example) must be entity-escaped: `&lt;script&gt;` — typically inside `<code>`
 - Never markdown links or `[[wikilinks]]` in card text — wiki linkage belongs in the companion page's `flashcard_ids`, not the card
 - **Never a cloze deletion (`{{c1::…}}`).** Cards are question/answer style only: the front asks something, the back answers it. A cloze hands over the sentence frame, so it tests recognition of a missing word instead of a full retrieval attempt, and it makes it easy to smuggle two facts into one deletion. Rephrase the sentence into a question rather than blanking a span.
-- **No em dashes (`—`), ever.** They're the classic LLM tell and read worse than plain prose. Write two sentences instead; after a bold lead-in label, use a colon (`<b>Fresh per response:</b> never reused…`). En dashes in numeric ranges (`1–4`) are fine.
+- **No em dashes (`—`), ever.** They're the classic LLM tell and read worse than plain prose. Write two sentences instead; after a bold lead-in label, use a colon (`<b>Fresh per response:</b> never reused…`). The `&mdash;` entity (and `&#8212;` / `&#x2014;`) counts as an em dash and is rejected too, since Anki renders it identically. En dashes in numeric ranges (`1–4`, `&ndash;`) are fine.
 
 When presenting a card draft in chat, show it rendered (readable), not as raw HTML. `scripts/card-htmlize` exists as a safety net that converts any markdown stragglers (dry-run by default, `--apply` to write), but new cards should be born clean.
 
