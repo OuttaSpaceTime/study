@@ -15,3 +15,7 @@ wiki/indexes/
 
 # Ollama embeddings cache (rebuilt from wiki content)
 wiki/.embeddings.json
+
+# Personal journal + working todo (local only, stripped from history)
+daily/
+todo.md
