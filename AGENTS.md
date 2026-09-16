@@ -56,12 +56,11 @@ Every wiki page has YAML frontmatter. Required on **all pages**: `title`, `alias
 
 ### Search
 
-- **TreeSearch** (pytreesearch): FTS5 keyword search, <100ms, section-aware results. Index at `wiki/indexes/`.
-- **Ollama** (nomic-embed-text): Semantic embeddings pre-computed at write time, stored in `wiki/.embeddings.json`. Query via `scripts/wiki-search`.
+- **qmd**: local hybrid search over `wiki/` — BM25 keyword + vector semantic search (RRF-fused), with optional LLM re-ranking, entirely on-device (no cloud calls). Query via the `mcp__qmd__query` MCP tool with `searches: [{type: "lex", ...}, {type: "vec", ...}]`. **Default `rerank: false`** for skill lookups (existence/relatedness checks) — warm latency is ~20-30ms. Pass `rerank: true` only when ordering quality matters more than speed — it costs ~8s per call every time (LLM cross-encoding is per-query compute, not a one-time load, so it never gets faster once warm). CLI equivalents: `qmd query "<text>" -c wiki` (hybrid+rerank), `qmd search "<text>" -c wiki` (BM25 only), `qmd vsearch "<text>" -c wiki` (vector only). Project config is `.qmd/index.yml` (tracked in git); the SQLite index at `.qmd/index.sqlite` is gitignored and rebuilt from wiki content. Embeddings refresh automatically as part of `scripts/wiki-write` (`qmd update` + `qmd embed`).
 
 ### Writing to Wiki
 
-All skills follow the shared protocol in `.claude/skills/references/wiki-write-protocol.md`. The flow: read index → extend/split check → draft → link resolution → write file → `scripts/wiki-write` (updates index, reindexes TreeSearch, embeds via Ollama, runs lint) → session log.
+All skills follow the shared protocol in `.claude/skills/references/wiki-write-protocol.md`. The flow: read index → extend/split check → draft → link resolution → write file → `scripts/wiki-write` (updates index, refreshes the qmd search index, runs lint) → session log.
 
 ### Linting
 
@@ -110,7 +109,7 @@ Open the dashboard itself (`xdg-open "http://localhost:4777/"`) when you want th
 
 ### Flashcards in the viewer
 
-The viewer reads flashcards **straight from flashcard-mcp's SQLite file** (`~/Code/Misc/flashcard-mcp/prisma/master.db`) via `node:sqlite`, opened **read-only** — the MCP server owns all writes, and an accidental write here would corrupt review history that Anki sync treats as append-only. Override the path with `FLASHCARD_DB`. Two surfaces:
+The viewer reads flashcards **straight from flashcard-mcp's SQLite file** (`~/Code/flashcard-mcp/prisma/master.db`) via `node:sqlite`, opened **read-only** — the MCP server owns all writes, and an accidental write here would corrupt review history that Anki sync treats as append-only. Override the path with `FLASHCARD_DB`. Two surfaces:
 
 - **Per page** — a button in the article header opens a large modal with the page's cards, in two modes: an **overview** grid (fronts, answers revealed individually) and **flip-through** (one card at a time, 3D flip on click/space, arrow keys, progress bar). Cards come from the page's `flashcard_ids`; a page without any falls back to tag overlap.
 - **Whole deck** — `/flashcards` (sidebar card icon) browses everything: true retention over a trailing 30 days with the calibration verdict, a clickable state bar (new / learning / review / relearning / suspended) that filters the list, plus deck, tag, and text filters, and the same flip-through over whatever the filters leave.
@@ -140,17 +139,17 @@ To change what's hidden: edit the list in **both** `app.json` (`userIgnoreFilter
 
 When the developer asks a substantive knowledge question — any "what is X / how does X work / why does X" or equivalent — handle it through this flow. The guiding principle: **never block the first answer on lookups**. Answer from memory immediately; run saved-knowledge lookups in the background and reconcile afterward.
 
-1. **Answer first, from memory.** Give the developer your best answer right away based on your own knowledge. Do not run `scripts/wiki-search`, `mcp__flashcard-mcp__search_cards`, or any other lookup before this first response — those are slow (Ollama embedding round-trip) and would block the reply.
+1. **Answer first, from memory.** Give the developer your best answer right away based on your own knowledge. Do not run `mcp__qmd__query`, `mcp__flashcard-mcp__search_cards`, or any other lookup before this first response — those add latency (model inference, web round-trip) and would block the reply.
 
 2. **Spawn one background subagent to do all lookup + verification + logging in parallel.** Immediately after (or alongside) the first answer, launch a single background agent (`run_in_background: true`) with a prompt that instructs it to:
-   - Run `scripts/wiki-search "<query>"` and collect top hits.
+   - Call `mcp__qmd__query` (hybrid BM25 + vector, `rerank: false`) and collect top hits.
    - Call `mcp__flashcard-mcp__search_cards` with the same query.
    - Optionally glance at `wiki/.wiki-index.json` sections/aliases if phrasing is unlikely to embed well.
    - **Always verify the memory answer against the web** via `WebSearch` (and `WebFetch` on the most authoritative result — official docs, source code, RFC, upstream repo — when the question has a specific factual claim to check). This runs regardless of whether wiki/cards hit, so memory answers are never trusted on their own.
    - Append a `## Query N (HH:MM)` entry to today's `logs/<MM>/<YYYY-MM-DD>.md` (zero-padded month folder; creating the file if missing) with: **Question**, **Wiki hits** (wikilinks or `none`), **Card hits** (ids + one-line fronts or `none`), **Web check** (one-line verdict: `confirms` | `contradicts: <what>` | `refines: <what>` | `inconclusive`, plus the authoritative URL used), **Source** (`wiki` | `cards` | `research` | `mixed` | `memory`), **Answer** (one-line summary of what you told the developer).
    - Report back the wiki/card hits **and the web-check verdict** so the main thread can reconcile.
 
-   The main thread must not `Read` or `Write` the log file itself, and must not run wiki-search / card-search directly. Same rule for the wiki-write follow-up when the developer accepts a `/study-walkthrough --write` offer: spawn it in the background.
+   The main thread must not `Read` or `Write` the log file itself, and must not call `mcp__qmd__query` / `search_cards` directly. Same rule for the wiki-write follow-up when the developer accepts a `/study-walkthrough --write` offer: spawn it in the background.
 
 3. **Reconcile when the subagent returns.** Once the background agent reports hits + web verdict:
    - If the wiki/cards **confirm** your answer, add a brief follow-up citing the page(s) with `[[folder/slug]]` wikilinks or flashcard ids. Keep it short — the developer already has the answer.
@@ -200,9 +199,9 @@ Daily append-only logs live at **`logs/MM/YYYY-MM-DD.md`** — the parent folder
 
 ## MCP Server
 
-The `flashcard-mcp` MCP server must be running. It starts automatically via `.mcp.json` (stdio transport pointing to `~/Code/Misc/flashcard-mcp/src/mcp/server.ts`).
+The `flashcard-mcp` MCP server must be running. It starts automatically via `.mcp.json` (stdio transport pointing to `~/Code/flashcard-mcp/src/mcp/server.ts`).
 
-If tools aren't available, check that `~/Code/Misc/flashcard-mcp` has dependencies installed (`npm install` in that directory).
+If tools aren't available, check that `~/Code/flashcard-mcp` has dependencies installed (`npm install` in that directory).
 
 **Calibration and leeches live in the MCP too.** `check_calibration` returns true retention over a trailing 30 days plus a verdict (`over-difficult` / `calibrated` / `under-difficult` / `low-signal`, with a `marginal` flag near a band edge), and drives `/study`'s difficulty levers — never the rating rubric. Leeches are no longer surveyed: `get_next_card` stamps any card it serves at 5+ lapses and the next `get_next_card` **throws** until that card is rewritten (`update_card`, which also resets `lapses`), split, deleted, or explicitly kept via `resolve_leech(id, "defer")` — which stops blocking until the card lapses again. Suspend is deliberately not offered: it hides the card instead of fixing it.
 
@@ -227,18 +226,18 @@ python3 scripts/wiki-write wiki/security/hsts.md  # explicit
 ```
 
 Available scripts:
-- `scripts/wiki-write <page>` — Update index, reindex TreeSearch, embed via Ollama, run lint
+- `scripts/wiki-write <page>` — Update index, refresh qmd search index, run lint
 - `scripts/wiki-reindex [--wiki-dir DIR]` — Rebuild `.wiki-index.json` from every page: drops fields the current schema no longer writes, prunes entries for deleted pages, and carries each page's `updated` stamp over (a reindex is a derive, not a write). Use after any index schema change
 - `scripts/lint` — Check broken wikilinks, frontmatter, orphans, alias collisions
-- `scripts/wiki-search "<query>"` — Semantic search against wiki embeddings
 - `scripts/anki-sync <login|sync|status>` — Sync flashcards to AnkiWeb (see [Anki Sync](#anki-sync)). `sync --dry-run` previews, `--local` skips AnkiWeb
 - `scripts/card-htmlize` — Convert markdown/plain card text in master.db to simple Anki HTML (dry-run by default, `--apply` writes after backing up master.db)
+
+Search is not a `scripts/` entry point — it's the `qmd` CLI / `mcp__qmd__query` MCP tool, see [Search](#search).
 
 Python modules live in `scripts/wiki/`. The top-level scripts are thin entry points.
 
 ## Dependencies
 
-- **TreeSearch**: `uv tool install pytreesearch` — FTS5 search for wiki
-- **Ollama**: Local LLM runtime with `nomic-embed-text` model — semantic embeddings
+- **qmd**: `npm install -g @tobilu/qmd` — local hybrid search engine (BM25 + vector + LLM re-rank) for the wiki. Models (embedding, reranking, query-expansion GGUFs, ~2GB total) download once via `qmd pull`, cached in `~/.cache/qmd/models/`. Exposes an MCP server (`qmd mcp`, registered in `.mcp.json`) and a CLI. Auto-detects GPU acceleration (Vulkan/CUDA/Metal) via `node-llama-cpp`, falling back to CPU.
 - **wiki-viewer**: Next.js app in-repo at `wiki-viewer/` — the browser surface for wiki pages (`http://localhost:4777`, health at `/api/health`). Run `npm install` in `wiki-viewer/`, then `npm run dev` (binds 127.0.0.1). See [Show in browser](#show-in-browser) and [Flashcards in the viewer](#flashcards-in-the-viewer).
 - **Obsidian**: used only by `/canvas` (`.canvas` editing). Installed from the Debian package at `/opt/Obsidian/obsidian`; official CLI (`obsidian`) at `~/.local/bin/obsidian`. Launch detached with `setsid -f /opt/Obsidian/obsidian >/dev/null 2>&1 < /dev/null`; open files with `obsidian open vault="study" file="<slug>"`.

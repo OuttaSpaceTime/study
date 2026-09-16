@@ -25,7 +25,7 @@ For additional shared interactive principles (scope, handling disagreement, non-
 - Start each checkpoint with `Checkpoint X/4: <title>`.
 - Pause after each checkpoint — ask whether to continue or discuss. Never auto-advance.
 - At each checkpoint, blend guided and unguided modes.
-- **Read silently, never cat.** Run `mcp__flashcard-mcp__check_pressure`, `scripts/wiki-search`, `mcp__flashcard-mcp__find_similar_cards`, and any `Read` calls without preamble narration and without echoing their stdout, JSON, or file contents into chat. The chat shows only synthesized output — the pressure verdict, similar-card warnings, draft cards, the next checkpoint prompt. See AGENTS.md "Skill Design Principles → Read silently, never cat."
+- **Read silently, never cat.** Run `mcp__flashcard-mcp__check_pressure`, `mcp__qmd__query`, `mcp__flashcard-mcp__find_similar_cards`, and any `Read` calls without preamble narration and without echoing their stdout, JSON, or file contents into chat. The chat shows only synthesized output — the pressure verdict, similar-card warnings, draft cards, the next checkpoint prompt. See AGENTS.md "Skill Design Principles → Read silently, never cat."
 
 ## Correction Primitive
 

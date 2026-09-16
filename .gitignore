@@ -10,11 +10,8 @@ wiki/.obsidian/workspace-mobile.json
 # Obsidian scratch canvases
 Untitled*.canvas
 
-# TreeSearch index (rebuilt from wiki content)
-wiki/indexes/
-
-# Ollama embeddings cache (rebuilt from wiki content)
-wiki/.embeddings.json
+# qmd search index (rebuilt from wiki content via `qmd update` + `qmd embed`)
+.qmd/index.sqlite*
 
 # Personal journal + working todo (local only, stripped from history)
 daily/

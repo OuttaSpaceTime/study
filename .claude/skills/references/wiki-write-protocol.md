@@ -6,9 +6,8 @@ Shared protocol for all skills that write to the developer wiki. Include this re
 
 - Wiki directory: `wiki/` (Obsidian vault root)
 - Index file: `wiki/.wiki-index.json`
-- Scripts: `scripts/wiki-write`, `scripts/lint`, `scripts/wiki-search`
-- TreeSearch: `treesearch` CLI (pytreesearch)
-- Ollama: running locally with `nomic-embed-text` model
+- Scripts: `scripts/wiki-write`, `scripts/lint`
+- qmd: local hybrid search (BM25 + vector + rerank) via `mcp__qmd__query`, or the `qmd` CLI
 
 ## "Write Wiki" Flow
 
@@ -23,8 +22,7 @@ Read `wiki/.wiki-index.json`. This gives you all existing pages with titles, ali
 Search the index for title/alias overlap with the current topic:
 
 1. Check index entries for title or alias matches
-2. Run `treesearch search --query "<topic>" --index_dir wiki/indexes` for keyword matches
-3. If Ollama is running, run `scripts/wiki-search "<topic>"` for semantic matches
+2. Call `mcp__qmd__query` (hybrid, `rerank: false`) for keyword/semantic matches on `<topic>`
 
 If a match is found, show the developer:
 > `architecture/event-sourcing` already exists with sections: Core Concepts, Projections, Related Concepts.
@@ -176,7 +174,7 @@ Generate 2-5 aliases for the page — common alternative names, abbreviations, a
 Three sources of links, in order:
 
 1. **Exact match**: Scan the draft content for any existing page title or alias from the index. Wrap matches in `[[absolute/path]]` format. Always use absolute paths from wiki root.
-2. **TreeSearch**: Run `treesearch search --query "<key concepts>"` to find related pages. Present top hits to the developer: "These pages seem related — want to link any?"
+2. **qmd**: Call `mcp__qmd__query` (hybrid, `rerank: false`) with `<key concepts>` to find related pages. Present top hits to the developer: "These pages seem related — want to link any?"
 3. **Walkthrough links**: Concepts discussed during the interactive session that the developer already confirmed as related — include these as links.
 
 All wikilinks MUST use absolute paths: `[[architecture/cqrs]]` not `[[cqrs]]`.
@@ -214,7 +212,7 @@ Write to `wiki/<folder>/<slug>.md` where slug is the slugified title (lowercase,
 scripts/wiki-write wiki/<folder>/<slug>.md
 ```
 
-This updates the index, reindexes TreeSearch, embeds via Ollama, and runs lint.
+This updates the index, refreshes the qmd search index (`qmd update` + `qmd embed`), and runs lint.
 
 Parse the JSON output:
 - `{"status":"ok","lint":"clean"}` → report success

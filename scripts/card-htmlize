@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run python3
 """Canonicalize flashcard-mcp cards to simple Anki-renderable HTML."""
 import sys
 from pathlib import Path

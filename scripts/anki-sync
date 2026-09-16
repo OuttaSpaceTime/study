@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run python3
 """Sync flashcard-mcp cards to AnkiWeb (one-way push + scheduling/history merge)."""
 import os
 import sys

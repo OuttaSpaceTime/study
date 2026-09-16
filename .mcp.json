@@ -1,10 +1,14 @@
 {
   "mcpServers": {
+    "qmd": {
+      "command": "qmd",
+      "args": ["mcp"]
+    },
     "flashcard-mcp": {
       "command": "npx",
-      "args": ["tsx", "/home/felix/Code/Misc/flashcard-mcp/src/mcp/server.ts"],
+      "args": ["tsx", "/home/outtaspacetime/Code/flashcard-mcp/src/mcp/server.ts"],
       "env": {
-        "DATABASE_URL": "file:/home/felix/Code/Misc/flashcard-mcp/prisma/master.db"
+        "DATABASE_URL": "file:/home/outtaspacetime/Code/flashcard-mcp/prisma/master.db"
       }
     }
   }

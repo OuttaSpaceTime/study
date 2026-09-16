@@ -9,7 +9,7 @@ This check is a **hard preflight**, not an optional step. It must run **before a
 Specifically:
 
 - The **first assistant message** of a skill invocation that will add SRS content must be the pressure-check output. No exceptions.
-- No `find_similar_cards`, `list_decks`, `treesearch`, `wiki-search`, or drafting calls may happen before the verdict is produced and (for `warn`/`pause`) surfaced to the developer.
+- No `find_similar_cards`, `list_decks`, `mcp__qmd__query`, or drafting calls may happen before the verdict is produced and (for `warn`/`pause`) surfaced to the developer.
 - An assistant message that advances the skill without first surfacing the verdict is a **contract violation** — equivalent to omitting the progress footer.
 - "It's just one card" / "the developer already said what they want" / "we ran it earlier in the session" are **not** valid reasons to skip. Run it every invocation.
 

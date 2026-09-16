@@ -1,4 +1,4 @@
-"""Wiki write orchestrator — updates index, reindexes TreeSearch, embeds via Ollama, runs lint."""
+"""Wiki write orchestrator — updates index, refreshes the qmd search index, runs lint."""
 
 from __future__ import annotations
 
@@ -10,7 +10,6 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from scripts.wiki.embed import update_embeddings
 from scripts.wiki.frontmatter import dump_page, parse_frontmatter
 from scripts.wiki.index import iter_wiki_pages, load_index, save_index, update_entry
 from scripts.wiki.lint import lint_wiki
@@ -142,28 +141,13 @@ def wiki_write(page_path: Path, wiki_dir: Path = Path("wiki")) -> dict:
     save_index(index_path, index)
     print(f"Index updated: {page_path.relative_to(wiki_dir)}", file=sys.stderr)
 
-    # Step 2: Reindex TreeSearch
-    if shutil.which("treesearch"):
-        md_files = [str(p) for p in iter_wiki_pages(wiki_dir)]
-        if md_files:
-            subprocess.run(
-                ["treesearch", "index", "--paths", *md_files, "-o", str(wiki_dir / "indexes"), "--force"],
-                capture_output=True,
-            )
-        print("TreeSearch reindexed", file=sys.stderr)
+    # Step 2: Refresh qmd search index (BM25 + vector embeddings)
+    if shutil.which("qmd"):
+        subprocess.run(["qmd", "update"], capture_output=True)
+        subprocess.run(["qmd", "embed"], capture_output=True)
+        print("qmd index refreshed", file=sys.stderr)
     else:
-        print("Warning: treesearch not found, skipping reindex", file=sys.stderr)
-
-    # Step 3: Embed via Ollama
-    try:
-        import urllib.request
-
-        urllib.request.urlopen("http://localhost:11434/api/tags", timeout=2)
-        update_embeddings(wiki_dir, page_path)
-        rel_key = str(page_path.relative_to(wiki_dir)).removesuffix(".md")
-        print(f"Embedded: {rel_key}", file=sys.stderr)
-    except Exception as e:
-        print(f"Warning: Ollama not available, skipping embedding: {e}", file=sys.stderr)
+        print("Warning: qmd not found, skipping search reindex", file=sys.stderr)
 
     # Step 3b: Auto-update folder MOC(s) — sub-MOC first, then parent.
     try:

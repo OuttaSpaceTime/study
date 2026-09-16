@@ -25,7 +25,7 @@ For additional shared interactive principles (scope, handling disagreement, non-
 - Pause after each phase -- ask whether to continue or discuss. Never auto-advance.
 - If the developer says "skip" or "I know this," fast-forward immediately.
 - If the developer fails a recall question, do NOT skip -- walk through it again until internalized.
-- **Read silently, never cat.** Run `scripts/wiki-search`, `Read` of wiki/index/log files, and `mcp__flashcard-mcp__*` calls without preamble narration and without echoing their stdout, JSON, or file contents into chat. The chat shows only synthesized output — the calibration question, the gap surfaced, the next phase prompt. See AGENTS.md "Skill Design Principles → Read silently, never cat."
+- **Read silently, never cat.** Run `mcp__qmd__query`, `Read` of wiki/index/log files, and `mcp__flashcard-mcp__*` calls without preamble narration and without echoing their stdout, JSON, or file contents into chat. The chat shows only synthesized output — the calibration question, the gap surfaced, the next phase prompt. See AGENTS.md "Skill Design Principles → Read silently, never cat."
 
 ## Socratic Never-Reveal — The Developer Produces Every Answer (always on; not a selectable mode; overrides every reveal-style step below)
 
@@ -156,7 +156,7 @@ This matters because the walkthrough compounds: a wrong explanation in Phase 2 p
 
 ## Preflight — SRS Pressure Check (MANDATORY, ALWAYS FIRST)
 
-**Before Phase 1. Before any tool call. Before any wiki-index read, TreeSearch, wiki-search, `find_similar_cards`, or drafting.** The first assistant message of this skill invocation must be the pressure-check output — nothing else. This applies regardless of mode, flags, or whether a wiki page will be written.
+**Before Phase 1. Before any tool call. Before any wiki-index read, `mcp__qmd__query`, `find_similar_cards`, or drafting.** The first assistant message of this skill invocation must be the pressure-check output — nothing else. This applies regardless of mode, flags, or whether a wiki page will be written.
 
 Follow `references/srs-pressure-check.md` exactly. Summary:
 
@@ -177,10 +177,9 @@ Follow `references/srs-pressure-check.md` exactly. Summary:
 **Step 1 -- Find what exists (and start research in parallel):**
 
 1. Read `wiki/.wiki-index.json` for the topic
-2. Run `treesearch search --query "<topic>" --index_dir wiki/indexes` for keyword matches
-3. Run `scripts/wiki-search "<topic>"` for semantic matches (if Ollama running)
-4. Call `find_similar_cards` from MCP to find related flashcards
-5. **Run the `research-grounding` workflow in the background** per the "Research Grounding" section above (passing `topic` and `cadence`). Do this at the same time as steps 1-4 — it should be running while calibration happens, so the synthesised two-lane findings are ready by Phase 2. Skip only for repo-internal topics (note the skip in the session log).
+2. Call `mcp__qmd__query` (hybrid, `rerank: false`) for keyword/semantic matches on `<topic>`
+3. Call `find_similar_cards` from MCP to find related flashcards
+4. **Run the `research-grounding` workflow in the background** per the "Research Grounding" section above (passing `topic` and `cadence`). Do this at the same time as steps 1-4 — it should be running while calibration happens, so the synthesised two-lane findings are ready by Phase 2. Skip only for repo-internal topics (note the skip in the session log).
 
 **Step 2 -- Present existing knowledge:**
 

@@ -27,6 +27,10 @@
       "Read(//tmp/**)"
     ]
   },
+  "enabledMcpjsonServers": [
+    "flashcard-mcp",
+    "qmd"
+  ],
   "skillOverrides": {
     "channel-artifact": "off",
     "dot-manage": "user-invocable-only",
@@ -38,8 +42,5 @@
     "forge": "off",
     "ml-inbox-audit": "user-invocable-only",
     "solveit-nvim": "off"
-  },
-  "enabledMcpjsonServers": [
-    "flashcard-mcp"
-  ]
+  }
 }
