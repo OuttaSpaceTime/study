@@ -5,11 +5,7 @@
       "args": ["mcp"]
     },
     "flashcard-mcp": {
-      "command": "npx",
-      "args": ["tsx", "/home/outtaspacetime/Code/flashcard-mcp/src/mcp/server.ts"],
-      "env": {
-        "DATABASE_URL": "file:/home/outtaspacetime/Code/flashcard-mcp/prisma/master.db"
-      }
+      "command": "scripts/flashcard-mcp-server"
     }
   }
 }

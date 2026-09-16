@@ -16,3 +16,6 @@ Untitled*.canvas
 # Personal journal + working todo (local only, stripped from history)
 daily/
 todo.md
+
+# Machine-local paths (flashcard-mcp location) — see .env.local.example
+.env.local

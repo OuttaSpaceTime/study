@@ -1,0 +1,35 @@
+#!/bin/sh
+# Launches flashcard-mcp's stdio server at the path configured in .env.local.
+# Kept dependency-free: anything written to stdout here would corrupt the
+# MCP stdio stream, so only stderr is used for diagnostics.
+set -eu
+
+root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+
+dir=${FLASHCARD_MCP_DIR:-}
+if [ -z "$dir" ] && [ -f "$root/.env.local" ]; then
+  dir=$(sed -n 's/^[[:space:]]*FLASHCARD_MCP_DIR[[:space:]]*=[[:space:]]*//p' "$root/.env.local" \
+        | tail -n1 | tr -d "\"'")
+fi
+case $dir in
+  "~/"*) dir=$HOME/${dir#"~/"} ;;
+  '$HOME/'*) dir=$HOME/${dir#'$HOME/'} ;;
+esac
+
+if [ -z "$dir" ]; then
+  echo "FLASHCARD_MCP_DIR is not set. Write it to $root/.env.local, e.g." >&2
+  echo "    FLASHCARD_MCP_DIR=\$HOME/Code/flashcard-mcp" >&2
+  echo "See 'Machine-local configuration' in README.md." >&2
+  exit 1
+fi
+
+server=$dir/src/mcp/server.ts
+if [ ! -f "$server" ]; then
+  echo "No flashcard-mcp server at $server" >&2
+  echo "Fix FLASHCARD_MCP_DIR in $root/.env.local." >&2
+  exit 1
+fi
+
+DATABASE_URL="file:${FLASHCARD_MASTER_DB:-$dir/prisma/master.db}"
+export DATABASE_URL
+exec npx tsx "$server"

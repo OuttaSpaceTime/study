@@ -39,9 +39,38 @@ appending a contradiction. `AGENTS.md` is the full operating schema.
 ```bash
 uv sync
 npm --prefix wiki-viewer install
+cp .env.local.example .env.local   # then edit, see below
 ```
 
 `scripts/lint` checks the wiki; `wiki-viewer` serves it.
+
+### Machine-local configuration
+
+The [flashcard-mcp](https://github.com/OuttaSpaceTime/flashcard-mcp) checkout lives at a
+different path on each machine, so that path is **never committed**. It is set once, in
+`.env.local` at the repo root (gitignored):
+
+```sh
+FLASHCARD_MCP_DIR=/home/felix/Code/Misc/flashcard-mcp
+```
+
+That single line is the only thing to change when setting this repo up on another machine.
+`$HOME/...` and `~/...` are both expanded. Everything that needs the deck derives its path
+from it:
+
+| Consumer | Uses |
+|---|---|
+| `.mcp.json` → `scripts/flashcard-mcp-server` | `$FLASHCARD_MCP_DIR/src/mcp/server.ts`, and `DATABASE_URL` |
+| `scripts/ankisync`, `scripts/card-htmlize` | `scripts/config.py` → `$FLASHCARD_MCP_DIR/prisma/master.db` |
+| `wiki-viewer` | `lib/flashcard-path.ts` → the same DB, plus the `dev:cli calibration` shell-out |
+
+Environment variables still win over the file, for one-off overrides:
+`FLASHCARD_MCP_DIR` (the checkout), `FLASHCARD_MASTER_DB` / `FLASHCARD_DB` (the SQLite file
+directly), `WIKI_ROOT` (defaults to `wiki/` next to `AGENTS.md`).
+
+If the config is missing, every entry point fails with a message naming `.env.local` rather
+than silently reading a path that doesn't exist. `uv run pytest tests/test_config.py` guards
+against a machine-specific path being committed again.
 
 ## Note
 
