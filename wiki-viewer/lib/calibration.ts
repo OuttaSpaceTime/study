@@ -7,12 +7,12 @@
 // mean spawning a stdio client per request.
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { flashcardMcpDir } from "./flashcard-path";
 import type { Calibration } from "./types";
 
 const run = promisify(execFile);
 
-const MCP_DIR = process.env.FLASHCARD_MCP_DIR ??
-  "/home/outtaspacetime/Code/flashcard-mcp";
+const MCP_DIR = flashcardMcpDir();
 
 interface CalibrationJson {
   verdict: Calibration["verdict"];
@@ -26,6 +26,7 @@ interface CalibrationJson {
 
 /** Null when the script is unavailable — the panel degrades instead of 500ing. */
 export async function getCalibration(): Promise<Calibration | null> {
+  if (!MCP_DIR) return null;
   try {
     const { stdout } = await run(
       "npm",

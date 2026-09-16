@@ -3,6 +3,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import matter from "gray-matter";
+import { REPO_ROOT } from "./flashcard-path";
 import type {
   GraphLink,
   GraphNode,
@@ -15,7 +16,7 @@ import type {
 // path.resolve also strips a trailing slash, which would otherwise break the
 // `startsWith(WIKI_ROOT + path.sep)` guard in safeWikiFile for every page.
 export const WIKI_ROOT = path.resolve(
-  process.env.WIKI_ROOT ?? "/home/felix/Code/Misc/study/wiki",
+  process.env.WIKI_ROOT ?? path.join(REPO_ROOT, "wiki"),
 );
 
 /** Non-content directories inside the wiki root. */

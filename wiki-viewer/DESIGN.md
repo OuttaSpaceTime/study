@@ -1,6 +1,6 @@
 # Wiki Viewer — Design Contract
 
-Local Next.js viewer for the study wiki at `/home/felix/Code/Misc/study/wiki` (env `WIKI_ROOT`).
+Local Next.js viewer for the study wiki at `<repo>/wiki`, resolved by walking up to `AGENTS.md` (override with env `WIKI_ROOT`).
 Read this whole file before writing any code.
 
 ## The wiki being rendered
@@ -17,10 +17,10 @@ Read this whole file before writing any code.
 
 ## The flashcard deck
 
-- `lib/flashcards.ts` reads flashcard-mcp's SQLite file directly (`FLASHCARD_DB`, default `~/Code/flashcard-mcp/prisma/master.db`) through `node:sqlite`, opened **read-only** — the MCP server owns writes.
+- `lib/flashcards.ts` reads flashcard-mcp's SQLite file directly through `node:sqlite`, opened **read-only** — the MCP server owns writes. The path comes from `lib/flashcard-path.ts`: `FLASHCARD_DB`, else `FLASHCARD_MCP_DIR/prisma/master.db` from the environment or the repo-root `.env.local`.
 - A page links to cards through its `flashcard_ids`; pages without any fall back to tag overlap.
 - Surfaces: a per-page modal from the article header, and `/flashcards` for the whole deck (retention, state filters, tag/deck/text filters, flip-through).
-- The calibration verdict is **not** computed here. `lib/calibration.ts` runs flashcard-mcp's `dev:cli calibration` and renders its JSON, so the viewer and `/study` always agree. Override the repo path with `FLASHCARD_MCP_DIR`.
+- The calibration verdict is **not** computed here. `lib/calibration.ts` runs flashcard-mcp's `dev:cli calibration` and renders its JSON, so the viewer and `/study` always agree. The repo path comes from the same `lib/flashcard-path.ts` resolver (`FLASHCARD_MCP_DIR`, env or `.env.local`).
 - Datetime columns in master.db hold both epoch-ms integers and ISO text. Every read normalizes via the `epochMs` helper in `lib/flashcards.ts`; comparing such a column against a string silently drops ~75% of the rows.
 
 ## Stack (already installed — do not add dependencies)

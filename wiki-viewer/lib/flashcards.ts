@@ -2,10 +2,10 @@
 // directly (read-only) rather than going through the MCP server, so the viewer
 // stays a plain Next app with no extra process to run.
 import { DatabaseSync } from "node:sqlite";
+import { masterDbPath } from "./flashcard-path";
 import type { Card, CardState, DeckOverview } from "./types";
 
-export const MASTER_DB = process.env.FLASHCARD_DB ??
-  "/home/outtaspacetime/Code/flashcard-mcp/prisma/master.db";
+export const MASTER_DB = masterDbPath();
 
 // ts-fsrs State enum, mirrored from flashcard-mcp's schema (Card.state).
 const STATE_NAMES: CardState[] = ["new", "learning", "review", "relearning"];
@@ -17,6 +17,11 @@ function open(): DatabaseSync {
   // write would corrupt review history the sync trusts as append-only.
   // `timeout` covers the EXCLUSIVE window of a concurrent writer — the file is
   // journal_mode=delete, so a review being committed locks readers out.
+  if (!MASTER_DB) {
+    throw new Error(
+      "FLASHCARD_MCP_DIR is not set — add it to .env.local at the repo root.",
+    );
+  }
   db ??= new DatabaseSync(MASTER_DB, { readOnly: true, timeout: 5000 });
   return db;
 }
