@@ -5,10 +5,18 @@ Direction contract:
 - Scheduling flows both ways: the side with the newer last review wins wholesale.
 - Review history is append-only: union by (card, timestamp), nothing overwritten.
 - Anki-only notes (non-CUID guid) are reported, never imported into master.
-- Anki-only notes with a CUID guid are ours: deleted from Anki when master already
-  holds other cards (an intentional deletion, now propagated); imported into master
-  instead when master.db is completely empty, since that shape means a fresh/reset
-  local install recovering from an existing Anki collection, not a real mass-delete.
+
+Deletion is explicit state on both sides, never inferred from absence. Absence is
+ambiguous in both directions: a note missing from Anki is either brand new here or
+deleted elsewhere, and a card missing from master is either never seen here or
+deleted here. Several machines share one AnkiWeb collection, so guessing either way
+destroys data. Instead a deleted card keeps its Anki note, tagged DELETED_TAG, and
+master keeps a tombstone row; absence then means exactly one thing on each side.
+
+  local \\ remote   LIVE (note)        DEL (tagged)        NONE
+  LIVE (row)        content + sched    soft-delete here    create on Anki
+  TOMB (tombstone)  tag the note       nothing             nothing
+  NONE              import             tombstone here      nothing
 
 No sync bookkeeping exists: every decision derives from the current state of both
 sides. Identity is carried by the Anki note guid, which we set to the master card's
@@ -20,6 +28,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 CUID_RE = re.compile(r"^c[a-z0-9]{20,}$")
+
+DELETED_TAG = "__deleted__"
 
 
 def is_cuid(guid: str) -> bool:
@@ -86,9 +96,10 @@ class SyncPlan:
     push_sched: list[tuple[MasterCard, int]] = field(default_factory=list)  # (card, anki card_id)
     pull_sched: list[tuple[str, Sched]] = field(default_factory=list)  # (master card id, sched)
     push_suspend: list[tuple[MasterCard, int]] = field(default_factory=list)  # (card, card_id)
-    delete_notes: list[int] = field(default_factory=list)
+    tag_deleted: list[int] = field(default_factory=list)  # note ids to mark DELETED_TAG
+    local_soft_delete: list["AnkiCard"] = field(default_factory=list)  # tombstone here
     unknown_anki: list[int] = field(default_factory=list)  # note ids not ours; report only
-    import_from_anki: list["AnkiCard"] = field(default_factory=list)  # recovered onto empty master
+    import_from_anki: list["AnkiCard"] = field(default_factory=list)  # created on another machine
 
 
 @dataclass
@@ -103,16 +114,27 @@ def _content(card: MasterCard | AnkiCard) -> tuple:
     return (card.front, card.back, tuple(sorted(t.casefold() for t in card.tags)), card.deck)
 
 
-def plan_sync(master_cards: list[MasterCard], anki_cards: list[AnkiCard]) -> SyncPlan:
+def _is_deleted(anki: AnkiCard) -> bool:
+    return DELETED_TAG in {t.casefold() for t in anki.tags}
+
+
+def plan_sync(
+    master_cards: list[MasterCard],
+    anki_cards: list[AnkiCard],
+    deleted_ids: set[str] | frozenset[str] = frozenset(),
+) -> SyncPlan:
     plan = SyncPlan()
     master_by_id = {c.id: c for c in master_cards}
     anki_by_guid = {a.guid: a for a in anki_cards}
-    master_is_empty = not master_cards
 
     for card in master_cards:
         anki = anki_by_guid.get(card.id)
         if anki is None:
             plan.create.append(card)
+            continue
+        if _is_deleted(anki):
+            # deleted on another machine: take the deletion, never push our row back
+            plan.local_soft_delete.append(anki)
             continue
         if _content(card) != _content(anki):
             plan.update_content.append((card, anki.note_id))
@@ -123,13 +145,15 @@ def plan_sync(master_cards: list[MasterCard], anki_cards: list[AnkiCard]) -> Syn
     for anki in anki_cards:
         if anki.guid in master_by_id:
             continue
-        if is_cuid(anki.guid):
-            if master_is_empty:
-                plan.import_from_anki.append(anki)  # fresh/reset local db, recover from Anki
-            else:
-                plan.delete_notes.append(anki.note_id)  # was ours, deleted in master
-        else:
+        if not is_cuid(anki.guid):
             plan.unknown_anki.append(anki.note_id)
+        elif anki.guid in deleted_ids:
+            if not _is_deleted(anki):
+                plan.tag_deleted.append(anki.note_id)
+        elif _is_deleted(anki):
+            plan.local_soft_delete.append(anki)
+        else:
+            plan.import_from_anki.append(anki)
 
     return plan
 

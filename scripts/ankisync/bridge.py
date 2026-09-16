@@ -19,7 +19,7 @@ from scripts.ankisync.convert import (
     dt_to_anki_due,
     state_to_anki,
 )
-from scripts.ankisync.merge import AnkiCard, MasterCard, Review, Sched
+from scripts.ankisync.merge import DELETED_TAG, AnkiCard, MasterCard, Review, Sched
 
 PROFILE = "StudySync"
 NOTETYPE = "Basic"
@@ -161,9 +161,18 @@ def set_suspended(col: Collection, card_id: int, suspended: bool) -> None:
         col.sched.unsuspend_cards([card_id])
 
 
-def delete_notes(col: Collection, note_ids: list[int]) -> None:
-    if note_ids:
-        col.remove_notes(note_ids)
+def tag_deleted(col: Collection, note_ids: list[int]) -> None:
+    """Mark a note deleted and suspend its cards, instead of removing it.
+
+    The note is how the deletion reaches the other machines: they share only the
+    AnkiWeb collection, so a removed note would be indistinguishable from one that
+    was never created there. Suspending keeps it out of review in the meantime.
+    """
+    for note_id in note_ids:
+        note = col.get_note(note_id)
+        note.tags = [*note.tags, DELETED_TAG]
+        col.update_note(note)
+        col.sched.suspend_cards(col.card_ids_of_note(note_id))
 
 
 def read_anki_reviews(col: Collection, guid_by_cid: dict[int, str]) -> list[Review]:

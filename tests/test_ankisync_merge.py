@@ -11,6 +11,7 @@ Direction contract:
 from datetime import UTC, datetime
 
 from scripts.ankisync.merge import (
+    DELETED_TAG,
     AnkiCard,
     MasterCard,
     Review,
@@ -67,24 +68,68 @@ class TestPlanExistence:
     def test_master_card_missing_in_anki_is_created(self):
         plan = plan_sync([_master()], [])
         assert [c.id for c in plan.create] == [CUID]
-        assert not plan.update_content and not plan.delete_notes
+        assert not plan.update_content and not plan.local_soft_delete
 
-    def test_cuid_note_without_master_card_is_deleted_when_master_has_other_cards(self):
-        plan = plan_sync([_master(id=CUID2)], [_anki(guid=CUID)])
-        assert plan.delete_notes == [100]
-        assert not plan.import_from_anki
+    def test_cuid_note_without_master_card_is_imported_not_deleted(self):
+        # the other machine created it; absence from master only means "never seen here"
+        anki = _anki(guid=CUID)
+        plan = plan_sync([_master(id=CUID2)], [anki])
+        assert plan.import_from_anki == [anki]
+        assert not plan.local_soft_delete
 
     def test_cuid_note_is_imported_when_master_is_completely_empty(self):
         anki = _anki(guid=CUID)
         plan = plan_sync([], [anki])
         assert plan.import_from_anki == [anki]
-        assert not plan.delete_notes
 
-    def test_foreign_guid_note_is_reported_never_deleted(self):
+    def test_foreign_guid_note_is_reported_never_touched(self):
         plan = plan_sync([], [_anki(note_id=999, guid="f$kz$Y9Z*m")])
         assert plan.unknown_anki == [999]
-        assert not plan.delete_notes and not plan.pull_sched
+        assert not plan.pull_sched and not plan.import_from_anki
+
+
+class TestDeletionPropagation:
+    """Deletion is explicit state on both sides; absence never implies it.
+
+    Local: LIVE (row) / TOMB (id in tombstones) / NONE.
+    Remote: LIVE (note) / DEL (note tagged __deleted__) / NONE.
+    """
+
+    def test_tombstoned_card_still_live_on_anki_gets_tagged(self):
+        plan = plan_sync([], [_anki(guid=CUID)], deleted_ids={CUID})
+        assert plan.tag_deleted == [100]
         assert not plan.import_from_anki
+
+    def test_tombstoned_card_already_tagged_on_anki_is_left_alone(self):
+        anki = _anki(guid=CUID, tags=("ruby", DELETED_TAG))
+        plan = plan_sync([], [anki], deleted_ids={CUID})
+        assert not plan.tag_deleted
+        assert not plan.import_from_anki and not plan.local_soft_delete
+
+    def test_deleted_tag_from_other_machine_soft_deletes_local_card(self):
+        anki = _anki(guid=CUID, tags=("ruby", DELETED_TAG))
+        plan = plan_sync([_master(id=CUID)], [anki])
+        assert [a.guid for a in plan.local_soft_delete] == [CUID]
+
+    def test_deleted_tag_never_pushes_content_or_schedule_back(self):
+        # the local row is still LIVE, so a naive content diff would strip the tag
+        anki = _anki(guid=CUID, tags=("ruby", DELETED_TAG),
+                     sched=_sched(last_review="2026-01-01", reps=3))
+        plan = plan_sync([_master(id=CUID)], [anki])
+        assert not plan.update_content and not plan.push_sched and not plan.push_suspend
+
+    def test_deleted_tag_for_never_seen_card_records_a_tombstone(self):
+        anki = _anki(guid=CUID, tags=(DELETED_TAG,))
+        plan = plan_sync([], [anki])
+        assert [a.guid for a in plan.local_soft_delete] == [CUID]
+        assert not plan.import_from_anki
+
+    def test_deletion_converges_and_does_not_resurrect(self):
+        # after both sides settle, a further sync plans nothing at all
+        anki = _anki(guid=CUID, tags=("ruby", DELETED_TAG))
+        plan = plan_sync([], [anki], deleted_ids={CUID})
+        assert not any([plan.create, plan.import_from_anki, plan.local_soft_delete,
+                        plan.tag_deleted, plan.update_content, plan.push_sched])
 
 
 class TestPlanContent:

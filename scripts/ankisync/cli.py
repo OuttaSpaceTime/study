@@ -14,7 +14,7 @@ from fastanki.core import data_path
 
 from scripts.ankisync import bridge, master
 from scripts.ankisync.htmlize import to_anki_html
-from scripts.ankisync.merge import is_cuid, plan_history, plan_sync
+from scripts.ankisync.merge import DELETED_TAG, is_cuid, plan_history, plan_sync
 
 CONFIG = data_path() / bridge.PROFILE / "sync-config.json"
 
@@ -41,16 +41,23 @@ def _gather(col):
     with master.connect(readonly=True) as con:
         cards = master.read_cards(con)
         reviews = master.read_reviews(con)
+        deleted_ids = master.read_tombstones(con)
     anki_cards = bridge.read_anki_cards(col)
     ours_ids = {c.id for c in cards}
     # never plan: reviews of since-deleted cards (no note to land on) and
     # rating-0 skip events (Anki's ease range is 1-4; they can't round-trip)
     reviews = [r for r in reviews if r.card_id in ours_ids and 1 <= r.rating <= 4]
-    # every CUID guid, not just ours_ids: an empty-master import (see merge.py)
-    # needs an about-to-be-created card's review history too, not just existing ones
-    guid_by_cid = {a.card_id: a.guid for a in anki_cards if is_cuid(a.guid)}
+    # every CUID guid, not just ours_ids: an import (see merge.py) needs an
+    # about-to-be-created card's review history too, not just existing ones.
+    # Deleted notes are excluded: their Card row is gone or about to go, so their
+    # reviews have nothing to hang off.
+    guid_by_cid = {
+        a.card_id: a.guid
+        for a in anki_cards
+        if is_cuid(a.guid) and a.guid not in deleted_ids and DELETED_TAG not in a.tags
+    }
     anki_reviews = bridge.read_anki_reviews(col, guid_by_cid)
-    return cards, reviews, anki_cards, anki_reviews
+    return cards, reviews, anki_cards, anki_reviews, deleted_ids
 
 
 def _warn_format(cards) -> None:
@@ -77,7 +84,8 @@ def _summary(plan, hist) -> str:
         ("sched→anki", plan.push_sched),
         ("sched←anki", plan.pull_sched),
         ("suspend", plan.push_suspend),
-        ("delete", plan.delete_notes),
+        ("deleted→anki", plan.tag_deleted),
+        ("deleted←anki", plan.local_soft_delete),
         ("history→anki", hist.push_reviews),
         ("history←anki", hist.pull_reviews),
     ):
@@ -101,9 +109,9 @@ def cmd_sync(args) -> int:
                 print(f"sync: not logged in ({e}); run anki-sync login first")
                 return 1
 
-        cards, reviews, anki_cards, anki_reviews = _gather(col)
+        cards, reviews, anki_cards, anki_reviews, deleted_ids = _gather(col)
         _warn_format(cards)
-        plan = plan_sync(cards, anki_cards)
+        plan = plan_sync(cards, anki_cards, deleted_ids)
         hist = plan_history(reviews, anki_reviews)
         print(f"plan: {_summary(plan, hist)}")
         if args.dry_run:
@@ -127,7 +135,11 @@ def cmd_sync(args) -> int:
             bridge.write_sched(col, cid, card)
         for card, cid in plan.push_suspend:
             bridge.set_suspended(col, cid, card.suspended)
-        bridge.delete_notes(col, plan.delete_notes)
+        bridge.tag_deleted(col, plan.tag_deleted)
+        if plan.local_soft_delete:
+            with master.connect(readonly=False) as con, con:
+                for anki_card in plan.local_soft_delete:
+                    master.soft_delete_card(con, anki_card.guid)
         if hist.push_reviews:
             fresh = bridge.read_anki_cards(col)  # creates may have added cards
             cid_by_guid = {a.guid: a.card_id for a in fresh if is_cuid(a.guid)}
@@ -151,9 +163,9 @@ def cmd_sync(args) -> int:
 def cmd_status(args) -> int:
     col = bridge.open_bridge()
     try:
-        cards, reviews, anki_cards, anki_reviews = _gather(col)
+        cards, reviews, anki_cards, anki_reviews, deleted_ids = _gather(col)
         _warn_format(cards)
-        plan = plan_sync(cards, anki_cards)
+        plan = plan_sync(cards, anki_cards, deleted_ids)
         hist = plan_history(reviews, anki_reviews)
         print(f"master: {len(cards)} cards, {len(reviews)} reviews")
         print(f"bridge: {len(anki_cards)} notes, {len(anki_reviews)} reviews")

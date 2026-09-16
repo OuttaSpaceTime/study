@@ -6,7 +6,6 @@ Only scheduling fields and appended Review rows are ever written — card
 existence and content are never modified from the Anki side.
 """
 
-import os
 import secrets
 import sqlite3
 from datetime import UTC, datetime
@@ -14,19 +13,46 @@ from pathlib import Path
 
 from scripts.ankisync.convert import format_master_dt, parse_master_dt, split_tags
 from scripts.ankisync.merge import AnkiCard, MasterCard, Review, Sched
+from scripts.config import master_db
 
-MASTER_DB = Path(
-    os.environ.get("FLASHCARD_MASTER_DB", "~/Code/flashcard-mcp/prisma/master.db")
-).expanduser()
+
+def db_path() -> Path:
+    return master_db()
 
 
 def connect(readonly: bool = True) -> sqlite3.Connection:
+    db = db_path()
     if readonly:
-        con = sqlite3.connect(f"file:{MASTER_DB}?mode=ro", uri=True)
+        con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
     else:
-        con = sqlite3.connect(MASTER_DB, timeout=10)
+        con = sqlite3.connect(db, timeout=10)
         con.execute("PRAGMA busy_timeout = 10000")
     return con
+
+
+def read_tombstones(con: sqlite3.Connection) -> set[str]:
+    """Card ids deleted here. Absent table means no card has been deleted yet."""
+    rows = con.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='DeletedCard'"
+    ).fetchall()
+    if not rows:
+        return set()
+    return {r[0] for r in con.execute("SELECT cardId FROM DeletedCard").fetchall()}
+
+
+def soft_delete_card(con: sqlite3.Connection, card_id: str) -> None:
+    """Record a deletion made on another machine and drop our row for it."""
+    con.execute(
+        """CREATE TABLE IF NOT EXISTS DeletedCard (
+               cardId TEXT NOT NULL PRIMARY KEY,
+               deletedAt DATETIME NOT NULL
+           )"""
+    )
+    con.execute(
+        "INSERT OR IGNORE INTO DeletedCard (cardId, deletedAt) VALUES (?, ?)",
+        (card_id, format_master_dt(now_utc())),
+    )
+    con.execute("DELETE FROM Card WHERE id = ?", (card_id,))
 
 
 def read_cards(con: sqlite3.Connection) -> list[MasterCard]:
