@@ -25,7 +25,7 @@ The decode loop produces a probability distribution over the next token at every
 
 ## The Decode Loop Has a Sampler
 
-Every decode step (see [[llm/inference-prefill-and-decode]]) ends with the model producing a vector of raw scores ("logits"). One per token in the vocabulary, often ~150,000 entries. Those logits are turned into a probability distribution by softmax, and a sampler picks one token from that distribution. That picked token is then fed back as input for the next step.
+Every decode step (see [[llm/inference-prefill-and-decode]]) ends with the model producing a vector of raw scores ("logits"). One per token in the vocabulary, roughly 150,000 entries. Those logits are turned into a probability distribution by softmax, and a sampler picks one token from that distribution. That picked token is then fed back as input for the next step.
 
 The sampler is the main place where a deployment shapes model behavior at runtime. Most "production knobs" are sampler knobs.
 
@@ -57,7 +57,7 @@ The effect on the distribution shape:
 
 ### Why Temperature Is Dangerous for Structured Outputs
 
-For free-form text, `temperature: 0.5` is fine. Readers don't notice an occasional unusual word. For JSON or structured output, even mild temperature is risky. The mechanism is this. At any decode step the sampler can pick a low-probability token. If that off-distribution pick lands inside structured syntax (e.g., a stray non-`}` token where the model was supposed to close an object), the model continues "in style" with the broken prefix and often spirals. Generating thousands of malformed tokens until it hits some natural stop or `num_predict`.
+For free-form text, `temperature: 0.5` is fine. Readers don't notice an occasional unusual word. For JSON or structured output, even mild temperature is risky. The mechanism is this. At any decode step the sampler can pick a low-probability token. If that off-distribution pick lands inside structured syntax (e.g., a stray non-`}` token where the model was supposed to close an object), the model continues "in style" with the broken prefix and spirals. Generating thousands of malformed tokens until it hits some natural stop or `num_predict`.
 
 The fix is just `temperature: 0`. Argmax-only decoding can't make off-distribution leaps; the worst it can do is be wrong on a confident token, which is much rarer.
 
@@ -65,7 +65,7 @@ The fix is just `temperature: 0`. Argmax-only decoding can't make off-distributi
 
 `num_predict` (also called `max_tokens` in some APIs) is a hard upper bound on how many tokens decode produces in one request. When the limit is reached, decode stops regardless of what the model wanted to do next.
 
-Decode time scales linearly with output length. Without `num_predict`, decode is bounded only by the model emitting a stop token (which relies on the model behaving sensibly) or the runtime's internal max (often the full context length minus prompt). Both are dangerous as the only ceiling. A model that drifts off-distribution (bad temperature, ambiguous prompt, looping behavior) can burn through thousands of tokens of nonsense before hitting either condition. **A 30-second hang on a request that should produce 200 tokens is the textbook symptom of missing `num_predict`.**
+Decode time scales linearly with output length. Without `num_predict`, decode is bounded only by the model emitting a stop token (which relies on the model behaving sensibly) or the runtime's internal max (the full context length minus prompt). Both are dangerous as the only ceiling. A model that drifts off-distribution (bad temperature, ambiguous prompt, looping behavior) can burn through thousands of tokens of nonsense before hitting either condition. **A 30-second hang on a request that should produce 200 tokens is the textbook symptom of missing `num_predict`.**
 
 ### Sizing num_predict
 
@@ -84,7 +84,7 @@ Pick the smallest value the use case can tolerate, with a comfortable margin. Th
 
 ## Thinking Mode - Reasoning Preamble
 
-Some recent models are trained to emit a hidden **reasoning preamble** before the actual answer. A stream of internal-monologue tokens (often wrapped in `<think>…</think>`) where the model works through the problem before producing user-visible output. The preamble is hidden from the user but **costs decode time exactly like normal output tokens.** Reasoning preambles can easily be 500–5,000 tokens.
+Some recent models are trained to emit a hidden **reasoning preamble** before the actual answer. A stream of internal-monologue tokens (wrapped in `<think>…</think>`) where the model works through the problem before producing user-visible output. The preamble is hidden from the user but **costs decode time exactly like normal output tokens.** Reasoning preambles can easily be 500–5,000 tokens.
 
 The runtime exposes this as a `think` flag. **Ollama defaults `think: true`** for any model that supports it, which means a default-configured request can spend tens of seconds generating hidden tokens before the user sees anything.
 

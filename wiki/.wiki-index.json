@@ -696,8 +696,61 @@
     "created": "2026-05-05",
     "updated": "2026-06-08"
   },
-  "rails/database-transactions": {
-    "file": "rails/database-transactions.md",
+  "rails/delegated-type": {
+    "file": "rails/delegated-type.md",
+    "title": "Delegated Type",
+    "aliases": [
+      "delegated_type",
+      "delegated types",
+      "delegated_type macro",
+      "Rails delegated type"
+    ],
+    "tags": [
+      "rails",
+      "activerecord",
+      "polymorphism"
+    ],
+    "sections": [
+      "The Problem It Solves",
+      "Schema Shape",
+      "What the delegated_type Declaration Generates",
+      "What `delegated_type` Expands to",
+      "Direction of Delegation",
+      "Design Rule: Where Attributes Live",
+      "STI vs Delegated Type",
+      "N+1 Gotcha",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-17",
+    "updated": "2026-07-01"
+  },
+  "rails/index-with": {
+    "file": "rails/index-with.md",
+    "title": "index_with",
+    "aliases": [
+      "Enumerable index_with",
+      "ActiveSupport index_with"
+    ],
+    "tags": [
+      "ruby",
+      "rails",
+      "active-support",
+      "enumerable"
+    ],
+    "sections": [
+      "Fixed Value vs Block",
+      "index_with vs index_by",
+      "index_with vs to_h",
+      "Duplicate Keys",
+      "Related Concepts"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-04-10",
+    "updated": "2026-07-07"
+  },
+  "rails/postgres/database-transactions": {
+    "file": "rails/postgres/database-transactions.md",
     "title": "Database transactions",
     "aliases": [
       "Rails transactions",
@@ -729,39 +782,10 @@
       "cmqu0tvnw0007150msfy24wz5"
     ],
     "created": "2026-06-25",
-    "updated": "2026-07-11"
+    "updated": "2026-09-16"
   },
-  "rails/delegated-type": {
-    "file": "rails/delegated-type.md",
-    "title": "Delegated Type",
-    "aliases": [
-      "delegated_type",
-      "delegated types",
-      "delegated_type macro",
-      "Rails delegated type"
-    ],
-    "tags": [
-      "rails",
-      "activerecord",
-      "polymorphism"
-    ],
-    "sections": [
-      "The Problem It Solves",
-      "Schema Shape",
-      "What the delegated_type Declaration Generates",
-      "What `delegated_type` Expands to",
-      "Direction of Delegation",
-      "Design Rule: Where Attributes Live",
-      "STI vs Delegated Type",
-      "N+1 Gotcha",
-      "Related Concepts"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-17",
-    "updated": "2026-07-01"
-  },
-  "rails/foreign-keys": {
-    "file": "rails/foreign-keys.md",
+  "rails/postgres/foreign-keys": {
+    "file": "rails/postgres/foreign-keys.md",
     "title": "Foreign keys",
     "aliases": [
       "foreign key",
@@ -793,31 +817,100 @@
       "cmq8hwa0t0002j70mfor6qqf7"
     ],
     "created": "2026-06-10",
-    "updated": "2026-07-29"
+    "updated": "2026-09-16"
   },
-  "rails/index-with": {
-    "file": "rails/index-with.md",
-    "title": "index_with",
+  "rails/postgres/postgres-index": {
+    "file": "rails/postgres/postgres-index.md",
+    "title": "Postgres Index",
     "aliases": [
-      "Enumerable index_with",
-      "ActiveSupport index_with"
+      "rails-postgres-moc",
+      "rails postgres map"
     ],
     "tags": [
-      "ruby",
-      "rails",
-      "active-support",
-      "enumerable"
+      "moc",
+      "postgres"
     ],
     "sections": [
-      "Fixed Value vs Block",
-      "index_with vs index_by",
-      "index_with vs to_h",
-      "Duplicate Keys",
-      "Related Concepts"
+      "Pages"
     ],
     "flashcard_ids": [],
-    "created": "2026-04-10",
-    "updated": "2026-07-07"
+    "created": "2026-09-16",
+    "updated": "2026-09-16"
+  },
+  "rails/postgres/row-locking-and-concurrency": {
+    "file": "rails/postgres/row-locking-and-concurrency.md",
+    "title": "Row locking and concurrency",
+    "aliases": [
+      "with_lock",
+      "Pessimistic locking in Rails",
+      "Optimistic locking",
+      "Database row locking",
+      "MVCC",
+      "Lost update"
+    ],
+    "tags": [
+      "rails",
+      "postgres",
+      "concurrency",
+      "locking",
+      "databases"
+    ],
+    "sections": [
+      "TL;DR",
+      "MVCC Means Readers and Writers Never Block Each Other",
+      "Implicit Row Locks Make Writers Block Writers",
+      "Lost Updates and Why with_lock Fixes Them",
+      "with_lock, Lock!, and Lock",
+      "with_lock Locks One Row, not the Block",
+      "Why a Transaction Does not Speed up Parallel Work",
+      "Optimistic Versus Pessimistic Locking",
+      "Advisory Locks Lock a Name, Not a Row",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [
+      "cmqu0tx600008150m7a48y2lr",
+      "cmqu0tyy80009150ma3fm8a5h",
+      "cmqu0u0ef000a150muv3hmvrl",
+      "cmqu0u1ur000b150m6ttrks13",
+      "cmqu0u3eu000c150m44rrl72z"
+    ],
+    "created": "2026-06-25",
+    "updated": "2026-09-16"
+  },
+  "rails/postgres/upsert-and-concurrent-inserts": {
+    "file": "rails/postgres/upsert-and-concurrent-inserts.md",
+    "title": "Upsert and concurrent inserts",
+    "aliases": [
+      "ON CONFLICT",
+      "upsert",
+      "insert_all",
+      "upsert_all",
+      "find_or_create_by race",
+      "RecordNotUnique",
+      "excluded pseudo-table"
+    ],
+    "tags": [
+      "rails",
+      "postgres",
+      "database",
+      "concurrency"
+    ],
+    "sections": [
+      "TL;DR",
+      "The Race Between Two Concurrent Inserts",
+      "ON CONFLICT DO NOTHING vs DO UPDATE",
+      "RETURNING Returns Only Touched Rows",
+      "Rails Create!, insert_all, insert_all!, upsert_all",
+      "Bulk Methods Bypass Validations and Callbacks",
+      "find_or_create_by Is not Atomic",
+      "Tradeoffs and Gotchas",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [],
+    "created": "2026-06-14",
+    "updated": "2026-09-16"
   },
   "rails/rails-index": {
     "file": "rails/rails-index.md",
@@ -835,7 +928,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-20",
-    "updated": "2026-06-25"
+    "updated": "2026-09-16"
   },
   "rails/routing/collection-and-member-routes": {
     "file": "rails/routing/collection-and-member-routes.md",
@@ -1021,81 +1114,6 @@
     "flashcard_ids": [],
     "created": "2026-04-13",
     "updated": "2026-06-01"
-  },
-  "rails/row-locking-and-concurrency": {
-    "file": "rails/row-locking-and-concurrency.md",
-    "title": "Row locking and concurrency",
-    "aliases": [
-      "with_lock",
-      "Pessimistic locking in Rails",
-      "Optimistic locking",
-      "Database row locking",
-      "MVCC",
-      "Lost update"
-    ],
-    "tags": [
-      "rails",
-      "postgres",
-      "concurrency",
-      "locking",
-      "databases"
-    ],
-    "sections": [
-      "TL;DR",
-      "MVCC Means Readers and Writers Never Block Each Other",
-      "Implicit Row Locks Make Writers Block Writers",
-      "Lost Updates and Why with_lock Fixes Them",
-      "with_lock, Lock!, and Lock",
-      "with_lock Locks One Row, not the Block",
-      "Why a Transaction Does not Speed up Parallel Work",
-      "Optimistic Versus Pessimistic Locking",
-      "Advisory Locks Lock a Name, Not a Row",
-      "Related Concepts",
-      "References"
-    ],
-    "flashcard_ids": [
-      "cmqu0tx600008150m7a48y2lr",
-      "cmqu0tyy80009150ma3fm8a5h",
-      "cmqu0u0ef000a150muv3hmvrl",
-      "cmqu0u1ur000b150m6ttrks13",
-      "cmqu0u3eu000c150m44rrl72z"
-    ],
-    "created": "2026-06-25",
-    "updated": "2026-07-29"
-  },
-  "rails/upsert-and-concurrent-inserts": {
-    "file": "rails/upsert-and-concurrent-inserts.md",
-    "title": "Upsert and concurrent inserts",
-    "aliases": [
-      "ON CONFLICT",
-      "upsert",
-      "insert_all",
-      "upsert_all",
-      "find_or_create_by race",
-      "RecordNotUnique",
-      "excluded pseudo-table"
-    ],
-    "tags": [
-      "rails",
-      "postgres",
-      "database",
-      "concurrency"
-    ],
-    "sections": [
-      "TL;DR",
-      "The Race Between Two Concurrent Inserts",
-      "ON CONFLICT DO NOTHING vs DO UPDATE",
-      "RETURNING Returns Only Touched Rows",
-      "Rails Create!, insert_all, insert_all!, upsert_all",
-      "Bulk Methods Bypass Validations and Callbacks",
-      "find_or_create_by Is not Atomic",
-      "Tradeoffs and Gotchas",
-      "Related Concepts",
-      "References"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-06-14",
-    "updated": "2026-07-04"
   },
   "reactive/observable-error-handling": {
     "file": "reactive/observable-error-handling.md",
@@ -1659,6 +1677,42 @@
     "created": "2026-04-17",
     "updated": "2026-07-18"
   },
+  "sql/indexes": {
+    "file": "sql/indexes.md",
+    "title": "Indexes",
+    "aliases": [
+      "database index",
+      "B-tree index",
+      "index scan",
+      "how indexes work",
+      "EXPLAIN ANALYZE index"
+    ],
+    "tags": [
+      "sql",
+      "postgres",
+      "indexes",
+      "performance"
+    ],
+    "sections": [
+      "TL;DR",
+      "What an Index Actually Is",
+      "Heap Fetch vs Index-Only Scan",
+      "Sequential Scan: Cost Scales Linearly with Table Size",
+      "B-Tree Structure: Why Height Grows so Slowly",
+      "Reading EXPLAIN ANALYZE: Buffers, Pages, and Scan Types",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [
+      "cmu3pa20k0000jz1arq8stgy7",
+      "cmu3pa33h0001jz1a12j5ecy2",
+      "cmu3pa4ao0002jz1ahgda4jd7",
+      "cmu3pa5l20003jz1a5xz22vd1",
+      "cmu3pa6j90004jz1aroj8hqdr"
+    ],
+    "created": "2026-09-16",
+    "updated": "2026-09-16"
+  },
   "sql/nullable-columns": {
     "file": "sql/nullable-columns.md",
     "title": "Nullable Columns",
@@ -1689,9 +1743,13 @@
       "Sentinels Masquerading as Values",
       "Related Concepts"
     ],
-    "flashcard_ids": [],
+    "flashcard_ids": [
+      "cmu3ogyu500002r1akvmh5qiv",
+      "cmu3ogyzl00012r1aj2p085vy",
+      "cmu3ogzvy00022r1aq6lu6ymb"
+    ],
     "created": "2026-05-05",
-    "updated": "2026-07-31"
+    "updated": "2026-09-16"
   },
   "sql/sql-index": {
     "file": "sql/sql-index.md",
@@ -1709,7 +1767,7 @@
     ],
     "flashcard_ids": [],
     "created": "2026-04-20",
-    "updated": "2026-05-07"
+    "updated": "2026-09-16"
   },
   "typescript/discriminated-union-narrowing": {
     "file": "typescript/discriminated-union-narrowing.md",

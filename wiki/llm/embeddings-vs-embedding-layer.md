@@ -65,7 +65,7 @@ Internally, an embedding model:
 
 The output is a single vector, often 384, 768, or 1024 dimensions long.
 
-Crucially, **there is no decode loop, no sampler, no autoregressive generation.** No `temperature`, no `num_predict`, no `think`. One forward pass produces the full result. That makes embedding models **dramatically cheaper per call** than generative LLMs.
+**There is no decode loop, no sampler, no autoregressive generation.** No `temperature`, no `num_predict`, no `think`. One forward pass produces the full result. That makes embedding models **dramatically cheaper per call** than generative LLMs.
 
 ## Cost Asymmetry vs Generative LLMs
 

@@ -7,7 +7,7 @@ tags:
 - moc
 - sql
 created: '2026-04-20'
-updated: '2026-05-05'
+updated: '2026-09-16'
 source_skill: manual
 allow_orphan: true
 flashcard_ids: []
@@ -20,5 +20,6 @@ Map of content for the `sql/` wiki folder. Auto-maintained by `scripts/wiki-writ
 ## Pages
 
 - [[sql/array-agg]]
+- [[sql/indexes]]
 - [[sql/nullable-columns]]
 

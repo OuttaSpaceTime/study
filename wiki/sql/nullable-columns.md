@@ -13,9 +13,12 @@ tags:
 - data-modeling
 - null
 created: '2026-05-05'
-updated: '2026-07-31'
+updated: '2026-09-16'
 source_skill: study-walkthrough
-flashcard_ids: []
+flashcard_ids:
+- cmu3ogyu500002r1akvmh5qiv
+- cmu3ogyzl00012r1aj2p085vy
+- cmu3ogzvy00022r1aq6lu6ymb
 ---
 
 # Nullable Columns

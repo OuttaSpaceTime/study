@@ -24,7 +24,7 @@ flashcard_ids:
 
 ## TL;DR
 
-A transaction is a **correctness** tool, not a performance or parallelism tool. It guarantees that a group of writes either all commit or all roll back (atomicity), and that each transaction sees a consistent view of the data (isolation). It is **not** a mutex and does not serialize concurrent work by itself. Reach for it when several dependent writes must succeed or fail together. Do not reach for it to "protect against parallelism" (that is the job of locking, see [[rails/row-locking-and-concurrency]]), and never put slow or external work inside one.
+A transaction is a **correctness** tool, not a performance or parallelism tool. It guarantees that a group of writes either all commit or all roll back (atomicity), and that each transaction sees a consistent view of the data (isolation). It is **not** a mutex and does not serialize concurrent work by itself. Reach for it when several dependent writes must succeed or fail together. Do not reach for it to "protect against parallelism" (that is the job of locking, see [[rails/postgres/row-locking-and-concurrency]]), and never put slow or external work inside one.
 
 ## What a Transaction Guarantees, and What It Does not
 
@@ -44,7 +44,7 @@ What a transaction guarantees (ACID):
 - **Isolation.** Each transaction sees a consistent snapshot, not other transactions' uncommitted work.
 - **Durability.** Once committed, it survives a crash.
 
-What it does **not** guarantee is a lock. Opening a transaction does not keep other workers out of the database, and it does not by itself serialize concurrent work on the same data. If you need to coordinate concurrent access to a row, that is the job of explicit locking, not merely of being inside a transaction. See [[rails/row-locking-and-concurrency]].
+What it does **not** guarantee is a lock. Opening a transaction does not keep other workers out of the database, and it does not by itself serialize concurrent work on the same data. If you need to coordinate concurrent access to a row, that is the job of explicit locking, not merely of being inside a transaction. See [[rails/postgres/row-locking-and-concurrency]].
 
 ## Isolation Levels and the Anomalies Each Allows
 
@@ -145,9 +145,9 @@ end
 
 ## Related Concepts
 
-- [[rails/row-locking-and-concurrency]]: MVCC, row locks, lost updates, and why a transaction does not speed up parallel work.
-- [[rails/upsert-and-concurrent-inserts]]: handling concurrent inserts and the race conditions unique constraints catch.
-- [[rails/foreign-keys]]: DB-level integrity that, like transactions, lives below the application layer.
+- [[rails/postgres/row-locking-and-concurrency]]: MVCC, row locks, lost updates, and why a transaction does not speed up parallel work.
+- [[rails/postgres/upsert-and-concurrent-inserts]]: handling concurrent inserts and the race conditions unique constraints catch.
+- [[rails/postgres/foreign-keys]]: DB-level integrity that, like transactions, lives below the application layer.
 
 ## References
 

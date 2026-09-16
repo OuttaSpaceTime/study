@@ -131,7 +131,7 @@ Event.upsert_all([{ user_id: 7, event_key: "" }])
 
 The `presence` validation does **not** fire, the `before_create` callback does **not** run, and the blank `event_key` lands in the table with `normalized_key` unset. Values still go through type casting and serialization, but nothing in your model code runs.
 
-This is the thesis of the whole topic. Once you bypass the ORM, application-level guarantees evaporate, so **integrity has to live at the database level** through unique indexes, `NOT NULL`, check and foreign-key constraints (see [[rails/foreign-keys]]). A Ruby validation is a UX nicety; the constraint is the guarantee.
+This is the thesis of the whole topic. Once you bypass the ORM, application-level guarantees evaporate, so **integrity has to live at the database level** through unique indexes, `NOT NULL`, check and foreign-key constraints (see [[rails/postgres/foreign-keys]]). A Ruby validation is a UX nicety; the constraint is the guarantee.
 
 ## find_or_create_by Is not Atomic
 
@@ -166,7 +166,7 @@ Both are only *possible* because the constraint exists.
 ## Related Concepts
 
 - [[sql/nullable-columns]]: partial unique indexes (a partial arbiter needs a matching `WHERE`) and how `UNIQUE` does not constrain `NULL`s.
-- [[rails/foreign-keys]]: the other DB-level integrity constraint, and the same DB-constraint-vs-app-validation split.
+- [[rails/postgres/foreign-keys]]: the other DB-level integrity constraint, and the same DB-constraint-vs-app-validation split.
 
 ## References
 

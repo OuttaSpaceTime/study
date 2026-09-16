@@ -28,7 +28,7 @@ flashcard_ids:
 
 ## TL;DR
 
-Postgres uses MVCC, so reads and writes never block each other. The only contention is **writer versus writer on the same row**. A bare `UPDATE` already takes an implicit row lock held until commit, so writers serialize automatically. That implicit lock is not enough for read-modify-write done in Ruby, which loses updates and needs `with_lock` (`SELECT ... FOR UPDATE`) to move the lock back to read time. A transaction is for correctness, not parallelism. See [[rails/database-transactions]] for the transaction side of this.
+Postgres uses MVCC, so reads and writes never block each other. The only contention is **writer versus writer on the same row**. A bare `UPDATE` already takes an implicit row lock held until commit, so writers serialize automatically. That implicit lock is not enough for read-modify-write done in Ruby, which loses updates and needs `with_lock` (`SELECT ... FOR UPDATE`) to move the lock back to read time. A transaction is for correctness, not parallelism. See [[rails/postgres/database-transactions]] for the transaction side of this.
 
 ## MVCC Means Readers and Writers Never Block Each Other
 
@@ -253,8 +253,8 @@ Two caveats limit where advisory locks apply.
 
 ## Related Concepts
 
-- [[rails/database-transactions]]: atomicity, isolation levels, rollback semantics, and when to use a transaction.
-- [[rails/upsert-and-concurrent-inserts]]: handling concurrent inserts and the race conditions unique constraints catch.
+- [[rails/postgres/database-transactions]]: atomicity, isolation levels, rollback semantics, and when to use a transaction.
+- [[rails/postgres/upsert-and-concurrent-inserts]]: handling concurrent inserts and the race conditions unique constraints catch.
 
 ## References
 
