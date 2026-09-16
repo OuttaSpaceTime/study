@@ -109,7 +109,7 @@ Open the dashboard itself (`xdg-open "http://localhost:4777/"`) when you want th
 
 ### Flashcards in the viewer
 
-The viewer reads flashcards **straight from flashcard-mcp's SQLite file** (`~/Code/flashcard-mcp/prisma/master.db`) via `node:sqlite`, opened **read-only** — the MCP server owns all writes, and an accidental write here would corrupt review history that Anki sync treats as append-only. Override the path with `FLASHCARD_DB`. Two surfaces:
+The viewer reads flashcards **straight from flashcard-mcp's SQLite file** (`$FLASHCARD_MCP_DIR/prisma/master.db`, see [Machine-local configuration](#machine-local-configuration)) via `node:sqlite`, opened **read-only** — the MCP server owns all writes, and an accidental write here would corrupt review history that Anki sync treats as append-only. Override the file directly with `FLASHCARD_DB`. Two surfaces:
 
 - **Per page** — a button in the article header opens a large modal with the page's cards, in two modes: an **overview** grid (fronts, answers revealed individually) and **flip-through** (one card at a time, 3D flip on click/space, arrow keys, progress bar). Cards come from the page's `flashcard_ids`; a page without any falls back to tag overlap.
 - **Whole deck** — `/flashcards` (sidebar card icon) browses everything: true retention over a trailing 30 days with the calibration verdict, a clickable state bar (new / learning / review / relearning / suspended) that filters the list, plus deck, tag, and text filters, and the same flip-through over whatever the filters leave.
@@ -186,8 +186,17 @@ Daily append-only logs live at **`logs/MM/YYYY-MM-DD.md`** — the parent folder
 
 `scripts/anki-sync` (module `scripts/ankisync/`) mirrors flashcard-mcp's cards to AnkiWeb so they can be reviewed on the phone. It is **stateless**: no sync bookkeeping exists anywhere — every run derives its plan from the current state of both sides.
 
-- **Identity:** the Anki note `guid` is set to the master card's CUID. A note with a CUID-shaped guid but no master card was ours and gets deleted; non-CUID guids are reported as unknown and never touched or imported.
-- **Existence & content:** one-way push, master.db always wins (front/back/tags/deck overwritten on any difference; Anki-side edits do not survive). Deleting a card **on the phone does not delete it** — master owns existence, so the next sync recreates it and says so: `create N (M deleted on Anki, reinstated)`. Delete it in master (`delete_card`) to make it stick.
+- **Identity:** the Anki note `guid` is set to the master card's CUID. A note with a CUID-shaped guid but no master card is **imported**, because that is what a card created on another machine looks like; non-CUID guids are reported as unknown and never touched or imported.
+- **Existence & content:** content is a one-way push, master.db always wins (front/back/tags/deck overwritten on any difference; Anki-side edits do not survive). Existence is **shared across machines**, since several of them sync through one AnkiWeb collection.
+- **Deletion is explicit state, never absence.** Absence is ambiguous in both directions: a note missing from Anki is either brand new here or deleted elsewhere, and a card missing from master is either never seen here or deleted here. Guessing either way destroys cards, which it did — a sync on this machine deleted 8 cards that another machine had created (2026-09-16). So `delete_card` writes a `DeletedCard` tombstone row instead of just dropping the card, and the sync marks the Anki note with the `__deleted__` tag and suspends it instead of removing it. The tagged note is how the deletion reaches the other machines. Full table, `local \ remote`:
+
+  | | LIVE (note) | DEL (tagged) | NONE |
+  | --- | --- | --- | --- |
+  | **LIVE** (row) | content + sched | soft-delete here | create on Anki |
+  | **TOMB** (tombstone) | tag the note | nothing | nothing |
+  | **NONE** | import | tombstone here | nothing |
+
+  Two consequences: deleting a card **on the phone still does not delete it** (LIVE × NONE means "new here"), so the next sync recreates it and says so — `create N (M deleted on Anki, reinstated)`; and deleting it in master propagates everywhere and stays deleted. Tombstones and tagged notes are kept forever, and there is deliberately no command to purge them: a row is ~40 bytes, a suspended note never enters review, and no stateless run can know that every machine has processed the deletion. Clearing one early resurrects the card.
 - **Scheduling:** flows both ways — the side with the newer last review wins its whole FSRS block (`stability`/`difficulty` map natively to Anki's `memory_state`; no SM-2 conversion). Anki-side recency comes from the newest **revlog** entry, never from `card.last_review_time`: a sync-down delivers a remote review as a revlog row without setting that field, and a push overwrites it from master, so it reads null or stale on exactly the cards Anki reviewed most recently. That field is a fallback only for cards with no revlog at all (an `inheritFrom` split carries a schedule but no reviews of its own), which is what stops those re-pushing on every run. Reviewing the **same card on both sides** between syncs is lossy by design: the newer side wins wholesale, and the loser's review survives in the history union but not in the block.
 - **Review history:** append-only union by (card, timestamp) — phone reviews land in the `Review` table, local reviews land in Anki's revlog. Nothing is overwritten.
 - **Bridge collection:** a dedicated headless Anki profile `StudySync` (`~/.local/share/Anki2/StudySync/`) — never the desktop profile. It is disposable: deleting the folder and re-running `sync` rebuilds it.
@@ -197,11 +206,31 @@ Daily append-only logs live at **`logs/MM/YYYY-MM-DD.md`** — the parent folder
 
 **Card size and scope are enforced too.** The same `content-rules.ts` caps the **answer at 200 visible characters and 4 sentences**, and requires the **front to ask one question**. Both limits measure rendered text, so markup and entities are free and formatting a card well never costs it budget; fronts carry no length cap, because grounded scenario fronts are the preferred style. The rejection message names the field and states both remedies (split the card, or reduce the text). The one-question check is a heuristic — 2+ question marks, or `and`/`or` followed by a question word, with `<code>` spans neutralised so a Ruby `nil?` is not miscounted — so it flags and the calling skill judges. The standing preference on a rejection is **reduce first**: splitting adds review load, and most violations are padding rather than two ideas. See "Card Size & Scope" in `.claude/skills/study-flashcard/SKILL.md`.
 
+## Machine-local configuration
+
+The flashcard-mcp checkout sits at a different path on each machine this repo is synced to, so **that path is never committed**. It is set once in `.env.local` at the repo root (gitignored; `.env.local.example` is the tracked template):
+
+```sh
+FLASHCARD_MCP_DIR=/home/felix/Code/Misc/flashcard-mcp
+```
+
+Changing that one line is the whole setup step on a new machine. `$HOME/...` and `~/...` are expanded. Three readers derive everything else from it, each parsing the file itself rather than sharing a loader:
+
+| Reader | Resolves |
+|---|---|
+| `scripts/flashcard-mcp-server` (POSIX sh) | the `.mcp.json` command — execs `npx tsx $FLASHCARD_MCP_DIR/src/mcp/server.ts` with `DATABASE_URL` set. Writes only to stderr, since stdout is the MCP stdio stream |
+| `scripts/config.py` | `flashcard_mcp_dir()` / `master_db()` for `scripts/ankisync` and `scripts/card-htmlize` |
+| `wiki-viewer/lib/flashcard-path.ts` | `REPO_ROOT` (walks up to `AGENTS.md`), `flashcardMcpDir()`, `masterDbPath()` |
+
+Environment variables take precedence over the file: `FLASHCARD_MCP_DIR`, `FLASHCARD_MASTER_DB` / `FLASHCARD_DB` (point at the SQLite file directly), `WIKI_ROOT`.
+
+**Never hardcode an absolute home path** in `.mcp.json`, `scripts/`, or `wiki-viewer/lib/` — it breaks the other machine on the next pull, which has already happened twice. `tests/test_config.py::test_no_machine_specific_path_is_committed` fails on any `/home/<user>/…flashcard-mcp` literal in those files. When the config is absent, every entry point exits with a message naming `.env.local` instead of silently reading a nonexistent path.
+
 ## MCP Server
 
-The `flashcard-mcp` MCP server must be running. It starts automatically via `.mcp.json` (stdio transport pointing to `~/Code/flashcard-mcp/src/mcp/server.ts`).
+The `flashcard-mcp` MCP server must be running. It starts automatically via `.mcp.json`, whose `command` is the repo-relative `scripts/flashcard-mcp-server` launcher (project-scoped stdio servers spawn with the project root as cwd), which reads `FLASHCARD_MCP_DIR` as above.
 
-If tools aren't available, check that `~/Code/flashcard-mcp` has dependencies installed (`npm install` in that directory).
+If tools aren't available: check `.env.local` points at a real checkout, and that it has dependencies installed (`npm install` in that directory). Running `scripts/flashcard-mcp-server </dev/null` surfaces the path error directly.
 
 **Calibration and leeches live in the MCP too.** `check_calibration` returns true retention over a trailing 30 days plus a verdict (`over-difficult` / `calibrated` / `under-difficult` / `low-signal`, with a `marginal` flag near a band edge), and drives `/study`'s difficulty levers — never the rating rubric. Leeches are no longer surveyed: `get_next_card` stamps any card it serves at 5+ lapses and the next `get_next_card` **throws** until that card is rewritten (`update_card`, which also resets `lapses`), split, deleted, or explicitly kept via `resolve_leech(id, "defer")` — which stops blocking until the card lapses again. Suspend is deliberately not offered: it hides the card instead of fixing it.
 
@@ -231,6 +260,7 @@ Available scripts:
 - `scripts/lint` — Check broken wikilinks, frontmatter, orphans, alias collisions
 - `scripts/anki-sync <login|sync|status>` — Sync flashcards to AnkiWeb (see [Anki Sync](#anki-sync)). `sync --dry-run` previews, `--local` skips AnkiWeb
 - `scripts/card-htmlize` — Convert markdown/plain card text in master.db to simple Anki HTML (dry-run by default, `--apply` writes after backing up master.db)
+- `scripts/flashcard-mcp-server` — stdio launcher used by `.mcp.json`; not run by hand except to debug a path problem (see [Machine-local configuration](#machine-local-configuration))
 
 Search is not a `scripts/` entry point — it's the `qmd` CLI / `mcp__qmd__query` MCP tool, see [Search](#search).
 
