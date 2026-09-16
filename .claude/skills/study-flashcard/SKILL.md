@@ -125,10 +125,16 @@ For each sub-concept that will become a flashcard:
 For each card draft:
 
 1. Present the draft (front, back, type, tags)
-1a. **Atomicity check (front must have a single recall target):** Reject any front that asks for a superlative or judgment ("the single most effective", "the best way", "the right approach to X") or otherwise admits several defensible answers — there is nothing to grade against. Rewrite it to name the specific scenario or principle being tested before proceeding (e.g. "What's the single most effective technique for loose coupling?" → "Which design principle reduces coupling by depending on an abstraction instead of a concrete collaborator?"). This mirrors the *Non-atomic / opinion-bait front* flag in `/study`'s review-time quality check — catch it here so it never becomes a card.
+1a. **Front quality checks.** These mirror `/study`'s review-time quality flags — catch them here, where a fix costs one message instead of months of reviews. Run all three on every draft:
+   - **Atomicity (single recall target):** Reject any front that asks for a superlative or judgment ("the single most effective", "the best way", "the right approach to X") or otherwise admits several defensible answers — there is nothing to grade against. Rewrite it to name the specific scenario or principle being tested (e.g. "What's the single most effective technique for loose coupling?" → "Which design principle reduces coupling by depending on an abstraction instead of a concrete collaborator?").
+   - **Self-contained front (no ambiguity):** The front must name its subject concretely enough that **exactly one answer is right without seeing the back**. Read the draft front alone and ask what else it could plausibly be asking. If a second reading exists, the card will drift between reviews. "What is the private key used for?" could be TLS, JWT signing, or SSH — rewrite to "In a TLS handshake, what does the server's private key actually do?". This is the *Ambiguous front* flag; it is the most common defect in the deck and nothing else in this flow catches it.
+   - **Back carries learnable detail:** Reject a back so thin that reading it teaches nothing ("Store sensitive data in database instead of sessions"). A precise one-liner is fine; a vague gesture is not. This is the *Too vague* flag.
 2. **Semantic duplicate check**: Call `find_similar_cards` with the draft front text
    - >80% match: "Very similar card exists. Skip or rephrase?"
-   - 50-80% match: "Related card exists. Your new card covers a different angle — proceed?"
+   - 50-80% match — **this band is an interference risk, not a duplicate risk.** Sibling cards that differ only in which attribute, directive, or flag they name compete with each other at recall, and the deck already carries a family of six cookie-attribute cards that arrived this way. Do not wave it through with "covers a different angle — proceed?". Show the related card and ask the developer to discriminate:
+     > "This sits close to *'What does the Expires attribute of a browser cookie do?'*. Can you state what makes the two answers different, without looking? If not, it's one card."
+
+     If they cannot separate them cleanly, fold the drafts into a single card that contrasts the pair rather than creating both.
    - No matches: "No similar cards found. This is new territory."
 3. Ask the developer to explain the concept in their own words
 4. Developer says "good", "next", "edit", or "skip" for each draft
@@ -189,6 +195,20 @@ Avoid cards about:
 - Language/framework trivia that a reference doc or LSP would surface instantly
 
 If a drafted card is pure syntax recall, flag it and ask whether there's a higher-level concept underneath worth capturing instead. When in doubt, ask — don't create the syntax card on assumption.
+
+### The definition trap — the failure mode that actually shows up
+
+Syntax recall is not the common defect: a September 2026 audit found only **2%** of the deck asking for a directive or flag value, against **70% asking what something is**. A definition card is not trivia, but it is not portable judgment either — you learn the label, not a decision you can reuse.
+
+**If a drafted front asks what something *is*, flag it and ask whether there's a decision, failure mode, or tradeoff underneath worth capturing instead.** Prefer "what breaks if you skip this" over "what is this". Examples of the same knowledge, moved up a tier:
+
+| Definition (weaker) | Judgment (stronger) |
+| --- | --- |
+| What is session fixation? | What does an attacker gain by fixing the session ID *before* login that they couldn't get after? |
+| What is an "origin" in web security context? | Two URLs differ only in port. Same-origin policy: blocked or allowed, and why? |
+| What is the Composite design pattern? | What does Composite buy you that a plain list of children doesn't? |
+
+The strongest cards pair a **concrete front** with a **transferable answer** — a real scenario to reason over, whose answer is a principle that travels. Only 13% of the deck hits both, so this is where the headroom is. A definition card is still the right call when the term itself is the thing you keep failing to recall; ask rather than assume.
 
 ## Card Size & Scope — one question, short answer
 

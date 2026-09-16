@@ -20,7 +20,7 @@ Flashcards are the only thing studied. The wiki is **not** scheduled and never r
 
 See `~/.claude/skills/references/interactive-principles.md` for shared interactive principles.
 
-- ONE card per message, under 150-200 words of prose. Pause for discussion.
+- ONE card per message. Feedback is one to two sentences; the 150-200 word ceiling applies only inside Socratic mode.
 - The developer can interrupt at any point — see Mid-Session Actions below.
 - Start each card with its position: `Card 3/12 — [Deck Name]`
 - After feedback, immediately advance to the next card — do not wait for "next".
@@ -37,17 +37,40 @@ See `~/.claude/skills/references/interactive-principles.md` for shared interacti
 - If the developer has studied today already, acknowledge it
 - Show "Session complete" when queue is exhausted — do not pull more cards
 
-## Socratic Never-Reveal on Weak Answers
+## Fast Feedback by Default, Socratic on Request
 
-When the developer's answer is good (would rate Good/Easy), they already produced it — confirm and move on as normal. When the answer is weak (would rate Again/Hard: wrong, blank, or significant gaps), do NOT reveal the card back. Recover via questions instead:
+**The default loop is fast: answer → rating with a stated reason → next card.** No questions back, no recovery loop, no expansion. Socratic questioning is the opt-in mode, because it costs far more time per card than it returns when the developer only wants to know whether they were right.
+
+**Default behaviour on every answer, strong or weak:**
+
+- Rate immediately and state the reason in **one or two sentences** — what was correct, what was missing. That is the whole feedback.
+- On a weak answer, **name the missing piece plainly**. Revealing the back here is correct: seeing the gap immediately is the point of the fast loop. Do not decompose, do not hint, do not ask the developer to try again.
+- Do not ask a follow-up question, a missing-half question, or a generation prompt. Those are Socratic-mode mechanisms (see below).
+- Advance to the next card in the same message. The only thing that stops the loop is a card **quality issue** (step 5) or a mid-session action.
+
+**Entering Socratic mode — the developer's call, never Claude's.** Any of these is the affordance:
+
+- An explicit request: "let's explore", "walk me through this", "walkthrough", "go deeper", "discuss", "tell me more".
+- **Any question the developer asks about the card or the concept.** A question is an invitation to explore, so answer it in Socratic style rather than closing it out with a paragraph.
+- Confusion about the material itself ("I don't understand why that's true").
+
+Do **not** infer entry from a weak answer. A wrong answer means rate it and move on, not start a recovery loop.
+
+**The rating is on the unaided answer and is stated before any exploration.** Entering Socratic mode afterwards does not re-rate the card — the developer already showed what they could produce alone, which is the cleaner signal. This replaces the old "rate on the whole exchange after scaffolding" rule.
+
+**Exiting.** Socratic mode lasts for the current card only. The next card returns to fast feedback unless the developer asks otherwise (`/study --socratic` or "stay in explore mode" keeps it on for the session).
+
+### Inside Socratic mode: never-reveal still applies
+
+Once the developer has asked to explore, the old discipline holds — the value of the mode is that they produce the missing piece themselves:
 
 - **Decompose, don't explain.** Ask one smaller guiding question aimed at the missing piece. Point at a concrete value, snippet, error, or the half they did get, and ask what follows. Wait.
 - **Never hand over the answer to end the loop.** Keep decomposing into smaller, more concrete questions until the developer produces the missing piece themselves. Hints get more concrete; the final words stay theirs. (Agreed stuck-fallback: decompose, never reveal.)
-- **"I don't understand / make it concrete" is NOT a reveal request.** When the developer says the *question* is unclear, asks you to make it concrete, or is confused about what you're asking, make the **next question** smaller and more grounded (a specific value, a one-line snippet, a named scenario) — do **not** answer it for them or work the example to its conclusion. Reformulating the prompt is not the same as supplying the missing piece. This is the most common way revealing sneaks in: a clarification plea gets answered with the full worked solution. Only an *explicit* request for the answer (next bullet) overrides the rule. If you slip and reveal, acknowledge it in one line, rate the section honestly (a revealed section is Again/Hard), and return to decomposition for the remaining sections rather than continuing to explain.
+- **"I don't understand / make it concrete" is NOT a reveal request.** When the developer says the *question* is unclear, asks you to make it concrete, or is confused about what you're asking, make the **next question** smaller and more grounded (a specific value, a one-line snippet, a named scenario) — do **not** answer it for them or work the example to its conclusion. Reformulating the prompt is not the same as supplying the missing piece. This is the most common way revealing sneaks in: a clarification plea gets answered with the full worked solution. Only an *explicit* request for the answer (next bullet) overrides the rule. If you slip and reveal, acknowledge it in one line and return to decomposition for the remaining pieces rather than continuing to explain.
 - **Confirming ≠ revealing.** Once they produce it, confirm ("right — that's the piece you were missing"). Do not say it first.
-- **Then rate honestly.** Needing scaffolding is the rating signal: a card the developer could only reconstruct under heavy hinting is Again (1) or Hard (2), even though they got there. Submit that rating so the card resurfaces soon.
+- **The rating already stands.** It was submitted on the unaided answer before this mode began — do not re-rate, re-submit, or revise it because the developer reconstructed the piece under hinting. Exploration is for understanding, not for improving the score.
 - **Explicit request override.** If the developer explicitly asks ("just show me the back"), honor it, then re-probe. The rule forbids volunteering the answer, not refusing a direct request.
-- **Escape hatch is a walkthrough, not a reveal.** If a card stays stuck after several decomposed hints, rate Again and offer `/study-walkthrough <topic>` rather than dumping the back. Note rating Again re-queues the card for this session (see Intra-day repeats) — after a 3rd failed pass, skip the repeat instead of looping again.
+- **Escape hatch is a walkthrough, not a reveal.** If a card stays stuck after several decomposed hints, offer `/study-walkthrough <topic>` rather than dumping the back.
 
 ## MCP Server Dependency
 
@@ -61,6 +84,7 @@ This skill requires the `flashcard-mcp` MCP server running from `~/Code/flashcar
 /study                    — Start a default study session
 /study <deck-name>        — Focus on a specific deck
 /study --short            — Short session (5 cards max)
+/study --socratic         — Keep Socratic mode on for the whole session (default is fast feedback)
 /study add                — Create new flashcards (chain to /study-flashcard)
 /study add <deck-name>    — Create flashcards for a specific deck
 ```
@@ -118,12 +142,14 @@ Example when nothing is due:
 
 **Difficulty levers — derive from the Phase 1 calibration verdict.** The band percentages below and the 2-point margin restate the constants in flashcard-mcp's `src/core/calibration.ts` — retune them there, then update this table to match.
 
-| Verdict | Staging (`2a`) | Missing-half follow-up | Generation prompt |
+| Verdict | Staging (`2a`) | Missing-half follow-up † | Generation prompt † |
 |---|---|---|---|
 | `over-difficult` (<80%) | on | **off** | off |
 | `calibrated` (80-90%) | on | once per card | ~1 in 4 |
 | `under-difficult` (>90%) | on, harder framings | up to twice | ~1 in 3, plus "teach it back" |
 | `low-signal` | on | once per card | ~1 in 4 |
+
+† **Socratic-mode only.** Both columns are questions back at the developer, so they never fire in the default fast-feedback loop no matter what the verdict says — see "Fast Feedback by Default, Socratic on Request". The rates above cap them *within* a card the developer opened for exploration. Staging (`2a`) is not a question back (it frames the card's own question) and stays on in both modes.
 
 **`marginal` is a modifier on any of those rows, not a row of its own.** The tool sets it when retention is within 2 points of a band edge; since the bands are hard cutoffs on a noisy estimator, a single review can flip the verdict. When marginal, move **one step back toward the `calibrated` row** rather than applying the verdict's row in full — so a marginal `over-difficult` keeps the follow-up and drops only the generation prompt. `low-signal` is never marginal: that verdict already says retention isn't trustworthy, so distance-to-a-band-edge means nothing there. Never read a marginal verdict as a mandate to strip difficulty.
 
@@ -185,26 +211,22 @@ Then loop:
    - `Hard (2)`: Mostly correct but significant gaps
    - `Good (3)`: Correct answer with reasonable detail
    - `Easy (4)`: Perfect, immediate recall
-5. **Feedback** — brief, constructive, and **answer-dependent** (see Socratic Never-Reveal).
+5. **Feedback** — **one or two sentences, every answer, strong or weak** (see Fast Feedback by Default).
 
-   **Precedence on a Good/Easy answer — exactly one of these fires, first match wins.** Several rules below can apply at once; without an order they stack into a three-question interrogation of a card the developer already knew.
+   State what was correct and what was missing, then rate and advance. That is the default and it is the whole message. Do not ask a question back — not a missing-half follow-up, not a generation prompt, not a recovery hint. Those fire **only after the developer has entered Socratic mode**.
+
+   **Only two things stop the loop:**
 
    1. **Quality issue** (cloze, too broad, ambiguous, leech) → raise it, stop advancing.
-   2. **Missing-half follow-up** → a real second dimension is missing and the verdict allows it.
-   3. **Generation prompt** → only if no follow-up fired, at the verdict's rate.
-   4. **Nothing** → confirm in one line, rate, advance.
+   2. **The developer asked something** → answer it in Socratic mode (see that section), then resume fast feedback on the next card.
 
-   This also scopes the "advance immediately, don't wait for *next*" rule in Session Rules: it applies to case 4. Cases 1-3 are explicit waits.
+   Otherwise: rate, advance, same message. This is what the "advance immediately, don't wait for *next*" rule in Session Rules means.
 
-   Then, by answer strength:
-   - **Good/Easy answer:** keep it tight — **2-3 sentences, hard cap.** The developer already produced the answer, so don't re-explain it back to them. Spend the sentences only on filling a genuine gap or drawing one interesting/non-obvious connection, and only when there is one — a clean answer can just get a one-line confirm + rating. Do not volunteer a deeper expansion; the developer will ask ("discuss", "tell me more") if a card is worth dwelling on. The goal on good answers is to keep moving; Socratic depth is for the cards that need it (weak answers), not for cards already known.
-   - **Missing-half follow-up — ask for the gap, don't fill it.** When the answer is *correct* but covers only one of two things the back requires (one of a pair, one of two conditions, one side of a contrast), do not supply the other half as feedback. Confirm the half they got in one clause, then ask for the missing one as a fresh question — best done by moving the goalposts to a case that isolates it. Example: the card asks why a copied CSP nonce fails; the developer says *"the nonce is unique per request"* (freshness, but not unpredictability) →
-     > Right that it's fresh per response — so the attacker's copied value is already stale. One more: suppose the server regenerated it per request but used `nonce-` plus a 3-digit counter (001, 002, …). Per-request unique, still. Is that safe?
-
-     This does not violate the 2-3 sentence cap above — the cap governs *explaining*, and this is asking. Rate once, after the follow-up, on the whole exchange: producing the missing half unaided is still Good; needing it decomposed further is Hard. Fire it at the rate the calibration verdict sets (**at most once per card** on `calibrated`, off on `over-difficult`), and only when the gap is a real second dimension — not to extract a synonym or a detail the back doesn't ask for. A second miss goes to Socratic recovery below.
-   - **Again/Hard answer:** do NOT reveal the back. Enter Socratic recovery — decompose into smaller guiding questions until the developer produces the missing piece themselves, then confirm. Never volunteer the answer to close the loop.
-   - State what was correct and what was missing (1-2 sentences)
-   - **Do not state the rating yet.** The rating line is emitted *once*, after `submit_review` returns (step 6), so it can carry the next interval. Decide the rating here (needing recovery hints means Again/Hard) but do not print a bare "Rated: …" line in this step — printing it here and again in step 6 double-states it.
+   By answer strength:
+   - **Good/Easy answer:** one line of confirmation naming what made it right, then the rating. Do not re-explain what they just produced, do not volunteer a connection or an expansion — the developer will ask if the card is worth dwelling on.
+   - **Again/Hard answer:** **name the missing piece plainly and reveal what they needed**, in one or two sentences, then rate. Seeing the gap immediately is the point of the fast loop. Do not decompose it into hints, do not ask them to try again, do not withhold the back.
+   - **Socratic-mode mechanisms — off unless the developer opened the mode.** The *missing-half follow-up* (confirm the half they got, then ask for the other half as a fresh question, moving the goalposts to a case that isolates it) and the *generation prompt* ("can you give me a scenario where this applies?") are real teaching tools, but both cost a round trip per card. They belong to Socratic mode, at the rate the calibration verdict sets. Never fire either one to close out a default-mode card.
+   - **Do not state the rating yet.** The rating line is emitted *once*, after `submit_review` returns (step 6), so it can carry the next interval. Decide the rating here, on the unaided answer, but do not print a bare "Rated: …" line in this step — printing it here and again in step 6 double-states it.
    - **Flashcard quality check:** Evaluate the card itself — not just the answer. Flag genuinely weak cards:
      - **Too vague:** back doesn't give enough concrete detail to learn from (not just short — a precise one-liner is fine)
      - **Too broad:** front covers multiple distinct concepts that should be separate cards
@@ -217,8 +239,7 @@ Then loop:
      - **Two questions on the front:** the front asks two things ("what does X do <b>and</b> what is its default?"). Keep the one the card is really about; split only if the dropped idea has no other card (check with `search_cards`).
      - Do NOT flag cards that are intentionally minimal — simple recall cards with precise, correct backs are fine.
      - **When a quality issue is detected: stop advancing.** Explicitly describe the problem and ask the developer to fix it before continuing. Example: "This card's front is ambiguous — it could mean X or Y. Want to edit it to be more specific, or split it?" Wait for the developer to edit, split, or explicitly say "skip" before moving on.
-   - **Generation prompt** (on Good/Easy cards, at the rate the calibration verdict sets — see the difficulty-lever table; off entirely on `over-difficult`): Ask the developer to generate their own example or analogy: "Can you give me a real-world scenario where this applies?" This strengthens encoding. Keep it brief — one sentence is enough.
-   - One-liner reminder: *(harder/easier · discuss · edit · split · delete · show in browser)*
+   - One-liner reminder: *(explore · harder/easier · edit · split · delete · show in browser)*
 6. **Call `submit_review`** with the rating, then state the rating line **once** — complete with the next interval from the returned schedule (`due`, `interval`, `state`, `intraDay`). This is the only place the rating is printed. Read the schedule silently; show only the formatted phrase, never the raw JSON. Format:
    - `intraDay: true` (interval `0`) → "Rated: **Again (1)** — repeats this session". Don't invent a minute count.
    - `interval >= 1` → "Rated: **Good (3)** — next review in **N days** (YYYY-MM-DD)" using `interval` and the date portion of `due`. Use "1 day" (singular) when `interval` is 1.
@@ -306,9 +327,11 @@ The viewer's dashboard ranks the same kind of list by recency first (`wiki-viewe
 
 The developer can say any of these at any point during the study loop.
 
-### "discuss" / "tell me more" / "why?" / "I don't understand"
+### "explore" / "let's explore" / "discuss" / "tell me more" / "why?" / "I don't understand" / **any question about the card**
 
-Pause the session. Explain the concept in more depth, using concrete code when possible. Keep discussion to 2-4 exchanges. When the developer demonstrates understanding, resume the study loop.
+**This is the Socratic-mode affordance.** Enter Socratic mode for the current card and follow "Fast Feedback by Default, Socratic on Request" — decompose into smaller questions rather than explaining, and let the developer produce the missing piece. A question from the developer counts as entry on its own; do not answer it with a paragraph and move on.
+
+The rating already stated for this card stands and is not revised. Keep it to 2-4 exchanges, then resume the fast loop on the next card.
 
 ### "walkthrough" / "let's go deeper"
 
@@ -373,7 +396,8 @@ If developer says "actually harder" or "actually easier" after feedback, acknowl
 
 **Always:**
 - Reference actual codebase code when discussing card concepts
-- On a weak (Again/Hard) answer, recover via smaller questions — never volunteer the back (Socratic Never-Reveal)
+- Rate every answer immediately with a one-to-two sentence reason, then advance — questions back only after the developer opens Socratic mode
+- Once in Socratic mode, recover via smaller questions — never volunteer the back
 - Respect every mid-session action immediately
 - Write session log at the end of every session
 - Call `end_session` on every exit path — normal wrap-up, "done"/"stop", or abandoning mid-way
@@ -385,7 +409,8 @@ If developer says "actually harder" or "actually easier" after feedback, acknowl
 - Stack more than one follow-up onto a Good answer — see the precedence list in step 5
 - Report a duration you didn't measure — see the duration rule in Phase 3
 - Show the answer before the developer attempts a response
-- Reveal the back to fill a gap on a weak answer — decompose into a smaller question instead (explicit developer request excepted)
+- Reveal the back to fill a gap **once in Socratic mode** — decompose into a smaller question instead (explicit developer request excepted). In the default loop, revealing the missing piece is correct
+- Start a recovery loop, a missing-half follow-up, or a generation prompt because an answer was weak — a weak answer gets a plain reason and a rating, nothing more
 - Create cards automatically
 - Batch multiple cards in one message
 - Schedule, reschedule, or rate a wiki page — pages carry no review state; the wiki is explored, not studied
