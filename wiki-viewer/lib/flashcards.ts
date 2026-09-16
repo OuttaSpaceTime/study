@@ -5,7 +5,7 @@ import { DatabaseSync } from "node:sqlite";
 import type { Card, CardState, DeckOverview } from "./types";
 
 export const MASTER_DB = process.env.FLASHCARD_DB ??
-  "/home/felix/Code/Misc/flashcard-mcp/prisma/master.db";
+  "/home/outtaspacetime/Code/flashcard-mcp/prisma/master.db";
 
 // ts-fsrs State enum, mirrored from flashcard-mcp's schema (Card.state).
 const STATE_NAMES: CardState[] = ["new", "learning", "review", "relearning"];

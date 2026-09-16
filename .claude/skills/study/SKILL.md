@@ -51,9 +51,9 @@ When the developer's answer is good (would rate Good/Easy), they already produce
 
 ## MCP Server Dependency
 
-This skill requires the `flashcard-mcp` MCP server running from `~/Code/Misc/flashcard-mcp`. If tools are not available, tell the user:
+This skill requires the `flashcard-mcp` MCP server running from `~/Code/flashcard-mcp`. If tools are not available, tell the user:
 
-> The flashcard-mcp SRS server isn't running. Check `.mcp.json` or run `npm install` in `~/Code/Misc/flashcard-mcp`.
+> The flashcard-mcp SRS server isn't running. Check `.mcp.json` or run `npm install` in `~/Code/flashcard-mcp`.
 
 ## Modes of Invocation
 

@@ -46,7 +46,9 @@ def _gather(col):
     # never plan: reviews of since-deleted cards (no note to land on) and
     # rating-0 skip events (Anki's ease range is 1-4; they can't round-trip)
     reviews = [r for r in reviews if r.card_id in ours_ids and 1 <= r.rating <= 4]
-    guid_by_cid = {a.card_id: a.guid for a in anki_cards if a.guid in ours_ids}
+    # every CUID guid, not just ours_ids: an empty-master import (see merge.py)
+    # needs an about-to-be-created card's review history too, not just existing ones
+    guid_by_cid = {a.card_id: a.guid for a in anki_cards if is_cuid(a.guid)}
     anki_reviews = bridge.read_anki_reviews(col, guid_by_cid)
     return cards, reviews, anki_cards, anki_reviews
 
@@ -70,6 +72,7 @@ def _summary(plan, hist) -> str:
     parts = []
     for label, items in (
         ("create", plan.create),
+        ("import", plan.import_from_anki),
         ("content", plan.update_content),
         ("sched→anki", plan.push_sched),
         ("sched←anki", plan.pull_sched),
@@ -105,6 +108,16 @@ def cmd_sync(args) -> int:
         print(f"plan: {_summary(plan, hist)}")
         if args.dry_run:
             return 0
+
+        if plan.import_from_anki:
+            imported_ids = {a.guid for a in plan.import_from_anki}
+            sched_by_card = {a.guid: a.sched for a in plan.import_from_anki}
+            imported_reviews = [r for r in hist.pull_reviews if r.card_id in imported_ids]
+            with master.connect(readonly=False) as con, con:
+                for anki_card in plan.import_from_anki:
+                    master.import_card(con, anki_card)
+                master.append_reviews(con, imported_reviews, sched_by_card)
+            hist.pull_reviews = [r for r in hist.pull_reviews if r.card_id not in imported_ids]
 
         for card in plan.create:
             bridge.create_card(col, card)

@@ -5,6 +5,10 @@ Direction contract:
 - Scheduling flows both ways: the side with the newer last review wins wholesale.
 - Review history is append-only: union by (card, timestamp), nothing overwritten.
 - Anki-only notes (non-CUID guid) are reported, never imported into master.
+- Anki-only notes with a CUID guid are ours: deleted from Anki when master already
+  holds other cards (an intentional deletion, now propagated); imported into master
+  instead when master.db is completely empty, since that shape means a fresh/reset
+  local install recovering from an existing Anki collection, not a real mass-delete.
 
 No sync bookkeeping exists: every decision derives from the current state of both
 sides. Identity is carried by the Anki note guid, which we set to the master card's
@@ -84,6 +88,7 @@ class SyncPlan:
     push_suspend: list[tuple[MasterCard, int]] = field(default_factory=list)  # (card, card_id)
     delete_notes: list[int] = field(default_factory=list)
     unknown_anki: list[int] = field(default_factory=list)  # note ids not ours; report only
+    import_from_anki: list["AnkiCard"] = field(default_factory=list)  # recovered onto empty master
 
 
 @dataclass
@@ -102,6 +107,7 @@ def plan_sync(master_cards: list[MasterCard], anki_cards: list[AnkiCard]) -> Syn
     plan = SyncPlan()
     master_by_id = {c.id: c for c in master_cards}
     anki_by_guid = {a.guid: a for a in anki_cards}
+    master_is_empty = not master_cards
 
     for card in master_cards:
         anki = anki_by_guid.get(card.id)
@@ -118,7 +124,10 @@ def plan_sync(master_cards: list[MasterCard], anki_cards: list[AnkiCard]) -> Syn
         if anki.guid in master_by_id:
             continue
         if is_cuid(anki.guid):
-            plan.delete_notes.append(anki.note_id)  # was ours, deleted in master
+            if master_is_empty:
+                plan.import_from_anki.append(anki)  # fresh/reset local db, recover from Anki
+            else:
+                plan.delete_notes.append(anki.note_id)  # was ours, deleted in master
         else:
             plan.unknown_anki.append(anki.note_id)
 

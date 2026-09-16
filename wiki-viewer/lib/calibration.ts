@@ -12,7 +12,7 @@ import type { Calibration } from "./types";
 const run = promisify(execFile);
 
 const MCP_DIR = process.env.FLASHCARD_MCP_DIR ??
-  "/home/felix/Code/Misc/flashcard-mcp";
+  "/home/outtaspacetime/Code/flashcard-mcp";
 
 interface CalibrationJson {
   verdict: Calibration["verdict"];

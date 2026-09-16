@@ -13,10 +13,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from scripts.ankisync.convert import format_master_dt, parse_master_dt, split_tags
-from scripts.ankisync.merge import MasterCard, Review, Sched
+from scripts.ankisync.merge import AnkiCard, MasterCard, Review, Sched
 
 MASTER_DB = Path(
-    os.environ.get("FLASHCARD_MASTER_DB", "~/Code/Misc/flashcard-mcp/prisma/master.db")
+    os.environ.get("FLASHCARD_MASTER_DB", "~/Code/flashcard-mcp/prisma/master.db")
 ).expanduser()
 
 
@@ -148,3 +148,63 @@ def append_reviews(
 
 def now_utc() -> datetime:
     return datetime.now(tz=UTC)
+
+
+def get_or_create_deck(con: sqlite3.Connection, name: str) -> str:
+    """Look up a Deck by name, creating it if this is the first card to land there.
+
+    Used when importing Anki-only cards onto an empty master.db: their deck
+    names won't generally match the fixed set of decks a fresh install seeds.
+    """
+    row = con.execute("SELECT id FROM Deck WHERE name = ?", (name,)).fetchone()
+    if row:
+        return row[0]
+    deck_id = _cuid_like()
+    con.execute(
+        "INSERT INTO Deck (id, name, createdAt) VALUES (?, ?, ?)",
+        (deck_id, name, format_master_dt(now_utc())),
+    )
+    return deck_id
+
+
+def import_card(con: sqlite3.Connection, card: AnkiCard) -> None:
+    """Insert a Card row recovered from an Anki-only note onto an empty master.db.
+
+    Reuses the Anki note's own guid as the new Card.id: it is already a CUID
+    minted by a prior flashcard-mcp instance (that is what made it eligible for
+    import rather than being reported as a foreign/unknown note), so identity
+    is preserved and no guid rewrite is needed on the Anki side afterward.
+
+    createdAt is derived from the Anki note id (itself an epoch-ms creation
+    timestamp), not from the moment of import — these cards are old, and
+    check_pressure's newToday axis would otherwise read all of them as added
+    today and hard-block further intake for the rest of the day.
+    """
+    deck_id = get_or_create_deck(con, card.deck)
+    sched = card.sched
+    now = format_master_dt(now_utc())
+    created_at = format_master_dt(datetime.fromtimestamp(card.note_id / 1000, tz=UTC))
+    con.execute(
+        """INSERT INTO Card (id, deckId, front, back, tags, due, stability,
+                              difficulty, reps, lapses, state, lastReview,
+                              interval, suspended, createdAt, updatedAt)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (
+            card.guid,
+            deck_id,
+            card.front,
+            card.back,
+            ",".join(card.tags),
+            format_master_dt(sched.due) if sched.due else now,
+            sched.stability or 0.0,
+            sched.difficulty or 0.0,
+            sched.reps,
+            sched.lapses,
+            sched.state,
+            format_master_dt(sched.last_review) if sched.last_review else None,
+            sched.interval,
+            int(card.suspended),
+            created_at,
+            now,
+        ),
+    )

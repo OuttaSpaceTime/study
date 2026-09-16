@@ -17,7 +17,7 @@ Read this whole file before writing any code.
 
 ## The flashcard deck
 
-- `lib/flashcards.ts` reads flashcard-mcp's SQLite file directly (`FLASHCARD_DB`, default `~/Code/Misc/flashcard-mcp/prisma/master.db`) through `node:sqlite`, opened **read-only** — the MCP server owns writes.
+- `lib/flashcards.ts` reads flashcard-mcp's SQLite file directly (`FLASHCARD_DB`, default `~/Code/flashcard-mcp/prisma/master.db`) through `node:sqlite`, opened **read-only** — the MCP server owns writes.
 - A page links to cards through its `flashcard_ids`; pages without any fall back to tag overlap.
 - Surfaces: a per-page modal from the article header, and `/flashcards` for the whole deck (retention, state filters, tag/deck/text filters, flip-through).
 - The calibration verdict is **not** computed here. `lib/calibration.ts` runs flashcard-mcp's `dev:cli calibration` and renders its JSON, so the viewer and `/study` always agree. Override the repo path with `FLASHCARD_MCP_DIR`.

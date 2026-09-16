@@ -69,14 +69,22 @@ class TestPlanExistence:
         assert [c.id for c in plan.create] == [CUID]
         assert not plan.update_content and not plan.delete_notes
 
-    def test_cuid_note_without_master_card_is_deleted(self):
-        plan = plan_sync([], [_anki(guid=CUID)])
+    def test_cuid_note_without_master_card_is_deleted_when_master_has_other_cards(self):
+        plan = plan_sync([_master(id=CUID2)], [_anki(guid=CUID)])
         assert plan.delete_notes == [100]
+        assert not plan.import_from_anki
+
+    def test_cuid_note_is_imported_when_master_is_completely_empty(self):
+        anki = _anki(guid=CUID)
+        plan = plan_sync([], [anki])
+        assert plan.import_from_anki == [anki]
+        assert not plan.delete_notes
 
     def test_foreign_guid_note_is_reported_never_deleted(self):
         plan = plan_sync([], [_anki(note_id=999, guid="f$kz$Y9Z*m")])
         assert plan.unknown_anki == [999]
         assert not plan.delete_notes and not plan.pull_sched
+        assert not plan.import_from_anki
 
 
 class TestPlanContent:
