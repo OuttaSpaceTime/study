@@ -11,7 +11,7 @@ import sys
 from datetime import datetime
 
 from scripts.ankisync.htmlize import to_anki_html
-from scripts.ankisync.master import MASTER_DB, connect
+from scripts.ankisync.master import connect, db_path
 
 
 def _changes(con):
@@ -38,10 +38,11 @@ def main() -> None:
             print(f"  back-> {new_back[:120]!r}")
         sys.exit(0)
 
-    backup = MASTER_DB.with_name(
+    db = db_path()
+    backup = db.with_name(
         f"master.db.bak-{datetime.now().strftime('%Y%m%d-%H%M%S')}"  # noqa: DTZ005
     )
-    shutil.copy2(MASTER_DB, backup)
+    shutil.copy2(db, backup)
     with connect(readonly=False) as con, con:
         # materialize before writing: updating rows while the SELECT cursor is
         # still iterating the same table makes sqlite skip rows
