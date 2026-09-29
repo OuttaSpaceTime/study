@@ -35,6 +35,8 @@ def flashcard_mcp_dir(env_file: Path = ENV_FILE) -> Path:
             f"    FLASHCARD_MCP_DIR=$HOME/Code/flashcard-mcp\n"
             "See 'Machine-local configuration' in README.md."
         )
+    if value.startswith("$HOME/"):
+        value = str(Path.home() / value[len("$HOME/") :])
     return Path(value).expanduser()
 
 
