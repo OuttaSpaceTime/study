@@ -22,7 +22,7 @@ See `~/.claude/skills/references/interactive-principles.md` for shared interacti
 
 - ONE card per message. Feedback is one to two sentences; the 150-200 word ceiling applies only inside Socratic mode.
 - The developer can interrupt at any point — see Mid-Session Actions below.
-- Start each card with its position: `Card 3/12 — [Deck Name]`
+- Start each card with its position: `Card 3/12 — [Deck Name]`, built from the `position` and `total` fields `get_next_card` returns. Append ` (repeat)` when it returns `repeat: true`. Never count by hand or carry a total over from an earlier card: the server already accounts for re-queued repeats, skips, deletes and `adjust_session`.
 - After feedback, immediately advance to the next card — do not wait for "next".
 
 ## Output Discipline
@@ -161,7 +161,7 @@ If cards span multiple decks, **interleave** them — don't exhaust one deck bef
 
 **Intra-day repeats (learning steps).** Any rating that leaves a card in an intra-day learning step re-queues it at the end of the current session — the server appends it with reason `learning_repeat` and `get_next_card` serves it again after the remaining cards. In FSRS terms: Again always repeats; Hard repeats on learning/relearning cards; Good repeats on brand-new cards (10-minute step). A card leaves the session only once its interval is a day or more.
 
-- Mark repeat presentations in the position line: `Card 13/13 — [Deck Name] (repeat)`. The session total grows as repeats are queued — that's expected.
+- Mark repeat presentations in the position line: `Card 13/13 — [Deck Name] (repeat)`. `get_next_card` flags these with `repeat: true`, and its `total` already includes every re-queue (see Session Rules).
 - Evaluate and rate honestly each time. A repeat rated Again comes back again; that's the point.
 - On a repeat, **vary the probe** — don't re-ask identically. Ask from a different angle or with a different concrete example so the developer recalls the concept, not your previous phrasing.
 - **Stuck-card escape:** if a card fails its 3rd pass in one session, don't keep looping. Rate it honestly, and when it resurfaces, offer `/study-walkthrough <topic>`, call `skip_card`, and move on — it stays due in minutes and returns next session.
@@ -241,7 +241,7 @@ Then loop:
      - **When a quality issue is detected: stop advancing.** Explicitly describe the problem and ask the developer to fix it before continuing. Example: "This card's front is ambiguous — it could mean X or Y. Want to edit it to be more specific, or split it?" Wait for the developer to edit, split, or explicitly say "skip" before moving on.
    - One-liner reminder: *(explore · harder/easier · edit · split · delete · show in browser)*
 6. **Call `submit_review`** with the rating, then state the rating line **once** — complete with the next interval from the returned schedule (`due`, `interval`, `state`, `intraDay`). This is the only place the rating is printed. Read the schedule silently; show only the formatted phrase, never the raw JSON. Format:
-   - `intraDay: true` (interval `0`) → "Rated: **Again (1)** — repeats this session". Don't invent a minute count.
+   - `intraDay: true` (interval `0`) → "Rated: **Again (1)** — repeats this session". Don't invent a minute count. The server has re-queued the card, so the next `get_next_card` returns `total` one higher: card 7 of 12 rated Again → the next card comes back as `position: 8, total: 13` → `Card 8/13`.
    - `interval >= 1` → "Rated: **Good (3)** — next review in **N days** (YYYY-MM-DD)" using `interval` and the date portion of `due`. Use "1 day" (singular) when `interval` is 1.
 7. **Advance** — call `get_next_card` and present the next card in the same message. Only advance if no quality issue was flagged (or developer resolved/skipped it).
 
