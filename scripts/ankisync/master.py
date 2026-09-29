@@ -20,6 +20,33 @@ def db_path() -> Path:
     return master_db()
 
 
+# Neutral FSRS difficulty (1-10 scale, midpoint) for a card that arrives with
+# no memory_state and therefore no way to infer a real one.
+_DEFAULT_DIFFICULTY = 5.0
+
+
+def _fallback_memory_state(sched: Sched) -> tuple[float, float]:
+    """Approximate stability/difficulty for a card Anki never computed FSRS memory for.
+
+    Anki only populates card.memory_state once a card has been reviewed under
+    the FSRS scheduler; a card that predates FSRS being enabled (or hasn't been
+    reviewed since) reports memory_state=None even though it has a perfectly
+    real SM-2-style interval. Writing 0.0 for "unknown" is indistinguishable
+    from flashcard-mcp's own corruption sentinel (scheduler.ts's
+    sanitizeForReview resets any non-New card with stability<=0 back to a
+    fresh New card, discarding reps/lapses continuity) — so a missing
+    memory_state must never reach the DB as a literal 0.0. The existing
+    interval was calibrated for roughly the same target retention FSRS
+    assumes, so it's a reasonable stability proxy; floored at 1 day so it can
+    never collide with the sentinel.
+    """
+    if sched.stability is not None and sched.difficulty is not None:
+        return sched.stability, sched.difficulty
+    if sched.state == 0:  # New: no memory state is correct, not missing
+        return 0.0, 0.0
+    return max(sched.interval, 1.0), _DEFAULT_DIFFICULTY
+
+
 def connect(readonly: bool = True) -> sqlite3.Connection:
     db = db_path()
     if readonly:
@@ -210,6 +237,7 @@ def import_card(con: sqlite3.Connection, card: AnkiCard) -> None:
     sched = card.sched
     now = format_master_dt(now_utc())
     created_at = format_master_dt(datetime.fromtimestamp(card.note_id / 1000, tz=UTC))
+    stability, difficulty = _fallback_memory_state(sched)
     con.execute(
         """INSERT INTO Card (id, deckId, front, back, tags, due, stability,
                               difficulty, reps, lapses, state, lastReview,
@@ -222,8 +250,8 @@ def import_card(con: sqlite3.Connection, card: AnkiCard) -> None:
             card.back,
             ",".join(card.tags),
             format_master_dt(sched.due) if sched.due else now,
-            sched.stability or 0.0,
-            sched.difficulty or 0.0,
+            stability,
+            difficulty,
             sched.reps,
             sched.lapses,
             sched.state,
