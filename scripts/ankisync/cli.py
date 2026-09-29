@@ -43,18 +43,18 @@ def _gather(col):
         reviews = master.read_reviews(con)
         deleted_ids = master.read_tombstones(con)
     anki_cards = bridge.read_anki_cards(col)
-    ours_ids = {c.id for c in cards}
-    # never plan: reviews of since-deleted cards (no note to land on) and
+    # Deleted on either side: the Card row is gone, or is soft-deleted this run
+    # because its note arrived tagged. Their history is excluded on both sides,
+    # or the side still holding it would plan a push to the other on the way out.
+    deleted = deleted_ids | {a.guid for a in anki_cards if DELETED_TAG in a.tags}
+    live_ids = {c.id for c in cards} - deleted
+    # never plan: reviews of deleted cards (no note to land on) and
     # rating-0 skip events (Anki's ease range is 1-4; they can't round-trip)
-    reviews = [r for r in reviews if r.card_id in ours_ids and 1 <= r.rating <= 4]
-    # every CUID guid, not just ours_ids: an import (see merge.py) needs an
+    reviews = [r for r in reviews if r.card_id in live_ids and 1 <= r.rating <= 4]
+    # every CUID guid, not just live_ids: an import (see merge.py) needs an
     # about-to-be-created card's review history too, not just existing ones.
-    # Deleted notes are excluded: their Card row is gone or about to go, so their
-    # reviews have nothing to hang off.
     guid_by_cid = {
-        a.card_id: a.guid
-        for a in anki_cards
-        if is_cuid(a.guid) and a.guid not in deleted_ids and DELETED_TAG not in a.tags
+        a.card_id: a.guid for a in anki_cards if is_cuid(a.guid) and a.guid not in deleted
     }
     anki_reviews = bridge.read_anki_reviews(col, guid_by_cid)
     return cards, reviews, anki_cards, anki_reviews, deleted_ids

@@ -68,7 +68,12 @@ def read_tombstones(con: sqlite3.Connection) -> set[str]:
 
 
 def soft_delete_card(con: sqlite3.Connection, card_id: str) -> None:
-    """Record a deletion made on another machine and drop our row for it."""
+    """Record a deletion made on another machine and drop our row and history for it.
+
+    Review rows go explicitly: Python's sqlite3 leaves foreign keys off, so the
+    schema's ON DELETE CASCADE never fires here the way it does for Prisma's
+    delete, and orphaned reviews would still count toward calibration.
+    """
     con.execute(
         """CREATE TABLE IF NOT EXISTS DeletedCard (
                cardId TEXT NOT NULL PRIMARY KEY,
@@ -79,6 +84,7 @@ def soft_delete_card(con: sqlite3.Connection, card_id: str) -> None:
         "INSERT OR IGNORE INTO DeletedCard (cardId, deletedAt) VALUES (?, ?)",
         (card_id, format_master_dt(now_utc())),
     )
+    con.execute("DELETE FROM Review WHERE cardId = ?", (card_id,))
     con.execute("DELETE FROM Card WHERE id = ?", (card_id,))
 
 
