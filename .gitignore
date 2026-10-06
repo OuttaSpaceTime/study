@@ -19,3 +19,7 @@ todo.md
 
 # Machine-local paths (flashcard-mcp location) — see .env.local.example
 .env.local
+
+# Legacy wiki search index (superseded by qmd), local only
+wiki/.embeddings.json
+wiki/indexes/index.db
