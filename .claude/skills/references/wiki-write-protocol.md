@@ -258,6 +258,12 @@ At any point during any skill, the developer can say "show in browser", "open in
 
 4. **Resume the skill session** — this is a non-blocking side action, not a skill interruption.
 
+**"Show in Omvida"** is the same, in the Omvida desktop app (`~/Code/omvida`) instead of the browser: one command, no server to start. It opens the page in the running Omvida, or starts one:
+```bash
+~/Code/omvida/bin/omvida open <key>
+```
+Use it when the developer says "show in Omvida" or "open in the app"; "show in browser" keeps meaning the wiki-viewer.
+
 ## MOC Pages
 
 Every top-level wiki folder has a **MOC (Map of Content) page** — a hub that wikilinks every other page in the folder. This gives the Obsidian graph a clean hub-and-spoke shape per topic and provides a browsable index.

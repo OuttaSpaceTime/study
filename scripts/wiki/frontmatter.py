@@ -25,7 +25,8 @@ def parse_frontmatter(content: str) -> tuple[dict, str]:
     fm_text = parts[1]
     body = parts[2]
 
-    meta = yaml.safe_load(fm_text)
+    # The C loader where PyYAML has it: YAML is most of an index build.
+    meta = yaml.load(fm_text, Loader=getattr(yaml, "CSafeLoader", yaml.SafeLoader))
     if not isinstance(meta, dict):
         return {}, content
 
@@ -46,12 +47,22 @@ def dump_page(meta: dict, body: str) -> str:
     return f"---\n{fm}---\n{body}"
 
 
-_H2_RE = re.compile(r"^## (.+)$", re.MULTILINE)
+_H2_RE = re.compile(r"^##[ \t]+(.+?)\s*$")
+_FENCE_RE = re.compile(r"^\s*(```|~~~)")
 
 
 def extract_h2s(body: str) -> list[str]:
-    """Return H2 heading texts from a page body, in document order."""
-    return [m.strip() for m in _H2_RE.findall(body)]
+    """Return H2 heading texts from a page body, in document order.
+
+    A `## ` line inside a fenced block (a shell comment, say) is not a heading.
+    """
+    out, in_fence = [], False
+    for line in body.split("\n"):
+        if _FENCE_RE.match(line):
+            in_fence = not in_fence
+        elif not in_fence and (m := _H2_RE.match(line)):
+            out.append(m.group(1))
+    return out
 
 
 def slugify(title: str) -> str:

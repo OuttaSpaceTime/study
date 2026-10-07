@@ -21,7 +21,7 @@ Read this whole file before writing any code.
 - A page links to cards through its `flashcard_ids`; pages without any fall back to tag overlap.
 - Surfaces: a per-page modal from the article header, and `/flashcards` for the whole deck (retention, state filters, tag/deck/text filters, flip-through).
 - The calibration verdict is **not** computed here. `lib/calibration.ts` runs flashcard-mcp's `dev:cli calibration` and renders its JSON, so the viewer and `/study` always agree. The repo path comes from the same `lib/flashcard-path.ts` resolver (`FLASHCARD_MCP_DIR`, env or `.env.local`).
-- Datetime columns in master.db hold both epoch-ms integers and ISO text. Every read normalizes via the `epochMs` helper in `lib/flashcards.ts`; comparing such a column against a string silently drops ~75% of the rows.
+- Datetime columns in master.db are ISO text: flashcard-mcp converts the epoch-ms integers older Prisma wrote, on every start (`src/db/normalize.ts`), so plain SQL comparisons and `ORDER BY` on them are correct.
 
 ## Stack (already installed — do not add dependencies)
 

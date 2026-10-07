@@ -1,7 +1,6 @@
-// Exercises the SQL layer against a real fixture database. The cases that
-// matter here are the ones a hand-read of the SQL gets wrong: master.db stores
-// datetimes as BOTH epoch-ms integers and ISO text, and SQLite orders every
-// integer before every text value regardless of the instant they represent.
+// Exercises the SQL layer against a real fixture database. Datetimes are ISO
+// text, as flashcard-mcp leaves them (it converts older epoch-ms integers on
+// every start, src/db/normalize.ts, and tests that conversion there).
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -18,11 +17,6 @@ function daysAgo(n: number): number {
   const d = new Date();
   d.setHours(12, 0, 0, 0);
   return d.getTime() - n * DAY_MS;
-}
-
-/** BigInt binds as a true INTEGER, which is how older Prisma wrote datetimes. */
-function asInt(ms: number): bigint {
-  return BigInt(ms);
 }
 
 function localDay(ms: number): string {
@@ -61,17 +55,14 @@ beforeAll(() => {
   const card = db.prepare(
     `INSERT INTO Card VALUES (?, ?, ?, ?, ?, ?, 10.0, 5.0, ?, ?, ?, 12.0, ?, ?, ?)`,
   );
-  // createdAt deliberately mixes storage types, oldest first by real time.
-  card.run("old-int", "d1", "oldest", "back", "Web", isoOf(daysAgo(90)), 3, 0, 2, null, 0, asInt(daysAgo(90)));
+  card.run("old-int", "d1", "oldest", "back", "Web", isoOf(daysAgo(90)), 3, 0, 2, null, 0, isoOf(daysAgo(90)));
   card.run("mid-text", "d1", "middle", "back", "SQL,Web", isoOf(daysAgo(40)), 5, 7, 2, isoOf(daysAgo(2)), 0, isoOf(daysAgo(40)));
-  card.run("new-int", "d2", "newest", "back", "", isoOf(daysAgo(1)), 0, 0, 0, null, 0, asInt(daysAgo(1)));
-  card.run("susp", "d1", "suspended one", "back", "SQL", isoOf(daysAgo(5)), 1, 0, 2, null, 1, asInt(daysAgo(5)));
+  card.run("new-int", "d2", "newest", "back", "", isoOf(daysAgo(1)), 0, 0, 0, null, 0, isoOf(daysAgo(1)));
+  card.run("susp", "d1", "suspended one", "back", "SQL", isoOf(daysAgo(5)), 1, 0, 2, null, 1, isoOf(daysAgo(5)));
 
   const review = db.prepare(`INSERT INTO Review VALUES (?, ?, ?, ?)`);
-  // Integer-stored reviews are the NEWEST here — the inverse of production,
-  // so a query that only sees text rows fails this fixture.
-  review.run("old-int", 3, asInt(daysAgo(1)), 5.0);
-  review.run("old-int", 1, asInt(daysAgo(1) + 3600_000), 0.1);
+  review.run("old-int", 3, isoOf(daysAgo(1)), 5.0);
+  review.run("old-int", 1, isoOf(daysAgo(1) + 3600_000), 0.1);
   review.run("mid-text", 3, isoOf(daysAgo(10)), 4.0);
   review.run("susp", 4, isoOf(daysAgo(20)), 9.0);
   db.close();
@@ -82,12 +73,7 @@ afterAll(() => {
 });
 
 describe("getRecentlyStudied", () => {
-  it("includes reviews stored as epoch-ms integers, not only ISO text", async () => {
-    const { getRecentlyStudied } = await load();
-    expect(getRecentlyStudied().map((r) => r.id)).toContain("old-int");
-  });
-
-  it("orders by real time across both storage formats", async () => {
+  it("orders by real time, newest first", async () => {
     const { getRecentlyStudied } = await load();
     expect(getRecentlyStudied().map((r) => r.id)).toEqual([
       "old-int",
@@ -113,7 +99,7 @@ describe("getRecentlyStudied", () => {
 });
 
 describe("getAllCards", () => {
-  it("orders by creation across both storage formats", async () => {
+  it("orders by creation, newest first", async () => {
     const { getAllCards } = await load();
     expect(getAllCards().map((c) => c.id)).toEqual([
       "new-int",

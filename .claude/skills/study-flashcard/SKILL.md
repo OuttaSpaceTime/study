@@ -1,230 +1,134 @@
 ---
 name: study-flashcard
-description: "Create SRS flashcards through an interactive walkthrough that checks against existing cards. Optionally writes a companion wiki page. Trigger keywords: create flashcard, add flashcard, new flashcard, make flashcard."
+description: "Create SRS flashcards directly: suggest a few ready card fronts on a topic, the developer picks or edits them, they are created. Checks pressure and existing cards first. For learning the topic itself, the developer calls /study-walkthrough or /study. Trigger keywords: create flashcard, add flashcard, new flashcard, make flashcard, cards on this."
 user_invocable: true
 ---
 
-# Interactive Flashcard Creator
+# Flashcard Creator: suggest, pick, create
 
-Create flashcards for the spaced repetition system through an interactive 4-checkpoint walkthrough. Every card is checked against existing cards before creation — no duplicates, no overload. Optionally writes a companion wiki page summarizing the flashcarded concepts.
+Turn a topic into 2-3 good cards in about two messages. Claude does the groundwork silently (pressure, existing cards, the wiki), then **suggests ready card fronts with their answers**. The developer picks, edits or rejects them in one reply, and the picked cards are created.
 
-**Core guarantee:** The developer understands every flashcard before it enters the SRS. If they cannot explain the concept back, the walkthrough continues. Every draft is checked against existing cards using semantic similarity.
+This is deliberately **not** a walkthrough. No checkpoints, no concept challenges, no "explain it back". When the developer wants to learn or probe the topic, they call `/study-walkthrough <topic>` or `/study` themselves. Offer that in one line when a topic looks unfamiliar; never start teaching here.
 
-## Wiki Integration
-
-This skill can write companion wiki pages to `wiki/`. See `references/wiki-write-protocol.md` for the full "write wiki" flow, linking rules, and frontmatter spec. All wikilinks use absolute paths from wiki root (e.g., `[[javascript/closures]]` not `[[closures]]`).
-
-**At any point** during the session, the developer can say "show in browser" to open wiki pages in the wiki-viewer app. Follow the "Show in browser" flow in the wiki-write-protocol.
+**Core guarantee:** every card that enters the deck was picked by the developer, passed the duplicate check, and meets the content rules below. Fewer, sharper cards beat more cards.
 
 ## Session Rules
 
-For additional shared interactive principles (scope, handling disagreement, non-interactive mode), see `~/.claude/skills/references/interactive-principles.md`.
+See `~/.claude/skills/references/interactive-principles.md` for the shared principles.
 
-- ONE concept per message, under 150-200 words of prose. Pause for discussion.
-- If the developer already knows the topic well, compress Checkpoint 2 and move to drafting.
-- Start each checkpoint with `Checkpoint X/4: <title>`.
-- Pause after each checkpoint — ask whether to continue or discuss. Never auto-advance.
-- At each checkpoint, blend guided and unguided modes.
-- **Read silently, never cat.** Run `mcp__flashcard-mcp__check_pressure`, `mcp__qmd__query`, `mcp__flashcard-mcp__find_similar_cards`, and any `Read` calls without preamble narration and without echoing their stdout, JSON, or file contents into chat. The chat shows only synthesized output — the pressure verdict, similar-card warnings, draft cards, the next checkpoint prompt. See AGENTS.md "Skill Design Principles → Read silently, never cat."
-
-## Correction Primitive
-
-When the developer corrects a concept explanation or draft card mid-session:
-
-- **Edit the draft in place**, do not append "actually, X". The running draft list is the artifact; if Checkpoint 3 already shows a bad front/back, rewrite it in the next message rather than adding a second version below it.
-- If a correction invalidates a concept walked through in Checkpoint 2, mark any dependent drafts `[STALE — redraw]` and redo them before Checkpoint 4.
-- If cards have already been created (mid-Checkpoint-4 corrections), call `update_card` to fix them rather than creating new variants. Never leave two near-duplicate cards in the deck because of a mid-session correction.
-
-## Output Contract — Progress Footer (mandatory)
-
-Every assistant message in this skill **must end with a progress footer as the LAST line**. No exceptions while the interactive flow is active — this includes clarifying questions, short acknowledgements, and messages that contain only code. A message without this footer is a contract violation.
-
-**Format:**
-- With steps: `Step 1/2 · Checkpoint 3/4 — Draft Review & Duplicate Check: similarity scan`
-- Without steps: `Checkpoint 1/4 — Topic & Scope`
-
-The footer is a single line, rendered verbatim, at the very bottom of the message — nothing after it.
-
-**Exceptions:** Omit the footer only when the developer has explicitly opted out of the interactive flow — non-interactive subagent mode, or an explicit "just draft the cards" request.
+- **Two beats:** the suggestion message, then the creation report. Add a third only when the developer edits or a check needs a decision.
+- **Read silently, never cat.** `check_pressure`, `list_decks`, `find_similar_cards`, `mcp__qmd__query` and `Read` run without narration and without echoing their output. The chat shows the verdict line, the suggestions and the result. (AGENTS.md, "Read silently, never cat".)
+- **Correct in place.** When the developer edits a suggestion, show the revised card once, replacing the old one. If a card is already created, fix it with `update_card`, never a second near-duplicate.
+- Default to **2-3 suggestions**, at most 5. Suggest fewer when the topic is narrow.
 
 ## MCP Server Dependency
 
-This skill requires the `flashcard-mcp` MCP server. Tools used: `find_similar_cards`, `create_card`, `list_decks`.
-
-**Note:** Always use `find_similar_cards` for duplicate detection — it uses semantic similarity (Jaccard + cosine embeddings). `search_cards` is exact substring match only and is not suitable for duplicate checks.
+Requires `flashcard-mcp`. Tools: `check_pressure`, `list_decks`, `find_similar_cards`, `create_card`, `get_card`, `update_card`. Use `find_similar_cards` for duplicate checks: it is semantic. `search_cards` is substring only.
 
 ## Invocation
 
 ```
-/study-flashcard                          — Create flashcards (asks for topic and deck)
-/study-flashcard <topic>                  — Create flashcards about a specific topic
-/study-flashcard <topic> <deck-name>      — Create flashcards about a topic in a specific deck
-/study-flashcard --from <url>             — Create flashcards from a URL (use WebFetch to retrieve content)
-/study-flashcard <any text or paragraph>  — Extract key concepts from the provided text and create flashcards
+/study-flashcard                          ask for the topic in one line
+/study-flashcard <topic>                  cards on a topic
+/study-flashcard <topic> <deck-name>      cards on a topic, in that deck
+/study-flashcard --from <url>             cards from a page (WebFetch it)
+/study-flashcard <a paragraph of text>    cards from the text's key ideas
 ```
 
-When invoked with a block of text or URL, treat it as source material. The flashcards and wiki page capture only what was walked through and understood — not a raw dump.
+The Omvida app (`~/Code/omvida`, Add → Flashcards) opens this skill as `/study-flashcard <topic>` with a `Context:` line under it:
 
-## Preflight — SRS Pressure Check (MANDATORY, ALWAYS FIRST)
+- `Context: wiki page [[folder/slug]]`: read that page silently and suggest cards for what it teaches that its `flashcard_ids` do not cover yet.
+- `Context: flashcard <id>: <front>`: the developer was studying that card. Suggest cards for the neighbouring ideas or the gap it exposed, not a rephrasing of it.
 
-**Before Checkpoint 1. Before any tool call. Before any deck listing, similarity scan, wiki read, or drafting.** The first assistant message of this skill invocation must be the pressure-check output — nothing else.
+## Step 1: Pressure preflight (always first)
 
-Follow `references/srs-pressure-check.md` exactly. Summary:
+Call `check_pressure` before anything else and follow `references/srs-pressure-check.md`.
 
-1. Call `mcp__flashcard-mcp__check_pressure` — it computes the counts and verdict server-side. Do **not** call `mcp__flashcard-mcp__get_due_cards` or `mcp__flashcard-mcp__list_decks` for pressure signals (`get_due_cards` caps at 30 and will underreport).
-2. First message output:
-   - `ok` → one line: `SRS pressure: ok — proceeding.`
-   - `warn` / `pause` → the counts, the reasons, and the clearance numbers, then the gate question from the reference. Wait for an explicit answer before Checkpoint 1.
-3. Progress footer for this message: `Preflight — SRS Pressure Check`.
+- `ok`: one line, `SRS pressure: ok.`, and continue to the suggestions in the same message.
+- `warn`: the counts, the reasons and the clearance in one or two lines, then the reference's gate question, and wait. The guard is one the developer asked for; being direct does not mean skipping it. On "continue", suggest at most 2 cards.
+- `pause`: the server refuses fresh cards. Say so with the clearance numbers and stop. Splits (`inheritFrom`) and `update_card` still work, so a fix to an existing card is fine.
 
-**Contract:** skipping this step, folding it into Checkpoint 1, or running other tool calls before the verdict is a contract violation — same severity as omitting the progress footer. "Just one card" / "we already ran it earlier" / "the developer told me what they want" are **not** valid reasons to skip.
+## Step 2: Groundwork (silent)
 
-## Checkpoint Flow
+1. **Deck.** `list_decks`. Pick the deck that already holds this topic's cards. Ask in one line only if two decks fit equally.
+2. **What exists.** `find_similar_cards` with the topic, and with each draft front before suggesting it. Read `wiki/.wiki-index.json` for a page on the topic and its `flashcard_ids`.
+3. **Draft and filter.** Draft more fronts than you will show, then drop any that fail the quality checks below or sit above 80% similarity to an existing card. Only suggestions that already pass are shown.
 
-### Checkpoint 1/4: Topic & Scope
+## Step 3: Suggest (one message)
 
-(Preflight must be complete and — if warn/pause — explicitly acknowledged by the developer before starting this checkpoint.)
+Lead with one line on existing coverage when there is any ("You have 4 cards on CSP; these cover what they don't."). Then the numbered suggestions, each with its front as the title and the answer under it, rendered (not raw HTML):
 
-1. Call `list_decks` to show available decks. Ask which deck to target.
-2. Determine what the developer wants to create flashcards about. Accept any of:
-   - A topic, URL, file path, raw text, free text, or a concept from a recent session
-   If raw text was provided at invocation, summarize: "I see 3 key concepts here: X, Y, Z. Which should we flashcard?"
-3. Ask what the developer already knows about the topic — calibrate depth.
-4. **Wiki check**: Read `wiki/.wiki-index.json` — check if a wiki page exists for this topic. If yes, show it:
-   > `[[javascript/closures]]` exists. Your new flashcards will be linked to this page.
-5. **Pre-check**: Call `find_similar_cards` with the topic text. If existing cards cover this area, show them:
-   > "You already have 3 cards about this topic:
-   > - *'Card 1'* (85% match)
-   > Do you want to: add new cards that cover different aspects, edit existing cards, or skip?"
-6. **Anti-overload gate:** Default: 2-3 cards. Developer can request more but push back gently.
+> **1. Two URLs differ only in port. Same-origin policy: blocked or allowed, and why?**
+> Blocked. The origin is scheme, host and port, so a different port is a different origin.
+> *guided · #security #web*
+>
+> **2. …**
+>
+> Pick (`1,3`), edit (`2: shorter answer`), `all`, or `none`.
 
-**Scope decision tree:**
-- Topic decomposes into >5 sub-concepts → suggest splitting into multiple sessions
-- Developer already knows the topic well → skip to Checkpoint 3 with pre-written drafts
-- Topic is trivial (single fact) → suggest a single card, skip the walkthrough
+- A suggestion in the **50-80% similarity band** carries one extra line naming the close card: *close to "What does the Expires attribute do?"; say how the answers differ, or skip it.* That band is an interference risk: sibling cards that differ only in which attribute they name compete at recall. If the developer cannot separate them, fold the two into one contrasting card instead of creating both.
+- If the topic looks new to the developer, end with one line: *To learn it first: `/study-walkthrough <topic>`.*
 
-### Checkpoint 2/4: Core Concept Walkthrough
+## Step 4: Create and report
 
-For each sub-concept that will become a flashcard:
-
-1. Explain what it does and why it matters, with concrete codebase code when possible
-2. **Concrete example/challenge (mandatory, every concept):** Ask the developer to actively produce something before moving on:
-   - **Code concepts:** "What do you expect this outputs?" / "How would you write the code for that?" / "Here's a broken version — what's wrong?"
-   - **Theory/architecture concepts:** "When would you choose this over X?" / "What breaks if you skip this step?" / "Explain why this matters in your own words"
-   - Keep each challenge focused — one question, not a quiz. The answer reveals whether they truly understand the concept the flashcard will test.
-3. Gap detected → pause and fill it. Understanding solid → move on.
-4. As you walk through each concept, mentally draft the front/back — the walkthrough IS the drafting process
-5. **Track related concepts** for wiki linking — note any existing wiki pages that come up
-
-**Guided vs Unguided card decision** (decide per concept):
-- Factual/definitional concept → **guided card** (Q&A flashcard)
-- Skill/technique/practice → **unguided card** (exercise/task card)
-
-### Checkpoint 3/4: Draft Review & Duplicate Check
-
-For each card draft:
-
-1. Present the draft (front, back, type, tags)
-1a. **Front quality checks.** These mirror `/study`'s review-time quality flags — catch them here, where a fix costs one message instead of months of reviews. Run all three on every draft:
-   - **Atomicity (single recall target):** Reject any front that asks for a superlative or judgment ("the single most effective", "the best way", "the right approach to X") or otherwise admits several defensible answers — there is nothing to grade against. Rewrite it to name the specific scenario or principle being tested (e.g. "What's the single most effective technique for loose coupling?" → "Which design principle reduces coupling by depending on an abstraction instead of a concrete collaborator?").
-   - **Self-contained front (no ambiguity):** The front must name its subject concretely enough that **exactly one answer is right without seeing the back**. Read the draft front alone and ask what else it could plausibly be asking. If a second reading exists, the card will drift between reviews. "What is the private key used for?" could be TLS, JWT signing, or SSH — rewrite to "In a TLS handshake, what does the server's private key actually do?". This is the *Ambiguous front* flag; it is the most common defect in the deck and nothing else in this flow catches it.
-   - **Back carries learnable detail:** Reject a back so thin that reading it teaches nothing ("Store sensitive data in database instead of sessions"). A precise one-liner is fine; a vague gesture is not. This is the *Too vague* flag.
-2. **Semantic duplicate check**: Call `find_similar_cards` with the draft front text
-   - >80% match: "Very similar card exists. Skip or rephrase?"
-   - 50-80% match — **this band is an interference risk, not a duplicate risk.** Sibling cards that differ only in which attribute, directive, or flag they name compete with each other at recall, and the deck already carries a family of six cookie-attribute cards that arrived this way. Do not wave it through with "covers a different angle — proceed?". Show the related card and ask the developer to discriminate:
-     > "This sits close to *'What does the Expires attribute of a browser cookie do?'*. Can you state what makes the two answers different, without looking? If not, it's one card."
-
-     If they cannot separate them cleanly, fold the drafts into a single card that contrasts the pair rather than creating both.
-   - No matches: "No similar cards found. This is new territory."
-3. Ask the developer to explain the concept in their own words
-4. Developer says "good", "next", "edit", or "skip" for each draft
-
-### Checkpoint 4/4: Confirm, Create & Write Wiki
-
-1. Present all approved drafts in a numbered list
-2. Developer confirms: "Create these" or makes final edits
-3. For each approved draft, call `create_card` with deckId, front, back, tags, and type
-   - **Deriving from an existing card?** If these drafts are a split or rephrasing of a card that already has review history, pass `inheritFrom: <original card id>` on each `create_card` so the new cards copy the original's FSRS schedule (due, stability, interval, state, maturity) instead of resetting to fresh New cards. Read the original's id with `find_similar_cards`/`get_card` before creating, and delete the original only after the new cards are created. Brand-new concepts with no parent card omit `inheritFrom`.
-4. Report results
-4a. **Push to AnkiWeb:** run `scripts/anki-sync sync` silently so the new cards reach the phone right away. One-line confirm only if it moved something (e.g. `Anki sync: pushed 3 new cards.`); on failure, a one-line note — never block the session on it.
-5. **Offer "write wiki"**: "Want to save a companion wiki page for these concepts?"
-   - If yes, follow the full flow from `references/wiki-write-protocol.md`:
-     - **Before drafting:** present a brief outline — title, proposed H2 sections with a one-line description each. Wait for confirmation or adjustment, then start writing from the top.
-     - **Before drafting**, internalize that protocol's "Writing Style" section — no em-dashes anywhere, no prose-colons as clause connectors. Filename must equal `slugify(title)` exactly. Writing clean prose first time avoids multi-pass cleanup.
-     - Draft a wiki page that goes beyond a thin summary, including context, examples, and the developer's own explanations from the walkthrough.
-     - Include `flashcard_ids` in frontmatter with the IDs of created cards
-     - **Required:** link to at least 2 related wiki pages via `[[absolute/path]]`. Search the index for connections. Companion pages must not be leaf nodes in the graph.
-     - Resolve links, propose folder, write file, run `scripts/wiki-write`, append session log
-   - If no, just log the session
-
-## Chaining
-
-**Into /study-flashcard:**
-- After `/study-walkthrough` surfaces gaps → "Want to create flashcards for what we just covered?"
-- After `/study-walkthrough` writes a wiki page → "Want to add key points as SRS flashcards?"
-- After `/study` reveals weak areas → "Create targeted cards for struggling topics?"
-
-**Out of /study-flashcard:**
-- If developer can't explain a concept → chain to `/study-walkthrough` then return
-- After creating cards → offer `/study` to immediately review them
-- After creating cards + wiki page → offer `/study-walkthrough` for deeper exploration
+1. `create_card` for each picked card, with deckId, front, back, tags and type.
+   - **Derived from an existing card** (a split or rephrasing of one with review history)? Pass `inheritFrom: <original id>` on every `create_card`, then delete the original. The new cards keep its FSRS schedule instead of arriving as new cards.
+2. Report in one or two lines: how many were created, and each card's front in short.
+3. **Push to AnkiWeb:** run `scripts/anki-sync sync` silently. Mention it only if it moved something or failed (one line, never blocking).
+4. **Link the wiki:** if a wiki page covers the topic, add the new ids to its `flashcard_ids` and run `scripts/wiki-write <page>` (the wiki-write protocol's index and lint step). Say it in one line. If no page exists, offer once: *No wiki page yet; `/study-walkthrough --write <topic>` writes one.*
+5. Append the session log entry (`## Session N — Flashcard (HH:MM)`: topic, cards created, deck, wiki page linked) to `logs/<MM>/<YYYY-MM-DD>.md`.
 
 ## Guardrails
 
 **Always:**
-- Check `find_similar_cards` before creating ANY card
-- Give the developer a chance to explain each concept before finalizing
-- Use concrete code from the codebase, not abstract examples
-- Default to fewer cards (2-3) not more
+- Run the pressure preflight first, and `find_similar_cards` on every front before suggesting it.
+- Let the developer pick. Nothing is created that was not picked.
+- Prefer 2-3 cards. More only on explicit request, and never more than 5 in one go.
 
 **Never:**
-- Create cards without developer reviewing and approving each one
-- Skip the duplicate check
-- Create more than 5 cards in a single session without explicit request
-- Add cards for concepts the developer already demonstrates mastery of
+- Turn this into a walkthrough: no teaching sequence, no comprehension checks, no "explain it back". Point at `/study-walkthrough` instead.
+- Create a card the duplicate check flags above 80% without the developer saying so explicitly.
+- Suggest a card that fails the checks below, hoping the developer will fix it.
 
-## Developer Preference — Card Style
+## Quality checks on every suggestion
 
-The developer wants cards that support **high-level intuition and evaluation**, not detailed syntax recall. Favor cards about:
-- Tradeoffs, design principles, "when/why to choose X over Y"
-- Mental models, threat models, failure modes
-- Concepts portable across languages/frameworks
+These mirror `/study`'s review-time flags and the Omvida grader's card check. Catching them here costs one draft; catching them in review costs months.
 
-Avoid cards about:
-- Exact syntax, flag defaults, API method signatures, enum values
-- Language/framework trivia that a reference doc or LSP would surface instantly
+- **One recall target.** No superlatives or judgments with several defensible answers ("the single most effective", "the best way"). Name the scenario or principle being tested instead.
+- **Self-contained front.** Exactly one answer is right without seeing the back. "What is the private key used for?" could mean TLS, JWT or SSH. Write "In a TLS handshake, what does the server's private key do?". This *Ambiguous front* is the most common defect in the deck.
+- **A back worth learning.** A precise one-liner is fine; a vague gesture ("store sensitive data in the database") is not.
 
-If a drafted card is pure syntax recall, flag it and ask whether there's a higher-level concept underneath worth capturing instead. When in doubt, ask — don't create the syntax card on assumption.
+## Developer preference: judgment over definitions
 
-### The definition trap — the failure mode that actually shows up
+The developer wants cards that build **intuition and evaluation**: tradeoffs, when and why to choose X over Y, mental models, threat models, failure modes, concepts that travel across languages. Not exact syntax, flag defaults, method signatures or enum values a reference or LSP surfaces instantly.
 
-Syntax recall is not the common defect: a September 2026 audit found only **2%** of the deck asking for a directive or flag value, against **70% asking what something is**. A definition card is not trivia, but it is not portable judgment either — you learn the label, not a decision you can reuse.
+### The definition trap
 
-**If a drafted front asks what something *is*, flag it and ask whether there's a decision, failure mode, or tradeoff underneath worth capturing instead.** Prefer "what breaks if you skip this" over "what is this". Examples of the same knowledge, moved up a tier:
+A September 2026 audit found 70% of the deck asking what something *is* and only 2% asking for a flag value. A definition card teaches the label, not a decision. **Suggest the judgment version first**, and the definition only when the term itself is what keeps failing to come back.
 
 | Definition (weaker) | Judgment (stronger) |
 | --- | --- |
 | What is session fixation? | What does an attacker gain by fixing the session ID *before* login that they couldn't get after? |
-| What is an "origin" in web security context? | Two URLs differ only in port. Same-origin policy: blocked or allowed, and why? |
-| What is the Composite design pattern? | What does Composite buy you that a plain list of children doesn't? |
+| What is an "origin" in web security? | Two URLs differ only in port. Same-origin policy: blocked or allowed, and why? |
+| What is the Composite pattern? | What does Composite buy you that a plain list of children doesn't? |
 
-The strongest cards pair a **concrete front** with a **transferable answer** — a real scenario to reason over, whose answer is a principle that travels. Only 13% of the deck hits both, so this is where the headroom is. A definition card is still the right call when the term itself is the thing you keep failing to recall; ask rather than assume.
+The strongest cards pair a **concrete front** (a real scenario to reason over) with a **transferable answer** (a principle that travels). Only 13% of the deck does both; that is the headroom.
 
-## Card Size & Scope — one question, short answer
+## Card Size & Scope: one question, short answer
 
-Two limits are **enforced at write time** by `create_card`/`update_card`. They are not style advice; a violating card is rejected.
+Enforced at write time by `create_card`/`update_card`. A violating card is rejected.
 
 | Rule | Limit | Measured on |
 | --- | --- | --- |
-| Answer length | **200 characters** | Visible text — markup and entities are not counted |
+| Answer length | **200 characters** | Visible text: markup and entities are not counted |
 | Answer shape | **4 sentences** | Terminal punctuation, plus each `<li>` and `<br>` |
 | Front | **one question** | Heuristic: 2+ question marks, or `and`/`or` + a question word |
 
-Markup is free, so `<code>`, `<b>` and `<ul>` never cost budget — only the words a reviewer reads. Fronts have **no** length limit: a grounded scenario front is good and should stay concrete.
+Markup is free, so `<code>`, `<b>` and `<ul>` never cost budget. Fronts have **no** length limit: a grounded scenario front is good.
 
-**Write the answer like this:** the answer first, then at most one clause of why. Simple, direct language. No throat-clearing ("In REST, statelessness improves…"), no restating the question, no summarising sentence at the end.
+**Write the answer like this:** the answer first, then at most one clause of why. No throat-clearing, no restated question, no summary sentence.
 
-Too long (300 chars), and the last clause is filler:
+Too long (300 chars), the last clause is filler:
 
 > Access and manipulate sensitive data, make authenticated requests, and interact with the DOM. For example, a malicious script running on evil.com could extract banking details from your authenticated bank.com session, effectively seeing everything you can see and stealing your sensitive information.
 
@@ -234,31 +138,30 @@ On point (161 chars):
 
 ### When a write is rejected
 
-The error names the field and states both remedies. Pick in this order:
+The error names the field and both remedies. In this order:
 
-1. **Reduce.** Cut filler, restated question, and trailing summary. Most rejections are padding, not two ideas. This is the default and the developer's stated preference.
-2. **Drop the extra question.** If the front asks two things, keep the one the card is really about.
-3. **Split** — only when the dropped idea is genuinely not covered by another card. Check with `search_cards` first. A split off a reviewed parent must pass `inheritFrom: <parent id>` so it keeps the parent's FSRS schedule instead of arriving as a new card.
+1. **Reduce.** Cut filler, the restated question, the trailing summary. Most rejections are padding. This is the developer's stated preference.
+2. **Drop the extra question.** Keep the one the card is really about.
+3. **Split**, only when the dropped idea has no other card (check with `find_similar_cards`). A split off a reviewed parent passes `inheritFrom`.
 
-Splitting is the last resort, not the first: every split adds review load, and the deck is usually better served by a tighter answer. Never work around the validation by rephrasing to dodge the heuristic.
+Never rephrase just to slip past the check. The one-question check is a regex and can misfire: if it rejects a front that asks **one** question, show the developer the flagged phrase and let them decide. It already allows conjunctions that join subjects ("how do Bundler <b>and</b> Yarn resolve…").
 
-### The heuristic is a flag, not a verdict
+## Card Content Format: simple HTML, never markdown
 
-The single-question check is a regex, so it can misfire. If it rejects a front you believe asks **one** question, say so to the developer with the flagged phrase and your reasoning, and let them decide — do not silently reword the card to slip past the check. It correctly allows conjunctions that join subjects rather than questions ("how do Bundler <b>and</b> Yarn resolve…", "what directive <b>and</b> value…").
+Cards sync to AnkiWeb, and Anki fields are **HTML**: markdown renders literally, newlines collapse, and bare `<`/`>` parse as markup. Write every front and back in this subset:
 
-## Card Content Format — simple HTML, never markdown
+- Line breaks: `<br>`, never bare newlines
+- Inline code `<code>…</code>`; code blocks `<pre><code>…</code></pre>`
+- Emphasis `<b>`, `<i>`, never `**` or `*`
+- Lists `<ul>`/`<ol>` with `<li>`, never `- ` or `1. ` lines
+- Literal angle brackets entity-escaped: `&lt;script&gt;`, typically inside `<code>`
+- No markdown links and no `[[wikilinks]]`: wiki linkage lives in the page's `flashcard_ids`
+- **No cloze deletions (`{{c1::…}}`).** Question and answer only. A cloze hands over the sentence frame and tests recognition, not retrieval.
+- **No em dashes (`—`, `&mdash;`, `&#8212;`, `&#x2014;`), ever.** Write two sentences, or use a colon after a bold label. En dashes in ranges (`1–4`) are fine.
 
-Cards sync to AnkiWeb, and Anki note fields are **HTML**: markdown renders literally, raw newlines collapse, and unescaped `<`/`>` are parsed as markup. Author every `create_card`/`update_card` front and back in the simple HTML subset (it renders correctly on desktop, AnkiDroid, and AnkiWeb):
+Show drafts rendered in chat, never as raw HTML. These rules are enforced by `create_card`/`update_card` with a per-field error; fix the draft per the error and retry. `scripts/card-htmlize` converts markdown stragglers, but new cards should be born clean.
 
-- Line breaks: `<br>` (never bare newlines)
-- Inline code: `<code>...</code>`; code blocks: `<pre><code>...</code></pre>`
-- Emphasis: `<b>`, `<i>` (never `**`/`*`)
-- Lists: `<ul>/<ol>` with `<li>` (never `- ` / `1. ` lines)
-- Literal angle brackets (e.g. a `<script>` XSS example) must be entity-escaped: `&lt;script&gt;` — typically inside `<code>`
-- Never markdown links or `[[wikilinks]]` in card text — wiki linkage belongs in the companion page's `flashcard_ids`, not the card
-- **Never a cloze deletion (`{{c1::…}}`).** Cards are question/answer style only: the front asks something, the back answers it. A cloze hands over the sentence frame, so it tests recognition of a missing word instead of a full retrieval attempt, and it makes it easy to smuggle two facts into one deletion. Rephrase the sentence into a question rather than blanking a span.
-- **No em dashes (`—`), ever.** They're the classic LLM tell and read worse than plain prose. Write two sentences instead; after a bold lead-in label, use a colon (`<b>Fresh per response:</b> never reused…`). The `&mdash;` entity (and `&#8212;` / `&#x2014;`) counts as an em dash and is rejected too, since Anki renders it identically. En dashes in numeric ranges (`1–4`, `&ndash;`) are fine.
+## Chaining
 
-When presenting a card draft in chat, show it rendered (readable), not as raw HTML. `scripts/card-htmlize` exists as a safety net that converts any markdown stragglers (dry-run by default, `--apply` to write), but new cards should be born clean.
-
-These rules are **enforced at write time**: `create_card`/`update_card` reject markdown, bare newlines, wikilinks, and em dashes with a per-field error message, alongside the length and one-question limits in [Card Size & Scope](#card-size--scope--one-question-short-answer). If a write is rejected, fix the draft per the error and retry — do not work around the validation.
+- **Into this skill:** Omvida's Add → Flashcards and a wiki page's "Cards on this page"; `/study-walkthrough` after it writes a page ("Add the key points as cards?"); `/study` when a session exposes a gap.
+- **Out of it:** `/study-walkthrough <topic>` to learn first or go deeper; `/study` to review the new cards. Offer each in one line at most, never both at once.

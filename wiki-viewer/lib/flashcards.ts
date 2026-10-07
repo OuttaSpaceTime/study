@@ -27,27 +27,12 @@ function open(): DatabaseSync {
 }
 
 /**
- * Datetime columns hold two formats: epoch-ms INTEGERs written by older Prisma
- * versions and ISO TEXT written by newer ones (master.db currently holds both,
- * ~75% integer). Comparing a column against an ISO string silently drops every
- * integer row, because SQLite orders INTEGER before TEXT regardless of value.
- * Every read normalizes to epoch ms first. `scripts/ankisync/convert.py`
- * (`parse_master_dt`) is the Python side of this same rule.
+ * Local calendar day (not UTC) of a datetime column, as YYYY-MM-DD. Datetime
+ * columns are uniform ISO text: flashcard-mcp converts the epoch-ms integers
+ * older Prisma wrote on every start (its src/db/normalize.ts).
  */
-function epochMs(column: string): string {
-  return `(CASE WHEN typeof(${column}) = 'integer' THEN ${column}
-           ELSE CAST(strftime('%s', ${column}) AS INTEGER) * 1000 END)`;
-}
-
-/** Local calendar day (not UTC) of a datetime column, as YYYY-MM-DD. */
 function localDay(column: string): string {
-  return `date(${epochMs(column)} / 1000, 'unixepoch', 'localtime')`;
-}
-
-function localDayOf(ms: number): string {
-  const d = new Date(ms);
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  return `${d.getFullYear()}-${month}-${String(d.getDate()).padStart(2, "0")}`;
+  return `date(${column}, 'localtime')`;
 }
 
 interface CardRow {
@@ -109,7 +94,7 @@ export function getCardsByIds(ids: readonly string[]): Card[] {
 /** Every card, newest first — small enough (hundreds) to ship whole. */
 export function getAllCards(): Card[] {
   const rows = open()
-    .prepare(`${CARD_SELECT} ORDER BY ${epochMs("c.createdAt")} DESC`)
+    .prepare(`${CARD_SELECT} ORDER BY c.createdAt DESC`)
     .all() as unknown as CardRow[];
   return rows.map(toCard);
 }
@@ -166,28 +151,13 @@ export function getRecentlyStudied(limit = 100): { id: string; at: string }[] {
 }
 
 function recentlyStudiedRows(limit: number): { id: string; at: string }[] {
-  // Ordering by the normalized expression would drop Review_reviewedAt_idx and
-  // sort the whole log into a temp b-tree. SQLite sorts every number before
-  // every string regardless of the instant each represents, so the true newest
-  // N is contained in the newest N of each storage class — two indexed reads,
-  // merged here.
-  const newestOf = (clause: string) =>
-    open()
-      .prepare(
-        `SELECT cardId, ${epochMs("reviewedAt")} AS ms FROM Review
-         WHERE typeof(reviewedAt) ${clause} 'text' ORDER BY reviewedAt DESC LIMIT ?`,
-      )
-      .all(limit) as unknown as { cardId: string; ms: number }[];
-
-  const newest = [...newestOf("!="), ...newestOf("=")]
-    .sort((a, b) => b.ms - a.ms)
-    .slice(0, limit);
-
-  const latest = new Map<string, number>();
-  for (const row of newest) {
-    latest.set(row.cardId, Math.max(latest.get(row.cardId) ?? 0, row.ms));
-  }
-  return [...latest]
-    .sort((a, b) => b[1] - a[1])
-    .map(([id, ms]) => ({ id, at: localDayOf(ms) }));
+  const rows = open()
+    .prepare(
+      `SELECT cardId, ${localDay("reviewedAt")} AS at FROM Review ORDER BY reviewedAt DESC LIMIT ?`,
+    )
+    .all(limit) as unknown as { cardId: string; at: string }[];
+  // Newest first, so the first row seen for a card is its latest review.
+  const latest = new Map<string, string>();
+  for (const row of rows) if (!latest.has(row.cardId)) latest.set(row.cardId, row.at);
+  return [...latest].map(([id, at]) => ({ id, at }));
 }

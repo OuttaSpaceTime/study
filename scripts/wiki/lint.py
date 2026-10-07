@@ -13,6 +13,10 @@ from pathlib import Path
 from scripts.wiki.frontmatter import parse_frontmatter, slugify
 from scripts.wiki.headings import titlecase
 from scripts.wiki.index import iter_wiki_pages, load_index
+from scripts.wiki.links import FENCED_CODE_RE as _FENCED_CODE_RE
+from scripts.wiki.links import INLINE_CODE_RE as _INLINE_CODE_RE
+from scripts.wiki.links import WIKILINK_RE as _WIKILINK_RE
+from scripts.wiki.links import strip_code as _strip_code
 
 REQUIRED_FIELDS = {
     "title",
@@ -38,8 +42,6 @@ RETIRED_FIELDS = {
     "last_probed": "probe sections were removed",
 }
 
-_FENCED_CODE_RE = re.compile(r"```.*?```", re.DOTALL)
-_INLINE_CODE_RE = re.compile(r"``[^`\n]+``|`[^`\n]+`")
 _QUOTED_STR_RE = re.compile(r'"[^"\n]*"|\'[^\'\n]*\'')
 _SENT_SPLIT_RE = re.compile(r"(?<=[.!?])\s+")
 _MD_SYNTAX_RE = re.compile(r"[*_`\[\]()|#!]+")
@@ -99,8 +101,6 @@ _PROSE_PATTERNS: list[tuple[str, str, str]] = [
         "name the source or cut the claim",
     ),
 ]
-# Wikilink not preceded by `!` (image embed). Captures target before any `|display`.
-_WIKILINK_RE = re.compile(r"(?<!!)\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|[^\]]*)?\]\]")
 
 
 @dataclass
@@ -374,13 +374,6 @@ def _check_moc_split_suggestion(wiki_dir: Path, pages: list[ParsedPage]) -> list
                 f"tag '{tag}' clusters {count} — consider wiki/{folder}/{tag}/{tag}-index.md"
             )
     return warnings
-
-
-def _strip_code(body: str) -> str:
-    """Remove fenced and inline code so wikilinks inside them aren't linted."""
-    body = _FENCED_CODE_RE.sub("", body)
-    body = _INLINE_CODE_RE.sub("", body)
-    return body
 
 
 def _check_prose_quality(pages: list[ParsedPage]) -> list[str]:

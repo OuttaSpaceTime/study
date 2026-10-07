@@ -47,7 +47,7 @@ If you realize mid-flow that the preflight was skipped, stop immediately, run th
 
 ## Where to run it
 
-- `/study-flashcard` — as the **Preflight**, before Checkpoint 1. The first assistant message of the invocation.
+- `/study-flashcard` — as **Step 1**, before any other tool call. On `ok` the suggestions follow in the same message; on `warn`/`pause` the gate question ends it.
 - `/study-walkthrough` — as the **Preflight**, before Phase 1. The first assistant message of the invocation. **Regardless of mode** (write-focused or deepen-focused) and regardless of whether a wiki page will ultimately be written. The developer may opt out of the wiki-write at the end of the session, but the preflight still runs up front.
 - `/study` — as the Phase 1 opener. The report is the status summary.
 

@@ -25,7 +25,7 @@ Applies to every skill in this repo.
 ### Study & Knowledge
 
 - `/study` — Interactive study session. Flashcards are the only thing reviewed: Claude evaluates answers and rates them. Closes by suggesting wiki pages related to the cards just studied (or the index view for free browsing). Logs sessions.
-- `/study-flashcard` — Create new flashcards through a guided walkthrough with duplicate detection. Optionally writes companion wiki pages.
+- `/study-flashcard` — Create new flashcards directly: suggests a few ready card fronts on a topic, the developer picks or edits them, they are created after the duplicate and quality checks. Not a walkthrough: for learning the topic, call `/study-walkthrough` or `/study`. Links new cards into an existing wiki page's `flashcard_ids`.
 - `/study-walkthrough` — Interactive walkthrough that calibrates to current understanding, fills gaps, pushes deeper. Optionally writes wiki pages. Use `--write` to default to producing a wiki page.
 - `/canvas` — Interactively edit an Obsidian `.canvas` in a tight edit→show→react loop. Two modes: **live** (`eval` against the running app, reads your GUI selection) and **file** (Read/Write the JSON on disk, git-trackable). Same JSON schema either way.
 
@@ -106,6 +106,10 @@ xdg-open "http://localhost:4777/wiki/<key>"
 The viewer reads pages straight off `wiki/` and resolves the same absolute `[[topic/slug]]` wikilinks Obsidian uses. Obsidian remains installed but is used **only by `/canvas`** (`.canvas` files have no browser equivalent); its socket-check launch flow lives in that skill.
 
 Open the dashboard itself (`xdg-open "http://localhost:4777/"`) when you want the developer browsing rather than reading one page — its **Last studied** list ranks the pages behind the last 100 reviewed cards, most recent first, then by how many of those cards a page covers.
+
+### Omvida (desktop app)
+
+`~/Code/omvida` is a Quickshell app over the same wiki and deck: the wiki reader (tree, context panel, links, local graph), the deck explorer, the full graph, search with an "Ask Claude" that runs the [Query Protocol](#query-protocol) headless, and a **study loop** for typing answers. Each answer is graded by `claude -p` (flashcard-mcp `src/core/grading.ts`, fixed rubric) and the developer accepts or overrides the suggested rating with keys (Shift+Enter reveal, Alt+Enter accept, Shift+1-4 rate). It keeps `/study`'s session around the loop: Anki sync before and after, the pressure and calibration verdicts, leech blocking, the related-pages offer, and a `## Session N — Study` entry in today's log with `**Surface:** Omvida app`. Its Discuss, Add → Flashcards and Add → Wiki entry open Claude Code in kitty in this repo with the matching skill. Launch it with `~/Code/omvida/bin/omvida`, or `omvida open <wiki-key>` for a page ("show in Omvida", see the wiki-write protocol). The wiki-viewer stays; Omvida is a second surface over the same files.
 
 ### Flashcards in the viewer
 
