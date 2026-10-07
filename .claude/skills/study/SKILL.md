@@ -27,7 +27,7 @@ See `~/.claude/skills/references/interactive-principles.md` for shared interacti
 
 ## Output Discipline
 
-**Run all lookups silently.** `mcp__flashcard-mcp__check_pressure`, `mcp__flashcard-mcp__check_calibration`, `Read` of wiki pages or the index, `mcp__flashcard-mcp__*` calls — these execute without preamble narration ("Starting Phase 1…", "Let me check…") and without any echoing of their stdout, JSON, or file contents into chat. The chat shows only synthesized output: the pressure verdict line, the question, the rating, the next prompt. If a script exits non-zero or errors, surface a one-line summary, not the stderr blob. This generalizes the existing "read logs, never tail" rule to every tool the skill calls.
+**Run all lookups silently.** `mcp__flashcard-mcp__check_pressure`, `mcp__flashcard-mcp__check_calibration`, `Read` of wiki pages or the index, `mcp__flashcard-mcp__*` calls — these execute without preamble narration ("Starting Phase 1…", "Let me check…") and without any echoing of their stdout, JSON, or file contents into chat. The chat shows only synthesized output: the pressure verdict line, the question, the rating, the next prompt. If a script exits non-zero or errors, surface a one-line summary, not the stderr blob.
 
 ## Anti-Overload Principle
 
@@ -56,13 +56,13 @@ See `~/.claude/skills/references/interactive-principles.md` for shared interacti
 
 Do **not** infer entry from a weak answer. A wrong answer means rate it and move on, not start a recovery loop.
 
-**The rating is on the unaided answer and is stated before any exploration.** Entering Socratic mode afterwards does not re-rate the card — the developer already showed what they could produce alone, which is the cleaner signal. This replaces the old "rate on the whole exchange after scaffolding" rule.
+**The rating is on the unaided answer and is stated before any exploration.** Entering Socratic mode afterwards does not re-rate the card — the developer already showed what they could produce alone, which is the cleaner signal.
 
 **Exiting.** Socratic mode lasts for the current card only. The next card returns to fast feedback unless the developer asks otherwise (`/study --socratic` or "stay in explore mode" keeps it on for the session).
 
 ### Inside Socratic mode: never-reveal still applies
 
-Once the developer has asked to explore, the old discipline holds — the value of the mode is that they produce the missing piece themselves:
+Once the developer has asked to explore, never-reveal holds — the value of the mode is that they produce the missing piece themselves:
 
 - **Decompose, don't explain.** Ask one smaller guiding question aimed at the missing piece. Point at a concrete value, snippet, error, or the half they did get, and ask what follows. Wait.
 - **Never hand over the answer to end the loop.** Keep decomposing into smaller, more concrete questions until the developer produces the missing piece themselves. Hints get more concrete; the final words stay theirs. (Agreed stuck-fallback: decompose, never reveal.)
@@ -107,7 +107,7 @@ This skill requires the `flashcard-mcp` MCP server running from `~/Code/flashcar
 
 **Calibration.** `mcp__flashcard-mcp__check_calibration` reports true retention over the trailing window and a `verdict`: `over-difficult`, `calibrated`, `under-difficult`, or `low-signal`, plus a `marginal` flag. Report the verdict verbatim — never infer it from the retention number, and never recompute retention yourself. It drives the difficulty levers in Phase 2. Surface it as one line in the opening message; if the tool errors, treat the session as `low-signal` (levers stay at their `calibrated` defaults) and note it in one line.
 
-**No leech list is fetched.** Leeches are not surveyed up front any more — the server flags one the moment it serves it and blocks the queue until it is dealt with. See the leech rule in Phase 2.
+**No leech list is fetched.** The server flags a leech the moment it serves it and blocks the queue until it is dealt with. See the leech rule in Phase 2.
 
 Emit one opening message with the pressure verdict, the clearance numbers, and the calibration line, then **immediately start Phase 2 (the flashcard loop)** — no confirmation gate, no "ready?".
 
@@ -256,13 +256,13 @@ Then loop:
 > Weak areas: Deck B (2 lapses), Deck C (1 lapse)
 > Leech: "What is a parser…" (7 lapses) — rewritten grounded, schedule inherited
 
-**Duration must be honest — measure the exchange, not the session row.** `start_session`'s `startTime` is when the session was *opened*, which historically has spanned hours of idle terminal (17 cards over 5h56m on 2026-07-22). Time the interval from the **first card presented to the last review submitted**, and:
+**Duration must be honest — measure the exchange, not the session row.** `start_session`'s `startTime` is when the session was *opened*, which can be hours of idle terminal before the first card. Time the interval from the **first card presented to the last review submitted**, and:
 
 - Under 2 hours → report it plainly: `12 cards in 11 minutes`.
 - Over 2 hours, or interrupted by a long gap → report cards and accuracy, and mark the span as inclusive of breaks: `17 cards over 5h56m (with breaks)`. Never present an idle-inflated span as study time.
 - Never invent a duration you didn't observe. If the session's start is unknown (resumed context, unclear first card), omit the duration line rather than estimating.
 
-**Close the session with `end_session`.** After the summary, call `end_session` with the session id. Reviews do not close a session — `submit_review` no longer stamps `endTime`, so `endTime` now means "this session was ended" and nothing else. Call it here and on every exit path: "done" / "stop" / "end", and when a session is abandoned mid-way. The call is idempotent, so calling it twice is harmless. Also don't call `start_session` until Phase 2 actually begins — never speculatively in Phase 1.
+**Close the session with `end_session`.** After the summary, call `end_session` with the session id. Reviews do not close a session: `submit_review` leaves `endTime` alone, and only `end_session` sets it. Call it here and on every exit path: "done" / "stop" / "end", and when a session is abandoned mid-way. The call is idempotent, so calling it twice is harmless. Also don't call `start_session` until Phase 2 actually begins — never speculatively in Phase 1.
 
 A session that reviewed nothing is discarded automatically the next time `start_session` runs, so abandoned empty rows no longer pile up. A session that *did* review cards and was never closed keeps `endTime: null` on purpose — we don't know when it ended, and stamping it later would invent a duration.
 
@@ -297,7 +297,7 @@ Omit the **Wiki explored** line if the developer opened nothing.
 
 #### Wiki exploration offer (after the log, before the closing offers)
 
-The wiki is no longer scheduled, so nothing is ever "due" — instead, close the session by pointing at pages connected to what was **actually studied**. This is an invitation, not a queue: the developer opens what interests them, reads at their own pace, and nothing is rated or rescheduled.
+Wiki pages carry no schedule, so nothing is ever "due". Close the session by pointing at pages connected to what was **actually studied**. This is an invitation, not a queue: the developer opens what interests them, reads at their own pace, and nothing is rated or rescheduled.
 
 **Find the pages** by matching this session's card ids against the index, silently:
 

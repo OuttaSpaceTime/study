@@ -20,7 +20,7 @@ This skill reads from and writes to the developer wiki at `wiki/`. See `referenc
 
 For additional shared interactive principles (scope, handling disagreement, non-interactive mode), see `~/.claude/skills/references/interactive-principles.md`.
 
-- ONE concept per message, under 150-200 words of prose. Pause for discussion.
+- ONE concept per message, with only the prose the developer needs for their next answer. Pause for discussion.
 - Start each phase with `Phase X/4: <title>`.
 - Pause after each phase -- ask whether to continue or discuss. Never auto-advance.
 - If the developer says "skip" or "I know this," fast-forward immediately.
@@ -51,9 +51,9 @@ For walkthroughs that span more than ~3 phase messages, maintain a tiny ledger a
 
 The ledger is chat-only — do NOT write it into the wiki page. It exists so the developer (and you) can see session state at a glance and so Phase 3 verification targets the real gaps instead of a generic recall quiz. Skip the ledger for short walkthroughs (single-concept refreshes).
 
-## Output Contract -- Progress Footer (mandatory)
+## Output Contract -- Progress Footer
 
-Every assistant message in this skill **must end with a progress footer as the LAST line**. No exceptions while the interactive flow is active -- this includes clarifying questions, short acknowledgements, and messages that contain only code. A message without this footer is a contract violation.
+While the interactive flow is active, end every assistant message in this skill with a progress footer as its last line -- including clarifying questions, short acknowledgements, and messages that contain only code.
 
 **Format:**
 - With steps: `Step 1/2 · Phase 2/4 — Adaptive Walkthrough: recall check`
@@ -78,7 +78,7 @@ The walkthrough must not rely solely on model-internal knowledge. At Phase 1 Ste
 
 **The hard rule: authoritative wins for facts.** The synthesis step reconciles the two lanes and flags any practitioner claim that contradicts an authoritative fact (`contradictsGroundTruth: true`) — the fact stands, the blog claim is marked likely stale, wrong, or context-specific. An opinion is never promoted into a fact. Practitioner divergence (where blogs disagree with each other) is surfaced so the walkthrough can present it as genuinely open rather than settled.
 
-**Invoking the workflow.** Call the `Workflow` tool with `name: "research-grounding"` and `args` as a **real JSON object — never a JSON-encoded string**. Pass the topic in full: `args: { "topic": "<the developer's full topic, verbatim>", "cadence": "learning" }`. Stringifying `args` (passing `"{\"topic\": ...}"`) is a known footgun — the workflow then sees no topic and the run is wasted; the workflow now rejects that case loudly, but get the call shape right the first time. This skill instructing you to call it IS the opt-in — no separate confirmation needed. Workflows run in the background automatically: the call returns a task id immediately and a notification arrives when synthesis completes, so kick it off at Phase 1 Step 1 and keep running calibration meanwhile (the developer is busy answering calibration questions while it works — same anti-slot-machine posture as the old single subagent). Pass args:
+**Invoking the workflow.** Call the `Workflow` tool with `name: "research-grounding"` and `args` as a **real JSON object — never a JSON-encoded string**. Pass the topic in full: `args: { "topic": "<the developer's full topic, verbatim>", "cadence": "learning" }`. Stringifying `args` (passing `"{\"topic\": ...}"`) is a known footgun — the workflow then sees no topic and the run is wasted; the workflow now rejects that case loudly, but get the call shape right the first time. This skill instructing you to call it IS the opt-in — no separate confirmation needed. Workflows run in the background automatically: the call returns a task id immediately and a notification arrives when synthesis completes, so kick it off at Phase 1 Step 1 and keep running calibration meanwhile (the developer is busy answering calibration questions while it works). Pass args:
 
 | arg | value |
 | --- | --- |
@@ -106,7 +106,7 @@ The workflow returns `{ confidence, authoritativeSources[], practitionerSources[
 
 **Single-agent fallback prompt** (only when the workflow itself cannot run):
 
-> Research `<topic>` for a developer walkthrough across two lanes, kept separate. **Authoritative (ground truth):** find 2-3 official docs / RFCs / source / canonical refs (`WebSearch` then `WebFetch`); return load-bearing facts, each tagged with its source and confidence. **Practitioner (opinion):** find 1-2 credible blog posts / talks / forum threads; return tradeoffs, experiences, architectural nuances, and gotchas, each tagged with its source and stance (consensus | contested | single-voice). Then reconcile: authoritative wins for any factual conflict — flag practitioner claims that contradict a fact as likely stale/wrong, never promote an opinion to a fact. Return `confidence` (high|medium|low), the authoritative facts, the labelled opinions, misconceptions/version gotchas, and any practitioner divergence. Under 450 words, no preamble.
+> Research `<topic>` for a developer walkthrough across two lanes, kept separate. **Authoritative (ground truth):** find 2-3 official docs / RFCs / source / canonical refs (`WebSearch` then `WebFetch`); return load-bearing facts, each tagged with its source and confidence. **Practitioner (opinion):** find 1-2 credible blog posts / talks / forum threads; return tradeoffs, experiences, architectural nuances, and gotchas, each tagged with its source and stance (consensus | contested | single-voice). Then reconcile: authoritative wins for any factual conflict — flag practitioner claims that contradict a fact as likely stale/wrong, never promote an opinion to a fact. Return `confidence` (high|medium|low), the authoritative facts, the labelled opinions, misconceptions/version gotchas, and any practitioner divergence, as terse structured findings with no preamble.
 
 **Skip research only when:** the topic is repository-internal (a codebase pattern, an internal script, a project decision) where no public authoritative source exists. Note the skip in the session log under a `Research:` field so the pattern is visible across sessions.
 
@@ -154,9 +154,9 @@ When the developer corrects something you said in a prior phase:
 
 This matters because the walkthrough compounds: a wrong explanation in Phase 2 poisons the recall check in Phase 3 and the wiki draft in Phase 4.
 
-## Preflight — SRS Pressure Check (MANDATORY, ALWAYS FIRST)
+## Preflight — SRS Pressure Check
 
-**Before Phase 1. Before any tool call. Before any wiki-index read, `mcp__qmd__query`, `find_similar_cards`, or drafting.** The first assistant message of this skill invocation must be the pressure-check output — nothing else. This applies regardless of mode, flags, or whether a wiki page will be written.
+Run it before Phase 1 and before any other tool call: no wiki-index read, `mcp__qmd__query`, `find_similar_cards`, or drafting until the verdict is out. The first assistant message of this skill invocation must be the pressure-check output — nothing else. This applies regardless of mode, flags, or whether a wiki page will be written.
 
 Follow `references/srs-pressure-check.md` exactly. Summary:
 
@@ -166,7 +166,7 @@ Follow `references/srs-pressure-check.md` exactly. Summary:
    - `warn` / `pause` → the counts, the reasons, and the clearance numbers, then the gate question. Wait for an explicit answer before Phase 1.
 3. Progress footer for this message: `Preflight — SRS Pressure Check`.
 
-**Contract:** skipping this step, folding it into Phase 1, or running other tool calls before the verdict is a contract violation — same severity as omitting the progress footer. The developer can always opt out of downstream steps (e.g., "just deepen, no wiki") mid-session — that does not justify skipping preflight.
+Keep it a separate first message: don't skip it, fold it into Phase 1, or run other tool calls before the verdict. Opting out of a downstream step mid-session (e.g., "just deepen, no wiki") does not skip the preflight.
 
 ## Phase Flow
 

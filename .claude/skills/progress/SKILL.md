@@ -67,7 +67,7 @@ Synthesize mentally. Do not write anything yet.
 
 ### Phase 3: Summary Presentation
 
-Surface a tight, evidence-first summary. Keep it under 15 lines.
+Surface a tight, evidence-first summary in this shape:
 
 > **Window:** last [N] days (since [date] — [reason: last progression / default / override])
 >
@@ -107,7 +107,7 @@ Invite disagreement **explicitly**. If the developer pushes back, revise the rel
 
 ### Phase 6: Feedback
 
-After the hypothesis lands (or gets revised), give **one short piece of feedback** — not advice, not a plan. Name what you notice about how the developer is navigating, and one small thing that might sharpen it. Two to four sentences, maximum.
+After the hypothesis lands (or gets revised), give **one short piece of feedback** — not advice, not a plan. Name what you notice about how the developer is navigating, and one small thing that might sharpen it.
 
 Avoid:
 - "You should…" / "Try to…" — prescribing

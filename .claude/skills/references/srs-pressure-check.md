@@ -2,18 +2,15 @@
 
 Shared preflight for skills that add new SRS content (`/study-flashcard`, and `/study-walkthrough` when it will write a wiki page). Prevents the developer from piling new material on top of a review backlog.
 
-## Contract (MANDATORY — READ BEFORE ANYTHING ELSE)
+## Contract
 
-This check is a **hard preflight**, not an optional step. It must run **before any other substantive action** in the skill — before listing decks, before reading the wiki index, before drafting anything, before asking the developer what they want to make.
+Run this check before any other substantive action in the skill: before listing decks, before reading the wiki index, before drafting anything, before asking the developer what they want to make.
 
-Specifically:
-
-- The **first assistant message** of a skill invocation that will add SRS content must be the pressure-check output. No exceptions.
+- The **first assistant message** of a skill invocation that will add SRS content must be the pressure-check output.
 - No `find_similar_cards`, `list_decks`, `mcp__qmd__query`, or drafting calls may happen before the verdict is produced and (for `warn`/`pause`) surfaced to the developer.
-- An assistant message that advances the skill without first surfacing the verdict is a **contract violation** — equivalent to omitting the progress footer.
-- "It's just one card" / "the developer already said what they want" / "we ran it earlier in the session" are **not** valid reasons to skip. Run it every invocation.
+- Run it on every invocation, including for a single card, when the developer has already said what they want, or when it ran earlier in the session: the developer asked for this guard.
 
-If you realize mid-flow that the preflight was skipped, stop immediately, run the check, and surface the result before continuing.
+If you notice mid-flow that the preflight was skipped, run the check and surface the result before continuing.
 
 ## Protocol
 
@@ -57,4 +54,3 @@ If you realize mid-flow that the preflight was skipped, stop immediately, run th
 - Do not re-implement the thresholds inline, and do not recompute due counts yourself. Always call `check_pressure`.
 - Do not call `mcp__flashcard-mcp__get_due_cards` for the pressure count — it caps at 30.
 - Do not query the flashcard SQLite DB directly from a skill. (The wiki-viewer reads it directly to *render* cards; that is a read-only display path, not the pressure path.)
-- Do not treat a wiki backlog as pressure. Wiki pages are no longer scheduled — the wiki is for exploration, and only flashcards are studied.
