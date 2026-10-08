@@ -26,14 +26,6 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function MocMarker() {
-  return (
-    <span className="ml-auto shrink-0 rounded border border-border px-1 text-[9px] uppercase tracking-wider text-faint">
-      moc
-    </span>
-  );
-}
-
 /** Breadcrumb stack: root → folder segments → current page title. */
 function YouAreHere({ meta }: { meta: PageMeta }) {
   const segments = meta.folder ? meta.folder.split("/") : [];
@@ -92,7 +84,6 @@ function SiblingRow({ meta, current }: { meta: PageMeta; current: boolean }) {
         style={{ backgroundColor: topicColor(meta.folder) }}
       />
       <span className="truncate">{meta.title}</span>
-      {meta.isIndex && <MocMarker />}
     </Link>
   );
 }

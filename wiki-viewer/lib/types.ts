@@ -14,8 +14,6 @@ export interface PageMeta {
   updated: string;
   /** SRS card ids this page covers, from frontmatter `flashcard_ids`. */
   flashcardIds: string[];
-  /** True for *-index.md MOC pages. */
-  isIndex: boolean;
   /** H2 headings in document order, for the sidebar mini-TOC. */
   sections: string[];
   /** Resolved wiki paths this page links to. */
@@ -30,7 +28,7 @@ export interface TreeFolder {
   /** Folder path, e.g. "rails/routing". Root is "". */
   path: string;
   folders: TreeFolder[];
-  /** Pages directly in this folder; index page first, then by title. */
+  /** Pages directly in this folder, by title. */
   pages: PageMeta[];
 }
 
@@ -38,7 +36,6 @@ export interface GraphNode {
   id: string; // page path
   title: string;
   folder: string;
-  isIndex: boolean;
   /** Total degree (inbound + outbound), for node sizing. */
   linkCount: number;
 }

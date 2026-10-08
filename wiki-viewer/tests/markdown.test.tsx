@@ -32,7 +32,6 @@ function makePage(path: string): PageMeta {
     created: "2026-01-01",
     updated: "2026-01-01",
     flashcardIds: [],
-    isIndex: false,
     sections: [],
     outbound: [],
     inbound: [],
@@ -187,20 +186,6 @@ describe("createWikilinkResolver", () => {
     // names only — a wrong folder prefix is never silently corrected.
     const resolve = createWikilinkResolver([makePage("a/b")]);
     expect(resolve("zzz/b")).toBeNull();
-  });
-
-  it("resolves MOC targets to their folder view (exact path and bare slug)", () => {
-    // MOC pages aren't rendered; links to them land on the folder view.
-    const mocs = [{ path: "rails/rails-index", folder: "rails" }];
-    const resolve = createWikilinkResolver([makePage("a/b")], mocs);
-    expect(resolve("rails/rails-index")).toBe("rails");
-    expect(resolve("rails-index")).toBe("rails");
-  });
-
-  it("prefers a real page over a MOC for an ambiguous bare slug", () => {
-    const mocs = [{ path: "x/shared", folder: "x" }];
-    const resolve = createWikilinkResolver([makePage("a/shared")], mocs);
-    expect(resolve("shared")).toBe("a/shared");
   });
 });
 

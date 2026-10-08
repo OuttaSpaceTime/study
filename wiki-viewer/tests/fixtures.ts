@@ -36,7 +36,6 @@ export function makePage(
     created: "2026-01-01",
     updated: "2026-01-02",
     flashcardIds: [],
-    isIndex: slug.endsWith("-index"),
     sections: [],
     outbound: [],
     inbound: [],

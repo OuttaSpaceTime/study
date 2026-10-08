@@ -51,12 +51,7 @@ export default async function WikiSlugPage({
   ]);
 
   if (page) {
-    // MOC pages survive only as graph ghosts; their refs let wikilinks
-    // targeting a MOC resolve to the folder view instead of breaking.
-    const mocs = index.graph.nodes
-      .filter((n) => n.isIndex)
-      .map((n) => ({ path: n.id, folder: n.folder }));
-    return <Article page={page} pages={index.pages} mocs={mocs} />;
+    return <Article page={page} pages={index.pages} />;
   }
 
   const folder = wikiPath ? findFolder(index.tree, wikiPath) : null;

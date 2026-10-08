@@ -43,24 +43,6 @@ MINIMAL_PAGE = """\
 class TestCleanWiki:
     def test_single_page_clean(self, wiki_dir: Path):
         _write_page(wiki_dir, "git/test-page.md", MINIMAL_PAGE)
-        _write_page(wiki_dir, "git/git-index.md", textwrap.dedent("""\
-            ---
-            title: "Git Index"
-            aliases: [git-moc]
-            tags: [moc, git]
-            created: 2026-04-09
-            updated: 2026-04-09
-            source_skill: manual
-            flashcard_ids: []
-            allow_orphan: true
-            ---
-
-            # Git Index
-
-            ## Pages
-
-            - [[git/test-page]]
-        """))
         _write_index(wiki_dir, {
             "git/test-page": {
                 "file": "git/test-page.md",
@@ -143,21 +125,22 @@ class TestFrontmatter:
         assert any("missing-field" in e and "source_skill" in e for e in errors)
 
     def test_missing_flashcard_ids_is_error(self, wiki_dir: Path):
-        """flashcard_ids is required on all pages (even index)."""
-        _write_page(wiki_dir, "git/git-index.md", """\
+        """flashcard_ids is required on all pages."""
+        _write_page(wiki_dir, "git/some-page.md", """\
             ---
-            title: "Git Index"
-            aliases: [git-moc]
-            tags: [moc, git]
+            title: "some page"
+            aliases: []
+            tags: [git]
             created: 2026-04-09
             updated: 2026-04-09
-            source_skill: manual
-            allow_orphan: true
+            source_skill: study-walkthrough
             ---
 
-            # Git Index
+            # some page
 
-            ## Pages
+            ## Section One
+
+            Content.
         """)
         _write_index(wiki_dir, {})
         errors, _ = lint_wiki(wiki_dir)
@@ -176,7 +159,6 @@ class TestFrontmatter:
             flashcard_ids: []
             next_review: '2026-05-01'
             review_interval: 3
-            allow_orphan: true
             ---
 
             # some page
@@ -201,7 +183,6 @@ class TestFrontmatter:
             source_skill: study-walkthrough
             flashcard_ids: []
             last_deepened: 2026-04-09
-            allow_orphan: true
             ---
 
             # some page
@@ -213,6 +194,30 @@ class TestFrontmatter:
         _write_index(wiki_dir, {})
         errors, _ = lint_wiki(wiki_dir)
         assert any("forbidden-field" in e and "last_deepened" in e for e in errors), errors
+
+    def test_allow_orphan_is_error(self, wiki_dir: Path):
+        """The orphan check is gone, so its opt-out is a retired field."""
+        _write_page(wiki_dir, "git/some-page.md", """\
+            ---
+            title: "some page"
+            aliases: []
+            tags: [git]
+            created: 2026-04-09
+            updated: 2026-04-09
+            source_skill: study-walkthrough
+            flashcard_ids: []
+            allow_orphan: true
+            ---
+
+            # some page
+
+            ## Section One
+
+            Content.
+        """)
+        _write_index(wiki_dir, {})
+        errors, _ = lint_wiki(wiki_dir)
+        assert any("forbidden-field" in e and "allow_orphan" in e for e in errors), errors
 
     def test_unknown_field_is_error(self, wiki_dir: Path):
         """The schema is closed, so a field nobody declared is caught too."""
@@ -226,7 +231,6 @@ class TestFrontmatter:
             source_skill: study-walkthrough
             flashcard_ids: []
             probe_sections: [Section One]
-            allow_orphan: true
             ---
 
             # some page
@@ -249,7 +253,6 @@ class TestFrontmatter:
             updated: 2026-04-09
             source_skill: study-walkthrough
             flashcard_ids: []
-            allow_orphan: true
             ---
 
             # some page
@@ -499,75 +502,6 @@ class TestWikilinks:
         assert not any("some-image" in e for e in errors)
 
 
-class TestOrphans:
-    def test_orphan_is_warning_not_error(self, wiki_dir: Path):
-        """Orphans should appear in warnings, not errors."""
-        _write_page(wiki_dir, "git/page-a.md", MINIMAL_PAGE)
-        _write_page(wiki_dir, "git/page-b.md", """\
-            ---
-            title: "page b"
-            aliases: []
-            tags: [git]
-            created: 2026-04-09
-            updated: 2026-04-09
-            source_skill: study-walkthrough
-            ---
-
-            Content with no links.
-        """)
-        _write_index(wiki_dir, {})
-        errors, warnings = lint_wiki(wiki_dir)
-        assert any("orphan" in w for w in warnings)
-        assert not any("orphan" in e for e in errors)
-
-    def test_allow_orphan_suppresses_warning(self, wiki_dir: Path):
-        """Pages with `allow_orphan: true` should not warn."""
-        _write_page(wiki_dir, "git/page-a.md", MINIMAL_PAGE)
-        _write_page(wiki_dir, "git/page-b.md", """\
-            ---
-            title: "page b"
-            aliases: []
-            tags: [git]
-            created: 2026-04-09
-            updated: 2026-04-09
-            source_skill: study-walkthrough
-            allow_orphan: true
-            ---
-
-            Intentionally standalone.
-        """)
-        _write_index(wiki_dir, {})
-        _, warnings = lint_wiki(wiki_dir)
-        orphans = [w for w in warnings if "page-b" in w and "orphan" in w]
-        assert orphans == [], f"allow_orphan did not suppress: {orphans}"
-
-    def test_self_link_does_not_count_as_inbound(self, wiki_dir: Path):
-        """A page linking only to itself is still an orphan."""
-        _write_page(wiki_dir, "git/page-a.md", MINIMAL_PAGE)
-        _write_page(wiki_dir, "git/page-b.md", """\
-            ---
-            title: "page b"
-            aliases: []
-            tags: [git]
-            created: 2026-04-09
-            updated: 2026-04-09
-            source_skill: study-walkthrough
-            ---
-
-            Self: [[git/page-b]].
-        """)
-        _write_index(wiki_dir, {})
-        _, warnings = lint_wiki(wiki_dir)
-        assert any("page-b" in w and "orphan" in w for w in warnings)
-
-    def test_single_page_not_orphan(self, wiki_dir: Path):
-        _write_page(wiki_dir, "git/test-page.md", MINIMAL_PAGE)
-        _write_index(wiki_dir, {})
-        _, warnings = lint_wiki(wiki_dir)
-        orphan_warnings = [w for w in warnings if "orphan" in w]
-        assert orphan_warnings == []
-
-
 class TestAliasCollisions:
     def test_collision_detected(self, wiki_dir: Path):
         _write_page(wiki_dir, "git/page-a.md", """\
@@ -653,127 +587,6 @@ class TestSlugMismatch:
         assert slug_errors == []
 
 
-class TestMocFrontmatter:
-    """MOC pages have stricter frontmatter rules than content pages."""
-
-    def _moc(self, body_extra_meta: str = "", body: str = "## Pages\n") -> str:
-        return textwrap.dedent(f"""\
-            ---
-            title: "Git Index"
-            aliases: [git-moc]
-            tags: [moc, git]
-            created: 2026-04-09
-            updated: 2026-04-09
-            source_skill: manual
-            flashcard_ids: []
-            allow_orphan: true
-            {body_extra_meta}---
-
-            # Git Index
-
-            {body}
-        """)
-
-    def test_clean_moc_passes(self, wiki_dir: Path):
-        _write_page(wiki_dir, "git/git-index.md", self._moc())
-        _write_index(wiki_dir, {})
-        errors, _ = lint_wiki(wiki_dir)
-        moc_errors = [e for e in errors if "moc-" in e]
-        assert moc_errors == [], f"clean MOC should pass: {moc_errors}"
-
-    def test_missing_moc_tag_is_error(self, wiki_dir: Path):
-        page = textwrap.dedent("""\
-            ---
-            title: "Git Index"
-            aliases: [git-moc]
-            tags: [git]
-            created: 2026-04-09
-            updated: 2026-04-09
-            source_skill: manual
-            flashcard_ids: []
-            allow_orphan: true
-            ---
-
-            # Git Index
-
-            ## Pages
-        """)
-        _write_page(wiki_dir, "git/git-index.md", page)
-        _write_index(wiki_dir, {})
-        errors, _ = lint_wiki(wiki_dir)
-        assert any("moc-tag-missing" in e for e in errors), errors
-
-    def test_missing_folder_tag_is_error(self, wiki_dir: Path):
-        page = textwrap.dedent("""\
-            ---
-            title: "Git Index"
-            aliases: [git-moc]
-            tags: [moc]
-            created: 2026-04-09
-            updated: 2026-04-09
-            source_skill: manual
-            flashcard_ids: []
-            allow_orphan: true
-            ---
-
-            # Git Index
-
-            ## Pages
-        """)
-        _write_page(wiki_dir, "git/git-index.md", page)
-        _write_index(wiki_dir, {})
-        errors, _ = lint_wiki(wiki_dir)
-        assert any("moc-folder-tag-missing" in e for e in errors), errors
-
-    def test_missing_allow_orphan_is_error(self, wiki_dir: Path):
-        page = textwrap.dedent("""\
-            ---
-            title: "Git Index"
-            aliases: [git-moc]
-            tags: [moc, git]
-            created: 2026-04-09
-            updated: 2026-04-09
-            source_skill: manual
-            flashcard_ids: []
-            ---
-
-            # Git Index
-
-            ## Pages
-        """)
-        _write_page(wiki_dir, "git/git-index.md", page)
-        _write_index(wiki_dir, {})
-        errors, _ = lint_wiki(wiki_dir)
-        assert any("moc-allow-orphan-missing" in e for e in errors), errors
-
-    def test_review_field_on_moc_is_error(self, wiki_dir: Path):
-        page = textwrap.dedent("""\
-            ---
-            title: "Git Index"
-            aliases: [git-moc]
-            tags: [moc, git]
-            created: 2026-04-09
-            updated: 2026-04-09
-            source_skill: manual
-            flashcard_ids: []
-            allow_orphan: true
-            next_review: 2026-05-01
-            review_interval: 3
-            ---
-
-            # Git Index
-
-            ## Pages
-        """)
-        _write_page(wiki_dir, "git/git-index.md", page)
-        _write_index(wiki_dir, {})
-        errors, _ = lint_wiki(wiki_dir)
-        for field in ("next_review", "review_interval"):
-            assert any("forbidden-field" in e and field in e for e in errors), (
-                f"expected forbidden-field for {field}: {errors}"
-            )
-
-
 class TestAliases:
     def test_single_letter_alias_is_error(self, wiki_dir: Path):
         _write_page(wiki_dir, "git/test-page.md", textwrap.dedent("""\
@@ -785,7 +598,6 @@ class TestAliases:
             updated: 2026-04-09
             source_skill: study-walkthrough
             flashcard_ids: []
-            allow_orphan: true
             ---
 
             # test page
@@ -864,8 +676,7 @@ class TestFlashcardMismatch:
         assert fc_errors == []
 
 
-# A minimal single-page setup for prose quality tests: allow_orphan suppresses orphan
-# warning so we only see prose-quality hits.
+# A minimal single-page setup for prose quality tests.
 _PROSE_PAGE_TEMPLATE = """\
     ---
     title: "{title}"
@@ -874,7 +685,6 @@ _PROSE_PAGE_TEMPLATE = """\
     created: 2026-04-09
     updated: 2026-04-09
     source_skill: study-walkthrough
-    allow_orphan: true
     ---
 
     # {title}
@@ -1102,7 +912,6 @@ class TestColonConnectors:
             created: 2026-04-09
             updated: 2026-04-09
             source_skill: study-walkthrough
-            allow_orphan: true
             ---
 
             # heading colon
@@ -1126,7 +935,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-allow_orphan: true
 ---
 
 # list colon
@@ -1151,7 +959,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-allow_orphan: true
 ---
 
 # eol list
@@ -1179,7 +986,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-allow_orphan: true
 ---
 
 # eol code
@@ -1219,7 +1025,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-allow_orphan: true
 ---
 
 # code colon
@@ -1245,7 +1050,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-allow_orphan: true
 ---
 
 # quoted colon
@@ -1269,7 +1073,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-allow_orphan: true
 ---
 
 # backtick colon
@@ -1293,7 +1096,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-allow_orphan: true
 ---
 
 # link colon inside
@@ -1317,7 +1119,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-allow_orphan: true
 ---
 
 # wikilink colon
@@ -1341,7 +1142,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-allow_orphan: true
 ---
 
 # mdlink colon
@@ -1367,7 +1167,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-allow_orphan: true
 ---
 
 # fragment
@@ -1391,7 +1190,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-allow_orphan: true
 ---
 
 # ok sentence
@@ -1415,7 +1213,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-allow_orphan: true
 ---
 
 # terminal short
@@ -1439,7 +1236,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-allow_orphan: true
 ---
 
 # code fragment
@@ -1467,7 +1263,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-allow_orphan: true
 ---
 
 # inline code start
@@ -1491,7 +1286,6 @@ tags: [git]
 created: 2026-04-09
 updated: 2026-04-09
 source_skill: study-walkthrough
-allow_orphan: true
 ---
 
 # abbrev period
@@ -1508,16 +1302,16 @@ Two changes vs. a regular unique index:
         assert frags == [], f"abbreviation period should not warn: {warnings}"
 
 
-def _orphan_page(lint_ignore: list[str] | None = None) -> str:
-    """Build a content page with no links and no allow_orphan, so it draws an `orphan` warning."""
+def _miscased_page(lint_ignore: list[str] | None = None) -> str:
+    """Build a content page whose heading is not in Title Case, so it draws a `heading-case` warning."""
     ignore_block = ""
     if lint_ignore is not None:
         rules = "\n".join(f"    - {r}" for r in lint_ignore)
         ignore_block = f"lint_ignore:\n{rules}\n"
     return (
         "---\n"
-        'title: "orphan page"\n'
-        "aliases: [orphan alias]\n"
+        'title: "miscased page"\n'
+        "aliases: [miscased alias]\n"
         "tags: [git]\n"
         "created: 2026-04-09\n"
         "updated: 2026-04-09\n"
@@ -1525,44 +1319,45 @@ def _orphan_page(lint_ignore: list[str] | None = None) -> str:
         "flashcard_ids: []\n"
         f"{ignore_block}"
         "---\n\n"
-        "# orphan page\n\n"
-        "Content with no links.\n"
+        "# miscased page\n\n"
+        "## a heading in sentence case\n\n"
+        "Content.\n"
     )
 
 
-def _orphan_warnings(warnings: list[str]) -> list[str]:
-    return [w for w in warnings if w.startswith("orphan:") and "orphan-page.md" in w]
+def _case_warnings(warnings: list[str]) -> list[str]:
+    return [w for w in warnings if w.startswith("heading-case:") and "miscased-page.md" in w]
 
 
 class TestLintIgnore:
     def test_ignore_suppresses_when_clean(self, wiki_dir: Path):
         _write_page(wiki_dir, "git/other-page.md", MINIMAL_PAGE)
-        _write_page(wiki_dir, "git/orphan-page.md", _orphan_page(lint_ignore=["orphan"]))
+        _write_page(wiki_dir, "git/miscased-page.md", _miscased_page(lint_ignore=["heading-case"]))
         _write_index(wiki_dir, {})
         # Clean working tree (nothing dirty) → suppression active.
         _, warnings = lint_wiki(wiki_dir, dirty_pages=set())
-        assert _orphan_warnings(warnings) == [], warnings
+        assert _case_warnings(warnings) == [], warnings
 
     def test_ignore_inactive_when_dirty(self, wiki_dir: Path):
         _write_page(wiki_dir, "git/other-page.md", MINIMAL_PAGE)
-        _write_page(wiki_dir, "git/orphan-page.md", _orphan_page(lint_ignore=["orphan"]))
+        _write_page(wiki_dir, "git/miscased-page.md", _miscased_page(lint_ignore=["heading-case"]))
         _write_index(wiki_dir, {})
         # Page has uncommitted changes → ignore does not apply, warning fires.
-        _, warnings = lint_wiki(wiki_dir, dirty_pages={"git/orphan-page.md"})
-        assert _orphan_warnings(warnings) != [], warnings
+        _, warnings = lint_wiki(wiki_dir, dirty_pages={"git/miscased-page.md"})
+        assert _case_warnings(warnings) != [], warnings
 
     def test_ignore_wrong_rule_does_not_suppress(self, wiki_dir: Path):
         _write_page(wiki_dir, "git/other-page.md", MINIMAL_PAGE)
-        _write_page(wiki_dir, "git/orphan-page.md", _orphan_page(lint_ignore=["prose-quality"]))
+        _write_page(wiki_dir, "git/miscased-page.md", _miscased_page(lint_ignore=["prose-quality"]))
         _write_index(wiki_dir, {})
         _, warnings = lint_wiki(wiki_dir, dirty_pages=set())
-        assert _orphan_warnings(warnings) != [], warnings
+        assert _case_warnings(warnings) != [], warnings
 
     def test_ignore_default_path_clean_outside_repo(self, wiki_dir: Path):
         # No dirty_pages passed: the git probe runs and finds no repo here,
         # so it reports nothing dirty and the suppression applies.
         _write_page(wiki_dir, "git/other-page.md", MINIMAL_PAGE)
-        _write_page(wiki_dir, "git/orphan-page.md", _orphan_page(lint_ignore=["orphan"]))
+        _write_page(wiki_dir, "git/miscased-page.md", _miscased_page(lint_ignore=["heading-case"]))
         _write_index(wiki_dir, {})
         _, warnings = lint_wiki(wiki_dir)
-        assert _orphan_warnings(warnings) == [], warnings
+        assert _case_warnings(warnings) == [], warnings

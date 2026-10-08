@@ -48,11 +48,6 @@ function PageRow({
         style={{ paddingLeft: depth * INDENT + 24 }}
       >
         <span className="truncate">{meta.title}</span>
-        {meta.isIndex && (
-          <span className="ml-auto shrink-0 rounded border border-border px-1 text-[9px] uppercase tracking-wider text-faint">
-            moc
-          </span>
-        )}
       </Link>
       {current && (
         <PageSections

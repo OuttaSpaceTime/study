@@ -1,5 +1,4 @@
 import Link from "next/link";
-import clsx from "clsx";
 import type { TreeFolder } from "@/lib/types";
 import { topicColor } from "@/lib/colors";
 import Breadcrumb from "./Breadcrumb";
@@ -15,7 +14,7 @@ function countPages(folder: TreeFolder): number {
 export default function FolderView({ folder }: { folder: TreeFolder }) {
   const parentPath = folder.path.split("/").slice(0, -1).join("/");
   const accent = topicColor(folder.path);
-  // Tree pages are already sorted index-first (MOC pinned), then by title.
+  // Tree pages are already sorted by title.
   return (
     <div className="mx-auto w-full max-w-3xl px-8 py-10">
       <header className="mb-8">
@@ -66,19 +65,9 @@ export default function FolderView({ folder }: { folder: TreeFolder }) {
               <li key={page.path} className="border-b border-border last:border-b-0">
                 <Link
                   href={`/wiki/${page.path}`}
-                  className={clsx(
-                    "flex flex-wrap items-baseline gap-x-3 gap-y-1 px-3 py-2 transition-colors hover:bg-panel-2",
-                    page.isIndex
-                      ? "bg-accent-soft text-accent hover:text-accent"
-                      : "text-muted hover:text-fg",
-                  )}
+                  className="flex flex-wrap items-baseline gap-x-3 gap-y-1 px-3 py-2 text-muted transition-colors hover:bg-panel-2 hover:text-fg"
                 >
                   <span className="text-[14px] font-medium">{page.title}</span>
-                  {page.isIndex && (
-                    <span className="text-[11px] uppercase tracking-wider">
-                      moc
-                    </span>
-                  )}
                   <span className="flex flex-1 flex-wrap items-baseline justify-end gap-x-3 gap-y-1">
                     <span className="flex flex-wrap gap-1.5">
                       {page.tags.map((tag) => (

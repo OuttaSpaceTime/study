@@ -14,8 +14,7 @@ type WikiModule = typeof import("@/lib/wiki");
 
 const FENCE = "```";
 
-/** Page paths the payload should yield (MOC *-index pages are excluded —
- * they survive only as ghost nodes in the graph), in localeCompare order. */
+/** Page paths the payload should yield, in localeCompare order. */
 const EXPECTED_PATHS = [
   "a/dupe",
   "b/dupe",
@@ -25,11 +24,13 @@ const EXPECTED_PATHS = [
   "linker",
   "notes/secret",
   "rails/alpha-page",
+  "rails/rails-index",
   "rails/routing/scope-vs-namespace",
   "rails/zeta-topic",
   "tools/unique-slug",
 ];
-const MOC_PATH = "rails/rails-index";
+// Named like the retired map-of-content pages, to show nothing treats it specially.
+const INDEX_PATH = "rails/rails-index";
 
 let fixtureDir: string;
 let wiki: WikiModule;
@@ -76,7 +77,7 @@ beforeAll(async () => {
       "flashcard_ids: [cardone, cardtwo]",
       "---",
       "Absolute: [[rails/routing/scope-vs-namespace]]",
-      "Pipe: [[rails/rails-index|Rails MOC]]",
+      "Pipe: [[rails/rails-index|Rails overview]]",
       "Anchor: [[rails/routing/scope-vs-namespace#Scope]]",
       "Slug fallback: [[unique-slug]]",
       "Ambiguous: [[dupe]]",
@@ -94,7 +95,7 @@ beforeAll(async () => {
     ].join("\n"),
   );
 
-  // MOC index page; no created/updated (missing optional fields).
+  // An old-style index page; no created/updated (missing optional fields).
   writeFixture(
     "rails/rails-index.md",
     ["---", "title: Rails Index", "tags:", "  - moc", "---", "- [[rails/alpha-page]]"].join(
@@ -209,7 +210,6 @@ describe("page meta", () => {
     expect(page.created).toBe("");
     expect(page.updated).toBe("");
     expect(page.flashcardIds).toEqual([]);
-    expect(page.isIndex).toBe(false);
   });
 
   it("extracts H2 headings in order, skipping those inside fenced code blocks", () => {
@@ -230,13 +230,11 @@ describe("page meta", () => {
     expect(nested.slug).toBe("scope-vs-namespace");
   });
 
-  it("excludes *-index MOC pages from the page list; they exist only as graph ghosts", () => {
-    expect(index.pages.some((p) => p.path === MOC_PATH)).toBe(false);
-    const ghost = index.graph.nodes.find((n) => n.id === MOC_PATH);
-    if (!ghost) throw new Error("MOC ghost node missing from graph");
-    expect(ghost.isIndex).toBe(true);
-    expect(ghost.folder).toBe("rails");
-    expect(mustPage("linker").isIndex).toBe(false);
+  it("treats a *-index page as an ordinary page", () => {
+    const page = mustPage(INDEX_PATH);
+    expect(page.folder).toBe("rails");
+    expect(page.outbound).toEqual(["rails/alpha-page"]);
+    expect(page.inbound).toEqual(["linker"]);
   });
 });
 
@@ -244,9 +242,9 @@ describe("link resolution", () => {
   it("resolves linker outbound: exact + pipe + anchor (deduped) + unique-slug fallback, sorted", () => {
     // Absolute and anchor forms of scope-vs-namespace collapse to one entry;
     // ambiguous [[dupe]], broken [[nowhere/missing]], self [[linker]],
-    // embed ![[embed-only]], and code-wrapped links are all excluded. The
-    // [[rails/rails-index]] MOC link is stripped from page meta (graph-only).
+    // embed ![[embed-only]], and code-wrapped links are all excluded.
     expect(mustPage("linker").outbound).toEqual([
+      "rails/rails-index",
       "rails/routing/scope-vs-namespace",
       "tools/unique-slug",
     ]);
@@ -295,10 +293,11 @@ describe("tree", () => {
     expect(index.tree.folders.map((f) => f.name)).toEqual(["a", "b", "notes", "rails", "tools"]);
   });
 
-  it("excludes the MOC from the tree and orders pages by title", () => {
+  it("orders a folder's pages by title", () => {
     const rails = mustFolder(index.tree, "rails");
     expect(rails.pages.map((p) => p.path)).toEqual([
       "rails/alpha-page",
+      "rails/rails-index",
       "rails/zeta-topic",
     ]);
   });
@@ -323,28 +322,21 @@ describe("tree", () => {
 });
 
 describe("graph", () => {
-  it("has one node per page plus the MOC ghost", () => {
-    expect(index.graph.nodes).toHaveLength(EXPECTED_PATHS.length + 1);
-    expect(index.graph.nodes.map((n) => n.id).sort()).toEqual(
-      [...EXPECTED_PATHS, MOC_PATH].sort(),
-    );
+  it("has one node per page", () => {
+    expect(index.graph.nodes.map((n) => n.id).sort()).toEqual([...EXPECTED_PATHS].sort());
   });
 
-  it("sets linkCount to full degree including MOC edges (pre-strip)", () => {
+  it("sets linkCount to the page's full degree", () => {
     const degree = (id: string) => {
       const node = index.graph.nodes.find((n) => n.id === id);
       if (!node) throw new Error(`node missing: ${id}`);
       return node.linkCount;
     };
-    // linker keeps its MOC edge in the graph (3 outbound + 1 inbound) even
-    // though page meta now lists only 2 outbound.
+    // linker: 3 outbound + 1 inbound.
     expect(degree("linker")).toBe(4);
-    expect(mustPage("linker").outbound).toHaveLength(2);
-    // alpha-page's only edge is from the MOC ghost; page meta shows none.
     expect(degree("rails/alpha-page")).toBe(1);
-    expect(mustPage("rails/alpha-page").inbound).toEqual([]);
-    // The ghost itself: outbound to alpha-page + inbound from linker.
-    expect(degree(MOC_PATH)).toBe(2);
+    expect(mustPage("rails/alpha-page").inbound).toEqual([INDEX_PATH]);
+    expect(degree(INDEX_PATH)).toBe(2);
   });
 
   it("dedupes undirected links: a mutual A→B / B→A pair yields one link", () => {

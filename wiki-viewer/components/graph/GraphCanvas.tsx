@@ -133,23 +133,6 @@ export default function GraphCanvas({
       const radius = nodeRadius(node) + (isCurrent ? 1 : 0);
       const color = topicColor(node.folder);
 
-      if (node.isIndex) {
-        // MOC ghost hub: translucent fill, dashed outline, label on hover only.
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, 2 * Math.PI);
-        ctx.fillStyle = color + "24";
-        ctx.fill();
-        ctx.setLineDash([2.5, 2]);
-        ctx.strokeStyle = color + "8c";
-        ctx.lineWidth = 0.8;
-        ctx.stroke();
-        ctx.setLineDash([]);
-        if (isHovered) {
-          paintLabel(ctx, node.title, x, y + radius + 3 / globalScale, globalScale, MUTED);
-        }
-        return;
-      }
-
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, 2 * Math.PI);
       ctx.fillStyle = color;
@@ -201,11 +184,6 @@ export default function GraphCanvas({
   const handleNodeClick = useCallback(
     (node: FGNode) => {
       if (!node.id) return;
-      // MOC ghosts have no page of their own — open their folder view.
-      if (node.isIndex) {
-        if (node.folder) router.push(`/wiki/${node.folder}`);
-        return;
-      }
       router.push(`/wiki/${node.id}`);
     },
     [router],

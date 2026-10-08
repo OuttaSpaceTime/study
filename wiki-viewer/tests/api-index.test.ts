@@ -102,9 +102,10 @@ describe("GET /api/index", () => {
     expect(contentType).toContain("application/json");
   });
 
-  it("returns the fixture pages sorted by path, MOC excluded", () => {
+  it("returns the fixture pages sorted by path, an *-index page among them", () => {
     expect(body.pages.map((p) => p.path)).toEqual([
       "rails/foreign-keys",
+      "rails/rails-index",
       "security/hsts",
     ]);
   });
@@ -120,33 +121,25 @@ describe("GET /api/index", () => {
     expect(page.tags).toEqual(["rails", "db"]);
     expect(page.created).toBe("2026-01-01");
     expect(page.flashcardIds).toEqual(["cmne7xz9202lx0msonsbfhp3j"]);
-    expect(page.isIndex).toBe(false);
   });
 
-  it("resolves outbound links (bare-slug fallback), stripping MOC references", () => {
+  it("resolves outbound links (bare-slug fallback) both ways", () => {
     const page = body.pages.find((p) => p.path === "rails/foreign-keys");
-    expect(page?.outbound).toEqual(["security/hsts"]);
-    expect(page?.inbound).toEqual([]);
+    expect(page?.outbound).toEqual(["rails/rails-index", "security/hsts"]);
+    expect(page?.inbound).toEqual(["rails/rails-index"]);
   });
 
-  it("keeps the MOC out of pages but in the graph as a ghost node", () => {
-    expect(body.pages.some((p) => p.path === "rails/rails-index")).toBe(false);
-    const ghost = body.graph.nodes.find((n) => n.id === "rails/rails-index");
-    expect(ghost?.isIndex).toBe(true);
-    expect(ghost?.folder).toBe("rails");
-  });
-
-  it("builds the folder tree from the fixture without the MOC", () => {
+  it("builds the folder tree from the fixture", () => {
     expect(body.tree.name).toBe("wiki");
     expect(body.tree.path).toBe("");
     expect(body.tree.pages).toEqual([]);
     expect(body.tree.folders.map((f) => f.name)).toEqual(["rails", "security"]);
     const rails = body.tree.folders.find((f) => f.name === "rails");
     expect(rails?.path).toBe("rails");
-    expect(rails?.pages.map((p) => p.slug)).toEqual(["foreign-keys"]);
+    expect(rails?.pages.map((p) => p.slug)).toEqual(["foreign-keys", "rails-index"]);
   });
 
-  it("builds the graph with one node per page plus the MOC ghost, links deduped", () => {
+  it("builds the graph with one node per page, links deduped", () => {
     expect(body.graph.nodes.map((n) => n.id).sort()).toEqual([
       "rails/foreign-keys",
       "rails/rails-index",

@@ -1,22 +1,4 @@
 {
-  "angular/angular-index": {
-    "file": "angular/angular-index.md",
-    "title": "Angular Index",
-    "aliases": [
-      "angular-moc",
-      "angular map"
-    ],
-    "tags": [
-      "moc",
-      "angular"
-    ],
-    "sections": [
-      "Pages"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-05-07",
-    "updated": "2026-07-02"
-  },
   "angular/change-detection": {
     "file": "angular/change-detection.md",
     "title": "Change Detection",
@@ -165,24 +147,6 @@
     "created": "2026-07-02",
     "updated": "2026-07-21"
   },
-  "git/git-index": {
-    "file": "git/git-index.md",
-    "title": "Git Index",
-    "aliases": [
-      "git-moc",
-      "git map"
-    ],
-    "tags": [
-      "moc",
-      "git"
-    ],
-    "sections": [
-      "Pages"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-20",
-    "updated": "2026-05-07"
-  },
   "git/git-restore": {
     "file": "git/git-restore.md",
     "title": "git restore",
@@ -246,16 +210,14 @@
     "created": "2026-05-08",
     "updated": "2026-07-29"
   },
-  "json-api/json-api-index": {
-    "file": "json-api/json-api-index.md",
-    "title": "JSON:API Index",
+  "json-api/json-api-mental-model": {
+    "file": "json-api/json-api-mental-model.md",
+    "title": "JSON:API mental model",
     "aliases": [
-      "json-api-moc",
-      "JSON:API map",
-      "JSON:API mental model"
+      "JSON:API overview",
+      "JSON:API graph protocol"
     ],
     "tags": [
-      "moc",
       "json-api",
       "api-design",
       "rest"
@@ -264,13 +226,12 @@
       "The Mental Model, Graph Protocol Wearing REST Clothes",
       "The Envelope-vs-Strategy Throughline",
       "When to Reach for JSON:API vs GraphQL vs Plain REST",
-      "Pages",
       "Related Concepts",
       "References"
     ],
     "flashcard_ids": [],
     "created": "2026-05-08",
-    "updated": "2026-06-08"
+    "updated": "2026-10-08"
   },
   "json-api/query-conventions": {
     "file": "json-api/query-conventions.md",
@@ -398,24 +359,6 @@
     "created": "2026-05-05",
     "updated": "2026-08-01"
   },
-  "llm/llm-index": {
-    "file": "llm/llm-index.md",
-    "title": "LLM Index",
-    "aliases": [
-      "llm-moc",
-      "llm map"
-    ],
-    "tags": [
-      "moc",
-      "llm"
-    ],
-    "sections": [
-      "Pages"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-05-05",
-    "updated": "2026-08-01"
-  },
   "llm/sampling-knobs": {
     "file": "llm/sampling-knobs.md",
     "title": "Sampling Knobs",
@@ -499,24 +442,6 @@
     "created": "2026-07-05",
     "updated": "2026-07-05"
   },
-  "networking/networking-index": {
-    "file": "networking/networking-index.md",
-    "title": "Networking Index",
-    "aliases": [
-      "networking-moc",
-      "networking map"
-    ],
-    "tags": [
-      "moc",
-      "networking"
-    ],
-    "sections": [
-      "Pages"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-05-04",
-    "updated": "2026-07-05"
-  },
   "networking/url-anatomy": {
     "file": "networking/url-anatomy.md",
     "title": "URL Anatomy",
@@ -547,24 +472,6 @@
     ],
     "created": "2026-05-04",
     "updated": "2026-07-05"
-  },
-  "openapi/openapi-index": {
-    "file": "openapi/openapi-index.md",
-    "title": "OpenAPI Index",
-    "aliases": [
-      "openapi-moc",
-      "openapi map"
-    ],
-    "tags": [
-      "moc",
-      "openapi"
-    ],
-    "sections": [
-      "Pages"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-20",
-    "updated": "2026-05-13"
   },
   "openapi/schema-composition": {
     "file": "openapi/schema-composition.md",
@@ -620,24 +527,6 @@
     "flashcard_ids": [],
     "created": "2026-05-05",
     "updated": "2026-07-29"
-  },
-  "programming-languages/programming-languages-index": {
-    "file": "programming-languages/programming-languages-index.md",
-    "title": "Programming Languages Index",
-    "aliases": [
-      "programming-languages-moc",
-      "programming languages map"
-    ],
-    "tags": [
-      "moc",
-      "programming-languages"
-    ],
-    "sections": [
-      "Pages"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-05-05",
-    "updated": "2026-05-07"
   },
   "rails/activerecord-pick": {
     "file": "rails/activerecord-pick.md",
@@ -819,24 +708,6 @@
     "created": "2026-06-10",
     "updated": "2026-09-16"
   },
-  "rails/postgres/postgres-index": {
-    "file": "rails/postgres/postgres-index.md",
-    "title": "Postgres Index",
-    "aliases": [
-      "rails-postgres-moc",
-      "rails postgres map"
-    ],
-    "tags": [
-      "moc",
-      "postgres"
-    ],
-    "sections": [
-      "Pages"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-09-16",
-    "updated": "2026-09-16"
-  },
   "rails/postgres/row-locking-and-concurrency": {
     "file": "rails/postgres/row-locking-and-concurrency.md",
     "title": "Row locking and concurrency",
@@ -910,24 +781,6 @@
     ],
     "flashcard_ids": [],
     "created": "2026-06-14",
-    "updated": "2026-09-16"
-  },
-  "rails/rails-index": {
-    "file": "rails/rails-index.md",
-    "title": "Rails Index",
-    "aliases": [
-      "rails-moc",
-      "rails map"
-    ],
-    "tags": [
-      "moc",
-      "rails"
-    ],
-    "sections": [
-      "Pages"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-20",
     "updated": "2026-09-16"
   },
   "rails/routing/collection-and-member-routes": {
@@ -1023,24 +876,6 @@
     "flashcard_ids": [],
     "created": "2026-04-13",
     "updated": "2026-06-21"
-  },
-  "rails/routing/routing-index": {
-    "file": "rails/routing/routing-index.md",
-    "title": "Routing Index",
-    "aliases": [
-      "rails-routing-moc",
-      "rails routing map"
-    ],
-    "tags": [
-      "moc",
-      "routing"
-    ],
-    "sections": [
-      "Pages"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-05-07",
-    "updated": "2026-05-07"
   },
   "rails/routing/scope-vs-namespace": {
     "file": "rails/routing/scope-vs-namespace.md",
@@ -1168,24 +1003,6 @@
     "created": "2026-05-07",
     "updated": "2026-07-18"
   },
-  "reactive/reactive-index": {
-    "file": "reactive/reactive-index.md",
-    "title": "Reactive Index",
-    "aliases": [
-      "reactive-moc",
-      "reactive map"
-    ],
-    "tags": [
-      "moc",
-      "reactive"
-    ],
-    "sections": [
-      "Pages"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-05-07",
-    "updated": "2026-05-07"
-  },
   "reactive/reactive-programming": {
     "file": "reactive/reactive-programming.md",
     "title": "Reactive Programming",
@@ -1211,24 +1028,6 @@
     "flashcard_ids": [],
     "created": "2026-05-07",
     "updated": "2026-07-11"
-  },
-  "ruby/ruby-index": {
-    "file": "ruby/ruby-index.md",
-    "title": "Ruby Index",
-    "aliases": [
-      "ruby-moc",
-      "ruby map"
-    ],
-    "tags": [
-      "moc",
-      "ruby"
-    ],
-    "sections": [
-      "Pages"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-20",
-    "updated": "2026-05-07"
   },
   "ruby/transform-values": {
     "file": "ruby/transform-values.md",
@@ -1374,24 +1173,6 @@
     "flashcard_ids": [],
     "created": "2026-04-29",
     "updated": "2026-07-01"
-  },
-  "security/security-index": {
-    "file": "security/security-index.md",
-    "title": "Security Index",
-    "aliases": [
-      "security-moc",
-      "security map"
-    ],
-    "tags": [
-      "moc",
-      "security"
-    ],
-    "sections": [
-      "Pages"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-20",
-    "updated": "2026-07-18"
   },
   "software-design/delegating-to-agents-without-losing-the-map": {
     "file": "software-design/delegating-to-agents-without-losing-the-map.md",
@@ -1596,24 +1377,6 @@
     "created": "2026-07-03",
     "updated": "2026-07-21"
   },
-  "software-design/software-design-index": {
-    "file": "software-design/software-design-index.md",
-    "title": "Software Design Index",
-    "aliases": [
-      "software-design-moc",
-      "software design map"
-    ],
-    "tags": [
-      "moc",
-      "software-design"
-    ],
-    "sections": [
-      "Pages"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-07-02",
-    "updated": "2026-07-24"
-  },
   "software-design/splitting-responsibilities": {
     "file": "software-design/splitting-responsibilities.md",
     "title": "Splitting responsibilities",
@@ -1751,24 +1514,6 @@
     "created": "2026-05-05",
     "updated": "2026-09-16"
   },
-  "sql/sql-index": {
-    "file": "sql/sql-index.md",
-    "title": "SQL Index",
-    "aliases": [
-      "sql-moc",
-      "sql map"
-    ],
-    "tags": [
-      "moc",
-      "sql"
-    ],
-    "sections": [
-      "Pages"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-04-20",
-    "updated": "2026-09-16"
-  },
   "typescript/discriminated-union-narrowing": {
     "file": "typescript/discriminated-union-narrowing.md",
     "title": "Discriminated union narrowing",
@@ -1820,24 +1565,6 @@
       "Generic Guards with Extract",
       "Related Concepts",
       "References"
-    ],
-    "flashcard_ids": [],
-    "created": "2026-07-15",
-    "updated": "2026-07-15"
-  },
-  "typescript/typescript-index": {
-    "file": "typescript/typescript-index.md",
-    "title": "TypeScript Index",
-    "aliases": [
-      "typescript-moc",
-      "typescript map"
-    ],
-    "tags": [
-      "moc",
-      "typescript"
-    ],
-    "sections": [
-      "Pages"
     ],
     "flashcard_ids": [],
     "created": "2026-07-15",

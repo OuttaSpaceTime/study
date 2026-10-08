@@ -8,7 +8,6 @@ import rehypeHighlight from "rehype-highlight";
 import type { PageMeta } from "@/lib/types";
 import {
   createWikilinkResolver,
-  type MocRef,
   remarkCallouts,
   remarkWikilinks,
   slugifyHeading,
@@ -88,13 +87,11 @@ const components: Components = {
 export default function ArticleBody({
   markdown,
   pages,
-  mocs = [],
 }: {
   markdown: string;
   pages: PageMeta[];
-  mocs?: MocRef[];
 }) {
-  const resolve = createWikilinkResolver(pages, mocs);
+  const resolve = createWikilinkResolver(pages);
   return (
     <article className="wiki-prose prose max-w-none">
       <Markdown

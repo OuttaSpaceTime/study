@@ -1,11 +1,9 @@
 ---
-title: JSON:API Index
+title: JSON:API mental model
 aliases:
-- json-api-moc
-- JSON:API map
-- JSON:API mental model
+- JSON:API overview
+- JSON:API graph protocol
 tags:
-- moc
 - json-api
 - api-design
 - rest
@@ -13,12 +11,11 @@ created: '2026-05-08'
 updated: '2026-06-08'
 source_skill: study-walkthrough
 flashcard_ids: []
-allow_orphan: true
 ---
 
-# JSON:API Index
+# JSON:API mental model
 
-Entry point for the JSON:API reference set. The sub-pages cover document structure, query conventions, the meta-vs-resource decision, and operational details. This page carries the mental model so the others stay focused on practical reference.
+The model behind the JSON:API pages. [[json-api/document-structure]] and [[json-api/query-conventions]] are the practical reference; this page carries the model so they stay focused.
 
 ## The Mental Model, Graph Protocol Wearing REST Clothes
 
@@ -71,14 +68,11 @@ This split is deliberate. Uniformity buys generic tooling where it pays off (res
 
 **Stay with plain REST when:** the API is small, single-consumer, or shape stability is not worth the spec ceremony.
 
-## Pages
-
-- [[json-api/document-structure]]
-- [[json-api/query-conventions]]
-
 ## Related Concepts
 
-- [[openapi/openapi-index]]: sibling API specification topic (schema description language, complementary rather than competing with JSON:API)
+- [[json-api/document-structure]]: the envelope and resource object rules
+- [[json-api/query-conventions]]: sparse fieldsets, pagination, filter, sort
+- [[openapi/schema-composition]]: the sibling API specification (a schema description language, complementary rather than competing with JSON:API)
 
 ## References
 

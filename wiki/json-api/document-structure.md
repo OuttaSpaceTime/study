@@ -125,7 +125,7 @@ This is the silent-payload-inflation trap. A long include chain (`?include=organ
 
 ## Related Concepts
 
-- [[json-api/json-api-index]]: graph-protocol mental model
+- [[json-api/json-api-mental-model]]: graph-protocol mental model
 - [[json-api/query-conventions]]: sparse fieldsets, pagination, filter, sort
 
 ## References

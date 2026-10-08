@@ -24,22 +24,11 @@ export function slugifyHeading(text: string): string {
 
 export type WikilinkResolver = (target: string) => string | null;
 
-/** MOC ghost reference: the index page's path and the folder it stands for. */
-export interface MocRef {
-  path: string;
-  folder: string;
-}
-
 /**
  * Build a resolver from the page index. Mirrors lib/wiki.ts resolution:
  * exact path match first, then unique slug (last path segment) match.
- * MOC (*-index) pages aren't rendered — wikilinks targeting one resolve to
- * its folder view instead.
  */
-export function createWikilinkResolver(
-  pages: readonly PageMeta[],
-  mocs: readonly MocRef[] = [],
-): WikilinkResolver {
+export function createWikilinkResolver(pages: readonly PageMeta[]): WikilinkResolver {
   const byPath = new Set(pages.map((p) => p.path));
   const bySlug = new Map<string, string[]>();
   for (const p of pages) {
@@ -47,27 +36,13 @@ export function createWikilinkResolver(
     list.push(p.path);
     bySlug.set(p.slug, list);
   }
-  const mocByPath = new Map(mocs.map((m) => [m.path, m.folder]));
-  const mocBySlug = new Map<string, string[]>();
-  for (const m of mocs) {
-    const slug = m.path.split("/").pop() ?? m.path;
-    const list = mocBySlug.get(slug) ?? [];
-    list.push(m.folder);
-    mocBySlug.set(slug, list);
-  }
   return (target) => {
     if (byPath.has(target)) return target;
-    const mocFolder = mocByPath.get(target);
-    if (mocFolder !== undefined) return mocFolder || null;
     // Bare names resolve by slug like in Obsidian; a path-qualified target
     // that doesn't match exactly is broken, never folder-corrected.
     if (target.includes("/")) return null;
     const candidates = bySlug.get(target);
     if (candidates && candidates.length === 1) return candidates[0] ?? null;
-    if (!candidates?.length) {
-      const folders = mocBySlug.get(target);
-      if (folders && folders.length === 1) return folders[0] || null;
-    }
     return null;
   };
 }

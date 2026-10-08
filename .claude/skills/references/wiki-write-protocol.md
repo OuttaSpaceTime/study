@@ -183,11 +183,11 @@ All wikilinks MUST use absolute paths: `[[architecture/cqrs]]` not `[[cqrs]]`.
 
 Infer the folder from tags and existing wiki structure:
 - Check existing top-level folders in `wiki/`
-- **If a top-level match exists, also check for a matching sub-MOC**: for each tag on the new page, test whether `wiki/<folder>/<tag>/<tag>-index.md` exists. If it does, propose the sub-folder (`wiki/rails/routing/`) instead of the top-level (`wiki/rails/`).
-- Propose: "I'd put this in `wiki/architecture/`. OK?" (or `wiki/rails/routing/` when a sub-MOC matches)
+- **If a top-level match exists, also check for a matching sub-folder**: for each tag on the new page, test whether `wiki/<folder>/<tag>/` exists. If it does, propose the sub-folder (`wiki/rails/routing/`) instead of the top-level (`wiki/rails/`).
+- Propose: "I'd put this in `wiki/architecture/`. OK?" (or `wiki/rails/routing/` when a sub-folder matches)
 - Developer confirms or overrides
 - Create the folder if it doesn't exist: `mkdir -p wiki/<folder>/`
-- If the proposed folder has no `<folder>-index.md` yet, offer to create the MOC page in the same step (see "MOC Pages" below).
+- Make sure the page's tags name its folder (and sub-folder): see "Topics" below.
 
 ### Step 7: Write File
 
@@ -216,7 +216,7 @@ This updates the index, refreshes the qmd search index (`qmd update` + `qmd embe
 
 Parse the JSON output:
 - `{"status":"ok","lint":"clean"}` → report success
-- `{"status":"ok","lint":"warnings","details":"..."}` → write succeeded; surface warnings (e.g., orphan pages) so the developer can decide whether to add inbound links
+- `{"status":"ok","lint":"warnings","details":"..."}` → write succeeded; surface warnings (e.g., prose quality) so the developer can decide whether to fix them
 - `{"status":"ok","lint":"errors","details":"..."}` → show lint errors to developer (these block a clean write)
 
 ### Step 9: Append Session Log
@@ -264,68 +264,14 @@ At any point during any skill, the developer can say "show in browser", "open in
 ```
 Use it when the developer says "show in Omvida" or "open in the app"; "show in browser" keeps meaning the wiki-viewer.
 
-## MOC Pages
+## Topics
 
-Every top-level wiki folder has a **MOC (Map of Content) page** — a hub that wikilinks every other page in the folder. This gives the Obsidian graph a clean hub-and-spoke shape per topic and provides a browsable index.
+A topic is a folder and a tag, not a page. There are no index or map-of-content pages: the folder tree in the wiki-viewer and Omvida lists every page, and the graph shows how they connect.
 
-### Convention
-
-- One MOC per folder: `wiki/<folder>/<folder>-index.md` (e.g. `wiki/git/git-index.md`)
-- Title: `"<Folder> Index"`, slug = `<folder>-index`, wikilink: `[[<folder>/<folder>-index]]`
-- One level of nesting is supported: `wiki/<folder>/<sub>/<sub>-index.md` (e.g. `wiki/rails/routing/routing-index.md`). Two levels deep is the maximum.
-- A top-level MOC's `## Pages` section lists sub-MOCs first (sorted), then loose top-level pages (sorted). A sub-MOC lists only its direct children. `scripts/wiki-write` rebuilds both when a page in a sub-folder is written.
-
-### When to split into a sub-MOC
-
-Lint emits a `moc-split-suggestion` warning when **all three** hold:
-
-1. The top-level folder has **≥ 8** pages.
-2. A non-folder, non-`moc` tag is shared by **≥ 4** pages in that folder.
-3. No sub-MOC for that tag already exists.
-
-The suggestion is informational. Acting on it means: create `wiki/<folder>/<tag>/<tag>-index.md`, `git mv` the clustered pages into the sub-folder, rewrite their `[[<folder>/<slug>]]` wikilinks to `[[<folder>/<tag>/<slug>]]` everywhere, then re-run `scripts/wiki-write` on each page (or rebuild the index).
-
-### MOC frontmatter template
-
-```yaml
----
-title: "Git Index"
-aliases: [git-moc, git map]
-tags: [moc, git]
-created: YYYY-MM-DD
-updated: YYYY-MM-DD
-source_skill: manual
-allow_orphan: true
----
-
-# Git Index
-
-Map of content for the `git/` wiki folder. Auto-maintained by `scripts/wiki-write`.
-
-## Pages
-
-- [[git/git-restore]]
-```
-
-For a **sub-MOC** (`wiki/<folder>/<sub>/<sub>-index.md`), use the same template but **omit `allow_orphan: true`** — the parent MOC links the sub-MOC, so the orphan check enforces parent linkage for free.
-
-### Rules for MOC pages
-
-All four are enforced by `scripts/lint`:
-
-- **Must include `tags: [moc, <folder>]`** — the `moc` tag marks a hub rather than content, and page-selection skips any entry tagged `moc`. Lint codes: `moc-tag-missing`, `moc-folder-tag-missing`. For sub-MOCs, `<folder>` is the sub-folder name (e.g. `routing`).
-- **Top-level MOCs must include `allow_orphan: true`** — they have no inbound links by design. Sub-MOCs must NOT set `allow_orphan` — they are linked from their parent MOC, and the orphan check enforces that link. Lint code: `moc-allow-orphan-missing` (top-level only).
-- **Must NOT be created as flashcard sources** — do not pass them to `/study-flashcard`.
-
-### Auto-maintenance
-
-`scripts/wiki-write` **auto-rebuilds the `## Pages` section** of the folder's MOC every time any page in that folder is written. The rebuild is from the filesystem (sorted wikilinks to every non-MOC `*.md` in the folder), so:
-
-- Skills writing a new page do **not** need to touch the MOC manually — it will be updated automatically.
-- Deleted pages drop out on the next write in that folder.
-- Manual edits to the `## Pages` section are overwritten on the next write; edit other sections freely.
-
-If a folder has no MOC yet, `scripts/wiki-write` emits a stderr warning and the lint reports `moc-missing`. Create the MOC once using the template above, then run `scripts/wiki-write wiki/<folder>/<folder>-index.md`.
+- Tag every page with its folder name, and with its sub-folder name when it sits in one (`tags: [rails, routing, ...]`), plus the subject tags it shares with pages elsewhere (`api-design`, `security`).
+- Tags are what holds a topic together without links: the graph pulls pages that share a tag towards each other, and its "Around the open page" view includes pages that share a tag with the open one. A page with no shared tags and no links floats alone.
+- One level of sub-folders is the maximum (`wiki/rails/routing/`). Split a folder by hand when one tag clusters many of its pages: `git mv` them into `wiki/<folder>/<tag>/`, rewrite their `[[<folder>/<slug>]]` wikilinks to `[[<folder>/<tag>/<slug>]]` everywhere, then re-run `scripts/wiki-write` on each page.
+- Don't create a page whose only job is to list other pages.
 
 ## Linking Rules Summary
 
@@ -334,7 +280,7 @@ If a folder has no MOC yet, `scripts/wiki-write` emits a stderr warning and the 
 - Aliases declared in frontmatter, checked against index for uniqueness
 - Obsidian resolves aliases automatically via frontmatter
 - When extending a page, preserve existing links and add new ones
-- Never create orphan links intentionally — if a target doesn't exist, either create a stub or don't link
+- Never create a broken link intentionally — if a target doesn't exist, either create a stub or don't link
 
 ## Frontmatter Required Fields
 
@@ -348,4 +294,4 @@ If a folder has no MOC yet, `scripts/wiki-write` emits a stderr warning and the 
 | `source_skill` | string | Yes | Which skill created this page |
 | `flashcard_ids` | array | No | Associated SRS flashcard IDs. Auto-filled to `[]` by `scripts/wiki-write` if missing. Drives the wiki-viewer's per-page flashcard modal and `/study`'s post-session page suggestions, so keep it accurate when a page's cards change. |
 
-**The schema is closed.** The table above plus `allow_orphan` and `lint_ignore` is the complete set of permitted keys; `scripts/lint` reports anything else as a `forbidden-field` **error**. That includes the retired scheduling fields (`next_review`, `review_interval`, `last_deepened`) — wiki pages are not scheduled, only flashcards are studied — and earlier retirements like `depth` and `probe_sections`. Adding a genuinely new field means adding it to `ALLOWED_FIELDS` in `scripts/wiki/lint.py` first.
+**The schema is closed.** The table above plus `lint_ignore` is the complete set of permitted keys; `scripts/lint` reports anything else as a `forbidden-field` **error**. That includes the retired scheduling fields (`next_review`, `review_interval`, `last_deepened`) — wiki pages are not scheduled, only flashcards are studied — and earlier retirements like `depth`, `probe_sections` and `allow_orphan` (the orphan check went with the index pages). Adding a genuinely new field means adding it to `ALLOWED_FIELDS` in `scripts/wiki/lint.py` first.

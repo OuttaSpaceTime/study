@@ -9,10 +9,8 @@ Read this whole file before writing any code.
 - Every page has YAML frontmatter (title, aliases, tags, created, updated, source_skill, flashcard_ids). Pages are **not** scheduled — there is no review state on a page.
 - Body is GitHub-flavored markdown: headings, tables, fenced code blocks (ruby/ts/sql/bash), blockquotes.
 - Internal links are Obsidian wikilinks with **absolute paths**: `[[rails/foreign-keys]]`, optionally `[[path#Heading]]` and `[[path|display text]]`. Embeds `![[...]]` are rare and may be ignored.
-- `*-index.md` pages are MOCs (maps of content) for their topic. They are NOT rendered as
-  pages (folder views replace them): excluded from `pages`/tree/search/link lists, kept only
-  as ghost nodes in the graph (translucent dashed; click opens the folder view). Wikilinks
-  targeting a MOC resolve to its folder view via the `mocs` param of `createWikilinkResolver`.
+- There are no index or map-of-content pages: a topic is a folder plus a tag, and folder views
+  list a folder's pages.
 - The wiki is **read-only** for this app; the viewer writes nothing anywhere.
 
 ## The flashcard deck

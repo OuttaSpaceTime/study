@@ -1,4 +1,4 @@
-"""Wiki linter — checks link integrity, frontmatter, absolute paths, orphans, alias collisions."""
+"""Wiki linter — checks link integrity, frontmatter, absolute paths, alias collisions."""
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ REQUIRED_FIELDS = {
     "flashcard_ids",
 }
 
-OPTIONAL_FIELDS = {"allow_orphan", "lint_ignore"}
+OPTIONAL_FIELDS = {"lint_ignore"}
 ALLOWED_FIELDS = REQUIRED_FIELDS | OPTIONAL_FIELDS
 
 # Named so the error can say what replaced them. Anything else unrecognized is
@@ -40,6 +40,7 @@ RETIRED_FIELDS = {
     "depth": "dropped with the old walkthrough depth model",
     "probe_sections": "probe sections were removed",
     "last_probed": "probe sections were removed",
+    "allow_orphan": "the orphan check went with the index pages",
 }
 
 _QUOTED_STR_RE = re.compile(r'"[^"\n]*"|\'[^\'\n]*\'')
@@ -151,16 +152,11 @@ def lint_wiki(
 
     errors.extend(_check_frontmatter(pages))
     errors.extend(_check_forbidden_fields(pages))
-    errors.extend(_check_moc_frontmatter(wiki_dir, pages))
     errors.extend(_check_aliases(pages))
-    link_errors, inbound = _check_wikilinks(wiki_dir, pages)
-    errors.extend(link_errors)
-    warnings.extend(_check_orphans(pages, inbound))
+    errors.extend(_check_wikilinks(wiki_dir, pages))
     errors.extend(_check_alias_collisions(index))
     errors.extend(_check_slugs(pages))
     errors.extend(_check_flashcard_ids(pages, index))
-    warnings.extend(_check_moc_coverage(wiki_dir, pages))
-    warnings.extend(_check_moc_split_suggestion(wiki_dir, pages))
     warnings.extend(_check_prose_quality(pages))
     warnings.extend(_check_sentence_fragments(pages))
     warnings.extend(_check_prose_density(pages))
@@ -219,9 +215,9 @@ def _dirty_wiki_pages(wiki_dir: Path) -> set[str]:
 def _warning_label_and_target(warning: str) -> tuple[str, str]:
     """Split a warning string into its `label` and the page rel-path it concerns.
 
-    Warnings are formatted `"<label>: <rel> ..."`. Folder-scoped warnings
-    (e.g. moc-split-suggestion) have a non-path second token that simply won't
-    match any page's lint_ignore, so they are never suppressed by accident.
+    Warnings are formatted `"<label>: <rel> ..."`. A warning whose second token
+    is not a page path simply won't match any page's lint_ignore, so it is never
+    suppressed by accident.
     """
     label, _, rest = warning.partition(": ")
     target = rest.split(maxsplit=1)[0] if rest else ""
@@ -233,7 +229,7 @@ def _apply_lint_ignore(
 ) -> list[str]:
     """Drop warnings a page opted out of via `lint_ignore`, unless the page is dirty.
 
-    `lint_ignore` is a frontmatter list of warning labels (e.g. `orphan`).
+    `lint_ignore` is a frontmatter list of warning labels (e.g. `heading-case`).
     The opt-out only holds while the page is committed: a page with uncommitted
     changes still gets all its warnings, so the decision to ignore must itself be
     committed before it takes effect, and editing the page re-surfaces the rule.
@@ -258,122 +254,6 @@ def _apply_lint_ignore(
             continue
         kept.append(w)
     return kept
-
-
-def _check_moc_coverage(wiki_dir: Path, pages: list[ParsedPage]) -> list[str]:
-    """Warn when MOCs and folders drift out of sync.
-
-    Supports one level of nesting (top-level + sub-folders).
-
-    - moc-missing: folder/sub-folder has pages but no <name>-index.md
-    - moc-drift:   page not listed in its DIRECT parent folder's MOC.
-                   Top-level MOC must list loose top-level pages AND each
-                   sub-folder's MOC link. Sub-MOCs list only their direct children.
-    """
-    warnings: list[str] = []
-
-    # Group pages by relative parent path so each folder is checked independently.
-    by_dir: dict[Path, list[ParsedPage]] = {}
-    for p in pages:
-        parent = p.path.parent
-        try:
-            rel_parent = parent.relative_to(wiki_dir)
-        except ValueError:
-            continue
-        # Only support depth 1 and 2 (top-level folders and one level of nesting).
-        if len(rel_parent.parts) not in (1, 2):
-            continue
-        by_dir.setdefault(parent, []).append(p)
-
-    # Map of folder path → set of subfolder names that have a MOC (used by parent drift).
-    subfolder_mocs: dict[Path, set[str]] = {}
-    for folder_path, folder_pages in by_dir.items():
-        rel_parts = folder_path.relative_to(wiki_dir).parts
-        if len(rel_parts) != 2:
-            continue
-        sub = rel_parts[1]
-        moc_name = f"{sub}-index.md"
-        if any(p.path.name == moc_name for p in folder_pages):
-            subfolder_mocs.setdefault(folder_path.parent, set()).add(sub)
-
-    for folder_path, folder_pages in by_dir.items():
-        rel_parts = folder_path.relative_to(wiki_dir).parts
-        folder_name = rel_parts[-1]
-        moc_name = f"{folder_name}-index.md"
-        moc = next((p for p in folder_pages if p.path.name == moc_name), None)
-        siblings = [p for p in folder_pages if p.path.name != moc_name]
-        rel_folder = "/".join(rel_parts)
-
-        if moc is None:
-            if siblings:
-                warnings.append(
-                    f"moc-missing: folder '{rel_folder}' has {len(siblings)} page(s) but no {moc_name}"
-                )
-            continue
-
-        listed = set(_WIKILINK_RE.findall(_strip_code(moc.body)))
-
-        # Direct-child pages (loose pages in this folder) must be listed.
-        for sib in siblings:
-            expected = f"{rel_folder}/{sib.path.stem}"
-            if expected not in listed:
-                warnings.append(
-                    f"moc-drift: {sib.rel} not listed in {rel_folder}/{moc_name}"
-                )
-
-        # Top-level MOC: each subfolder MOC must also be listed.
-        if len(rel_parts) == 1:
-            for sub in subfolder_mocs.get(folder_path, set()):
-                expected = f"{rel_folder}/{sub}/{sub}-index"
-                if expected not in listed:
-                    warnings.append(
-                        f"moc-drift: sub-MOC {rel_folder}/{sub}/{sub}-index.md not listed in {rel_folder}/{moc_name}"
-                    )
-    return warnings
-
-
-def _check_moc_split_suggestion(wiki_dir: Path, pages: list[ParsedPage]) -> list[str]:
-    """Suggest a sub-MOC when a top-level folder has ≥8 pages and a tag clusters ≥4 of them.
-
-    Suppressed when a sub-MOC for that tag already exists (wiki/<folder>/<tag>/<tag>-index.md).
-    Tags 'moc' and the folder name itself are excluded from cluster candidates.
-    """
-    warnings: list[str] = []
-    # Group non-MOC pages by top-level folder name.
-    by_top: dict[str, list[ParsedPage]] = {}
-    for p in pages:
-        try:
-            rel_parts = p.path.relative_to(wiki_dir).parts
-        except ValueError:
-            continue
-        if len(rel_parts) != 2:
-            continue
-        if p.path.stem.endswith("-index"):
-            continue
-        by_top.setdefault(rel_parts[0], []).append(p)
-
-    for folder, folder_pages in by_top.items():
-        if len(folder_pages) < 8:
-            continue
-        tag_counts: dict[str, int] = {}
-        for p in folder_pages:
-            for t in p.meta.get("tags") or []:
-                if not isinstance(t, str):
-                    continue
-                if t == "moc" or t == folder:
-                    continue
-                tag_counts[t] = tag_counts.get(t, 0) + 1
-        for tag, count in sorted(tag_counts.items()):
-            if count < 4:
-                continue
-            existing_sub_moc = wiki_dir / folder / tag / f"{tag}-index.md"
-            if existing_sub_moc.exists():
-                continue
-            warnings.append(
-                f"moc-split-suggestion: folder '{folder}' has {len(folder_pages)} pages; "
-                f"tag '{tag}' clusters {count} — consider wiki/{folder}/{tag}/{tag}-index.md"
-            )
-    return warnings
 
 
 def _check_prose_quality(pages: list[ParsedPage]) -> list[str]:
@@ -663,38 +543,6 @@ def _check_forbidden_fields(pages: list[ParsedPage]) -> list[str]:
     return errors
 
 
-def _check_moc_frontmatter(wiki_dir: Path, pages: list[ParsedPage]) -> list[str]:
-    """MOC pages (`<folder>/<folder>-index.md`) have stricter rules than content pages.
-
-    - moc-tag-missing: tags must include 'moc' (the marker distinguishing hubs from content).
-    - moc-folder-tag-missing: tags must include the parent folder name.
-    - moc-allow-orphan-missing: must declare allow_orphan: true (MOCs have no inbound links by design).
-    """
-    errors: list[str] = []
-    for p in pages:
-        if not p.path.stem.endswith("-index"):
-            continue
-        try:
-            rel_parts = p.path.relative_to(wiki_dir).parts
-        except ValueError:
-            continue
-        # Top-level MOC: wiki/<folder>/<folder>-index.md (depth 2)
-        # Sub-MOC:        wiki/<folder>/<sub>/<sub>-index.md  (depth 3)
-        if len(rel_parts) not in (2, 3):
-            continue
-        folder = p.path.parent.name
-        is_sub_moc = len(rel_parts) == 3
-        tags = p.meta.get("tags") or []
-        if "moc" not in tags:
-            errors.append(f"moc-tag-missing: {p.rel} must include 'moc' in tags")
-        if folder not in tags:
-            errors.append(f"moc-folder-tag-missing: {p.rel} must include '{folder}' in tags")
-        # Top-level MOCs are orphans by design; sub-MOCs are linked from their parent MOC.
-        if not is_sub_moc and p.meta.get("allow_orphan") is not True:
-            errors.append(f"moc-allow-orphan-missing: {p.rel} must declare allow_orphan: true")
-    return errors
-
-
 def _check_aliases(pages: list[ParsedPage]) -> list[str]:
     """Aliases must not be single-letter abbreviations (per wiki-write-protocol)."""
     errors: list[str] = []
@@ -707,11 +555,8 @@ def _check_aliases(pages: list[ParsedPage]) -> list[str]:
     return errors
 
 
-def _check_wikilinks(
-    wiki_dir: Path, pages: list[ParsedPage]
-) -> tuple[list[str], dict[Path, int]]:
+def _check_wikilinks(wiki_dir: Path, pages: list[ParsedPage]) -> list[str]:
     errors = []
-    inbound: dict[Path, int] = {p.path: 0 for p in pages}
     valid_paths = {p.path for p in pages}
 
     for p in pages:
@@ -720,10 +565,7 @@ def _check_wikilinks(
             link = match.group(1).strip()
             target = wiki_dir / f"{link}.md"
             target_exists = target in valid_paths
-            if target_exists:
-                if target != p.path:
-                    inbound[target] = inbound.get(target, 0) + 1
-            elif not (wiki_dir / link).exists():
+            if not target_exists and not (wiki_dir / link).exists():
                 errors.append(f"broken-link: {p.rel} → [[{link}]] does not resolve to a file")
 
             if "/" not in link and not target_exists:
@@ -731,20 +573,7 @@ def _check_wikilinks(
                     f"relative-link: {p.rel} → [[{link}]] should use absolute path (e.g., [[folder/{link}]])"
                 )
 
-    return errors, inbound
-
-
-def _check_orphans(pages: list[ParsedPage], inbound: dict[Path, int]) -> list[str]:
-    if len(pages) <= 1:
-        return []
-    warnings = []
-    for p in pages:
-        if inbound.get(p.path, 0) > 0:
-            continue
-        if p.meta.get("allow_orphan") is True:
-            continue
-        warnings.append(f"orphan: {p.rel} has no inbound links")
-    return warnings
+    return errors
 
 
 def _check_alias_collisions(index: dict) -> list[str]:

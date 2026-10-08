@@ -105,7 +105,6 @@ async function loadRawPages(): Promise<RawPage[]> {
         created: asDateString(data.created),
         updated: asDateString(data.updated),
         flashcardIds: asStringArray(data.flashcard_ids),
-        isIndex: slug.endsWith("-index"),
         sections: extractSections(content),
         outbound: [],
         inbound: [],
@@ -163,10 +162,7 @@ function buildTree(pages: PageMeta[]): TreeFolder {
   for (const page of pages) ensureFolder(page.folder).pages.push(page);
   for (const folder of folders.values()) {
     folder.folders.sort((a, b) => a.name.localeCompare(b.name));
-    folder.pages.sort((a, b) => {
-      if (a.isIndex !== b.isIndex) return a.isIndex ? -1 : 1;
-      return a.title.localeCompare(b.title);
-    });
+    folder.pages.sort((a, b) => a.title.localeCompare(b.title));
   }
   return root;
 }
@@ -176,7 +172,6 @@ function buildGraph(pages: PageMeta[]): { nodes: GraphNode[]; links: GraphLink[]
     id: p.path,
     title: p.title,
     folder: p.folder,
-    isIndex: p.isIndex,
     linkCount: p.inbound.length + p.outbound.length,
   }));
   const links: GraphLink[] = [];
@@ -195,20 +190,11 @@ function buildGraph(pages: PageMeta[]): { nodes: GraphNode[]; links: GraphLink[]
 async function buildWikiIndex(): Promise<WikiIndexPayload> {
   const raw = await loadRawPages();
   resolveLinks(raw);
-  const all = raw.map((p) => p.meta);
-  // MOC (*-index) pages aren't rendered as content — they survive only as
-  // ghost hub nodes in the graph, so build it before their links are stripped.
-  const graph = buildGraph(all);
-  const mocPaths = new Set(all.filter((p) => p.isIndex).map((p) => p.path));
-  const pages = all.filter((p) => !p.isIndex);
-  for (const page of pages) {
-    page.outbound = page.outbound.filter((t) => !mocPaths.has(t));
-    page.inbound = page.inbound.filter((t) => !mocPaths.has(t));
-  }
+  const pages = raw.map((p) => p.meta);
   return {
     pages,
     tree: buildTree(pages),
-    graph,
+    graph: buildGraph(pages),
     generatedAt: new Date().toISOString(),
   };
 }

@@ -41,7 +41,7 @@ The wiki content lives in `wiki/`, organized by topic folders (e.g., `wiki/javas
 
 ### Page Format
 
-Every wiki page has YAML frontmatter. Required on **all pages**: `title`, `aliases`, `tags`, `created`, `updated`, `source_skill`, `flashcard_ids` (list, empty `[]` is fine). `scripts/wiki-write` auto-fills `flashcard_ids` when missing; the rest must be set by the calling skill. Frontmatter is a **closed schema**: `scripts/lint` reports any key outside the required set plus `allow_orphan` / `lint_ignore` as a `forbidden-field` error. That covers the retired scheduling fields (`next_review`, `review_interval`, `last_deepened`) and every earlier retirement (`depth`, `probe_sections`, `last_probed`) without a list to maintain. Optional: `allow_orphan` (set to `true` to suppress the orphan warning for pages that are intentionally standalone — required on MOCs), `lint_ignore` (list of lint **warning** labels to suppress for this page — see [Suppressing warnings per page](#suppressing-warnings-per-page)).
+Every wiki page has YAML frontmatter. Required on **all pages**: `title`, `aliases`, `tags`, `created`, `updated`, `source_skill`, `flashcard_ids` (list, empty `[]` is fine). `scripts/wiki-write` auto-fills `flashcard_ids` when missing; the rest must be set by the calling skill. Frontmatter is a **closed schema**: `scripts/lint` reports any key outside the required set plus `lint_ignore` as a `forbidden-field` error. That covers the retired scheduling fields (`next_review`, `review_interval`, `last_deepened`) and every earlier retirement (`depth`, `probe_sections`, `last_probed`, `allow_orphan`) without a list to maintain. Optional: `lint_ignore` (list of lint **warning** labels to suppress for this page — see [Suppressing warnings per page](#suppressing-warnings-per-page)).
 
 ### Linking Rules
 
@@ -49,6 +49,10 @@ Every wiki page has YAML frontmatter. Required on **all pages**: `title`, `alias
 - Page filename = slugified title (lowercase, hyphens, no special chars)
 - Aliases declared in frontmatter, checked against index for uniqueness
 - Obsidian is configured with `newLinkFormat: absolute` in `wiki/.obsidian/app.json`
+
+### Topics
+
+A topic is a folder plus a tag; there are no index or map-of-content pages. Every page is tagged with its folder (and sub-folder) name, plus the subject tags it shares with pages elsewhere. The wiki-viewer and Omvida list a folder's pages from the tree, and Omvida's graph pulls pages that share a tag together, so a topic holds together without a hub page linking it. See the write protocol's "Topics" section.
 
 ### Index
 
@@ -64,17 +68,17 @@ All skills follow the shared protocol in `.claude/skills/references/wiki-write-p
 
 ### Linting
 
-`scripts/lint` checks: broken wikilinks, absolute path enforcement, frontmatter completeness, unknown/retired frontmatter fields, orphan pages, alias collisions, slug/filename consistency, and flashcard ID drift between frontmatter and index. Runs automatically after every wiki write.
+`scripts/lint` checks: broken wikilinks, absolute path enforcement, frontmatter completeness, unknown/retired frontmatter fields, alias collisions, slug/filename consistency, and flashcard ID drift between frontmatter and index. Runs automatically after every wiki write.
 
-Results are split into **errors** (block clean status, exit 1) and **warnings** (informational, exit 0). Orphan pages are warnings — suppress per-page with `allow_orphan: true` in frontmatter. Wikilink parsing ignores fenced code blocks, inline code, and image embeds (`![[...]]`), and strips `#heading` anchors and `|display` pipes before resolving targets. Self-links do not count as inbound.
+Results are split into **errors** (block clean status, exit 1) and **warnings** (informational, exit 0). There is no orphan check: a page nothing links to is still reached through its folder and its tags. Wikilink parsing ignores fenced code blocks, inline code, and image embeds (`![[...]]`), and strips `#heading` anchors and `|display` pipes before resolving targets.
 
 #### Suppressing warnings per page
 
-Add a `lint_ignore` list to a page's frontmatter naming the warning labels to silence for that page (the label is the token before the first colon in the lint line, e.g. `prose-quality`, `orphan`):
+Add a `lint_ignore` list to a page's frontmatter naming the warning labels to silence for that page (the label is the token before the first colon in the lint line, e.g. `prose-quality`, `heading-case`):
 
 ```yaml
 lint_ignore:
-- orphan
+- heading-case
 ```
 
 Only **warnings** can be suppressed — errors always fire. The suppression is **gated on git**: it applies only while the page is **committed and clean**. A page with uncommitted changes (modified, staged, or untracked) still emits all its warnings. Two consequences follow by design:
@@ -82,7 +86,7 @@ Only **warnings** can be suppressed — errors always fire. The suppression is *
 - **The opt-out must be committed to take effect.** Adding `lint_ignore` makes the page dirty, so the warning keeps showing until you commit the change — i.e. you have to commit the decision before it counts.
 - **Editing a suppressed page re-surfaces the rule.** As soon as you touch the page again, its warnings come back so you reconsider them against the new content, then go quiet once you re-commit.
 
-Use it for warnings you've deliberately judged not to apply — e.g. a page carries `lint_ignore: [orphan]` when it's deliberately standalone but you'd rather not set `allow_orphan`. Dirtiness is detected via `git status`; outside a git repo (or if git is unavailable) nothing is considered dirty, so suppressions simply apply.
+Use it for warnings you've deliberately judged not to apply — e.g. a page carries `lint_ignore: [heading-case]` when a heading quotes a name that must keep its case. Dirtiness is detected via `git status`; outside a git repo (or if git is unavailable) nothing is considered dirty, so suppressions simply apply.
 
 Python code is linted with ruff: `uv run ruff check scripts/ tests/`. Config lives in `pyproject.toml`.
 
@@ -261,7 +265,7 @@ python3 scripts/wiki-write wiki/security/hsts.md  # explicit
 Available scripts:
 - `scripts/wiki-write <page>` — Update index, refresh qmd search index, run lint
 - `scripts/wiki-reindex [--wiki-dir DIR]` — Rebuild `.wiki-index.json` from every page: drops fields the current schema no longer writes, prunes entries for deleted pages, and carries each page's `updated` stamp over (a reindex is a derive, not a write). Use after any index schema change
-- `scripts/lint` — Check broken wikilinks, frontmatter, orphans, alias collisions
+- `scripts/lint` — Check broken wikilinks, frontmatter, alias collisions
 - `scripts/anki-sync <login|sync|status>` — Sync flashcards to AnkiWeb (see [Anki Sync](#anki-sync)). `sync --dry-run` previews, `--local` skips AnkiWeb
 - `scripts/card-htmlize` — Convert markdown/plain card text in master.db to simple Anki HTML (dry-run by default, `--apply` writes after backing up master.db)
 - `scripts/flashcard-mcp-server` — stdio launcher used by `.mcp.json`; not run by hand except to debug a path problem (see [Machine-local configuration](#machine-local-configuration))

@@ -130,7 +130,7 @@ The general principle. **Operations belong in the reserved query family they sem
 
 ## Related Concepts
 
-- [[json-api/json-api-index]]: graph-protocol mental model
+- [[json-api/json-api-mental-model]]: graph-protocol mental model
 - [[json-api/document-structure]]: envelope, resources, relationships, included
 
 ## References
