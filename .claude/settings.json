@@ -1,5 +1,18 @@
 {
-  "hooks": {},
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "mcp__flashcard-mcp__(create_card|update_card|delete_card|delete_cards|resolve_leech|resolve_card_note|suspend_card|unsuspend_card|delete_deck)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ ! -x \"$HOME/Code/omvida/bin/omvida-deck-changed\" ] || \"$HOME/Code/omvida/bin/omvida-deck-changed\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  },
   "permissions": {
     "allow": [
       "Bash(uv run pytest:*)",

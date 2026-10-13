@@ -26,6 +26,7 @@ Applies to every skill in this repo.
 
 - `/study` — Interactive study session. Flashcards are the only thing reviewed: Claude evaluates answers and rates them. Closes by suggesting wiki pages related to the cards just studied (or the index view for free browsing). Logs sessions.
 - `/study-flashcard` — Create new flashcards directly: suggests a few ready card fronts on a topic, the developer picks or edits them, they are created after the duplicate and quality checks. Not a walkthrough: for learning the topic, call `/study-walkthrough` or `/study`. Links new cards into an existing wiki page's `flashcard_ids`.
+- `/study-fix-notes` — Work through the card notes left while studying (Omvida's Ctrl+N): per noted card, draft and write the fix it asks for, or work the question through in `/study`'s Socratic mode, then resolve the note. Omvida opens it with the noted cards' ids; with none it takes every open note.
 - `/study-walkthrough` — Interactive walkthrough that calibrates to current understanding, fills gaps, pushes deeper. Optionally writes wiki pages. Use `--write` to default to producing a wiki page.
 - `/canvas` — Interactively edit an Obsidian `.canvas` in a tight edit→show→react loop. Two modes: **live** (`eval` against the running app, reads your GUI selection) and **file** (Read/Write the JSON on disk, git-trackable). Same JSON schema either way.
 
