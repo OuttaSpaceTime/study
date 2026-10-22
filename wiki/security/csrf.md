@@ -8,9 +8,16 @@ tags:
 - security
 - web
 created: '2026-05-07'
-updated: '2026-05-07'
+updated: '2026-10-20'
 source_skill: study-walkthrough
-flashcard_ids: []
+flashcard_ids:
+- cmne7xush01in0mso1vx4q703
+- cmne7xuxo01jx0msoftnx2c68
+- cmne7xuu901j30msorwq72fbt
+- cmne7xv7k01md0mso1ibkgfta
+- cmne7y02502sx0msoqv2zedir
+- cmne7xxbf024v0msolzlfh20f
+- cmso9yrl2000ix90mwzdcjppu
 ---
 
 # CSRF (Cross-Site Request Forgery)

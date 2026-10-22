@@ -8,9 +8,20 @@ tags:
 - web
 - browser
 created: '2026-04-29'
-updated: '2026-07-01'
+updated: '2026-10-20'
 source_skill: study-walkthrough
-flashcard_ids: []
+flashcard_ids:
+- cmne7xpyj00c10mso9loaa64l
+- cmsczz3bh0006h60mldeg8dtl
+- cmne7y7lc04mx0msoktupiqjb
+- cmne7xxqf028l0msopfmu8ibl
+- cmne7xxsd02910msozec0bg74
+- cmne7xq2u00d30msoazu1lx9q
+- cmne7xq5f00dp0mso5wt9t51f
+- cmsczz1wf0005h60mx7pqz6wy
+- cmo6tvg0e0009dn0mmgbkhcb5
+- cmne7xwzl02230msoc69hmui0
+- cmne7xzvq02rh0msoh6nlzufz
 ---
 
 # Same-Origin Policy

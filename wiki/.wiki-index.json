@@ -1078,9 +1078,17 @@
       "Related Concepts",
       "References"
     ],
-    "flashcard_ids": [],
+    "flashcard_ids": [
+      "cmne7xush01in0mso1vx4q703",
+      "cmne7xuxo01jx0msoftnx2c68",
+      "cmne7xuu901j30msorwq72fbt",
+      "cmne7xv7k01md0mso1ibkgfta",
+      "cmne7y02502sx0msoqv2zedir",
+      "cmne7xxbf024v0msolzlfh20f",
+      "cmso9yrl2000ix90mwzdcjppu"
+    ],
     "created": "2026-05-07",
-    "updated": "2026-06-25"
+    "updated": "2026-10-20"
   },
   "security/hsts": {
     "file": "security/hsts.md",
@@ -1170,9 +1178,21 @@
       "Server-to-Server Requests",
       "Related Concepts"
     ],
-    "flashcard_ids": [],
+    "flashcard_ids": [
+      "cmne7xpyj00c10mso9loaa64l",
+      "cmsczz3bh0006h60mldeg8dtl",
+      "cmne7y7lc04mx0msoktupiqjb",
+      "cmne7xxqf028l0msopfmu8ibl",
+      "cmne7xxsd02910msozec0bg74",
+      "cmne7xq2u00d30msoazu1lx9q",
+      "cmne7xq5f00dp0mso5wt9t51f",
+      "cmsczz1wf0005h60mx7pqz6wy",
+      "cmo6tvg0e0009dn0mmgbkhcb5",
+      "cmne7xwzl02230msoc69hmui0",
+      "cmne7xzvq02rh0msoh6nlzufz"
+    ],
     "created": "2026-04-29",
-    "updated": "2026-07-01"
+    "updated": "2026-10-20"
   },
   "software-design/delegating-to-agents-without-losing-the-map": {
     "file": "software-design/delegating-to-agents-without-losing-the-map.md",
@@ -1569,5 +1589,42 @@
     "flashcard_ids": [],
     "created": "2026-07-15",
     "updated": "2026-07-15"
+  },
+  "security/xss": {
+    "file": "security/xss.md",
+    "title": "XSS",
+    "aliases": [
+      "cross-site scripting",
+      "DOM-based XSS",
+      "Trusted Types"
+    ],
+    "tags": [
+      "security",
+      "web",
+      "browser"
+    ],
+    "sections": [
+      "TL;DR",
+      "The Slot Decides What Is Dangerous",
+      "Escape for the Parser That Reads the Slot",
+      "DOM-Based XSS",
+      "Rendering User HTML with a Sanitizer",
+      "Enforcing It at the Sink with Trusted Types",
+      "Tradeoffs & Gotchas",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [
+      "cmvh4hkad0000jq1aro023kh5",
+      "cmvh4hlma0001jq1a5kb6oecs",
+      "cmvh4hmro0002jq1aih2gg344",
+      "cmvh4ho0w0003jq1a3jwnstmy",
+      "cmowkcmwt0006rb0m3v0pbih8",
+      "cmne7xxvt029t0msogj8pet75",
+      "cmne7xxu2029f0msowdgy7bej",
+      "cmne7y02502sx0msoqv2zedir"
+    ],
+    "created": "2026-10-20",
+    "updated": "2026-10-20"
   }
 }
