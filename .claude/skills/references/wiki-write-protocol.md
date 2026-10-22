@@ -293,6 +293,6 @@ A topic is a folder and a tag, not a page. There are no index or map-of-content 
 | `updated` | date | Yes | ISO date of last update |
 | `source_skill` | string | Yes | Which skill created this page |
 | `flashcard_ids` | array | No | Associated SRS flashcard IDs. Auto-filled to `[]` by `scripts/wiki-write` if missing. Drives the wiki-viewer's per-page flashcard modal and `/study`'s post-session page suggestions, so keep it accurate when a page's cards change. |
-| `explorables` | array | No (optional) | claude.ai artifact URLs of the interactive pages `/study-walkthrough` built for this page (`references/explorable-design.md`), main one first. Omvida shows an Explore button for each. Lint requires a list of `https://` URLs. |
+| `explorables` | array | No (optional) | claude.ai artifact URLs of the interactive pages `/study-walkthrough` built for this page (the global `explorable` skill), main one first. Omvida shows an Explore button for each. Lint requires a list of `https://` URLs. |
 
 **The schema is closed.** The table above plus `lint_ignore` is the complete set of permitted keys; `scripts/lint` reports anything else as a `forbidden-field` **error**. That includes the retired scheduling fields (`next_review`, `review_interval`, `last_deepened`) — wiki pages are not scheduled, only flashcards are studied — and earlier retirements like `depth`, `probe_sections` and `allow_orphan` (the orphan check went with the index pages). Adding a genuinely new field means adding it to `ALLOWED_FIELDS` in `scripts/wiki/lint.py` first.

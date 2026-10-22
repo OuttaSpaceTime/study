@@ -57,13 +57,13 @@ A topic is a folder plus a tag; there are no index or map-of-content pages. Ever
 
 ### Explorables
 
-An explorable is a small interactive page about one topic: 3-6 scenes in a stepper, each asking one question, gating its reveal behind a prediction, and letting the developer step, scrub or flip levers on the mechanism. `/study-walkthrough` builds it one scene per turn; the design rules, the research behind them, the scene catalogue and the data contract live in `.claude/skills/references/explorable-design.md`.
+An explorable is a small interactive page about one topic: 3-6 scenes in a stepper, each asking one question, gating its reveal behind a prediction, and letting the developer step, scrub or flip levers on the mechanism. `/study-walkthrough` builds it one scene per turn through the **global `explorable` skill** (`~/.claude/skills/explorable/`, managed with chezmoi in `~/Code/system`), which owns the design rules and the research behind them (`design.md`), the scene loop, the data contract and the smoke test. The study skill sets the source path and the facts and adds the wiki, flashcard and log parts. A machine without that skill installed cannot build explorables.
 
 - **Source** is one self-contained HTML file at `explore/<folder>/<slug>.html`, keyed like the wiki page it belongs to, and git-tracked.
 - **Published** as a private claude.ai Artifact, always from that same path so the URL stays put. The wiki page lists the URL in its `explorables` frontmatter, and Omvida shows an **Explore** button for it.
 - **Feedback channel:** the page records predictions and challenge answers (`attempts`) and its in-page Ask Claude questions (`questions`) in the artifact's own `db`. Skills read them with the `ArtifactData` tool: `/study-walkthrough` opens Discuss with the misses, `/study-flashcard` turns them into card suggestions. Nothing runs locally.
 - **Ask Claude** inside the page uses the artifact `sample` capability (the developer's own usage), grounded in a fact sheet built from the research workflow's authoritative facts.
-- `scripts/explore-check <file>` smoke-tests a page in headless Chromium (desktop and phone screenshots, console errors) before every publish.
+- The skill's `explore_check.py` smoke-tests a page in headless Chromium (desktop and phone screenshots, console errors) before every publish.
 
 Why not inside Omvida: Quickshell 0.3.2 crashes on loading Qt WebEngine (Chromium needs an `argv[0]` Quickshell does not pass), and native QML scenes would lock the pages to one app. A link is enough.
 
@@ -280,7 +280,6 @@ Available scripts:
 - `scripts/wiki-reindex [--wiki-dir DIR]` — Rebuild `.wiki-index.json` from every page: drops fields the current schema no longer writes, prunes entries for deleted pages, and carries each page's `updated` stamp over (a reindex is a derive, not a write). Use after any index schema change
 - `scripts/lint` — Check broken wikilinks, frontmatter, alias collisions
 - `scripts/anki-sync <login|sync|status>` — Sync flashcards to AnkiWeb (see [Anki Sync](#anki-sync)). `sync --dry-run` previews, `--local` skips AnkiWeb
-- `scripts/explore-check <page.html> [--out DIR]` — Smoke-test an explorable in headless Chromium: desktop and phone screenshots, console errors, exit 1 on an uncaught error (see [Explorables](#explorables))
 - `scripts/card-htmlize` — Convert markdown/plain card text in master.db to simple Anki HTML (dry-run by default, `--apply` writes after backing up master.db)
 - `scripts/flashcard-mcp-server` — stdio launcher used by `.mcp.json`; not run by hand except to debug a path problem (see [Machine-local configuration](#machine-local-configuration))
 

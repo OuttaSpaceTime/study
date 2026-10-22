@@ -10,7 +10,7 @@ The developer explores a topic first, in an **explorable**: a small interactive 
 
 **Core guarantee:** the developer finishes understanding the mechanism, not having read about it. Every scene made them predict before it revealed, every miss is recorded, and the misses drive the discussion, the challenge and the flashcards.
 
-**Read `references/explorable-design.md` before storyboarding.** It holds the research behind the format, the scene catalogue, the motion rules, the technical contract and the `db` schema. This file is the session flow.
+**Load the global `explorable` skill (Skill tool) before storyboarding.** It owns the page: the design rules and research in its `design.md`, the scene-by-scene loop, the smoke test, publishing and reading the page's records. This file runs it with the study settings (Phase 2) and adds the wiki, flashcard and log parts.
 
 ## Wiki Integration
 
@@ -23,7 +23,7 @@ For additional shared interactive principles (scope, handling disagreement, non-
 - **One scene per turn.** Build it, smoke-test it, publish it, end the turn with one line on what to try. Never build the whole page in one go: one scene is under a minute of waiting, a whole page is a slot machine (AGENTS.md, anti-slot-machine).
 - Start each phase with `Phase X/5: <title>`. Pause after each phase; never auto-advance.
 - If the developer says "skip" or "I know this", fast-forward immediately.
-- **Read silently, never cat.** `mcp__qmd__query`, `Read` of wiki/index/log files, `mcp__flashcard-mcp__*`, `ArtifactData` reads and `scripts/explore-check` run without narration and without echoing output. The chat shows only synthesized output: the storyboard, the scene link, the misses, the next question.
+- **Read silently, never cat.** `mcp__qmd__query`, `Read` of wiki/index/log files, `mcp__flashcard-mcp__*`, `ArtifactData` reads and the smoke test run without narration and without echoing output. The chat shows only synthesized output: the storyboard, the scene link, the misses, the next question.
 
 ## Answering vs. Socratic: by phase
 
@@ -56,8 +56,7 @@ Omit it only when the developer opted out of the interactive flow (non-interacti
 ## MCP and Tool Dependencies
 
 - `flashcard-mcp`: `check_pressure`, `find_similar_cards`, `search_cards`, `get_card`.
-- **Artifact** tool: publish the explorable (load the `artifact-design` and `artifact-capabilities` skills first, as that tool requires); **ArtifactData** (deferred; load via ToolSearch) to read the page's `attempts` and `questions`.
-- `scripts/explore-check`: headless smoke test before each publish.
+- The global **`explorable`** skill: builds, smoke-tests and publishes the page, and reads its `attempts` and `questions` (Artifact and ArtifactData tools).
 
 ## Research Grounding
 
@@ -84,7 +83,7 @@ It returns `{ confidence, authoritativeSources[], practitionerSources[], facts[]
 **Using the findings:**
 
 - **Scenes:** `loadBearing` facts decide what the scenes show; `misconceptions` are the best prediction options (the wrong answer people actually hold). A scene built before the research returned is checked against it when it lands: a contradicted point is corrected in place and the scene republished, with one line in chat.
-- **Fact sheet:** the page's in-page Ask is grounded in a constant listing the relevant `facts` with source URLs (`explorable-design.md`, "In-page Ask").
+- **Fact sheet:** pass the relevant `facts` with their source URLs to the `explorable` skill as its Facts, so it grounds the in-page Ask in them and skips its own research.
 - **Discuss:** facts ground the direct answers; `opinions` and `divergence` become tradeoff answers presented as opinion ("practitioners disagree: ...").
 - **Challenge:** `opinions` unlock judgement questions ("here's a gotcha someone hit in production: why might that happen?"). Never pose a `contradictsGroundTruth` opinion.
 - **Wiki write:** facts go to `## References` (inline-link version-specific claims); load-bearing opinions to `## Tradeoffs & Gotchas` or inline `> [Note]` callouts, attributed.
@@ -162,7 +161,7 @@ Run it before Phase 1 and before any other tool call. The first assistant messag
 - Existing material: one targeted recall question from the page or the hardest card back.
 - None: "What do you already know about <topic>, and what do you want to be able to do after this?"
 
-**Step 3: storyboard.** From the calibration answer, propose 3-6 scenes (per cadence), one line each: the scene's question, its type from the catalogue, and the prediction it asks. Lead with the hook scene (the most surprising behaviour). For write-focused mode, add the page type (Tutorial/Concept, Problem-Solution, Pattern/Technique, Feature/Tool Overview) and scope: a topic with >5 sub-concepts → suggest splitting; a single fact → suggest adding it to an existing page.
+**Step 3: storyboard** as the `explorable` skill's storyboard step describes, from the calibration answer and with the scene count per cadence. For write-focused mode, add the page type (Tutorial/Concept, Problem-Solution, Pattern/Technique, Feature/Tool Overview) and scope: a topic with >5 sub-concepts → suggest splitting; a single fact → suggest adding it to an existing page.
 
 > 1. **Why does bank.com get the cookie?** Step-through: a forged form submit. *Predict: does the browser attach bank.com's cookie to a POST from evil.com?*
 > 2. **What does SameSite change?** Lever sandbox: Strict / Lax / None × GET link / POST form / fetch. *Predict: which cells carry the cookie under Lax?*
@@ -174,19 +173,14 @@ Wait for the developer's go. The storyboard is the contract for Phase 2.
 
 ### Phase 2/5: Explore (scene by scene)
 
-**Per scene:**
+Run the `explorable` skill's Explore loop with the study settings:
 
-1. **Build** the scene into `explore/<folder>/<slug>.html` per `references/explorable-design.md`. Scene 1 also creates the page shell (header, stepper, fact sheet, recording, Ask box). The key `<folder>/<slug>` is the wiki page it belongs to; for a new topic, pick the key the page will get now.
-2. **Smoke-test:** `scripts/explore-check <file> --out <scratchpad>/explore-shots` loads the page from disk (so without capabilities) in headless Chromium at desktop and phone width, and exits 1 on an uncaught error. Read both screenshots silently and fix what's off before publishing: errors, overflow, overlapping labels, an empty diagram.
-3. **Publish** with the Artifact tool from the same file path every time (same URL). First publish: `capabilities: {db: {}, sample: {}}`, a two-to-four-word title, `icon` (e.g. `lightbulb`); then one functional pass, an `ArtifactData` `list` of `attempts` and `questions` (both may be empty), and one line saying what was checked. Later publishes: omit `capabilities` and `icon`. **Extending an explorable from an earlier conversation:** `Artifact` `read` its URL (from the page's `explorables`) first, then publish with `url` set to it; without `url` the publish creates a second artifact.
-4. **End the turn** with one line: the link (first scene) or "scene k is live", plus what to try. "Scene 1 is live: predict before you step. Say `next` when done, or ask in the page."
-
-**When the developer comes back** ("next", a reaction, a question):
-
-- Read the page's `attempts` (and `questions`) with `ArtifactData` `list`, silently. Misses are as `explorable-design.md` (Recording) defines them, this session's only. A missed prediction goes into the ledger's **Missed** with one line in chat: "You expected the cookie to be blocked on the POST; that one's queued for Discuss."
-- A request to change the scene ("slower", "add a step", "this label is confusing") → change it in place and republish before moving on.
-- A question typed in chat → answer it directly if it is short (Discuss rules); a big one goes to Open questions for Phase 3.
-- Then build the next scene.
+- **Source path:** `explore/<folder>/<slug>.html`, git-tracked, where `<folder>/<slug>` is the wiki page key it belongs to (for a new topic, the key the page will get now).
+- **Facts:** the research-grounding facts (Research Grounding).
+- **Extending:** the page's `explorables` URL, when it has one.
+- **Footer:** `Scene 2/5 · Phase 2/5 — Explore`.
+- **Misses** go into the ledger's **Missed**; short chat questions are answered under Discuss rules, big ones go to **Open questions**.
+- **After the last scene,** come back to this flow:
 
 After the last scene: "That's the whole page. Want to discuss what came up, or go straight to a challenge / the write?"
 
@@ -278,7 +272,7 @@ Writing style: concise, technically precise, practical, insightful, no emojis.
 - Log every session, even with no wiki write.
 
 **Never:**
-- Put a wall of text, autoplay motion or decoration in a scene (`explorable-design.md`, Anti-patterns).
+- Put a wall of text, autoplay motion or decoration in a scene (the `explorable` skill's `design.md`, Anti-patterns).
 - Reveal answers in the Challenge phase (explicit request excepted).
 - Present a practitioner opinion as fact, or cite a factual claim only to a blog.
 - Auto-write the wiki page in deepen-focused mode, or create flashcards without the developer picking them.

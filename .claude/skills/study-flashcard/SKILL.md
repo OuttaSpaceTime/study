@@ -88,9 +88,9 @@ Lead with one line on existing coverage when there is any ("You have 4 cards on 
 
 ## Seeding from an explorable
 
-Applies when there is an explorable: the `Context: explorable <url>` line, or a context wiki page whose frontmatter lists `explorables`. Read its `attempts` collection (`references/explorable-design.md`, Recording) with `ArtifactData` `list`. **A miss is the best card there is:** the developer has just shown which way they get it wrong, and the card can aim straight at that.
+Applies when there is an explorable: the `Context: explorable <url>` line, or a context wiki page whose frontmatter lists `explorables`. Read its `attempts` collection (the global `explorable` skill's `design.md`, Recording) with `ArtifactData` `list`. **A miss is the best card there is:** the developer has just shown which way they get it wrong, and the card can aim straight at that.
 
-- **Misses first.** Every miss (as `explorable-design.md` defines it, across all sessions) is a candidate; misses fill the suggestion slots before anything else.
+- **Misses first.** Every miss (as that `design.md` defines it, across all sessions) is a candidate; misses fill the suggestion slots before anything else.
 - **Grounded front from the scene.** The front restates the scene's setup as a concrete scenario and asks for the judgement the prediction asked for, without the page's interactive ("A form on evil.com POSTs to bank.com. Under `SameSite=Lax`, does bank.com's session cookie ride along, and why?"). The back gives the expected answer plus the one-clause why, within the size rules.
 - **Aim at the wrong model.** When the developer's wrong `answer` reveals a specific misconception, the front can name the tempting answer as a contrast ("...: blocked, or sent?") so recall has to reject it.
 - **Correct answers are not candidates** unless the developer asks for more cards; the page already showed they have it.
