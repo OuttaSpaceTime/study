@@ -13,6 +13,7 @@
 .nav-folder:has(> .nav-folder-title[data-path="scripts"]),
 .nav-folder:has(> .nav-folder-title[data-path="tests"]),
 .nav-folder:has(> .nav-folder-title[data-path="wiki-viewer"]),
+.nav-folder:has(> .nav-folder-title[data-path="explore"]),
 /* Individual root files */
 .nav-file:has(> .nav-file-title[data-path="CLAUDE.md"]) {
   display: none !important;
@@ -22,6 +23,7 @@
 .nav-folder-title[data-path="scripts"],
 .nav-folder-title[data-path="tests"],
 .nav-folder-title[data-path="wiki-viewer"],
+.nav-folder-title[data-path="explore"],
 .nav-file-title[data-path="CLAUDE.md"] {
   display: none !important;
 }

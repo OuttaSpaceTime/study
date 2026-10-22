@@ -1,424 +1,290 @@
 ---
 name: study-walkthrough
-description: "Interactive walkthrough that calibrates to the developer's understanding, fills gaps, pushes deeper, and optionally writes wiki pages. Handles both new-topic documentation and progressive deepening of existing material. Trigger keywords: deepen, walkthrough, study deeper, revisit, create reference, document this pattern."
+description: "Explore a topic hands-on: builds an interactive explorable page (animated step-throughs, lever sandboxes, break-it scenes, predictions) scene by scene, then discusses the developer's questions, optionally challenges them Socratically, and writes the wiki page. Trigger keywords: deepen, walkthrough, explore, explorable, study deeper, revisit, create reference, document this pattern."
 user_invocable: true
 ---
 
-# /study-walkthrough — Interactive Walkthrough & Wiki Writing
+# /study-walkthrough: Explore, Discuss, Challenge, Write
 
-Interactive walkthrough that builds on what the developer already knows. Checks existing wiki pages and flashcards, calibrates depth, fills gaps, and pushes into new territory. Each session on the same topic goes deeper. Optionally produces a wiki page as an artifact.
+The developer explores a topic first, in an **explorable**: a small interactive page built scene by scene, published as a private claude.ai Artifact. Then they bring their questions to Claude, optionally get challenged further, and the session ends with a wiki page that links the explorable.
 
-**Core guarantee:** The developer finishes with a deeper understanding than they started with. If they fail at specific questions, the skill walks through that concept again until it's internalized. Wiki pages grow as understanding grows.
+**Core guarantee:** the developer finishes understanding the mechanism, not having read about it. Every scene made them predict before it revealed, every miss is recorded, and the misses drive the discussion, the challenge and the flashcards.
+
+**Read `references/explorable-design.md` before storyboarding.** It holds the research behind the format, the scene catalogue, the motion rules, the technical contract and the `db` schema. This file is the session flow.
 
 ## Wiki Integration
 
-This skill reads from and writes to the developer wiki at `wiki/`. See `references/wiki-write-protocol.md` for the full "write wiki" flow, linking rules, and frontmatter spec.
-
-**At any point** during the session, the developer can say "show in browser" to open wiki pages in the wiki-viewer app. Follow the "Show in browser" flow in the wiki-write-protocol.
+This skill reads from and writes to the developer wiki at `wiki/`. See `references/wiki-write-protocol.md` for the full "write wiki" flow, linking rules, and frontmatter spec. "Show in Omvida" works at any point (the protocol's flow).
 
 ## Session Rules
 
 For additional shared interactive principles (scope, handling disagreement, non-interactive mode), see `~/.claude/skills/references/interactive-principles.md`.
 
-- ONE concept per message, with only the prose the developer needs for their next answer. Pause for discussion.
-- Start each phase with `Phase X/4: <title>`.
-- Pause after each phase -- ask whether to continue or discuss. Never auto-advance.
-- If the developer says "skip" or "I know this," fast-forward immediately.
-- If the developer fails a recall question, do NOT skip -- walk through it again until internalized.
-- **Read silently, never cat.** Run `mcp__qmd__query`, `Read` of wiki/index/log files, and `mcp__flashcard-mcp__*` calls without preamble narration and without echoing their stdout, JSON, or file contents into chat. The chat shows only synthesized output — the calibration question, the gap surfaced, the next phase prompt. See AGENTS.md "Skill Design Principles → Read silently, never cat."
+- **One scene per turn.** Build it, smoke-test it, publish it, end the turn with one line on what to try. Never build the whole page in one go: one scene is under a minute of waiting, a whole page is a slot machine (AGENTS.md, anti-slot-machine).
+- Start each phase with `Phase X/5: <title>`. Pause after each phase; never auto-advance.
+- If the developer says "skip" or "I know this", fast-forward immediately.
+- **Read silently, never cat.** `mcp__qmd__query`, `Read` of wiki/index/log files, `mcp__flashcard-mcp__*`, `ArtifactData` reads and `scripts/explore-check` run without narration and without echoing output. The chat shows only synthesized output: the storyboard, the scene link, the misses, the next question.
 
-## Socratic Never-Reveal — The Developer Produces Every Answer (always on; not a selectable mode; overrides every reveal-style step below)
+## Answering vs. Socratic: by phase
 
-The interactive walkthrough never hands the developer a correct answer. The developer must produce every conclusion themselves; your job is to ask the next small question, not to state the next fact. When any step below says "explain", "walk through", "lead with the framing", or "reveal" — read it through this rule.
+The explorable reveals by design: the developer predicts, then sees. What Claude says in chat depends on the phase:
 
-- **One small question at a time.** Decompose the concept into the smallest step the developer can reason about. Ask, wait, then react to their answer with the next question. Short steps, not lectures.
-- **Never state the answer to fill a gap.** When the developer is wrong or blank, do NOT correct by asserting the right answer. Decompose further — ask an easier sub-question, point at a concrete value/snippet/error and ask what it implies, or narrow scope until they can take the next step. Hints get progressively more concrete, but the final words are always theirs. (This is the agreed stuck-fallback: decompose, never reveal.)
-- **"Make it concrete" / "I don't understand" is NOT a reveal request.** When the developer says the *question* is unclear or asks you to make it concrete, make the **next question** smaller and more grounded (a specific value, a one-line snippet, a named scenario) — do **not** answer it for them or work the example to its conclusion. Reformulating the prompt is not the same as supplying the missing piece; a clarification plea answered with the full worked solution is the most common way revealing sneaks in.
-- **Confirming is allowed; pre-empting is not.** Once the developer produces a correct answer, you may confirm it ("yes — that's it"). You may not say it first.
-- **Applies to every cadence** (Learning, Refresh, Concise). Cadence sets how many questions and whether you loop on a miss — never whether you reveal.
-- **The written wiki page is exempt.** Never-reveal governs the spoken dialogue. The Phase 4 wiki page is the reference artifact and naturally contains the facts — that is the payoff for reconstructing them in dialogue, not a shortcut around it.
-- **Explicit request override.** The rule forbids *volunteering* the answer. If the developer explicitly asks ("just tell me", "show me the answer"), honor it — the human drives — then re-probe what you told them.
-- **Research and codebase reads inform your questions, not your statements.** Use them so you know the right answer yourself (to judge theirs and craft the next question) and to source the written page — never as a script to read facts aloud.
+- **Discuss (Phase 3): answer directly.** The developer explored first and now asks. Answer concisely, grounded in the research facts, and cite a source URL when a claim is version-specific or non-obvious. Then check the answer landed with one small follow-up question, not a quiz.
+- **Challenge (Phase 4): Socratic never-reveal.** The developer produces every answer. One small question at a time. On a wrong or blank answer, decompose into a smaller, more concrete question (a specific value, a one-line snippet, a named scenario); never state the answer to fill the gap. "Make it concrete" or "I don't understand" is a request for a smaller *question*, not for the answer. Confirming a correct answer is fine; saying it first is not. An explicit "just tell me" is honored, then re-probed.
+- **The explorable and the wiki page are reference material** and state the facts. The prediction gate is what keeps the page from handing them over unearned.
 
 ## Running Ledger
 
-For walkthroughs that span more than ~3 phase messages, maintain a tiny ledger at the top of each phase message (one line per field, skip empty fields):
+For sessions longer than ~3 phase messages, keep a tiny ledger at the top of each phase message (one line per field, skip empty fields):
 
-- **Known:** concepts calibrated solid or probed successfully this session
-- **Gaps filled:** concepts initially weak that were walked through and reconfirmed
-- **Still fuzzy:** concepts flagged but not yet reinforced — these gate Phase 3 completion
-- **Queued:** flashcard / wiki deltas to propose at Phase 4
+- **Explorable:** the artifact URL, `scene k/n published`
+- **Missed:** predictions or challenges the developer got wrong (scene id + one phrase)
+- **Open questions:** from the page's Ask box or the chat, not yet resolved
+- **Queued:** flashcard / wiki deltas to propose at Phase 5
 
-The ledger is chat-only — do NOT write it into the wiki page. It exists so the developer (and you) can see session state at a glance and so Phase 3 verification targets the real gaps instead of a generic recall quiz. Skip the ledger for short walkthroughs (single-concept refreshes).
+Chat-only; never written into the wiki page.
 
-## Output Contract -- Progress Footer
+## Output Contract: Progress Footer
 
-While the interactive flow is active, end every assistant message in this skill with a progress footer as its last line -- including clarifying questions, short acknowledgements, and messages that contain only code.
+While the flow is active, end every assistant message with a progress footer as its last line, including clarifying questions and short acknowledgements:
 
-**Format:**
-- With steps: `Step 1/2 · Phase 2/4 — Adaptive Walkthrough: recall check`
-- Without steps: `Phase 1/4 — Discovery & Calibration`
+- With steps: `Scene 2/5 · Phase 2/5 — Explore`
+- Without steps: `Phase 3/5 — Discuss`
 
-The footer is a single line, rendered verbatim, at the very bottom of the message -- nothing after it.
+Omit it only when the developer opted out of the interactive flow (non-interactive subagent mode, an explicit one-shot request).
 
-**Exceptions:** Omit the footer only when the developer has explicitly opted out of the interactive flow -- non-interactive subagent mode, or an explicit "one-shot explanation" request.
+## MCP and Tool Dependencies
 
-## MCP Server Dependency
-
-This skill uses the `flashcard-mcp` MCP server for flashcard lookup. Tools used: `find_similar_cards`, `search_cards`, `get_card`.
+- `flashcard-mcp`: `check_pressure`, `find_similar_cards`, `search_cards`, `get_card`.
+- **Artifact** tool: publish the explorable (load the `artifact-design` and `artifact-capabilities` skills first, as that tool requires); **ArtifactData** (deferred; load via ToolSearch) to read the page's `attempts` and `questions`.
+- `scripts/explore-check`: headless smoke test before each publish.
 
 ## Research Grounding
 
-The walkthrough must not rely solely on model-internal knowledge. At Phase 1 Step 1, run the **`research-grounding` workflow** (`.claude/workflows/research-grounding.js`) in the background, in parallel with the wiki/index lookups. It fans out across two lanes and synthesises one structured result the main thread uses to ground Phase 2 questions and the Phase 4 wiki page.
+Scenes state facts, and the in-page Ask answers from a fact sheet, so both must come from sources, not model memory. At Phase 1 Step 1, run the **`research-grounding` workflow** (`.claude/workflows/research-grounding.js`) in the background, in parallel with the wiki lookups.
 
-**Two lanes — and they are not equal:**
+**Two lanes, not equal:**
 
-- **Authoritative lane (ground truth).** Official docs, specs, RFCs, source code, canonical references. This lane decides what is *factually true*. Every fact must be traceable to an authoritative source.
-- **Practitioner lane (opinion).** Blog posts, conference talks, credible practitioner write-ups, high-signal forum threads. This lane adds what the docs leave out: tradeoffs, lived experience, architectural nuance, established-pattern critiques, and gotchas. It is **explicitly not ground truth** — every item stays labelled as opinion, attributed to its source, and marked `consensus` / `contested` / `single-voice`.
+- **Authoritative lane (ground truth):** official docs, specs, RFCs, source code. Decides what is *factually true*.
+- **Practitioner lane (opinion):** blog posts, talks, forum threads. Adds tradeoffs, lived experience, gotchas. Always labelled opinion, attributed, and marked `consensus` / `contested` / `single-voice`.
 
-**The hard rule: authoritative wins for facts.** The synthesis step reconciles the two lanes and flags any practitioner claim that contradicts an authoritative fact (`contradictsGroundTruth: true`) — the fact stands, the blog claim is marked likely stale, wrong, or context-specific. An opinion is never promoted into a fact. Practitioner divergence (where blogs disagree with each other) is surfaced so the walkthrough can present it as genuinely open rather than settled.
+**The hard rule: authoritative wins for facts.** A practitioner claim flagged `contradictsGroundTruth` is dropped; an opinion is never promoted to a fact.
 
-**Invoking the workflow.** Call the `Workflow` tool with `name: "research-grounding"` and `args` as a **real JSON object — never a JSON-encoded string**. Pass the topic in full: `args: { "topic": "<the developer's full topic, verbatim>", "cadence": "learning" }`. Stringifying `args` (passing `"{\"topic\": ...}"`) is a known footgun — the workflow then sees no topic and the run is wasted; the workflow now rejects that case loudly, but get the call shape right the first time. This skill instructing you to call it IS the opt-in — no separate confirmation needed. Workflows run in the background automatically: the call returns a task id immediately and a notification arrives when synthesis completes, so kick it off at Phase 1 Step 1 and keep running calibration meanwhile (the developer is busy answering calibration questions while it works). Pass args:
+**Invoking the workflow.** Call the `Workflow` tool with `name: "research-grounding"` and `args` as a **real JSON object, never a JSON-encoded string**: `args: { "topic": "<the developer's full topic, verbatim>", "cadence": "learning" }`. This skill instructing you to call it IS the opt-in. It runs in the background and notifies on completion.
 
 | arg | value |
 | --- | --- |
 | `topic` | the walkthrough topic |
-| `cadence` | `learning` \| `refresh` \| `concise` — trims the fan-out (`concise`/`refresh` → 1+1, `learning` → 2+2 authoritative+practitioner agents) |
-| `thoroughness` | optional `lite` \| `normal` \| `deep` — pass `deep` (3+3) for architecture/pattern topics where practitioner opinion matters most |
-| `fromUrl` | the URL (or a note that source text was pasted) for `--from` / pasted-text invocations |
+| `cadence` | `learning` \| `refresh` \| `concise` (`concise`/`refresh` → 1+1 agents, `learning` → 2+2) |
+| `thoroughness` | optional `lite` \| `normal` \| `deep` (`deep` = 3+3, for architecture/pattern topics) |
+| `fromUrl` | the URL (or a note that text was pasted) for `--from` / pasted-text invocations |
 
-The workflow returns `{ confidence, authoritativeSources[], practitionerSources[], facts[], loadBearing[], misconceptions[], opinions[], divergence[] }` — where each opinion carries `{ claim, kind, source, stance, contradictsGroundTruth, note? }`.
-
-**Variants (set via args):**
-
-- `--from <url>` or pasted text: pass `fromUrl`. The authoritative lane cross-checks that source's factual claims against other authoritative references; the practitioner lane treats it as one opinion among several.
-- Refresh cadence on an existing page: both lanes narrow to "what changed" — deprecations, version drift, and any newer practitioner consensus — anchored on the page's `updated` date.
-- Concise cadence: pass `cadence: "concise"`. Fan-out drops to 1+1; the result only needs to confirm-or-correct the one-pass restatement.
+It returns `{ confidence, authoritativeSources[], practitionerSources[], facts[], loadBearing[], misconceptions[], opinions[], divergence[] }`.
 
 **Using the findings:**
 
-- **Phase 2 grounding (facts).** `facts` / `loadBearing` equip *you* with the canonical answer so you can craft precise questions and judge the developer's answers — never read aloud (see Socratic Never-Reveal). If a source contradicts what you'd have said from memory, that sharpens the question you ask, not a spoken correction. When the developer's prediction is wrong, do not state the right answer; ask a smaller question that exposes the gap, and you may point them at the source URL to investigate themselves.
-- **Phase 2 grounding (opinions).** `opinions` and `divergence` unlock a class of question the docs cannot ground: tradeoff and judgement prompts. Pose them as open ("practitioners disagree about X — what do you think the tradeoff is?", "here's a gotcha someone hit in production — why might that happen?"). Never present an opinion as settled fact, and never reveal — the opinion shapes the *question*, the developer still produces the answer. An opinion flagged `contradictsGroundTruth` is not used to question at all; the authoritative fact it contradicts is.
-- **Phase 4 wiki write.** Fold facts and opinions into the page per the `## References` and `## Tradeoffs & Gotchas` rules in "Wiki Page Structure" below: facts go to an authoritative `## References` (inline-link version-specific claims); load-bearing opinions go to a `## Tradeoffs & Gotchas` H2 or inline `> [Note]` callouts, attributed and marked consensus/contested; drop any `contradictsGroundTruth` opinion.
-- **Confidence handling:** `confidence: low` means push extra probes in Phase 2 and add a `> [Note] Sources sparse. Verify before relying on this page.` callout in Phase 4. A `contested` opinion stance means present both sides; do not declare a winner the sources do not support.
+- **Scenes:** `loadBearing` facts decide what the scenes show; `misconceptions` are the best prediction options (the wrong answer people actually hold). A scene built before the research returned is checked against it when it lands: a contradicted point is corrected in place and the scene republished, with one line in chat.
+- **Fact sheet:** the page's in-page Ask is grounded in a constant listing the relevant `facts` with source URLs (`explorable-design.md`, "In-page Ask").
+- **Discuss:** facts ground the direct answers; `opinions` and `divergence` become tradeoff answers presented as opinion ("practitioners disagree: ...").
+- **Challenge:** `opinions` unlock judgement questions ("here's a gotcha someone hit in production: why might that happen?"). Never pose a `contradictsGroundTruth` opinion.
+- **Wiki write:** facts go to `## References` (inline-link version-specific claims); load-bearing opinions to `## Tradeoffs & Gotchas` or inline `> [Note]` callouts, attributed.
+- **`confidence: low`:** fewer facts in scenes, more probes, and a `> [Note] Sources sparse. Verify before relying on this page.` callout on the wiki page.
 
-**Silent execution.** The workflow runs in the background — do not narrate "running research workflow", echo its `/workflows` progress tree, or paste its output. When the synthesis notification arrives, fold the findings into the next phase message. If the workflow errors or times out, fall back to a single background research subagent using the two-lane fallback prompt below; if that also fails, note one line ("research unavailable — proceeding from model knowledge, flagged in Phase 4 references") and continue — never block the developer.
+**Silent execution.** Don't narrate the workflow or paste its output. If it fails, fall back to one background research subagent with the prompt below; if that fails too, say one line ("research unavailable, proceeding from model knowledge, flagged on the page") and continue.
 
-**Single-agent fallback prompt** (only when the workflow itself cannot run):
+**Single-agent fallback prompt:**
 
-> Research `<topic>` for a developer walkthrough across two lanes, kept separate. **Authoritative (ground truth):** find 2-3 official docs / RFCs / source / canonical refs (`WebSearch` then `WebFetch`); return load-bearing facts, each tagged with its source and confidence. **Practitioner (opinion):** find 1-2 credible blog posts / talks / forum threads; return tradeoffs, experiences, architectural nuances, and gotchas, each tagged with its source and stance (consensus | contested | single-voice). Then reconcile: authoritative wins for any factual conflict — flag practitioner claims that contradict a fact as likely stale/wrong, never promote an opinion to a fact. Return `confidence` (high|medium|low), the authoritative facts, the labelled opinions, misconceptions/version gotchas, and any practitioner divergence, as terse structured findings with no preamble.
+> Research `<topic>` for a developer walkthrough across two lanes, kept separate. **Authoritative (ground truth):** find 2-3 official docs / RFCs / source / canonical refs (`WebSearch` then `WebFetch`); return load-bearing facts, each tagged with its source and confidence. **Practitioner (opinion):** find 1-2 credible blog posts / talks / forum threads; return tradeoffs, experiences, architectural nuances, and gotchas, each tagged with its source and stance (consensus | contested | single-voice). Then reconcile: authoritative wins for any factual conflict; flag practitioner claims that contradict a fact as likely stale/wrong, never promote an opinion to a fact. Return `confidence` (high|medium|low), the authoritative facts, the labelled opinions, misconceptions/version gotchas, and any practitioner divergence, as terse structured findings with no preamble.
 
-**Skip research only when:** the topic is repository-internal (a codebase pattern, an internal script, a project decision) where no public authoritative source exists. Note the skip in the session log under a `Research:` field so the pattern is visible across sessions.
+**Skip research only** for repository-internal topics (a codebase pattern, an internal script); note it in the session log's `Research:` field.
 
-**Probes are exempt.** Research grounds *explanations*; probes ground via direct execution. When a probe is run (developer types a command, pastes the output), the probe output IS the authoritative source for that point — do not second-guess a probe with research, do not ask the developer to re-verify a probed result against docs, and do not require a probe-derived claim to carry a `## References` URL. If a probe contradicts the research findings, that's a finding worth surfacing ("the docs say X but your run shows Y — let's dig into why"), but the probe wins for the immediate question.
+**Probes are exempt.** When the developer runs a snippet and pastes the output, that output is the ground truth for what it demonstrates. If it contradicts the research, surface it ("the docs say X but your run shows Y, let's dig into why").
 
 ## Invocation
 
 ```
-/study-walkthrough                        — Start (asks for topic)
-/study-walkthrough <topic>                — Walkthrough on a specific topic
-/study-walkthrough --write <topic>        — Write-focused: walkthrough → wiki page (always writes)
-/study-walkthrough --from <url>           — Walkthrough from URL content
-/study-walkthrough <pasted text>          — Walkthrough from provided text
+/study-walkthrough                        start (asks for the topic)
+/study-walkthrough <topic>                explore a topic
+/study-walkthrough --write <topic>        explore, then always write the wiki page
+/study-walkthrough --from <url>           explore what a URL teaches
+/study-walkthrough <pasted text>          explore the text's key ideas
+/study-walkthrough --no-explore <topic>   no page: straight to Discuss and Challenge in chat
 ```
 
-When invoked with `--write`, the session defaults to producing a wiki page as the primary artifact. The walkthrough still ensures understanding, but Phase 4 writes to wiki by default rather than offering it as an option.
+Omvida's "Go deeper" and Add → Wiki entry open this skill with a `Context: wiki page [[folder/slug]]` line. Read that page silently. If it already has `explorables`, **extend that explorable** with scenes for the new depth (same source file, published to its existing URL, see Phase 2) instead of starting a new one.
 
-When invoked with a URL or pasted text, use it as source material. The walkthrough and wiki page capture only what the developer actually understood -- not a raw dump.
+## Mode and Cadence
 
-## Mode Detection
+**Mode** sets the output:
 
-The skill operates in two modes based on invocation and context:
+- **Write-focused:** `--write`, `--from`, pasted text, or no existing page and the intent is clearly "document this". Phase 5 writes the wiki page by default.
+- **Deepen-focused** (default): Phase 5 offers the wiki write, flashcards, or done.
 
-- **Write-focused**: Triggered by `--write` flag, `--from <url>`, or pasted source text. Also triggered when no existing wiki material is found and the developer's intent is clearly "document this." Compresses calibration, writes wiki by default at the end.
-- **Deepen-focused**: Default mode. Full calibration against existing material, adaptive depth, wiki write offered but not assumed.
+**Cadence** sets the depth. Default **Learning**:
 
-## Session Cadence
+| Cadence | Explore | Discuss | Challenge |
+| --- | --- | --- | --- |
+| **Learning** | 4-6 scenes | full | offered, recommended |
+| **Refresh** (existing page, or "just refresh") | reuse the page's explorable; 1-2 new scenes only for gaps calibration found | on the gaps | on the gaps |
+| **Concise** | 1-3 scenes, or none | short | one question, no looping |
 
-A separate axis from Mode Detection — sets *depth*, not *output type*. Default is **Learning**. **All three cadences are question-driven and never reveal the answer** (see Socratic Never-Reveal); cadence only sets how many questions and whether you loop on a miss.
-
-- **Learning** — predict-first mandatory on every concept, every concept gets an active challenge (the "Concrete example/challenge" bullet in Phase 2 is load-bearing here), loop on every failed recall (decompose into smaller questions, never reveal). This is today's default behavior.
-- **Refresh** — for pages that already cover the topic, or when the developer says "just refresh this." Question only the sections flagged weak at calibration, skip predictions on concepts calibrated as solid, no mandatory challenge on every concept — only on sections that were gap-flagged. Still never reveals.
-- **Concise** — a fast question-driven pass with one calibration check, no looping on a miss. For when the developer wants speed: fewer questions, and you move on rather than decomposing when they miss — but you still never hand them the answer. Session log coda collapses to one sentence.
-
-Announce the active cadence in Phase 1 Step 3 after calibration. If calibration reveals a mismatch (developer keeps saying "I know this" → bump to Refresh; keeps saying "wait, walk me through that again" → bump to Learning), suggest a cadence change once. Do not switch silently.
+Announce the cadence with the storyboard. If the developer keeps saying "I know this" (→ Refresh) or "wait, show me that again" (→ Learning), suggest a switch once; never switch silently.
 
 ## Correction Primitive
 
-When the developer corrects something you said in a prior phase:
+When the developer corrects something (a scene's behaviour, a fact, an earlier answer):
 
-- **Edit the original statement in place** — in the chat summary and in any in-progress wiki draft. Do not append "actually, X" at the bottom.
-- If the correction invalidates a drafted flashcard or wiki section, mark it `[STALE — redraw]` and redo it together before advancing.
-- In chat, acknowledge the edit with one line: "Updated Phase 2 — the explanation of X now reads Y." Then continue from the corrected state.
-- Never carry forward a concept the developer flagged as wrong.
+- **Edit it in place**: the scene in the source file (then republish), the chat statement, the wiki draft. Never append "actually, X".
+- A correction that invalidates a drafted card or wiki section marks it `[STALE — redraw]`; redo it before advancing.
+- One line in chat: "Updated scene 2: the cookie is now omitted on cross-site POSTs."
 
-This matters because the walkthrough compounds: a wrong explanation in Phase 2 poisons the recall check in Phase 3 and the wiki draft in Phase 4.
+## Preflight: SRS Pressure Check
 
-## Preflight — SRS Pressure Check
+Run it before Phase 1 and before any other tool call. The first assistant message of this skill is the pressure-check output and nothing else, regardless of mode or flags. Follow `references/srs-pressure-check.md` exactly:
 
-Run it before Phase 1 and before any other tool call: no wiki-index read, `mcp__qmd__query`, `find_similar_cards`, or drafting until the verdict is out. The first assistant message of this skill invocation must be the pressure-check output — nothing else. This applies regardless of mode, flags, or whether a wiki page will be written.
-
-Follow `references/srs-pressure-check.md` exactly. Summary:
-
-1. Call `mcp__flashcard-mcp__check_pressure` — it computes the counts and verdict server-side. Do **not** call `mcp__flashcard-mcp__get_due_cards` or `mcp__flashcard-mcp__list_decks` for pressure signals (`get_due_cards` caps at 30 and will underreport).
-2. First message output:
-   - `ok` → one line: `SRS pressure: ok — proceeding.`
-   - `warn` / `pause` → the counts, the reasons, and the clearance numbers, then the gate question. Wait for an explicit answer before Phase 1.
-3. Progress footer for this message: `Preflight — SRS Pressure Check`.
-
-Keep it a separate first message: don't skip it, fold it into Phase 1, or run other tool calls before the verdict. Opting out of a downstream step mid-session (e.g., "just deepen, no wiki") does not skip the preflight.
+1. Call `mcp__flashcard-mcp__check_pressure` (not `get_due_cards` or `list_decks`).
+2. `ok` → one line: `SRS pressure: ok — proceeding.` `warn` / `pause` → counts, reasons and clearance numbers, then the gate question; wait for an explicit answer.
+3. Footer: `Preflight — SRS Pressure Check`.
 
 ## Phase Flow
 
-### Phase 1/4: Discovery & Calibration
+### Phase 1/5: Scope & Storyboard
 
-(Preflight must be complete and — if warn/pause — explicitly acknowledged by the developer before starting this phase.)
+**Step 1: find what exists, start research (parallel, silent).**
 
-**Step 1 -- Find what exists (and start research in parallel):**
+1. Read `wiki/.wiki-index.json` for the topic.
+2. `mcp__qmd__query` (hybrid, `rerank: false`) on `<topic>`.
+3. `find_similar_cards` on the topic.
+4. Start the `research-grounding` workflow in the background (see Research Grounding).
 
-1. Read `wiki/.wiki-index.json` for the topic
-2. Call `mcp__qmd__query` (hybrid, `rerank: false`) for keyword/semantic matches on `<topic>`
-3. Call `find_similar_cards` from MCP to find related flashcards
-4. **Run the `research-grounding` workflow in the background** per the "Research Grounding" section above (passing `topic` and `cadence`). Do this at the same time as steps 1-4 — it should be running while calibration happens, so the synthesised two-lane findings are ready by Phase 2. Skip only for repo-internal topics (note the skip in the session log).
+**Step 2: present what exists and calibrate, in one message.** Name existing pages with their `updated` date, their explorable if they have one, and the card count. Then **one** calibration question:
 
-**Step 2 -- Present existing knowledge:**
+- Existing material: one targeted recall question from the page or the hardest card back.
+- None: "What do you already know about <topic>, and what do you want to be able to do after this?"
 
-If wiki pages exist, name them with their `updated` date:
-> You have a wiki page `[[architecture/event-sourcing]]` (updated 2026-03-15) covering: Core Concepts, Projections, Related Concepts.
-> You also have 4 flashcards on this topic.
-> Let me check what you actually remember.
+**Step 3: storyboard.** From the calibration answer, propose 3-6 scenes (per cadence), one line each: the scene's question, its type from the catalogue, and the prediction it asks. Lead with the hook scene (the most surprising behaviour). For write-focused mode, add the page type (Tutorial/Concept, Problem-Solution, Pattern/Technique, Feature/Tool Overview) and scope: a topic with >5 sub-concepts → suggest splitting; a single fact → suggest adding it to an existing page.
 
-If no wiki pages exist:
-> No wiki pages found for this topic. Let's build your understanding from scratch.
+> 1. **Why does bank.com get the cookie?** Step-through: a forged form submit. *Predict: does the browser attach bank.com's cookie to a POST from evil.com?*
+> 2. **What does SameSite change?** Lever sandbox: Strict / Lax / None × GET link / POST form / fetch. *Predict: which cells carry the cookie under Lax?*
+> 3. ...
+>
+> Edit, reorder, drop, or `go`.
 
-**Step 3 -- Calibration:**
+Wait for the developer's go. The storyboard is the contract for Phase 2.
 
-- **If existing material found**: Ask 1-2 targeted recall questions drawn from existing wiki page content (key concepts from sections) and flashcard backs (pick the hardest ones).
-- **If no existing material (write-focused)**: Ask one question: "What do you already know about this topic?" This sets the depth for Phase 2 without a full calibration cycle.
-- **If no existing material (deepen-focused)**: Same single question, then proceed to full walkthrough.
+### Phase 2/5: Explore (scene by scene)
 
-Evaluate the developer's answers:
-- **Solid recall** -> "Good -- you've internalized the basics. Let's go deeper into [new area]."
-- **Partial recall** -> "You remember the gist but some details are fuzzy. Let me walk through the gaps."
-- **Poor recall** -> "Let's revisit the fundamentals before going deeper."
+**Per scene:**
 
-This calibration determines where Phase 2 starts.
+1. **Build** the scene into `explore/<folder>/<slug>.html` per `references/explorable-design.md`. Scene 1 also creates the page shell (header, stepper, fact sheet, recording, Ask box). The key `<folder>/<slug>` is the wiki page it belongs to; for a new topic, pick the key the page will get now.
+2. **Smoke-test:** `scripts/explore-check <file> --out <scratchpad>/explore-shots` loads the page from disk (so without capabilities) in headless Chromium at desktop and phone width, and exits 1 on an uncaught error. Read both screenshots silently and fix what's off before publishing: errors, overflow, overlapping labels, an empty diagram.
+3. **Publish** with the Artifact tool from the same file path every time (same URL). First publish: `capabilities: {db: {}, sample: {}}`, a two-to-four-word title, `icon` (e.g. `lightbulb`); then one functional pass, an `ArtifactData` `list` of `attempts` and `questions` (both may be empty), and one line saying what was checked. Later publishes: omit `capabilities` and `icon`. **Extending an explorable from an earlier conversation:** `Artifact` `read` its URL (from the page's `explorables`) first, then publish with `url` set to it; without `url` the publish creates a second artifact.
+4. **End the turn** with one line: the link (first scene) or "scene k is live", plus what to try. "Scene 1 is live: predict before you step. Say `next` when done, or ask in the page."
 
-**Step 4 -- Scope & page type (write-focused mode only):**
+**When the developer comes back** ("next", a reaction, a question):
 
-If the session is write-focused, decide scope and page type now:
+- Read the page's `attempts` (and `questions`) with `ArtifactData` `list`, silently. Misses are as `explorable-design.md` (Recording) defines them, this session's only. A missed prediction goes into the ledger's **Missed** with one line in chat: "You expected the cookie to be blocked on the POST; that one's queued for Discuss."
+- A request to change the scene ("slower", "add a step", "this label is confusing") → change it in place and republish before moving on.
+- A question typed in chat → answer it directly if it is short (Discuss rules); a big one goes to Open questions for Phase 3.
+- Then build the next scene.
 
-- **Scope decision tree:**
-  - If the topic decomposes into >5 sub-concepts: suggest splitting into multiple pages
-  - If the developer already knows the topic well: compress Phase 2 and move to drafting
-  - If the topic is trivial (single fact or one-liner): suggest adding it to an existing page or skipping
+After the last scene: "That's the whole page. Want to discuss what came up, or go straight to a challenge / the write?"
 
-- **Page type** (choose together):
-  - **Tutorial/Concept** -- for learning a new pattern or technique
-  - **Problem-Solution** -- for documenting a specific gotcha, failure mode, or fix
-  - **Pattern/Technique** -- for documenting an established, repeatable approach
-  - **Feature/Tool Overview** -- for documenting capabilities and API surface
+### Phase 3/5: Discuss
 
-### Phase 2/4: Adaptive Walkthrough
+1. Read `attempts` and `questions` once more. Open with what the page recorded, then hand over:
+   > You missed 2 of 5 predictions (scenes 2 and 4) and asked one question in the page (about Lax and top-level navigations). Where do you want to start?
+2. The developer drives. Answer directly, grounded in the facts (see "Answering vs. Socratic"). One concept per message.
+3. When a question is best answered visually, **offer** a clarifying scene ("I can add a scene that steps through exactly that, want it?"). Build it only on yes, per the Phase 2 loop.
+4. Before leaving the phase, walk each **Missed** item once: ask the developer how they'd now predict it. A still-wrong answer stays in Missed for the challenge and the flashcards.
+5. Close: "Anything still fuzzy? Otherwise: a challenge, write the page, or done."
 
-Based on calibration results, the walkthrough adapts:
+### Phase 4/5: Challenge (optional)
 
-**If recall was solid -- push deeper:**
-- Identify areas the existing wiki page doesn't cover
-- Explore edge cases, advanced patterns, real-world tradeoffs
-- Use concrete codebase code to illustrate advanced concepts
-- Ask the developer to predict behavior in complex scenarios
+Offered, never forced. Recommended in Learning cadence and whenever Missed is non-empty. **Socratic never-reveal applies here.**
 
-**If recall had gaps -- fill them first (via questions, never explanation):**
-- Re-approach the weak concepts with fresh, concrete questions — do not re-explain them
-- After each concept, ask the developer to articulate it back in their own words
-- If they fail -> decompose into a smaller sub-question, then build back up. Never reveal the answer to fill the gap.
-- Do NOT move on until the developer can articulate the concept clearly themselves
-- Only after gaps are filled, push into new territory
+- 2-4 challenges, each a single question that makes the developer **produce** something: transfer the mechanism to a new setting, predict a variant the page didn't show, find what breaks if a step is skipped, design the attack or the fix. Target the Missed items and the scenes' combined levers first.
+- **Probe when possible:** for code-shaped concepts, ask the developer to run a minimal snippet (`curl`, a repl one-liner, a test) and paste the output; compare with their prediction. Capture a load-bearing probe takeaway (Prediction / Command / Output / Takeaway) in the session log.
+- A challenge that is better interactive (a broken config to fix, a sort with a twist) can be an extra **challenge scene** in the page; its answers land in `attempts` with `kind: "challenge"`. Offer it; build on yes.
+- On a miss: decompose into a smaller question until the developer gets there (Learning, Refresh), or note it and move on (Concise). Never reveal.
 
-**If recall was poor -- build from foundations (Socratically):**
-- Lead the developer to the core concepts through a chain of small questions, as if drawing it out of them for the first time — not lecturing it
-- Build understanding incrementally: foundation -> mechanism -> application -> edge cases, each step a question they answer
-- Frequent checks: "What would happen if...?" "Why does this matter?" — and when they stall, a smaller question, never the answer
+### Phase 5/5: Write & Chain
 
-**Walkthrough techniques:**
-- **Ground your questions in research (probes exempt).** Use the Phase 1 research findings so *you* hold the canonical answer — then ask the developer toward it; do not read the framing aloud (see Socratic Never-Reveal). When your memory diverges from the sources, the source wins for judging the developer's answer and for the written page. Cite source URLs only as a place for the developer to investigate, never as the answer itself. If the research grounding came back `low` confidence or hasn't returned by the time a load-bearing point comes up, push a probe instead of asserting. **Probes themselves are not grounded in research** — the probe's actual output is the ground truth for whatever it demonstrates. If a probe contradicts research, surface the contradiction but trust the probe for the immediate point.
-- Show concrete codebase code, never abstract examples
-- Ask a guiding question and wait — never reveal the answer. On a wrong or blank answer, decompose into a smaller sub-question rather than correcting by assertion.
-- **Probe when possible.** For code-shaped concepts (git, Python, shell, SQL, API behavior, algorithms), ask the developer to actually run a minimal snippet and paste the output — `uv run python -c`, a repl one-liner, a `git` command, `curl | jq`, a unit test. Compare the output against the prediction they made in the concrete challenge step. Probes turn Assumed understanding into Known and catch the "I thought I knew this" failure mode that pure discussion misses. Skip probes for theory-only concepts where no small snippet would demonstrate the point.
-- **Capture load-bearing probe takeaways.** When a probe changes the developer's understanding (prediction wrong, output surprising, or the probe resolved a gap that was gating the session), mirror the Takeaway (Prediction / Command / Output / Takeaway) into the session log's `Surprising:` or `Heuristic:` field so it's findable later. Skip capture for probes that merely confirmed what the developer already knew — those are ceremony.
-- When the developer's explanation is incomplete, ask a follow-up rather than correcting
-- **Concrete example/challenge (mandatory, every concept):** For each concept walked through, ask the developer to actively produce something -- not just passively receive:
-  - **Code concepts:** "What do you expect this outputs?" / "How would you write the code for that?" / "Here's a broken version -- what's wrong?" -- show a snippet and require a prediction or solution
-  - **Theory/architecture concepts:** "When would you choose this over X?" / "What breaks if you skip this step?" / "Explain why this matters in your own words"
-  - Keep each challenge focused -- one question, not a quiz. The developer's answer reveals whether they truly internalized the concept or just followed along.
-- Track related concepts for wiki linking as they come up
-- Note which areas are new understanding (these become wiki page extensions)
+**Before drafting**, internalize the "Writing Style" section of `references/wiki-write-protocol.md`: **no em dashes anywhere**, **no prose-colons as clause connectors**. Filename = slugified title (lint error otherwise); pick the filename first.
 
-### Phase 3/4: Verification & Gaps
+**Write-focused mode:** proceed to the wiki write. **Deepen-focused:** offer:
 
-After the walkthrough:
+1. **"add flashcard":** chain to `/study-flashcard <topic>` with `Context: explorable <url>`. It seeds its suggestions from the page's misses (concept/intuition cards only, see Developer Preference).
+2. **"write wiki":** the write below.
+3. **"done":** log the session, no writes.
 
-1. **Recall check**: Ask 2-3 questions covering both the new material AND the previously weak areas
-2. **If any question fails**: re-approach that concept with smaller guiding questions until the developer gets there themselves -- never reveal, do not skip
-3. **Repeat until all questions are answered correctly by the developer**
-4. **Identify remaining gaps**: "We covered X, Y, Z today. What still feels unclear?"
+**The wiki write** (follow `references/wiki-write-protocol.md`):
 
-This is the key differentiator -- the skill loops on failure until concepts are internalized.
+1. Present an outline first: title and H2 sections, one line each. Wait for confirmation.
+2. Draft the page. It is the reference artifact: it states the facts, compactly, and does not repeat the scenes' prose. A page extending an existing one adds H2 sections, keeps existing links and sets `updated` to today.
+3. **Frontmatter `explorables: [<artifact url>]`** (append to an existing list when this was a new explorable; unchanged when one was extended).
+4. Include `flashcard_ids` for related cards, `## Related Concepts`, `## References`, and `## Tradeoffs & Gotchas` when practitioner opinion is load-bearing (see Wiki Page Structure).
+5. Run `scripts/wiki-write <page>`, then offer "show in Omvida": the page now has an Explore button.
 
-**Write-focused addition**: In write-focused mode, also ask the developer to confirm:
-1. The key problem or context the page will cover
-2. One concrete code example and why it works that way
-3. Any gotchas or non-obvious behavior
-
-If any of these are missing or vague, return to the relevant concept and discuss until the developer can articulate it.
-
-### Phase 4/4: Write & Chain
-
-**Before drafting anything**, internalize the "Writing Style" section of `references/wiki-write-protocol.md`. The two costliest-to-fix-after-the-fact rules: **no em-dashes anywhere** (prose, headings, link text, list-item descriptions, table cells) and **no prose-colons as clause connectors** (`The trap: ...` is flagged — split into two sentences). A page with many of either forces a multi-pass cleanup touching every line; write clean from the first draft.
-
-**Filename = slugified title** (lint error, not warning). When the folder name disambiguates (e.g., `wiki/json-api/`), the title does not need to repeat the topic — `Document structure` is a cleaner title than `JSON:API document structure` because its slug equals the filename `document-structure.md`. Pick the filename first, then choose a title that slugifies back to it.
-
-**Write-focused mode** -- proceed directly to wiki write:
-
-1. **Present a brief outline first:** title, proposed H2 sections with a one-line description each. Wait for the developer to confirm or adjust before writing the full draft. Then start writing from the top.
-2. Present the full draft wiki page with frontmatter, wikilinks, and all sections
-3. For each section: ask the developer to explain it in their own words. If they cannot, discuss until they can.
-4. Adjust the page based on gaps surfaced during review
-5. Follow `references/wiki-write-protocol.md` for the full write flow
-6. Log the session
-
-**Deepen-focused mode** -- offer choices:
-
-1. **"add flashcard"** -- Chain to `/study-flashcard` for concepts that need SRS reinforcement, especially the ones that were initially failed during calibration
-
-2. **"write wiki"** -- Follow `references/wiki-write-protocol.md`. (Preflight was already run up front — no re-run needed.)
-   - **Before drafting:** present a brief outline of what the page will cover — title, proposed H2 sections, one-line description of each section. Wait for the developer to confirm or adjust before writing the full draft. This is the wiki entry preview; start writing from the top only after the outline is approved.
-   - If extending an existing page: add new sections for the deeper material, and set `updated` to today.
-   - If creating new: draft a full page with everything covered.
-   - Include `flashcard_ids` for any related cards
-   - Run `scripts/wiki-write`, append session log
-
-3. **"done"** -- Just log the session, no writes
-
-**Wiki write details (both modes):**
-
-When writing a wiki page, follow this structure:
-
-- If extending an existing page: read the existing file, add new H2 sections, preserve existing links
-- If creating new, use the page type chosen in Phase 1 to determine structure:
-  - **Tutorial/Concept**: `## TL;DR` with key takeaways, then H2 sections per concept
-  - **Problem-Solution**: Brief context, then `## The problem` then `## How to fix it`
-  - **Pattern/Technique**: Jump into the pattern with descriptive H2/H3 headings
-  - **Feature/Tool Overview**: What is possible, then H2 sections per feature
-- Always include: `## Related Concepts` with `[[absolute/path]]` wikilinks
-- **Always include `## References`**, plus a `## Tradeoffs & Gotchas` H2 (or inline `> [Note]` callouts) when practitioner opinion is load-bearing. Build both per "Wiki Page Structure" sections 6 & 7 below: facts cite the authoritative lane, opinions stay attributed and labelled consensus/contested, `contradictsGroundTruth` opinions are dropped.
-
-**Session log** -- always append to `logs/<MM>/<YYYY-MM-DD>.md` (zero-padded month folder):
+**Session log:** append to `logs/<MM>/<YYYY-MM-DD>.md`:
 
 ```markdown
-## Session N -- Walkthrough (HH:MM)
-- **Topic:** event sourcing
-- **Mode:** write-focused | deepen-focused
-- **Cadence:** learning | refresh | concise
-- **Starting level:** partial recall (Core Concepts solid, Projections weak)
-- **Covered:** event versioning, upcasting, schema evolution
-- **Gaps filled:** projections (re-walked, now solid)
-- **Wiki updates:** [[architecture/event-sourcing]] extended with 2 new sections
-- **Flashcards:** 2 created for event versioning
-- **Research:** research-grounding workflow — 2 authoritative (Greg Young's CQRS doc, EventStore docs) + 2 practitioner (Martin Fowler's bliki, a production post-mortem); confidence: high. 1 blog claim flagged contradictsGroundTruth (dropped). Cited 2 authoritative inline; 1 tradeoff surfaced in `## Tradeoffs & Gotchas`.
-- **Surprising:** upcasting was expected to be a compile-time transform; it's runtime-per-event
-- **Heuristic:** any change to a persisted event shape needs an upcaster, not a migration
-- **Next-time unblocker:** a small probe script that replays one serialized event through the upcaster chain
+## Session N — Walkthrough (HH:MM)
+- **Topic:** CSRF and SameSite cookies
+- **Mode:** deepen-focused
+- **Cadence:** learning
+- **Starting level:** knew the attack shape, not why SameSite=Lax still allows top-level GETs
+- **Explorable:** https://claude.ai/artifact/... (`explore/security/csrf.html`, 5 scenes)
+- **Predictions:** 3/5 right; missed scene 2 (Lax on POST), scene 4 (token in cookie vs. form)
+- **Questions:** 2 in the page, 1 in chat (Lax+POST two-minute window)
+- **Challenge:** 3 asked, 2 right first try, 1 after decomposing
+- **Wiki updates:** [[security/csrf]] extended with 2 sections, `explorables` added
+- **Flashcards:** 2 created from misses
+- **Research:** research-grounding — 2 authoritative (RFC 6265bis, MDN) + 2 practitioner; confidence: high
+- **Surprising:** expected Lax to block every cross-site POST; the misses say the token-vs-cookie distinction was the real gap
+- **Heuristic:** SameSite is a default-deny for subresources, not a CSRF defence on its own
+- **Next-time unblocker:** a scene that replays the same attack under each SameSite value side by side
 ```
 
-**Look-Back fields are mandatory in Learning cadence, recommended in Refresh, and collapse to a single **Takeaway:** line in Concise.** If nothing was surprising, write `Surprising: none — cadence may have been too shallow` so the pattern shows up across sessions. The heuristic is the single line a future session in this area should read first.
+Look-back fields are mandatory in Learning, recommended in Refresh, and collapse to one **Takeaway:** line in Concise. If nothing surprised, write `Surprising: none — cadence may have been too shallow`.
 
 ## Wiki Page Structure (for new pages)
 
-### 1. Frontmatter (YAML)
-Required fields: `title`, `aliases`, `tags`, `created`, `updated`, `source_skill`
-Optional: `flashcard_ids`
+1. **Frontmatter:** required `title`, `aliases`, `tags`, `created`, `updated`, `source_skill`, `flashcard_ids`; optional `explorables`.
+2. **Title (H1):** descriptive for concepts, imperative for how-tos, "Careful:" / "Warning:" prefix for gotchas.
+3. **Opening context** by page type: Tutorial/Concept → `## TL;DR`; Problem-Solution → context, `## The problem`, `## How to fix it`; Pattern/Technique → straight into the pattern; Feature/Tool Overview → what is possible, then a section per feature.
+4. **Code examples:** minimal but working; `# bad` / `# good` comments; codebase code when possible.
+5. **`## Related Concepts`:** `[[absolute/path]]` wikilinks with a one-line relationship each.
+6. **`## Tradeoffs & Gotchas`** (when practitioner opinion is load-bearing): attributed, marked consensus/contested, never ground truth; drop `contradictsGroundTruth` opinions. One-offs go inline as `> [Note]`.
+7. **`## References`:** up to 4 authoritative URLs with a one-line "what this is"; practitioner sources under a `**Practitioner / opinion:**` sub-label. A factual body claim is never cited only to a practitioner source. Research skipped or unavailable → `_None — repo-internal topic._` or `_Research unavailable at write time; verify before relying on this page._`
+8. **Warnings/notes:** short ones bold inline; standalone `> [Warning]` / `> [Note]`.
 
-### 2. Title (H1)
-- Clear, descriptive title identifying the topic
-- Use imperative form for how-to topics
-- Use descriptive form for concept topics
-- Prefix with "Careful:" or "Warning:" for gotcha-style pages
-
-### 3. Opening Context (varies by page type)
-Structure depends on the page type chosen in Phase 1.
-
-### 4. Code Examples
-- Minimal but complete enough to be functional
-- Show bad examples with `# bad` comment, good with `# good` comment
-- Use code from the actual codebase when possible
-
-### 5. Related Concepts (H2)
-- `[[absolute/path]]` wikilinks with brief relationship descriptions
-
-### 6. Tradeoffs & Gotchas (H2, optional — when practitioner opinion is load-bearing)
-- Collects the workflow's practitioner `opinions`: tradeoffs, lived experience, architectural nuance, gotchas
-- Each point attributed to its source and marked consensus/contested; framed as opinion, never as ground truth
-- One-off nuances go inline as `> [Note]` callouts in the relevant section instead of here
-- Drop any opinion the workflow flagged `contradictsGroundTruth` — keep the authoritative fact it contradicts instead
-
-### 7. References (H2)
-- Authoritative URLs (max 4) from Phase 1 research, each with a one-line "what this is"
-- Prefer official docs, RFCs, source code, canonical references for ground truth — facts cite this lane
-- When practitioner sources were used, list them under a `**Practitioner / opinion:**` sub-label, distinct from the authoritative URLs. **A factual claim in the body must never be cited only to a practitioner source.**
-- Inline-link specific version-specific, contested, or non-obvious claims in the body (`[per RFC 6797 §7.2](url)`) in addition to listing here
-- If research was skipped (repo-internal topic) or unavailable, still write the section as `_None — repo-internal topic._` or `_Research unavailable at write time; verify before relying on this page._` so the gap is visible
-
-### 8. Warnings/Notes
-- Short warnings: bold inline. Standalone callouts: `> [Warning]` / `> [Note]`
-
-## Writing Style
-
-- Concise -- every sentence adds value
-- Technically precise -- exact terms, versions, paths
-- Practical -- working code, not pseudocode
-- Insightful -- non-obvious information
-- No emojis
+Writing style: concise, technically precise, practical, insightful, no emojis.
 
 ## Chaining
 
-**Into /study-walkthrough:**
-- After `/study` reveals weak areas -> "You had 2 lapses on event sourcing. Let's deepen that."
-- After `/study-flashcard` -> "Want to explore these concepts more deeply?"
+**Into /study-walkthrough:** `/study` lapses on a topic ("2 lapses on CSRF, explore it?"); Omvida's Go deeper and Add → Wiki entry; `/study-flashcard` when a topic is new to the developer.
 
-**Out of /study-walkthrough:**
-- After walkthrough -> offer `/study-flashcard` for SRS reinforcement
-- After walkthrough -> offer `/study` to immediately review related cards
+**Out of /study-walkthrough:** `/study-flashcard` with the explorable as context (cards from misses); `/study` to review related cards right away. Offer one at a time.
 
 ## Guardrails
 
 **Always:**
-- Fill every gap with a question, never an assertion (Socratic Never-Reveal) -- the developer produces every answer in the dialogue
-- Check wiki and flashcards before starting -- never start blind
-- **Run the `research-grounding` workflow at Phase 1** for any externally-knowable topic — explanations must be grounded in authoritative sources (facts) and enriched with practitioner opinion (tradeoffs, gotchas), not just model memory. Authoritative always wins for facts; opinions stay labelled and never override ground truth. Probes are the exception: they ground themselves via execution.
-- Calibrate before teaching -- never assume the developer's level
-- Loop on failed recall -- never skip past a gap
-- Use concrete codebase code, not abstract examples
-- Log every session, even if no wiki write happens
-- Track which concepts are new vs. reinforced for accurate logging
+- Preflight first; storyboard approved before the first scene.
+- One scene per turn, smoke-tested before every publish, always published from the same source path.
+- Every scene asks one question and gates its reveal behind a prediction.
+- Read the page's `attempts` and `questions` when the developer comes back, and let the misses drive Discuss, Challenge and the flashcards.
+- Ground scenes and the fact sheet in the authoritative research; opinions stay labelled.
+- Log every session, even with no wiki write.
 
 **Never:**
-- Reveal or state a correct answer to fill a gap in the dialogue -- decompose into a smaller question instead (explicit developer request and the written wiki page excepted)
-- Skip calibration when existing material exists
-- Walk through an externally-knowable topic on model memory alone — research first, probe second, model paraphrase last
-- Present a practitioner opinion as ground truth, or cite a factual body claim only to a blog — facts come from the authoritative lane; opinions stay labelled and attributed
-- Promote an opinion the workflow flagged `contradictsGroundTruth` — keep the authoritative fact it contradicts
-- "Verify" a probe-derived result with research — the probe is the ground truth for what it demonstrates
-- Move past a concept the developer can't explain back
-- Dump information without checking understanding
-- Auto-write to wiki without developer requesting it (deepen-focused mode)
-- Create flashcards automatically -- always offer, never force
+- Put a wall of text, autoplay motion or decoration in a scene (`explorable-design.md`, Anti-patterns).
+- Reveal answers in the Challenge phase (explicit request excepted).
+- Present a practitioner opinion as fact, or cite a factual claim only to a blog.
+- Auto-write the wiki page in deepen-focused mode, or create flashcards without the developer picking them.
 
-## Developer Preference — Intuition First, Syntax as Reference
+## Developer Preference: Intuition First, Syntax as Reference
 
-The developer wants walkthroughs and wiki pages centered on **high-level intuition and evaluation capacity** — tradeoffs, design principles, mental models, "when/why X over Y," threat models, failure modes, and concepts portable across languages/frameworks.
+The developer wants **high-level intuition and evaluation capacity**: tradeoffs, design principles, mental models, "when/why X over Y", threat models, failure modes, concepts portable across languages. Scenes should make *mechanisms* visible, not quiz syntax. Syntax details (API signatures, flag defaults) are welcome on the wiki page as lookup material.
 
-Syntax details (exact API signatures, flag defaults, enum values) **are welcome in walkthroughs and wiki pages** — they make the reference material useful. Lead with the intuition, include the syntax as supporting reference.
-
-**Hard rule for the flashcard handoff:** if this session chains into `/study-flashcard`, do NOT propose syntax-recall cards. Only concept/tradeoff/intuition cards make it into the SRS. Syntax stays on the wiki page as a lookup.
+**Hard rule for the flashcard handoff:** no syntax-recall cards. Only concept, tradeoff and intuition cards enter the SRS.

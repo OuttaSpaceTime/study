@@ -266,6 +266,44 @@ class TestFrontmatter:
         assert [e for e in errors if "forbidden-field" in e] == []
 
 
+class TestExplorables:
+    def _page(self, explorables: str) -> str:
+        return f"""\
+            ---
+            title: "some page"
+            aliases: []
+            tags: [git]
+            created: 2026-04-09
+            updated: 2026-04-09
+            source_skill: study-walkthrough
+            flashcard_ids: []
+            {explorables}
+            ---
+
+            # some page
+
+            ## Section One
+
+            Content.
+        """
+
+    def test_list_of_https_urls_is_allowed(self, wiki_dir: Path):
+        _write_page(wiki_dir, "git/some-page.md", self._page("explorables: [https://claude.ai/artifact/abc123]"))
+        _write_index(wiki_dir, {})
+        errors, _ = lint_wiki(wiki_dir)
+        assert [e for e in errors if "explorable" in e or "forbidden-field" in e] == []
+
+    @pytest.mark.parametrize(("value", "expected"), [
+        ("[explore/git/some-page.html]", "explore/git/some-page.html"),
+        ("https://claude.ai/artifact/abc123", "must be a list"),
+    ])
+    def test_bad_value_is_an_error(self, wiki_dir: Path, value: str, expected: str):
+        _write_page(wiki_dir, "git/some-page.md", self._page(f"explorables: {value}"))
+        _write_index(wiki_dir, {})
+        errors, _ = lint_wiki(wiki_dir)
+        assert any("bad-explorable" in e and expected in e for e in errors), errors
+
+
 class TestWikilinks:
     def test_broken_link(self, wiki_dir: Path):
         _write_page(wiki_dir, "git/test-page.md", """\

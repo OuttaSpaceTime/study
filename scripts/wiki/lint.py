@@ -28,7 +28,7 @@ REQUIRED_FIELDS = {
     "flashcard_ids",
 }
 
-OPTIONAL_FIELDS = {"lint_ignore"}
+OPTIONAL_FIELDS = {"lint_ignore", "explorables"}
 ALLOWED_FIELDS = REQUIRED_FIELDS | OPTIONAL_FIELDS
 
 # Named so the error can say what replaced them. Anything else unrecognized is
@@ -152,6 +152,7 @@ def lint_wiki(
 
     errors.extend(_check_frontmatter(pages))
     errors.extend(_check_forbidden_fields(pages))
+    errors.extend(_check_explorables(pages))
     errors.extend(_check_aliases(pages))
     errors.extend(_check_wikilinks(wiki_dir, pages))
     errors.extend(_check_alias_collisions(index))
@@ -540,6 +541,23 @@ def _check_forbidden_fields(pages: list[ParsedPage]) -> list[str]:
         for field in sorted(set(p.meta) - ALLOWED_FIELDS):
             reason = RETIRED_FIELDS.get(field, "not part of the page schema")
             errors.append(f"forbidden-field: {p.rel} carries '{field}' ({reason})")
+    return errors
+
+
+def _check_explorables(pages: list[ParsedPage]) -> list[str]:
+    """`explorables` must be a list of https URLs: Omvida opens each one as is,
+    so a bare id or a local path would give a button that opens nothing."""
+    errors: list[str] = []
+    for p in pages:
+        if "explorables" not in p.meta:
+            continue
+        value = p.meta["explorables"]
+        if not isinstance(value, list):
+            errors.append(f"bad-explorable: {p.rel} 'explorables' must be a list of URLs")
+            continue
+        for url in value:
+            if not (isinstance(url, str) and url.startswith("https://")):
+                errors.append(f"bad-explorable: {p.rel} explorable '{url}' is not an https URL")
     return errors
 
 

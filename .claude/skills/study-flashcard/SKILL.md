@@ -1,6 +1,6 @@
 ---
 name: study-flashcard
-description: "Create SRS flashcards directly: suggest a few ready card fronts on a topic, the developer picks or edits them, they are created. Checks pressure and existing cards first. For learning the topic itself, the developer calls /study-walkthrough or /study. Trigger keywords: create flashcard, add flashcard, new flashcard, make flashcard, cards on this."
+description: "Create SRS flashcards directly: suggest a few ready card fronts on a topic, the developer picks or edits them, they are created. Checks pressure and existing cards first. When the topic has an explorable, the predictions the developer missed there come first. For learning the topic itself, the developer calls /study-walkthrough or /study. Trigger keywords: create flashcard, add flashcard, new flashcard, make flashcard, cards on this."
 user_invocable: true
 ---
 
@@ -25,6 +25,8 @@ See `~/.claude/skills/references/interactive-principles.md` for the shared princ
 
 Requires `flashcard-mcp`. Tools: `check_pressure`, `list_decks`, `find_similar_cards`, `create_card`, `get_card`, `update_card`. Use `find_similar_cards` for duplicate checks: it is semantic. `search_cards` is substring only.
 
+Reading an explorable's recorded answers uses the `ArtifactData` tool (deferred: load it via ToolSearch the first time).
+
 ## Invocation
 
 ```
@@ -40,6 +42,8 @@ The Omvida app (`~/Code/omvida`, Add → Flashcards) opens this skill as `/study
 - `Context: wiki page [[folder/slug]]`: read that page silently and suggest cards for what it teaches that its `flashcard_ids` do not cover yet.
 - `Context: flashcard <id>: <front>`: the developer was studying that card. Suggest cards for the neighbouring ideas or the gap it exposed, not a rephrasing of it.
 
+`/study-walkthrough` opens it with `Context: explorable <url>`: the interactive page the developer just explored. See "Seeding from an explorable" below.
+
 ## Step 1: Pressure preflight (always first)
 
 Call `check_pressure` before anything else and follow `references/srs-pressure-check.md`.
@@ -52,7 +56,10 @@ Call `check_pressure` before anything else and follow `references/srs-pressure-c
 
 1. **Deck.** `list_decks`. Pick the deck that already holds this topic's cards. Ask in one line only if two decks fit equally.
 2. **What exists.** `find_similar_cards` with the topic, and with each draft front before suggesting it. Read `wiki/.wiki-index.json` for a page on the topic and its `flashcard_ids`.
-3. **Draft and filter.** Draft more fronts than you will show, then drop any that fail the quality checks below or sit above 80% similarity to an existing card. Only suggestions that already pass are shown.
+3. **Explorable misses.** See "Seeding from an explorable".
+
+The lookups in 1-3 do not depend on each other: make them in one turn.
+4. **Draft and filter.** Draft more fronts than you will show, then drop any that fail the quality checks below or sit above 80% similarity to an existing card. Only suggestions that already pass are shown.
 
 ## Step 3: Suggest (one message)
 
@@ -67,6 +74,7 @@ Lead with one line on existing coverage when there is any ("You have 4 cards on 
 > Pick (`1,3`), edit (`2: shorter answer`), `all`, or `none`.
 
 - A suggestion in the **50-80% similarity band** carries one extra line naming the close card: *close to "What does the Expires attribute do?"; say how the answers differ, or skip it.* That band is an interference risk: sibling cards that differ only in which attribute they name compete at recall. If the developer cannot separate them, fold the two into one contrasting card instead of creating both.
+- A suggestion seeded from a miss carries one italic line naming it: *from your miss in scene 2: you expected the cookie to be blocked.*
 - If the topic looks new to the developer, end with one line: *To learn it first: `/study-walkthrough <topic>`.*
 
 ## Step 4: Create and report
@@ -77,6 +85,16 @@ Lead with one line on existing coverage when there is any ("You have 4 cards on 
 3. **Push to AnkiWeb:** run `scripts/anki-sync sync` silently. Mention it only if it moved something or failed (one line, never blocking).
 4. **Link the wiki:** if a wiki page covers the topic, add the new ids to its `flashcard_ids` and run `scripts/wiki-write <page>` (the wiki-write protocol's index and lint step). Say it in one line. If no page exists, offer once: *No wiki page yet; `/study-walkthrough --write <topic>` writes one.*
 5. Append the session log entry (`## Session N — Flashcard (HH:MM)`: topic, cards created, deck, wiki page linked) to `logs/<MM>/<YYYY-MM-DD>.md`.
+
+## Seeding from an explorable
+
+Applies when there is an explorable: the `Context: explorable <url>` line, or a context wiki page whose frontmatter lists `explorables`. Read its `attempts` collection (`references/explorable-design.md`, Recording) with `ArtifactData` `list`. **A miss is the best card there is:** the developer has just shown which way they get it wrong, and the card can aim straight at that.
+
+- **Misses first.** Every miss (as `explorable-design.md` defines it, across all sessions) is a candidate; misses fill the suggestion slots before anything else.
+- **Grounded front from the scene.** The front restates the scene's setup as a concrete scenario and asks for the judgement the prediction asked for, without the page's interactive ("A form on evil.com POSTs to bank.com. Under `SameSite=Lax`, does bank.com's session cookie ride along, and why?"). The back gives the expected answer plus the one-clause why, within the size rules.
+- **Aim at the wrong model.** When the developer's wrong `answer` reveals a specific misconception, the front can name the tempting answer as a contrast ("...: blocked, or sent?") so recall has to reject it.
+- **Correct answers are not candidates** unless the developer asks for more cards; the page already showed they have it.
+- Read the attempts silently and never show the raw records. If the read fails, fall back to the normal suggestions and say nothing about it.
 
 ## Guardrails
 
@@ -163,5 +181,5 @@ Show drafts rendered in chat, never as raw HTML. These rules are enforced by `cr
 
 ## Chaining
 
-- **Into this skill:** Omvida's Add → Flashcards and a wiki page's "Cards on this page"; `/study-walkthrough` after it writes a page ("Add the key points as cards?"); `/study` when a session exposes a gap.
+- **Into this skill:** Omvida's Add → Flashcards and a wiki page's "Cards on this page"; `/study-walkthrough` after exploring, with the explorable as context ("Cards from your misses?"); `/study` when a session exposes a gap.
 - **Out of it:** `/study-walkthrough <topic>` to learn first or go deeper; `/study` to review the new cards. Offer each in one line at most, never both at once.

@@ -25,9 +25,9 @@ Applies to every skill in this repo.
 ### Study & Knowledge
 
 - `/study` — Interactive study session. Flashcards are the only thing reviewed: Claude evaluates answers and rates them. Closes by suggesting wiki pages related to the cards just studied (or the index view for free browsing). Logs sessions.
-- `/study-flashcard` — Create new flashcards directly: suggests a few ready card fronts on a topic, the developer picks or edits them, they are created after the duplicate and quality checks. Not a walkthrough: for learning the topic, call `/study-walkthrough` or `/study`. Links new cards into an existing wiki page's `flashcard_ids`.
+- `/study-flashcard` — Create new flashcards directly: suggests a few ready card fronts on a topic, the developer picks or edits them, they are created after the duplicate and quality checks. When the topic has an explorable, the predictions missed there are suggested first. Not a walkthrough: for learning the topic, call `/study-walkthrough` or `/study`. Links new cards into an existing wiki page's `flashcard_ids`.
 - `/study-fix-notes` — Work through the card notes left while studying (Omvida's Ctrl+N): per noted card, draft and write the fix it asks for, or work the question through in `/study`'s Socratic mode, then resolve the note. Omvida opens it with the noted cards' ids; with none it takes every open note.
-- `/study-walkthrough` — Interactive walkthrough that calibrates to current understanding, fills gaps, pushes deeper. Optionally writes wiki pages. Use `--write` to default to producing a wiki page.
+- `/study-walkthrough` — Explore first, then talk: builds an **explorable** (an interactive page of animated step-throughs, lever sandboxes and predictions, see [Explorables](#explorables)) one scene per turn, then Discuss (direct answers to the developer's questions), an optional Challenge (Socratic), and the wiki page. `--write` always writes the page; `--no-explore` skips the page.
 - `/canvas` — Interactively edit an Obsidian `.canvas` in a tight edit→show→react loop. Two modes: **live** (`eval` against the running app, reads your GUI selection) and **file** (Read/Write the JSON on disk, git-trackable). Same JSON schema either way.
 
 ## Todo
@@ -42,7 +42,7 @@ The wiki content lives in `wiki/`, organized by topic folders (e.g., `wiki/javas
 
 ### Page Format
 
-Every wiki page has YAML frontmatter. Required on **all pages**: `title`, `aliases`, `tags`, `created`, `updated`, `source_skill`, `flashcard_ids` (list, empty `[]` is fine). `scripts/wiki-write` auto-fills `flashcard_ids` when missing; the rest must be set by the calling skill. Frontmatter is a **closed schema**: `scripts/lint` reports any key outside the required set plus `lint_ignore` as a `forbidden-field` error. That covers the retired scheduling fields (`next_review`, `review_interval`, `last_deepened`) and every earlier retirement (`depth`, `probe_sections`, `last_probed`, `allow_orphan`) without a list to maintain. Optional: `lint_ignore` (list of lint **warning** labels to suppress for this page — see [Suppressing warnings per page](#suppressing-warnings-per-page)).
+Every wiki page has YAML frontmatter. Required on **all pages**: `title`, `aliases`, `tags`, `created`, `updated`, `source_skill`, `flashcard_ids` (list, empty `[]` is fine). `scripts/wiki-write` auto-fills `flashcard_ids` when missing; the rest must be set by the calling skill. Frontmatter is a **closed schema**: `scripts/lint` reports any key outside the required set plus `lint_ignore` and `explorables` as a `forbidden-field` error. That covers the retired scheduling fields (`next_review`, `review_interval`, `last_deepened`) and every earlier retirement (`depth`, `probe_sections`, `last_probed`, `allow_orphan`) without a list to maintain. Optional: `lint_ignore` (list of lint **warning** labels to suppress for this page — see [Suppressing warnings per page](#suppressing-warnings-per-page)) and `explorables` (list of artifact URLs, see [Explorables](#explorables); lint requires `https://` URLs).
 
 ### Linking Rules
 
@@ -54,6 +54,18 @@ Every wiki page has YAML frontmatter. Required on **all pages**: `title`, `alias
 ### Topics
 
 A topic is a folder plus a tag; there are no index or map-of-content pages. Every page is tagged with its folder (and sub-folder) name, plus the subject tags it shares with pages elsewhere. The wiki-viewer and Omvida list a folder's pages from the tree, and Omvida's graph pulls pages that share a tag together, so a topic holds together without a hub page linking it. See the write protocol's "Topics" section.
+
+### Explorables
+
+An explorable is a small interactive page about one topic: 3-6 scenes in a stepper, each asking one question, gating its reveal behind a prediction, and letting the developer step, scrub or flip levers on the mechanism. `/study-walkthrough` builds it one scene per turn; the design rules, the research behind them, the scene catalogue and the data contract live in `.claude/skills/references/explorable-design.md`.
+
+- **Source** is one self-contained HTML file at `explore/<folder>/<slug>.html`, keyed like the wiki page it belongs to, and git-tracked.
+- **Published** as a private claude.ai Artifact, always from that same path so the URL stays put. The wiki page lists the URL in its `explorables` frontmatter, and Omvida shows an **Explore** button for it.
+- **Feedback channel:** the page records predictions and challenge answers (`attempts`) and its in-page Ask Claude questions (`questions`) in the artifact's own `db`. Skills read them with the `ArtifactData` tool: `/study-walkthrough` opens Discuss with the misses, `/study-flashcard` turns them into card suggestions. Nothing runs locally.
+- **Ask Claude** inside the page uses the artifact `sample` capability (the developer's own usage), grounded in a fact sheet built from the research workflow's authoritative facts.
+- `scripts/explore-check <file>` smoke-tests a page in headless Chromium (desktop and phone screenshots, console errors) before every publish.
+
+Why not inside Omvida: Quickshell 0.3.2 crashes on loading Qt WebEngine (Chromium needs an `argv[0]` Quickshell does not pass), and native QML scenes would lock the pages to one app. A link is enough.
 
 ### Index
 
@@ -114,7 +126,7 @@ Open the dashboard itself (`xdg-open "http://localhost:4777/"`) when you want th
 
 ### Omvida (desktop app)
 
-`~/Code/omvida` is a Quickshell app over the same wiki and deck: the wiki reader (tree, context panel, links, local graph), the deck explorer, the full graph, search with an "Ask Claude" that runs the [Query Protocol](#query-protocol) headless, and a **study loop** for typing answers. Each answer is graded by `claude -p` (flashcard-mcp `src/core/grading.ts`, fixed rubric) and the developer accepts or overrides the suggested rating with keys (Shift+Enter reveal, Alt+Enter accept, Shift+1-4 rate). It keeps `/study`'s session around the loop: Anki sync before and after, the pressure and calibration verdicts, leech blocking, the related-pages offer, and a `## Session N — Study` entry in today's log with `**Surface:** Omvida app`. Its Discuss, Add → Flashcards and Add → Wiki entry open Claude Code in kitty in this repo with the matching skill. Launch it with `~/Code/omvida/bin/omvida`, or `omvida open <wiki-key>` for a page ("show in Omvida", see the wiki-write protocol). The wiki-viewer stays; Omvida is a second surface over the same files.
+`~/Code/omvida` is a Quickshell app over the same wiki and deck: the wiki reader (tree, context panel, links, local graph), the deck explorer, the full graph, search with an "Ask Claude" that runs the [Query Protocol](#query-protocol) headless, and a **study loop** for typing answers. Each answer is graded by `claude -p` (flashcard-mcp `src/core/grading.ts`, fixed rubric) and the developer accepts or overrides the suggested rating with keys (Shift+Enter reveal, Alt+Enter accept, Shift+1-4 rate). It keeps `/study`'s session around the loop: Anki sync before and after, the pressure and calibration verdicts, leech blocking, the related-pages offer, and a `## Session N — Study` entry in today's log with `**Surface:** Omvida app`. Its Discuss, Add → Flashcards and Add → Wiki entry open Claude Code in kitty in this repo with the matching skill. A page with `explorables` gets an **Explore** button that opens each one as a web app window (`omarchy-launch-webapp`). Launch it with `~/Code/omvida/bin/omvida`, or `omvida open <wiki-key>` for a page ("show in Omvida", see the wiki-write protocol). The wiki-viewer stays; Omvida is a second surface over the same files.
 
 ### Flashcards in the viewer
 
@@ -134,7 +146,7 @@ The vault is the whole repo, but only `wiki/` is knowledge content. Hiding the r
 | Search, graph, quick-switcher, link autocomplete | `userIgnoreFilters` (core "Excluded files") | `.obsidian/app.json` |
 | File-explorer sidebar (full removal) | CSS snippet using `.nav-folder:has(...)` / `.nav-file:has(...)` rules | `.obsidian/snippets/hide-non-wiki.css` (enabled via `enabledCssSnippets` in `.obsidian/appearance.json`) |
 
-Both lists must stay **in sync**. Currently hidden: `scripts/`, `tests/`, `wiki-viewer/`, `CLAUDE.md`. Kept visible on purpose: `wiki/`, `logs/`, `AGENTS.md`, `todo.md`. Dotfolders (`.claude/`, `.git/`, `.venv/`, `.pytest_cache/`) are auto-ignored by Obsidian; non-markdown (`pyproject.toml`, `uv.lock`) is hidden by `showUnsupportedFiles: false`. The graph view is separately scoped to `path:wiki/ -path:wiki/indexes` via `.obsidian/graph.json`.
+Both lists must stay **in sync**. Currently hidden: `scripts/`, `tests/`, `wiki-viewer/`, `explore/`, `CLAUDE.md`. Kept visible on purpose: `wiki/`, `logs/`, `AGENTS.md`, `todo.md`. Dotfolders (`.claude/`, `.git/`, `.venv/`, `.pytest_cache/`) are auto-ignored by Obsidian; non-markdown (`pyproject.toml`, `uv.lock`) is hidden by `showUnsupportedFiles: false`. The graph view is separately scoped to `path:wiki/ -path:wiki/indexes` via `.obsidian/graph.json`.
 
 To change what's hidden: edit the list in **both** `app.json` (`userIgnoreFilters`) and `hide-non-wiki.css`, then reload Obsidian (`Ctrl+R`). For a folder, add `.nav-folder:has(> .nav-folder-title[data-path="<name>"])`; for a file, `.nav-file:has(> .nav-file-title[data-path="<name>.md"])`.
 
@@ -268,6 +280,7 @@ Available scripts:
 - `scripts/wiki-reindex [--wiki-dir DIR]` — Rebuild `.wiki-index.json` from every page: drops fields the current schema no longer writes, prunes entries for deleted pages, and carries each page's `updated` stamp over (a reindex is a derive, not a write). Use after any index schema change
 - `scripts/lint` — Check broken wikilinks, frontmatter, alias collisions
 - `scripts/anki-sync <login|sync|status>` — Sync flashcards to AnkiWeb (see [Anki Sync](#anki-sync)). `sync --dry-run` previews, `--local` skips AnkiWeb
+- `scripts/explore-check <page.html> [--out DIR]` — Smoke-test an explorable in headless Chromium: desktop and phone screenshots, console errors, exit 1 on an uncaught error (see [Explorables](#explorables))
 - `scripts/card-htmlize` — Convert markdown/plain card text in master.db to simple Anki HTML (dry-run by default, `--apply` writes after backing up master.db)
 - `scripts/flashcard-mcp-server` — stdio launcher used by `.mcp.json`; not run by hand except to debug a path problem (see [Machine-local configuration](#machine-local-configuration))
 

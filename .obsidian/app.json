@@ -8,6 +8,7 @@
     "scripts/",
     "tests/",
     "wiki-viewer/",
+    "explore/",
     "CLAUDE.md"
   ]
 }
