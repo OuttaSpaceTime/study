@@ -9,7 +9,7 @@ tags:
 - web
 - browser
 created: '2026-10-20'
-updated: '2026-10-20'
+updated: '2026-10-23'
 source_skill: study-walkthrough
 flashcard_ids:
 - cmvh4hkad0000jq1aro023kh5
@@ -176,7 +176,7 @@ The browser does no sanitizing itself. It does not know your allowlist. You supp
 
 - [[security/same-origin-policy]]: XSS bypasses SOP by running inside the target origin rather than reading across origins
 - [[security/csrf]]: CSRF tokens rely on SOP, so any XSS defeats them
-- Content Security Policy: the backup layer that limits what injected script can do once escaping fails (not yet a wiki page)
+- [[security/content-security-policy]]: the backup layer that limits what injected script can do once escaping fails
 
 ## References
 

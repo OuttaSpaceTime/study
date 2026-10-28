@@ -39,7 +39,7 @@ For sessions longer than ~3 phase messages, keep a tiny ledger at the top of eac
 
 - **Explorable:** the artifact URL, `scene k/n published`
 - **Missed:** predictions or challenges the developer got wrong (scene id + one phrase)
-- **Open questions:** from the page's Ask box or the chat, not yet resolved
+- **Open questions:** from the chat (the page's Ask box sends there too), not yet resolved
 - **Queued:** flashcard / wiki deltas to propose at Phase 5
 
 Chat-only; never written into the wiki page.
@@ -56,11 +56,11 @@ Omit it only when the developer opted out of the interactive flow (non-interacti
 ## MCP and Tool Dependencies
 
 - `flashcard-mcp`: `check_pressure`, `find_similar_cards`, `search_cards`, `get_card`.
-- The global **`explorable`** skill: builds, smoke-tests and publishes the page, and reads its `attempts` and `questions` (Artifact and ArtifactData tools).
+- The global **`explorable`** skill: builds, smoke-tests and publishes the page, reads its `attempts`, and answers the questions the page sends to the chat (Artifact, ArtifactData and ArtifactComments tools).
 
 ## Research Grounding
 
-Scenes state facts, and the in-page Ask answers from a fact sheet, so both must come from sources, not model memory. At Phase 1 Step 1, run the **`research-grounding` workflow** (`.claude/workflows/research-grounding.js`) in the background, in parallel with the wiki lookups.
+Scenes state facts, and the chat answers the page's questions, so both must come from sources, not model memory. At Phase 1 Step 1, run the **`research-grounding` workflow** (`.claude/workflows/research-grounding.js`) in the background, in parallel with the wiki lookups.
 
 **Two lanes, not equal:**
 
@@ -83,7 +83,7 @@ It returns `{ confidence, authoritativeSources[], practitionerSources[], facts[]
 **Using the findings:**
 
 - **Scenes:** `loadBearing` facts decide what the scenes show; `misconceptions` are the best prediction options (the wrong answer people actually hold). A scene built before the research returned is checked against it when it lands: a contradicted point is corrected in place and the scene republished, with one line in chat.
-- **Fact sheet:** pass the relevant `facts` with their source URLs to the `explorable` skill as its Facts, so it grounds the in-page Ask in them and skips its own research.
+- **Facts for the explorable:** pass the relevant `facts` with their source URLs to the `explorable` skill as its Facts, so its scenes are grounded in them and it skips its own research.
 - **Discuss:** facts ground the direct answers; `opinions` and `divergence` become tradeoff answers presented as opinion ("practitioners disagree: ...").
 - **Challenge:** `opinions` unlock judgement questions ("here's a gotcha someone hit in production: why might that happen?"). Never pose a `contradictsGroundTruth` opinion.
 - **Wiki write:** facts go to `## References` (inline-link version-specific claims); load-bearing opinions to `## Tradeoffs & Gotchas` or inline `> [Note]` callouts, attributed.
@@ -139,11 +139,10 @@ When the developer corrects something (a scene's behaviour, a fact, an earlier a
 
 ## Preflight: SRS Pressure Check
 
-Run it before Phase 1 and before any other tool call. The first assistant message of this skill is the pressure-check output and nothing else, regardless of mode or flags. Follow `references/srs-pressure-check.md` exactly:
+Run it before Phase 1 and before any other tool call, regardless of mode or flags. Follow `references/srs-pressure-check.md` exactly. **Only `warn` / `pause` stop the turn; `ok` never does.**
 
 1. Call `mcp__flashcard-mcp__check_pressure` (not `get_due_cards` or `list_decks`).
-2. `ok` → one line: `SRS pressure: ok — proceeding.` `warn` / `pause` → counts, reasons and clearance numbers, then the gate question; wait for an explicit answer.
-3. Footer: `Preflight — SRS Pressure Check`.
+2. `ok` → write the one line `SRS pressure: ok — proceeding.` and **go straight on to Phase 1 Step 1 in the same turn** (index read, qmd, card lookup, research start), ending the turn only at Step 2's calibration question. No footer, no "go" gate. `warn` / `pause` → counts, reasons and clearance numbers, then the gate question with footer `Preflight — SRS Pressure Check`; wait for an explicit answer.
 
 ## Phase Flow
 
@@ -159,7 +158,7 @@ Run it before Phase 1 and before any other tool call. The first assistant messag
 **Step 2: present what exists and calibrate, in one message.** Name existing pages with their `updated` date, their explorable if they have one, and the card count. Then **one** calibration question:
 
 - Existing material: one targeted recall question from the page or the hardest card back.
-- None: "What do you already know about <topic>, and what do you want to be able to do after this?"
+- None: "What do you already know about <topic>, and what do you want to be able to do after this?", plus 2-3 quick probes on the load-bearing concepts from the research. Practical exposure is not conceptual knowledge (2026-10-25: the developer had built an Auth0 login but missed 3 of 5 predictions on what ID tokens, signatures and third-party cookies are). The answers set each scene's mode: **Learn** (worked example, check afterwards) for new concepts, **Predict** only for parts already known; see the `explorable` skill.
 
 **Step 3: storyboard** as the `explorable` skill's storyboard step describes, from the calibration answer and with the scene count per cadence. For write-focused mode, add the page type (Tutorial/Concept, Problem-Solution, Pattern/Technique, Feature/Tool Overview) and scope: a topic with >5 sub-concepts → suggest splitting; a single fact → suggest adding it to an existing page.
 
@@ -186,7 +185,7 @@ After the last scene: "That's the whole page. Want to discuss what came up, or g
 
 ### Phase 3/5: Discuss
 
-1. Read `attempts` and `questions` once more. Open with what the page recorded, then hand over:
+1. Read `attempts` once more. Open with what the page recorded, then hand over:
    > You missed 2 of 5 predictions (scenes 2 and 4) and asked one question in the page (about Lax and top-level navigations). Where do you want to start?
 2. The developer drives. Answer directly, grounded in the facts (see "Answering vs. Socratic"). One concept per message.
 3. When a question is best answered visually, **offer** a clarifying scene ("I can add a scene that steps through exactly that, want it?"). Build it only on yes, per the Phase 2 loop.
@@ -267,8 +266,8 @@ Writing style: concise, technically precise, practical, insightful, no emojis.
 - Preflight first; storyboard approved before the first scene.
 - One scene per turn, smoke-tested before every publish, always published from the same source path.
 - Every scene asks one question and gates its reveal behind a prediction.
-- Read the page's `attempts` and `questions` when the developer comes back, and let the misses drive Discuss, Challenge and the flashcards.
-- Ground scenes and the fact sheet in the authoritative research; opinions stay labelled.
+- Read the page's `attempts` when the developer comes back, and let the misses drive Discuss, Challenge and the flashcards. Questions from the page arrive in the chat.
+- Ground scenes and chat answers in the authoritative research; opinions stay labelled.
 - Log every session, even with no wiki write.
 
 **Never:**
@@ -281,4 +280,4 @@ Writing style: concise, technically precise, practical, insightful, no emojis.
 
 The developer wants **high-level intuition and evaluation capacity**: tradeoffs, design principles, mental models, "when/why X over Y", threat models, failure modes, concepts portable across languages. Scenes should make *mechanisms* visible, not quiz syntax. Syntax details (API signatures, flag defaults) are welcome on the wiki page as lookup material.
 
-**Hard rule for the flashcard handoff:** no syntax-recall cards. Only concept, tradeoff and intuition cards enter the SRS.
+**Hard rule for the flashcard handoff:** no syntax-recall cards. Only concept, tradeoff and intuition cards enter the SRS, **breadth first**: the first cards on a topic are its most general, transferable concepts, phrased with roles (the identity provider, the API, the browser) rather than products. Vendor and version specifics stay on the wiki page and become cards only when the developer deepens the topic or asks. See `/study-flashcard`, "Breadth first".

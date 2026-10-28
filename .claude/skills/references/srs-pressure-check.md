@@ -6,7 +6,8 @@ Shared preflight for skills that add new SRS content (`/study-flashcard`, and `/
 
 Run this check before any other substantive action in the skill: before listing decks, before reading the wiki index, before drafting anything, before asking the developer what they want to make.
 
-- The **first assistant message** of a skill invocation that will add SRS content must be the pressure-check output.
+- The **first assistant message** of a skill invocation that will add SRS content opens with the pressure-check output.
+- **Only a `warn` or `pause` verdict stops the turn.** On `ok`, the verdict line is a status line, not a handoff: emit it and carry on with the skill's next step in the same turn, with no tool-free message ending after it and no waiting for "go". A skill that stops after `ok` makes the developer type a pointless confirmation.
 - No `find_similar_cards`, `list_decks`, `mcp__qmd__query`, or drafting calls may happen before the verdict is produced and (for `warn`/`pause`) surfaced to the developer.
 - Run it on every invocation, including for a single card, when the developer has already said what they want, or when it ran earlier in the session: the developer asked for this guard.
 
@@ -32,13 +33,13 @@ If you notice mid-flow that the preflight was skipped, run the check and surface
    **Read the level from the `verdict` field, verbatim** — `ok`, `warn`, or `pause`. Never infer it from prose. When the verdict is `warn` or `pause`, `clearance` gives the exact number of reviews needed to drop the backlog below the warn (and pause) line — `toExitWarn` / `toExitPause`. Carry those numbers through so the developer always knows the count needed to leave the pressure phase. Clearance covers the backlog axis only: no amount of reviewing lowers `newToday`, which resets at the start of the next day.
 
 2. **Surface the result in the first assistant message:**
-   - `ok` — one line is sufficient: `SRS pressure: ok — proceeding.` Do not expand. Do not bury it inside a larger message.
+   - `ok` — one line is sufficient: `SRS pressure: ok — proceeding.` Do not expand. Then **continue straight into the skill's next step in the same turn** (the next tool calls, the next phase). Never end the turn on this line.
    - `warn` — report the counts, the reasons, and the clearance numbers, then ask: "Continue adding new content, or pause and review first?" Wait for an explicit answer before proceeding.
    - `pause` — report the same, then: "I'd recommend pausing here. Want to run `/study` to clear some review load, or continue anyway?" The developer can override with explicit consent ("continue anyway", "I know, keep going") for everything **except** creating new cards — see below.
 
    **New, unseen cards are hard-blocked at `pause` — not overridable, and not by you.** The flashcard-mcp enforces this itself: `create_card` throws when the verdict is `pause` unless `inheritFrom` is set. The "continue anyway" override never covers a fresh `create_card`, and there is no point attempting one — the server refuses. Still allowed at `pause`, by design: **editing** an existing card (`update_card`) and **splitting** one (`inheritFrom`). Both improve the health of the deck the developer is already carrying, which is exactly what should happen under load. When the verdict is `pause`, redirect to `/study`, an edit, or a split.
 
-3. **Progress footer for the preflight message:** `Preflight — SRS Pressure Check`. (Skills that already have a footer contract follow their own format; this is the footer to emit for this specific step.)
+3. **Progress footer:** only on a `warn`/`pause` message, which ends the turn: `Preflight — SRS Pressure Check`. On `ok` there is no footer, because the turn does not end there; the message that eventually ends the turn carries the skill's own footer. (Skills that already have a footer contract follow their own format.)
 
 4. **Log it** in the session log if a warning was shown, even if the developer continued. One line: `SRS pressure: <verdict> (<flashcardsDue> due, <newToday> added today) — continued | paused`.
 

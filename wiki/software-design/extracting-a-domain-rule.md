@@ -11,13 +11,15 @@ tags:
 - code-review
 - coupling
 created: '2026-07-21'
-updated: '2026-07-21'
+updated: '2026-10-27'
 source_skill: study-walkthrough
 flashcard_ids:
 - cmruqe38w0000qo0m3plgjvt6
 - cmruqe6da0001qo0mj1zcggx0
 - cmruqe9fe0002qo0mx0jabxcf
 - cmruqebt50003qo0mufs2q74k
+- cmuz7zzdo0000621a7e3hqtxc
+- cmvr6uvzr0000lp1agvqpc1sd
 ---
 
 # Extracting a domain rule

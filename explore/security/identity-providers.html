@@ -1,0 +1,1422 @@
+<title>IdP Sessions &amp; Tokens</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one narrow column, a scene stepper, each scene a single working surface. */
+:root {
+  --bg: #eef1f5;
+  --surface: #ffffff;
+  --sunk: #e4e9f0;
+  --ink: #16202c;
+  --muted: #566476;
+  --line: #cfd7e2;
+  --accent: #3446c9;
+  --app: #3446c9;
+  --auth0: #b8521a;
+  --ms: #0d7381;
+  --browser: #5b6676;
+  --ok: #1c7a3c;
+  --bad: #b3242d;
+  --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141b; --surface: #171f29; --sunk: #1f2935; --ink: #e5eaf1; --muted: #9babbd;
+    --line: #2b3646; --accent: #8e9cff; --app: #8e9cff; --auth0: #f0955c; --ms: #4cc4d2;
+    --browser: #a3afbf; --ok: #5ccb86; --bad: #f2777e; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141b; --surface: #171f29; --sunk: #1f2935; --ink: #e5eaf1; --muted: #9babbd;
+  --line: #2b3646; --accent: #8e9cff; --app: #8e9cff; --auth0: #f0955c; --ms: #4cc4d2;
+  --browser: #a3afbf; --ok: #5ccb86; --bad: #f2777e; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--ink);
+  font: 16px/1.5 var(--f-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 56px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: grid; gap: 20px; }
+header { display: grid; gap: 6px; }
+.eyebrow { font: 600 12px/1 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font: 800 clamp(28px, 5vw, 40px)/1.05 var(--f-display); font-stretch: 112%; margin: 0; text-wrap: balance; }
+.promise { margin: 0; color: var(--muted); max-width: 62ch; }
+code, .mono { font-family: var(--f-mono); font-size: .88em; }
+
+/* stepper */
+nav.stepper { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.dots { display: flex; gap: 6px; flex: 1; min-width: 0; }
+.dot { flex: 1; height: 6px; border-radius: 3px; background: var(--line); border: 0; padding: 0; cursor: pointer; }
+.dot[aria-current="step"] { background: var(--accent); }
+.dot:disabled { cursor: default; opacity: .5; }
+.count { font: 600 13px/1 var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+button { font: inherit; color: inherit; }
+.btn {
+  border: 1px solid var(--line); background: var(--surface); border-radius: 8px;
+  padding: 7px 12px; cursor: pointer; font-size: 14px; line-height: 1.2;
+}
+.btn:hover:not(:disabled) { border-color: var(--accent); }
+.btn:disabled { opacity: .45; cursor: default; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 700; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* scene */
+.scene { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; display: grid; gap: 18px; }
+.scene h2 { font: 700 clamp(20px, 3.4vw, 25px)/1.2 var(--f-display); font-stretch: 105%; margin: 0; text-wrap: balance; }
+.prose { margin: 0; max-width: 64ch; }
+.upcoming { color: var(--muted); }
+
+/* timeline */
+.timeline { display: grid; gap: 14px; }
+.lane { display: grid; grid-template-columns: 190px minmax(0, 1fr) 92px; gap: 12px; align-items: center; border-radius: 10px; padding: 6px 8px; transition: background-color .3s; }
+.lane.active { background: var(--sunk); }
+.lane-name { display: grid; gap: 1px; min-width: 0; }
+.lane-name strong { font-size: 15px; }
+.lane-name .mono { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.track { position: relative; height: 30px; }
+.track .rail { position: absolute; inset: 11px 0; border-radius: 4px; border: 1px dashed var(--line); }
+.track .fill { position: absolute; left: 0; top: 9px; bottom: 9px; border-radius: 4px; background: var(--c); opacity: .85; }
+.track .now { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--ink); transform: translateX(-1px); transition: left .35s ease; }
+.track .exp { position: absolute; top: -2px; font: 11px/1 var(--f-mono); color: var(--muted); transform: translateX(-50%); white-space: nowrap; }
+.expiry-note { grid-column: 2 / 3; font-size: 12px; color: var(--muted); margin-top: -6px; }
+.status { font: 600 13px/1 var(--f-mono); display: flex; gap: 6px; align-items: center; justify-content: flex-end; }
+.status.alive { color: var(--ok); }
+.status.dead { color: var(--bad); }
+.lane.active .status { animation: pulse .5s ease; }
+@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.12); } 100% { transform: scale(1); } }
+
+.scrub { display: grid; grid-template-columns: 190px minmax(0, 1fr) 92px; gap: 12px; padding: 0 8px; }
+.scrub-inner { display: grid; gap: 4px; }
+.scrub input[type=range] { width: 100%; margin: 0; accent-color: var(--accent); }
+.ticks { position: relative; height: 16px; font: 12px/1 var(--f-mono); color: var(--muted); }
+.ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+.ticks span:first-child { transform: none; }
+.ticks span:last-child { transform: translateX(-100%); }
+.ticks span.on { color: var(--ink); font-weight: 600; }
+.readout { font-size: 14px; color: var(--muted); }
+.readout b { color: var(--ink); }
+.lock-note { font-size: 13px; color: var(--muted); }
+
+/* prediction gate */
+.gate { border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 10px; }
+.gate .q { font-weight: 700; margin: 0; }
+.opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.opt { text-align: left; border: 1px solid var(--line); background: var(--bg); border-radius: 10px; padding: 10px 12px; cursor: pointer; font-size: 15px; display: flex; gap: 8px; }
+.opt:hover:not(:disabled) { border-color: var(--accent); }
+.opt:disabled { cursor: default; }
+.opt .mark { font-family: var(--f-mono); font-weight: 600; min-width: 1.2em; }
+.opt.right { border-color: var(--ok); }
+.opt.wrong { border-color: var(--bad); }
+.opt.right .mark { color: var(--ok); }
+.opt.wrong .mark { color: var(--bad); }
+.feedback { margin: 0; padding: 10px 12px; border-radius: 10px; background: var(--sunk); }
+.feedback b.right { color: var(--ok); }
+.feedback b.wrong { color: var(--bad); }
+.rec { font-size: 12px; color: var(--muted); }
+
+/* login trace */
+.trace { display: grid; gap: 10px; }
+.trace-head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.trace-head h3 { font: 700 16px/1.2 var(--f-display); margin: 0 auto 0 0; }
+.trace ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; counter-reset: s; }
+.trace li { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 10px; align-items: start; padding: 8px 10px; border-radius: 8px; border: 1px solid transparent; counter-increment: s; transition: background-color .3s, border-color .3s; }
+.trace li.current { border-color: var(--accent); background: var(--sunk); }
+.trace li.past { opacity: .7; }
+.tag { font: 600 12px/1.3 var(--f-mono); color: var(--c); border: 1px solid var(--c); border-radius: 6px; padding: 2px 6px; justify-self: start; }
+.tag::before { content: counter(s) " · "; color: var(--muted); }
+.outcome { margin: 0; padding: 10px 12px; border-left: 3px solid var(--accent); background: var(--sunk); border-radius: 0 8px 8px 0; }
+.ctrls { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.ctrls .count { margin-left: 4px; }
+
+/* sequence (scene 2) */
+.legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.legend span { display: flex; align-items: center; gap: 6px; }
+.lg { display: inline-block; width: 28px; border-top: 2px solid var(--muted); }
+.lg.back { border-top-style: dashed; }
+.seq { border: 1px solid var(--line); border-radius: 10px; background: var(--bg); overflow: hidden; }
+.seq-head { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-bottom: 1px solid var(--line); background: var(--surface); }
+.seq-col { padding: 8px 6px; text-align: center; display: grid; gap: 1px; min-width: 0; }
+.seq-col strong { font-size: 14px; }
+.seq-col .mono { font-size: 10.5px; color: var(--muted); overflow-wrap: anywhere; }
+.seq-wrap { position: relative; max-height: 440px; overflow-y: auto; }
+.seq-lines span { position: absolute; top: 0; bottom: 0; border-left: 1px dashed var(--line); }
+.seq-body { list-style: none; margin: 0; padding: 6px 0 10px; position: relative; display: grid; gap: 2px; min-height: 60px; }
+.seq-row { padding: 6px 10px; border-radius: 8px; margin: 0 6px; transition: background-color .3s; }
+.seq-row.current { background: var(--surface); box-shadow: 0 0 0 1px var(--accent); }
+.seq-row.past { opacity: .6; }
+.seq-track { position: relative; height: 18px; margin: 0 -10px; }
+.arrow { position: absolute; top: 8px; border-top: 2px solid var(--c); }
+.arrow.back { border-top-style: dashed; }
+.arrow::after { content: ""; position: absolute; top: -7px; border: 6px solid transparent; }
+.arrow.right::after { right: -2px; border-left: 9px solid var(--c); border-right: 0; }
+.arrow.left::after { left: -2px; border-right: 9px solid var(--c); border-left: 0; }
+.self { position: absolute; top: 2px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--c); background: var(--surface); transform: translateX(-50%); }
+.seq-msg { font-size: 12.5px; overflow-wrap: anywhere; text-align: center; }
+.seq-detail { font-size: 14px; margin-top: 4px; text-align: center; max-width: 60ch; margin-inline: auto; }
+.addr { display: flex; gap: 10px; align-items: center; border: 1px solid var(--line); border-radius: 12px; padding: 6px 14px; background: var(--surface); min-width: 0; }
+.addr .mono { overflow-wrap: anywhere; min-width: 0; font-size: 12.5px; }
+.addr-label { font: 600 11px/1 var(--f-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); white-space: nowrap; }
+.addr.flash { animation: pulse .5s ease; }
+
+.segs { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.segs-label { font-size: 13px; color: var(--muted); margin-right: 4px; }
+.seg { border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 5px 12px; font-size: 14px; cursor: pointer; }
+.seg[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.http { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.http-col { min-width: 0; display: grid; gap: 4px; align-content: start; }
+.http-h { font: 600 11px/1 var(--f-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.http pre { margin: 0; padding: 10px 12px; background: var(--sunk); border-radius: 8px; font: 12.5px/1.5 var(--f-mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+.http mark { background: color-mix(in srgb, var(--accent) 22%, transparent); color: inherit; border-radius: 3px; padding: 0 2px; }
+.http-note { grid-column: 1 / -1; margin: 0; font-size: 14px; }
+
+/* jwt lab (scene 3) */
+.jwt-lab { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 18px; }
+.lab-col { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.tok-list { display: grid; gap: 6px; }
+.tok { display: flex; justify-content: space-between; align-items: center; gap: 8px; text-align: left; border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 7px 10px; font-size: 14px; cursor: pointer; }
+.tok.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); background: var(--surface); }
+.tok:disabled { opacity: .45; cursor: default; }
+.badge { font: 600 12px/1 var(--f-mono); white-space: nowrap; padding: 3px 6px; border-radius: 5px; border: 1px solid currentColor; }
+.badge.ok { color: var(--ok); }
+.badge.no { color: var(--muted); }
+.badge.danger { color: var(--bad); }
+.tok-view { display: grid; gap: 6px; }
+.jwt { font-size: 12.5px; overflow-wrap: anywhere; padding: 8px 10px; border-radius: 8px; background: var(--sunk); }
+.j-h { color: var(--auth0); }
+.j-p { color: var(--app); }
+.j-s { color: var(--ms); }
+.jwt-part pre { margin: 0; padding: 8px 10px; background: var(--sunk); border-radius: 8px; font: 12px/1.45 var(--f-mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+.checks { display: grid; gap: 6px; }
+.chk { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+.chk input { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; }
+.chk label { font-size: 14px; overflow-wrap: anywhere; }
+.chk-r { font: 600 12px/1 var(--f-mono); white-space: nowrap; }
+.chk-r.pass { color: var(--ok); }
+.chk-r.fail { color: var(--bad); }
+.chk-why { grid-column: 2 / -1; font-size: 12.5px; color: var(--muted); font-family: var(--f-mono); overflow-wrap: anywhere; }
+.verdict { margin: 0; padding: 10px 12px; border-radius: 8px; border-left: 3px solid var(--muted); background: var(--sunk); }
+.verdict.ok { border-color: var(--ok); }
+.verdict.no { border-color: var(--muted); }
+.verdict.danger { border-color: var(--bad); }
+.verdict.danger b { color: var(--bad); }
+.compare { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.cmp { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: var(--bg); min-width: 0; }
+.cmp h3 { font: 700 16px/1.2 var(--f-display); margin: 0 0 6px; }
+.cmp p { margin: 0 0 6px; font-size: 14px; }
+
+.btn.unsure { font-size: 13px; color: var(--muted); }
+
+/* silent check matrix (scene 4) */
+.matrix-wrap { overflow-x: auto; }
+.matrix { border-collapse: separate; border-spacing: 4px; width: 100%; min-width: 520px; }
+.matrix th { font-size: 13px; text-align: left; vertical-align: bottom; padding: 2px 4px; }
+.matrix thead th { text-align: center; }
+.matrix tbody th { font-weight: 600; max-width: 180px; }
+.th-note { display: block; font: 10.5px/1.2 var(--f-mono); color: var(--muted); font-weight: 400; }
+.matrix td { padding: 0; }
+.cell { width: 100%; min-height: 40px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); font: 600 12px/1.2 var(--f-mono); cursor: pointer; padding: 6px 4px; }
+.cell.hidden { color: var(--muted); }
+.cell.yes { color: var(--ok); }
+.cell.no { color: var(--bad); }
+.cell.na { color: var(--muted); }
+.cell.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); background: var(--surface); }
+.detail { display: grid; gap: 8px; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.detail-how, .detail-line { margin: 0; font-size: 14px; }
+.frame { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.frame.inner { margin-top: 6px; border-style: dashed; border-color: var(--auth0); }
+.frame-bar { font-size: 11.5px; padding: 4px 8px; background: var(--sunk); color: var(--muted); overflow-wrap: anywhere; }
+.frame-in { padding: 8px; display: grid; gap: 4px; justify-items: start; }
+.frame-label { font-size: 12px; color: var(--muted); }
+.cookie { font: 600 12px/1 var(--f-mono); padding: 4px 8px; border-radius: 999px; border: 1px solid currentColor; }
+.cookie.sent { color: var(--ok); }
+.cookie.blocked { color: var(--bad); }
+.cookie.none { color: var(--muted); }
+
+/* auto-login (scene 5) */
+.levers { display: grid; gap: 8px; }
+.seg:disabled { cursor: default; opacity: .7; }
+.sess-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.sess { font: 13px/1 var(--f-mono); padding: 6px 10px; border-radius: 999px; border: 1px solid var(--c); transition: opacity .3s; }
+.sess b { color: var(--c); font-weight: 600; }
+.sess.dead { opacity: .55; border-style: dashed; }
+.story { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.story li { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 10px; padding: 8px 10px; border-radius: 8px; border: 1px solid transparent; }
+.story li.current { border-color: var(--accent); background: var(--sunk); }
+.story li.past { opacity: .7; }
+.who { font: 600 12px/1.6 var(--f-mono); }
+.who.ada { color: var(--app); }
+.who.ben { color: var(--auth0); }
+
+/* ask */
+details.ask { border-top: 1px solid var(--line); padding-top: 12px; }
+details.ask summary { cursor: pointer; font-weight: 700; color: var(--muted); }
+.ask-body { display: grid; gap: 8px; margin-top: 10px; }
+.ask textarea { width: 100%; min-height: 70px; resize: vertical; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--bg); color: var(--ink); font: 15px/1.4 var(--f-body); }
+.ask-out { white-space: pre-wrap; margin: 0; padding: 10px 12px; background: var(--sunk); border-radius: 8px; }
+.ask-out:empty { display: none; }
+
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (max-width: 640px) {
+  .scene { padding: 16px; }
+  .lane { grid-template-columns: minmax(0, 1fr) 84px; row-gap: 4px; }
+  .lane-name { grid-column: 1 / -1; }
+  .lane-name { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  .expiry-note { grid-column: 1 / -1; margin-top: 0; }
+  .scrub { grid-template-columns: minmax(0, 1fr); }
+  .scrub > .spacer { display: none; }
+  .opts { grid-template-columns: minmax(0, 1fr); }
+  .trace li { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .seq-col .mono { display: none; }
+  .http { grid-template-columns: minmax(0, 1fr); }
+  .jwt-lab, .compare { grid-template-columns: minmax(0, 1fr); }
+  .seq-col strong { font-size: 12.5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Explorable · Identity providers</div>
+    <h1>IdP Sessions &amp; Tokens</h1>
+    <p class="promise">Follow one login through your app, Auth0 and Microsoft. By the end you can say which login is still alive, what your backend must check before it trusts a JWT, and what auto-login costs.</p>
+  </header>
+  <nav class="stepper" aria-label="Scenes">
+    <button class="btn" id="prev" type="button">← Back</button>
+    <div class="dots" id="dots"></div>
+    <span class="count" id="count"></span>
+    <button class="btn" id="next" type="button">Next →</button>
+  </nav>
+  <main id="stage"></main>
+  <div class="sr" aria-live="polite" id="live"></div>
+</div>
+
+<script>
+// ---------------------------------------------------------------------------
+// Facts: the authoritative sheet the in-page Ask answers from.
+// ---------------------------------------------------------------------------
+const FACTS = [
+  "OAuth 2.0 roles: resource owner, client, authorization server, resource server. OAuth is delegated authorization; it does not define authentication. https://www.rfc-editor.org/rfc/rfc6749.html",
+  "OpenID Connect adds authentication on top of OAuth: the OpenID Provider (the IdP) issues an ID token, a JWT about the login event, to the client (relying party). https://openid.net/specs/openid-connect-core-1_0.html",
+  "Auth0 describes three session layers: the application session (the app's own cookie, Auth0 has no role in it), the Auth0 session (an SSO cookie on the Auth0 domain), and the identity provider session (e.g. Microsoft's cookie on login.microsoftonline.com). https://auth0.com/docs/manage-users/sessions/session-layers",
+  "When a user is redirected to Auth0 Universal Login and an Auth0 session exists, Auth0 finds the SSO cookie, updates it if necessary, shows no login screen and returns to the app. https://auth0.com/docs/authenticate/single-sign-on",
+  "If the Auth0 session is gone but the Microsoft session is alive, Auth0 sends the user to Microsoft, which signs them in without a password; Microsoft may still show an account picker or 'Stay signed in?'. https://auth0.com/docs/manage-users/sessions/session-layers",
+  "Auth0 session lifetime has an inactivity timeout and an absolute timeout, set per tenant. Self-service plan maximums: 3 days inactivity, 30 days absolute; Enterprise: 100 and 365 days. The idle timer only resets when the browser visits Auth0. https://auth0.com/docs/manage-users/sessions/session-lifetime-limits",
+  "Entra ID's default sign-in frequency is a rolling 90-day window; Conditional Access can shorten it, and events like a password change revoke sessions. https://learn.microsoft.com/en-us/entra/identity/conditional-access/concept-session-lifetime",
+  "Entra sign-in frequency only applies to apps that redirect back to Entra. While the Auth0 session is alive, Auth0 does not go back to Microsoft. https://learn.microsoft.com/en-us/entra/identity/conditional-access/concept-session-lifetime",
+  "Each session layer has its own logout: app logout clears only the app cookie; Auth0's /oidc/logout clears the Auth0 session but not the app's; Microsoft is only logged out with the federated parameter. https://auth0.com/docs/authenticate/login/logout/log-users-out-of-idps",
+  "The Auth0 cookie lives on Auth0's domain; only the browser sends it there. A backend cannot ask Auth0 whether 'this browser' has a session; checking needs a browser round trip with prompt=none. https://auth0.com/docs/authenticate/login/configure-silent-authentication",
+  "prompt=none: the OpenID Provider must not show any login or consent UI; if the user is not already signed in it returns an error such as login_required or interaction_required. https://openid.net/specs/openid-connect-core-1_0.html",
+  "Safari blocks third-party cookies by default, Firefox partitions them, Brave blocks them, so a hidden-iframe silent login to a different site fails there. Chrome keeps third-party cookies on by default as of 2025-2026. https://webkit.org/blog/10218/full-third-party-cookie-blocking-and-more/",
+  "The ID token is for the client: its aud is the client_id. Entra and Auth0 both say never to use an ID token to call an API or make authorization decisions. https://learn.microsoft.com/en-us/entra/identity-platform/id-tokens",
+  "The access token is for the API (resource server). Clients should treat it as opaque. https://www.rfc-editor.org/rfc/rfc9068.html",
+  "A backend validating a JWT access token checks: signature with the IdP's public keys from jwks_uri (kid selects the key), iss equals the expected issuer, aud contains the API's own identifier, exp not passed, alg on an allowlist and never 'none'. https://www.rfc-editor.org/rfc/rfc8725.html",
+  "The IdP holds the private signing key; the API only fetches public keys (JWKS), so it validates locally without calling the IdP per request. A validly signed token is accepted until exp, so revocation lags. https://learn.microsoft.com/en-us/entra/identity-platform/access-tokens",
+  "Auth0: without an audience parameter the access token is opaque and only good for /userinfo; pass your API identifier as audience to get a JWT for your API. https://auth0.com/docs/secure/tokens/access-tokens/get-access-tokens",
+  "A JWT is three base64url segments (header, payload, signature). It is signed, not encrypted: anyone holding it can read the claims. https://www.rfc-editor.org/rfc/rfc7519.html",
+  "With federation (Auth0 or Entra brokering to Microsoft, Siemens ID or another IdP) the app and API trust only their direct issuer's iss and keys, never the upstream IdP's tokens. https://auth0.com/docs/authenticate/identity-providers",
+  "Authorization code flow: the browser only carries a short-lived, single-use code in the redirect; the client swaps it for tokens at the token endpoint server to server (the back channel), authenticating with its client secret. https://www.rfc-editor.org/rfc/rfc6749.html#section-4.1",
+  "When Auth0 brokers to Microsoft, Auth0 is itself an OIDC client of Microsoft with its own app registration and its own callback (https://<tenant>.auth0.com/login/callback). Auth0 then issues its own tokens to your app, signed with Auth0's keys published at https://<tenant>.auth0.com/.well-known/jwks.json. https://auth0.com/docs/authenticate/identity-providers",
+  "Auth0's iss claim is the tenant URL with a trailing slash, e.g. https://your-tenant.auth0.com/ (or the custom domain when one is configured). Auth0 access tokens requested with an audience and the openid scope carry aud as an array: your API identifier plus https://your-tenant.auth0.com/userinfo. https://auth0.com/docs/secure/tokens/access-tokens/validate-access-tokens",
+  "An Auth0 ID token's aud is the client_id of the application that logged in, so an API that checks aud against its own identifier rejects ID tokens. https://auth0.com/docs/secure/tokens/id-tokens/id-token-structure",
+  "JWT libraries must not take the algorithm from the token header on trust: accept only an allowlist (e.g. RS256) and never 'none'; 'alg: none' and algorithm confusion (RS256 to HS256) are known attacks. https://www.rfc-editor.org/rfc/rfc8725.html#section-2.1",
+  "A JWT payload can be edited by anyone, since it is only base64url; the edit breaks the signature, which is why the signature check matters. https://www.rfc-editor.org/rfc/rfc7519.html",
+  "A bearer token in an Authorization header is not attached by the browser automatically, so classic CSRF does not apply to it; a cookie is attached automatically, so cookie-authenticated endpoints need CSRF defenses. A stolen bearer token works for anyone until it expires. https://www.rfc-editor.org/rfc/rfc6750.html",
+  "Auth0 silent authentication: prompt=none with response_mode=web_message in a hidden iframe; the result comes back by postMessage to an origin listed in Allowed Web Origins. Errors: login_required, consent_required, interaction_required. https://auth0.com/docs/authenticate/login/configure-silent-authentication",
+  "Because third-party cookies are blocked (Safari ITP, Brave) or partitioned (Firefox Total Cookie Protection, since June 2022), the hidden-iframe check cannot see the Auth0 cookie there. Workarounds: an Auth0 custom domain on the app's own site (e.g. login.example.com for app.example.com), which makes the cookie same-site, or refresh token rotation instead of iframes. https://support.auth0.com/center/s/article/troubleshoot-auth0-token-renewal-issues-in-safari-with-itp-enabled",
+  "A top-level redirect with prompt=none works in every browser, because the Auth0 cookie is first-party when the whole page navigates to Auth0. Its cost is a visible navigation; without a session the user comes back with error=login_required. https://openid.net/specs/openid-connect-core-1_0.html",
+  "Chrome kept third-party cookies on by default (Google announced in 2025 that it would not deprecate them); incognito and users who opt in still block them. https://privacysandbox.google.com/blog/update-on-plans-for-privacy-sandbox-technologies",
+  "New Universal Login always sends X-Frame-Options: deny and CSP frame-ancestors 'none', so Auth0's login page itself can never be shown in an iframe. The silent-auth iframe renders no page; it only posts a message. https://auth0.com/docs/troubleshoot/product-lifecycle/past-migrations/clickjacking-protection-for-universal-login",
+  "Auth0 logout: /oidc/logout (OIDC RP-Initiated Logout, with id_token_hint and post_logout_redirect_uri) clears the Auth0 session; adding federated also sends the user to the upstream IdP's logout. Auth0 calls federated logout 'not recommended' for normal apps, because it signs the user out of the IdP for every app in that browser. Logout does not revoke refresh tokens. https://auth0.com/docs/authenticate/login/logout/log-users-out-of-auth0",
+  "Consequence of the session layers: if Log out clears only the app cookie and the start page auto-logs-in with prompt=none, the user is signed straight back in from the Auth0 session and can never stay logged out; at a shared computer the next person lands in the previous user's account. Fixes: clear the Auth0 layer on logout, or skip auto-login after an explicit logout. https://auth0.com/docs/manage-users/sessions/session-layers",
+  "Microsoft may keep signing a user in after a logout when the device holds a Primary Refresh Token or the user chose 'Stay signed in'; Microsoft advises closing all browser windows on shared machines. https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc",
+  "An automatic prompt=none redirect is an ordinary authorization request: the client still sends and checks state (and PKCE / nonce), so auto-login does not create a login-CSRF hole by itself. https://www.rfc-editor.org/rfc/rfc9700.html",
+  "OAuth clients must protect the redirect URI against login CSRF with a state value bound to the browser (or PKCE / nonce); otherwise an attacker can log the victim into the attacker's account. https://www.rfc-editor.org/rfc/rfc9700.html"
+];
+
+const TOPIC = "identity providers, sessions and tokens (OAuth, OpenID Connect, Auth0, Entra ID, JWT)";
+
+// ---------------------------------------------------------------------------
+// Capabilities (optional): recording and the Ask box light up when they resolve.
+// ---------------------------------------------------------------------------
+let db = null, sample = null;
+const capsReady = (async () => {
+  if (!window.claude || !window.claude.use) return;
+  try { db = await window.claude.use("db"); } catch (e) { db = null; }
+  try { sample = await window.claude.use("sample"); } catch (e) { sample = null; }
+  document.querySelectorAll("details.ask").forEach(d => { d.hidden = !sample; });
+})();
+
+async function record(collection, data) {
+  await capsReady;
+  if (!db) return false;
+  try { await db.collection(collection).add(data); return true; }
+  catch (e) { return false; }
+}
+
+const live = document.getElementById("live");
+function announce(msg) { live.textContent = ""; setTimeout(() => { live.textContent = msg; }, 30); }
+
+function el(tag, attrs = {}, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v;
+    else if (k === "style") n.setAttribute("style", v);
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+    else if (v !== false && v != null) n.setAttribute(k, v === true ? "" : v);
+  }
+  for (const k of kids.flat()) if (k != null) n.append(k.nodeType ? k : document.createTextNode(k));
+  return n;
+}
+function html(tag, attrs, markup) { const n = el(tag, attrs); n.innerHTML = markup; return n; }
+
+// ---------------------------------------------------------------------------
+// Shared pieces: prediction gate, step-through controls, Ask box.
+// ---------------------------------------------------------------------------
+function predictionGate({ scene, question, options, correct, why, onAnswer }) {
+  const box = el("div", { class: "gate" });
+  box.append(el("p", { class: "q" }, question));
+  const opts = el("div", { class: "opts", role: "group", "aria-label": question });
+  const fb = el("div");
+  const unsure = el("button", { class: "btn unsure", type: "button", id: `${scene}-unsure` }, "I don't know yet, show me");
+  let answered = null;
+  // Show an answer: a fresh one is recorded, a restored one (after a reload) is not.
+  async function show(id, fresh) {
+    if (answered) return;
+    answered = id;
+    const isUnsure = id === "(unsure)";
+    const ok = id === correct;
+    opts.querySelectorAll("button").forEach(x => x.disabled = true);
+    unsure.disabled = true;
+    // Looked up inside the gate: on a restore it is not in the document yet.
+    const picked = opts.querySelector(`[data-opt="${id}"]`);
+    if (picked) picked.classList.add(ok ? "right" : "wrong");
+    opts.querySelector(`[data-opt="${correct}"]`).classList.add("right");
+    const lead = isUnsure ? "<b>Here it is.</b>" : `<b class="${ok ? "right" : "wrong"}">${ok ? "Right." : "Not quite."}</b>`;
+    fb.replaceChildren(html("p", { class: "feedback" }, `${lead} ${why}`));
+    if (fresh) announce(lead.replace(/<[^>]+>/g, "") + " " + why.replace(/<[^>]+>/g, ""));
+    onAnswer(id, ok);
+    queueSave();
+    if (!fresh) return;
+    const saved = await record("attempts", {
+      scene, kind: "prediction", answer: isUnsure ? "(unsure)" : options.find(x => x.id === id).label,
+      answer_id: id, expected: options.find(x => x.id === correct).label,
+      correct: ok, unsure: isUnsure, at: new Date().toISOString()
+    });
+    if (!saved && window.claude) fb.append(el("div", { class: "rec" }, "Not recorded."));
+  }
+  options.forEach((o, i) => {
+    opts.append(el("button", { class: "opt", type: "button", id: `${scene}-opt-${o.id}`, "data-opt": o.id, onclick: () => show(o.id, true) },
+      el("span", { class: "mark" }, String.fromCharCode(65 + i)), el("span", {}, o.label)));
+  });
+  unsure.addEventListener("click", () => show("(unsure)", true));
+  box.append(opts, el("div", {}, unsure), fb);
+  box.restore = id => { if (id === "(unsure)" || options.some(o => o.id === id)) show(id, false); };
+  box.answer = () => answered;
+  box.byLabel = label => (label === "(unsure)" ? "(unsure)" : (options.find(o => o.label === label) || {}).id);
+  return box;
+}
+
+// Step-through state lives here so the keyboard can reach the visible one.
+let activeStepper = null;
+function stepper({ count, render }) {
+  let i = 0, timer = null;
+  const counter = el("span", { class: "count" });
+  const back = el("button", { class: "btn", type: "button" }, "← Step");
+  const fwd = el("button", { class: "btn primary", type: "button" }, "Step →");
+  const play = el("button", { class: "btn", type: "button" }, "Play");
+  const replay = el("button", { class: "btn", type: "button" }, "Replay");
+  function stop() { clearInterval(timer); timer = null; play.textContent = "Play"; }
+  function go(n) {
+    i = Math.max(0, Math.min(count() - 1, n));
+    back.disabled = i === 0; fwd.disabled = i >= count() - 1;
+    counter.textContent = `Step ${i + 1} of ${count()}`;
+    render(i);
+    if (i >= count() - 1) stop();
+    queueSave();
+  }
+  back.addEventListener("click", () => { stop(); go(i - 1); });
+  fwd.addEventListener("click", () => { stop(); go(i + 1); });
+  replay.addEventListener("click", () => { stop(); go(0); });
+  play.addEventListener("click", () => {
+    if (timer) return stop();
+    if (i >= count() - 1) go(0);
+    play.textContent = "Pause";
+    timer = setInterval(() => go(i + 1), 1400);
+  });
+  const api = { el: el("div", { class: "ctrls" }, back, fwd, play, replay, counter),
+    go, reset() { stop(); go(0); }, next() { stop(); go(i + 1); }, prev() { stop(); go(i - 1); },
+    toggle() { play.click(); }, replay() { stop(); go(0); } };
+  return api;
+}
+
+function askBox(sceneId, getContext) {
+  const id = `${sceneId}-ask`;
+  const ta = el("textarea", { id, placeholder: "A quick question about this scene. Bigger ones are better in the Claude Code session." });
+  const out = el("p", { class: "ask-out", "aria-live": "polite" });
+  const go = el("button", { class: "btn primary", type: "button" }, "Ask");
+  const stopB = el("button", { class: "btn", type: "button", hidden: true }, "Stop");
+  let ctl = null;
+  go.addEventListener("click", async () => {
+    const q = ta.value.trim();
+    if (!q || !sample) return;
+    ctl = new AbortController();
+    go.disabled = true; stopB.hidden = false; out.textContent = "Thinking...";
+    const prompt = [
+      `You are helping someone explore ${TOPIC} in an interactive page. Answer their question about the scene in at most 120 words, plain text, grounded only in the facts below. If the facts don't cover it, say so and suggest raising it in the Claude Code session.`,
+      "", "FACTS:", ...FACTS.map(f => "- " + f), "", getContext(), "", "QUESTION: " + q
+    ].join("\n");
+    try {
+      const r = await sample(prompt, { signal: ctl.signal, onText: ({ text }) => { out.textContent = text; } });
+      out.textContent = r.text;
+      record("questions", { scene: sceneId, question: q, answer: r.text, at: new Date().toISOString() });
+    } catch (e) {
+      if (e && e.code === "not_granted") { details.hidden = true; }
+      else out.textContent = (e && e.text) ? e.text + "\n\n(stopped)" : "No answer this time. Try again in a moment, or ask in the Claude Code session.";
+    } finally { go.disabled = false; stopB.hidden = true; }
+  });
+  stopB.addEventListener("click", () => ctl && ctl.abort());
+  const details = el("details", { class: "ask", hidden: !sample },
+    el("summary", {}, "Ask Claude about this scene"),
+    el("div", { class: "ask-body" }, el("label", { for: id, class: "sr" }, "Your question"), ta,
+      el("div", { class: "ctrls" }, go, stopB), out));
+  return details;
+}
+
+// ---------------------------------------------------------------------------
+// Scenes
+// ---------------------------------------------------------------------------
+const LANES = {
+  browser: { name: "Browser", color: "var(--browser)" },
+  app: { name: "Your backend", color: "var(--app)" },
+  auth0: { name: "Auth0", color: "var(--auth0)" },
+  ms: { name: "Microsoft", color: "var(--ms)" }
+};
+
+const SCENES = [
+  {
+    id: "s1-three-sessions",
+    title: "How many logins are you actually in?",
+    build: buildSessions
+  },
+  { id: "s2-round-trip", title: "Whose answer reaches your backend?", build: buildRoundTrip },
+  { id: "s3-trust-jwt", title: "What makes your backend trust the other page's JWT?", build: buildTrustJwt },
+  { id: "s4-silent-check", title: "Why can't the app just ask Auth0 whether there's a session?", build: buildSilentCheck },
+  { id: "s5-auto-login", title: "What does auto-login cost?", build: buildAutoLogin }
+];
+
+function buildSessions(root, saved = {}) {
+  const STOPS = [
+    { tick: "0", label: "just logged in", alive: { app: 1, auth0: 1, ms: 1 } },
+    { tick: "+2h", label: "2 hours since the last visit", alive: { app: 1, auth0: 1, ms: 1 } },
+    { tick: "+1d", label: "1 day since the last visit", alive: { app: 0, auth0: 1, ms: 1 } },
+    { tick: "+4d", label: "4 days since the last visit", alive: { app: 0, auth0: 0, ms: 1 } },
+    { tick: "+100d", label: "100 days since the last visit", alive: { app: 0, auth0: 0, ms: 0 } }
+  ];
+  const SESSION_LANES = [
+    { key: "app", name: "Your app", domain: "app.example.com", ends: 0.375, endLabel: "8 h", note: "Your backend's session cookie. Example lifetime: 8 hours, set by you." },
+    { key: "auth0", name: "Auth0", domain: "your-tenant.auth0.com", ends: 0.625, endLabel: "3 d idle", note: "Auth0's SSO cookie. Example: 3 days idle, 30 days max, set in the tenant." },
+    { key: "ms", name: "Microsoft", domain: "login.microsoftonline.com", ends: 0.875, endLabel: "90 d", note: "Microsoft's own cookie. Entra default: a rolling 90-day window." }
+  ];
+  const T = (lane, text) => ({ lane, text });
+  const TRACES = {
+    in: { steps: [
+      T("browser", "You open the app. The browser sends your app's session cookie with the request."),
+      T("app", "Your backend finds a valid session. You are in. Auth0 and Microsoft are never contacted.")
+    ], outcome: "Nothing to see: the app just opens." },
+    auth0: { steps: [
+      T("browser", "Your app's cookie has expired, so you click Login."),
+      T("app", "Your backend redirects the browser to Auth0's /authorize endpoint."),
+      T("auth0", "The browser sends Auth0's own cookie to Auth0's domain. Auth0 finds a live session and shows no login screen."),
+      T("app", "Auth0 redirects straight back to your callback with a code. Your backend swaps it for tokens and sets a fresh session cookie.")
+    ], outcome: "A redirect flicker, then the app. Steps your app runs after the callback, like choosing a membership, still run unless your app remembers them." },
+    ms: { steps: [
+      T("browser", "Your app's cookie has expired, so you click Login."),
+      T("app", "Your backend redirects the browser to Auth0."),
+      T("auth0", "No live Auth0 session. Auth0 shows its login page with your choices: Microsoft account or Entra ID."),
+      T("ms", "You pick one. The browser sends Microsoft's cookie to Microsoft's domain. Microsoft still knows you: no password, at most an account picker."),
+      T("auth0", "Microsoft answers Auth0. Auth0 starts a new session of its own and redirects to your callback."),
+      T("app", "Your backend sets a fresh session cookie. You are in.")
+    ], outcome: "Auth0's page with the two buttons, one click, then the app. No password." },
+    full: { steps: [
+      T("browser", "Your app's cookie has expired, so you click Login."),
+      T("app", "Your backend redirects the browser to Auth0."),
+      T("auth0", "No live Auth0 session. Auth0 shows its login page with your choices."),
+      T("ms", "You pick Microsoft. Microsoft has no session either: password, and MFA if your organisation requires it."),
+      T("auth0", "Microsoft answers Auth0. Auth0 starts a new session and redirects to your callback."),
+      T("app", "Your backend sets a fresh session cookie. You are in.")
+    ], outcome: "The full login: Auth0's page, then Microsoft's password and MFA." }
+  };
+  const traceFor = s => s.alive.app ? TRACES.in : s.alive.auth0 ? TRACES.auth0 : s.alive.ms ? TRACES.ms : TRACES.full;
+
+  let stop = 2, revealed = false, step = 0;
+
+  const prose = el("p", { class: "prose" },
+    "Your users pass through three separate logins. Each one is a cookie on a different domain with its own expiry. It is one day since the user's last visit: your app's cookie has expired, Auth0's and Microsoft's have not.");
+
+  // timeline lanes
+  const laneEls = {};
+  const tl = el("div", { class: "timeline", role: "group", "aria-label": "Session cookies over time" });
+  SESSION_LANES.forEach(L => {
+    const color = LANES[L.key].color;
+    const now = el("div", { class: "now" });
+    const status = el("div", { class: "status" });
+    const track = el("div", { class: "track", style: `--c:${color}` },
+      el("div", { class: "rail" }), el("div", { class: "fill", style: `width:${L.ends * 100}%` }),
+      el("span", { class: "exp", style: `left:${L.ends * 100}%` }, ""), now);
+    const row = el("div", { class: "lane" },
+      el("div", { class: "lane-name" }, el("strong", { style: `color:${color}` }, L.name), el("span", { class: "mono" }, L.domain)),
+      track, status, el("div", { class: "expiry-note" }, L.note));
+    laneEls[L.key] = { row, now, status };
+    tl.append(row);
+  });
+
+  // scrubber
+  const range = el("input", { type: "range", id: "s1-time", min: 0, max: STOPS.length - 1, step: 1, value: stop, disabled: true, "aria-label": "Time since the user's last visit" });
+  const ticks = el("div", { class: "ticks", "aria-hidden": "true" },
+    STOPS.map((s, i) => el("span", { style: `left:${(i / (STOPS.length - 1)) * 100}%` }, s.tick)));
+  const readout = el("div", { class: "readout" });
+  const lockNote = el("div", { class: "lock-note" }, "Make your prediction below to unlock the time slider and run the login.");
+  tl.append(el("div", { class: "scrub" }, el("div", { class: "spacer" }), el("div", { class: "scrub-inner" }, range, ticks), el("div", { class: "spacer" })));
+
+  // trace
+  const list = el("ol");
+  const outcome = el("p", { class: "outcome", hidden: true });
+  const trace = el("section", { class: "trace", hidden: true, "aria-label": "What happens when the user opens the app" });
+  const steps = stepper({ count: () => traceFor(STOPS[stop]).steps.length, render: i => { step = i; paintTrace(); } });
+  trace.append(el("div", { class: "trace-head" }, el("h3", {}, "The user clicks Login")), steps.el, list, outcome);
+
+  function paintTimeline() {
+    const s = STOPS[stop];
+    const x = (stop / (STOPS.length - 1)) * 100;
+    readout.innerHTML = `Now: <b>${s.label}</b>`;
+    [...ticks.children].forEach((t, i) => t.classList.toggle("on", i === stop));
+    SESSION_LANES.forEach(L => {
+      const { now, status } = laneEls[L.key];
+      now.style.left = `${x}%`;
+      const alive = !!s.alive[L.key];
+      status.className = "status " + (alive ? "alive" : "dead");
+      status.textContent = alive ? "✓ alive" : "✕ expired";
+    });
+    laneEls.app.row.parentElement.querySelectorAll(".exp").forEach((e, i) => { e.textContent = SESSION_LANES[i].endLabel; });
+  }
+  function paintTrace() {
+    const t = traceFor(STOPS[stop]);
+    list.replaceChildren(...t.steps.slice(0, step + 1).map((st, i) =>
+      el("li", { class: i === step ? "current" : "past" },
+        el("span", { class: "tag", style: `--c:${LANES[st.lane].color}` }, LANES[st.lane].name),
+        el("span", {}, st.text))));
+    const cur = t.steps[step];
+    Object.entries(laneEls).forEach(([k, v]) => v.row.classList.toggle("active", cur.lane === k));
+    const last = step === t.steps.length - 1;
+    outcome.hidden = !last;
+    outcome.innerHTML = `<b>What the user sees:</b> ${t.outcome}`;
+    announce(`Step ${step + 1}: ${cur.text}`);
+  }
+
+  range.addEventListener("input", () => {
+    stop = +range.value; paintTimeline(); steps.reset();
+  });
+
+  const gate = predictionGate({
+    scene: "s1-three-sessions",
+    question: "The user clicks Login. What do they see?",
+    options: [
+      { id: "auth0page", label: "Auth0's login page, with the Microsoft and Entra ID buttons" },
+      { id: "mspassword", label: "Microsoft's sign-in page, asking for the password" },
+      { id: "flicker", label: "A redirect flicker, then they are back in the app" },
+      { id: "picker", label: "Microsoft's account picker, then the app" }
+    ],
+    correct: "flicker",
+    why: "Auth0 still has its own session cookie, so it shows no login screen and sends the browser straight back. Microsoft is never asked. Step through it above, then drag the time slider and try the other days.",
+    onAnswer: () => {
+      revealed = true; range.disabled = false; lockNote.hidden = true; trace.hidden = false;
+      activeStepper = steps; steps.reset();
+    }
+  });
+
+  root.append(prose, tl, readout, lockNote, trace, gate);
+  paintTimeline();
+  if (saved.answer) {
+    gate.restore(saved.answer);
+    if (saved.stop != null) { stop = saved.stop; range.value = stop; paintTimeline(); steps.reset(); }
+    if (saved.step) steps.go(saved.step);
+  }
+
+  return {
+    getState: () => ({ answer: gate.answer(), stop, step }),
+    restoreRecord: r => gate.restore(r.answer_id || gate.byLabel(r.answer)),
+    stepper: () => (revealed ? steps : null),
+    context: () => {
+      const s = STOPS[stop];
+      const t = traceFor(s);
+      return [
+        "SCENE: How many logins are you actually in? (timeline of three session cookies: your app 8h example, Auth0 3 days idle example, Microsoft 90 days Entra default)",
+        "PROSE: " + prose.textContent,
+        `STATE: time = ${s.label}; alive = ${Object.entries(s.alive).filter(([, v]) => v).map(([k]) => k).join(", ") || "none"}; ` +
+          (revealed ? `login trace step ${step + 1}/${t.steps.length}: ${t.steps[step].text}` : "prediction not made yet"),
+      ].join("\n");
+    }
+  };
+}
+
+function buildRoundTrip(root, saved = {}) {
+  const COLS = ["browser", "app", "auth0", "ms"];
+  const DOMAIN = { browser: "your laptop", app: "app.example.com", auth0: "your-tenant.auth0.com", ms: "login.microsoftonline.com" };
+  // channel: "front" = a request the browser makes (a redirect lands in the address bar), "back" = server to server, "self" = inside one party
+  const S = (from, to, channel, msg, detail, url) => ({ from, to, channel, msg, detail, url });
+  const STEPS = [
+    S("browser", "app", "front", "GET /login", "You click Login on your app's page.", "app.example.com/login"),
+    S("browser", "auth0", "front", "GET /authorize?client_id=YOUR_APP&state=k7Qx…&nonce=…&code_challenge=…",
+      "Your backend answered with a redirect to Auth0. It also stored the state value in a short-lived cookie, to compare later.",
+      "your-tenant.auth0.com/authorize?client_id=YOUR_APP&state=k7Qx…"),
+    S("browser", "ms", "front", "GET /authorize?client_id=AUTH0_APP&redirect_uri=…auth0.com/login/callback",
+      "Auth0 redirects onward. Toward Microsoft, Auth0 is the client, with its own app registration and its own callback.",
+      "login.microsoftonline.com/…/authorize?client_id=AUTH0_APP…"),
+    S("ms", "ms", "self", "Sign-in", "Password and MFA, or nothing at all if Microsoft's own session is still alive (scene 1).", null),
+    S("browser", "auth0", "front", "GET /login/callback?code=M-91f…",
+      "Microsoft redirects back to Auth0 with a code. The code is meant for Auth0 and is useless to anyone else.",
+      "your-tenant.auth0.com/login/callback?code=M-91f…"),
+    S("auth0", "ms", "back", "POST /token  code=M-91f… + Auth0's secret  →  Microsoft's tokens",
+      "Server to server, never through the browser. Microsoft's tokens are addressed to Auth0, and this is where they stop.", null),
+    S("browser", "app", "front", "GET /callback?code=A-3c2…&state=k7Qx…",
+      "Auth0 redirects to your callback with a code of its own.", "app.example.com/callback?code=A-3c2…&state=k7Qx…"),
+    S("app", "app", "self", "state in the URL = state in the cookie?",
+      "Your backend checks that this callback answers a login this browser started. This is the CSRF check of a login: without it, an attacker could feed your callback a code for their own account.", null),
+    S("app", "auth0", "back", "POST /oauth/token  code=A-3c2… + your client secret  →  ID token + access token",
+      "Server to server again. Both tokens are signed with Auth0's key, and their iss is https://your-tenant.auth0.com/.", null),
+    S("app", "browser", "front", "Set-Cookie: session=…; HttpOnly; Secure",
+      "Your backend answers the callback request with its own session cookie. The tokens stay on your server.", "app.example.com/")
+  ];
+
+  // Raw HTTP per step. ⟦…⟧ marks what to look at. Long values are shortened with an ellipsis.
+  const H = (req, res, note) => ({ req, res, note });
+  const HTTP = [
+    H(`GET /login HTTP/1.1
+Host: app.example.com`,
+`HTTP/1.1 302 Found
+Location: https://your-tenant.auth0.com/authorize
+  ?response_type=code&client_id=YOUR_APP
+  &redirect_uri=https://app.example.com/callback
+  &scope=openid profile email
+  &⟦state=k7Qx…⟧&nonce=n-Wd2…
+  &code_challenge=E9Mr…&code_challenge_method=S256
+⟦Set-Cookie: login_state=k7Qx…; HttpOnly; Secure;
+  SameSite=Lax; Max-Age=600⟧`,
+      "The same state goes into the URL and into a cookie in this browser. Your backend keeps the nonce and the PKCE code_verifier next to it."),
+    H(`GET /authorize?response_type=code&client_id=YOUR_APP
+  &⟦state=k7Qx…⟧&… HTTP/1.1
+Host: your-tenant.auth0.com
+⟦Cookie: (no Auth0 session yet)⟧`,
+`HTTP/1.1 302 Found
+Location: https://login.microsoftonline.com/…/authorize
+  ?client_id=AUTH0_APP
+  &redirect_uri=https://your-tenant.auth0.com/login/callback
+  &state=a0-Tq8…&…`,
+      "login_state is not sent here: the browser only sends it to app.example.com. Shortened: with two buttons on Auth0's page, Auth0 shows that page first and redirects after the click."),
+    H(`GET /…/oauth2/v2.0/authorize?client_id=AUTH0_APP
+  &redirect_uri=https://your-tenant.auth0.com/login/callback
+  &state=a0-Tq8…&… HTTP/1.1
+Host: login.microsoftonline.com
+Cookie: (Microsoft's session cookie, if one is alive)`,
+`HTTP/1.1 200 OK
+(Microsoft's sign-in page)`,
+      "Auth0 runs the same pattern toward Microsoft: its own client_id, its own callback, its own state."),
+    H(`POST /…/login HTTP/1.1
+Host: login.microsoftonline.com
+(password, MFA)`,
+`HTTP/1.1 302 Found
+Location: https://your-tenant.auth0.com/login/callback
+  ?⟦code=M-91f…⟧&state=a0-Tq8…
+Set-Cookie: (Microsoft's session cookie)`,
+      "Microsoft sets its own session cookie on its own domain: the third lane of scene 1."),
+    H(`GET /login/callback?⟦code=M-91f…⟧&state=a0-Tq8… HTTP/1.1
+Host: your-tenant.auth0.com`,
+`(Auth0 holds this request open for step 6, then:)
+HTTP/1.1 302 Found
+Location: https://app.example.com/callback
+  ?⟦code=A-3c2…⟧&⟦state=k7Qx…⟧
+⟦Set-Cookie: auth0=…; HttpOnly; Secure; SameSite=None⟧`,
+      "That Set-Cookie is the Auth0 session from scene 1, on Auth0's domain. Auth0 hands your state back unchanged."),
+    H(`POST /…/oauth2/v2.0/token HTTP/1.1
+Host: login.microsoftonline.com
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=authorization_code&⟦code=M-91f…⟧
+&client_id=AUTH0_APP&client_secret=…
+&redirect_uri=https://your-tenant.auth0.com/login/callback`,
+`HTTP/1.1 200 OK
+Content-Type: application/json
+
+{ "id_token": "eyJ…",   (iss: Microsoft, aud: AUTH0_APP)
+  "access_token": "eyJ…",
+  "expires_in": 3599 }`,
+      "Microsoft's tokens are addressed to Auth0. Auth0 reads who you are from them and keeps them."),
+    H(`GET /callback?⟦code=A-3c2…⟧&⟦state=k7Qx…⟧ HTTP/1.1
+Host: app.example.com
+⟦Cookie: login_state=k7Qx…⟧`,
+`(your backend holds this request open
+ during steps 8 and 9; the answer is step 10)`,
+      "SameSite=Lax lets login_state ride along, because this is a top-level GET navigation arriving from Auth0. With SameSite=Strict it would be missing and every login would fail the check."),
+    H(`state in the URL:    ⟦k7Qx…⟧
+state in the cookie: ⟦k7Qx…⟧`,
+`match: carry on with step 9`,
+      "Same value in both places, so this browser started this login."),
+    H(`POST /oauth/token HTTP/1.1
+Host: your-tenant.auth0.com
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=authorization_code&client_id=YOUR_APP
+&⟦client_secret=…⟧&⟦code=A-3c2…⟧
+&code_verifier=dBjf…
+&redirect_uri=https://app.example.com/callback`,
+`HTTP/1.1 200 OK
+Content-Type: application/json
+
+{ ⟦"access_token": "eyJhbGciOiJSUzI1NiIs…"⟧,
+  ⟦"id_token": "eyJhbGciOiJSUzI1NiIs…"⟧,
+  "token_type": "Bearer",
+  "expires_in": 86400 }`,
+      "This is where the tokens are issued: in a response body, server to server. The code is single-use and only works with your client secret, which never leaves your server. Your backend then validates the ID token, nonce included."),
+    H(`(the answer to step 7's request)`,
+`HTTP/1.1 302 Found
+Location: /
+⟦Set-Cookie: session=s.b81f…; HttpOnly; Secure;
+  SameSite=Lax; Path=/⟧
+Set-Cookie: login_state=; Max-Age=0`,
+      "session is a random id. The tokens stay on your server under that id. They never appear in a URL or in the browser.")
+  ];
+  // The attacker's link: the same callback, prepared from the attacker's own unfinished login.
+  const ATK = [
+    { ...S("browser", "app", "front", "GET /callback?code=A-atk…&state=Zz9p…",
+      "Your browser loads a callback URL the attacker prepared from their own, unfinished login. The code is real and belongs to the attacker's account.",
+      "app.example.com/callback?code=A-atk…&state=Zz9p…"),
+      http: H(`GET /callback?⟦code=A-atk…⟧&⟦state=Zz9p…⟧ HTTP/1.1
+Host: app.example.com
+Referer: https://evil.example/
+⟦Cookie: (no login_state)⟧`,
+`(your backend checks state first: step 2)`,
+        "The attacker controls everything in the URL. They cannot touch your cookies.") },
+    { ...S("app", "app", "self", "state in the URL = state in the cookie?",
+      "No match: 403. Your backend never swaps the code, so no tokens and no session for the attacker's account.", null),
+      http: H(`state in the URL:    ⟦Zz9p…⟧
+state in the cookie: ⟦(missing)⟧`,
+`HTTP/1.1 403 Forbidden`,
+        "evil.example can't set a cookie for app.example.com. Even if you had a login of your own in progress, your cookie would hold your value, not Zz9p.") }
+  ];
+  STEPS.forEach((s, i) => { s.http = HTTP[i]; });
+  let mode = "own";
+  const L = () => (mode === "atk" ? ATK : STEPS);
+
+  let step = 0, revealed = false;
+  const prose = el("p", { class: "prose" },
+    "Auth0 sits between your app and Microsoft. Your backend sends the browser to Auth0, Auth0 sends it on to Microsoft, and the answers come back the same way. Some hops are redirects through the browser's address bar. Others run server to server, where the browser never sees them.");
+
+  const head = el("div", { class: "seq-head" }, COLS.map(c =>
+    el("div", { class: "seq-col" }, el("strong", { style: `color:${LANES[c].color}` }, LANES[c].name), el("span", { class: "mono" }, DOMAIN[c]))));
+  const body = el("ol", { class: "seq-body", "aria-label": "Login round trip, step by step" });
+  const lines = el("div", { class: "seq-lines", "aria-hidden": "true" }, COLS.map((c, i) => el("span", { style: `left:${(i + 0.5) * 25}%` })));
+  const seq = el("div", { class: "seq" }, head, el("div", { class: "seq-wrap" }, lines, body));
+  const bar = el("div", { class: "addr", "aria-label": "Browser address bar" });
+  const legend = el("div", { class: "legend" },
+    el("span", {}, el("i", { class: "lg front" }), "through the browser"),
+    el("span", {}, el("i", { class: "lg back" }), "server to server"));
+  const lock = el("div", { class: "lock-note" }, "Make your prediction below to start stepping through the login.");
+  const outcome = el("p", { class: "outcome", hidden: true });
+  outcome.innerHTML = "<b>Who holds what at the end:</b> Auth0 holds Microsoft's tokens. Your backend holds Auth0's ID token and access token. The browser holds only your session cookie. Your backend never sees anything Microsoft issued.";
+
+  const OUTCOME = {
+    own: outcome.innerHTML,
+    atk: "<b>What happened:</b> the attacker's callback carried a real code, but the state check failed before your backend asked Auth0 for tokens. Nothing was issued and no session cookie was set."
+  };
+  const steps = stepper({ count: () => L().length, render: i => { step = i; paint(); } });
+  const modeBtns = [["own", "Your own login"], ["atk", "The attacker's link"]].map(([m, label]) =>
+    el("button", { class: "seg", type: "button", "aria-pressed": String(m === mode), onclick: () => {
+      mode = m; modeBtns.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.m === mode)));
+      outcome.innerHTML = OUTCOME[mode]; steps.reset();
+    }, "data-m": m }, label));
+  const http = el("div", { class: "http" });
+  const run = el("section", { class: "trace", hidden: true, "aria-label": "Step-through" },
+    el("div", { class: "segs", role: "group", "aria-label": "Who loads the callback" },
+      el("span", { class: "segs-label" }, "Callback loaded by"), modeBtns),
+    steps.el);
+
+  const esc = t => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const marked = t => esc(t).replace(/⟦/g, "<mark>").replace(/⟧/g, "</mark>");
+  function paintHttp(s) {
+    http.replaceChildren(
+      el("div", { class: "http-col" }, el("div", { class: "http-h" }, s.channel === "self" ? "Check" : "Request"), html("pre", {}, marked(s.http.req))),
+      el("div", { class: "http-col" }, el("div", { class: "http-h" }, s.channel === "self" ? "Result" : "Response"), html("pre", {}, marked(s.http.res))),
+      el("p", { class: "http-note" }, s.http.note));
+  }
+
+  function paint() {
+    const STEPS = L();
+    if (revealed) paintHttp(STEPS[step]);
+    body.replaceChildren(...STEPS.slice(0, step + 1).map((s, i) => {
+      const a = COLS.indexOf(s.from), b = COLS.indexOf(s.to);
+      const lo = Math.min(a, b), hi = Math.max(a, b);
+      const color = LANES[s.channel === "front" ? s.to : s.from].color;
+      const mark = s.channel === "self"
+        ? el("div", { class: "self", style: `left:${(a + 0.5) * 25}%;--c:${color}` })
+        : el("div", { class: `arrow ${s.channel} ${b > a ? "right" : "left"}`, style: `left:${(lo + 0.5) * 25}%;width:${(hi - lo) * 25}%;--c:${color}` });
+      return el("li", { class: "seq-row " + (i === step ? "current" : "past") },
+        el("div", { class: "seq-track" }, mark),
+        el("div", { class: "seq-msg mono" }, s.msg),
+        i === step ? el("div", { class: "seq-detail" }, s.detail) : null);
+    }));
+    const cur = STEPS[step];
+    bar.replaceChildren(el("span", { class: "addr-label" }, "Address bar"),
+      el("span", { class: "mono" }, STEPS.slice(0, step + 1).reverse().find(s => s.url)?.url || ""));
+    bar.classList.toggle("flash", !!cur.url);
+    outcome.hidden = step !== STEPS.length - 1;
+    const wrap = body.parentElement;
+    if (wrap && revealed) wrap.scrollTop = wrap.scrollHeight;
+    announce(`Step ${step + 1}: ${cur.msg}. ${cur.detail}`);
+  }
+
+  const gate = predictionGate({
+    scene: "s2-round-trip",
+    question: "When the login is done, does a token issued by Microsoft ever reach your backend?",
+    options: [
+      { id: "idpass", label: "Yes: Auth0 passes Microsoft's ID token through to your backend" },
+      { id: "atpass", label: "Yes, but only Microsoft's access token, so your backend can call APIs" },
+      { id: "own", label: "No: Auth0 swaps Microsoft's answer for tokens it signs itself" },
+      { id: "none", label: "No: your backend gets no tokens at all, only a session cookie" }
+    ],
+    correct: "own",
+    why: "Auth0 is Microsoft's client, so Microsoft's tokens go to Auth0 and stop there. Your backend only ever sees tokens Auth0 signed, with Auth0's <code>iss</code>. Step through it to see where each one goes.",
+    onAnswer: () => { revealed = true; lock.hidden = true; run.hidden = false; activeStepper = steps; steps.reset(); }
+  });
+
+  run.append(http);
+  root.append(prose, legend, seq, bar, lock, run, outcome, gate);
+  step = 0; paint();
+  body.replaceChildren();
+  bar.replaceChildren(el("span", { class: "addr-label" }, "Address bar"), el("span", { class: "mono" }, "app.example.com/"));
+  if (saved.answer) {
+    gate.restore(saved.answer);
+    if (saved.mode === "atk") modeBtns[1].click();
+    if (saved.step) steps.go(saved.step);
+  }
+
+  return {
+    getState: () => ({ answer: gate.answer(), mode, step }),
+    restoreRecord: r => gate.restore(r.answer_id || gate.byLabel(r.answer)),
+    stepper: () => (revealed ? steps : null),
+    context: () => [
+      "SCENE: Whose answer reaches your backend? (step-through of the login round trip: browser, your backend, Auth0, Microsoft; Auth0 federates to Microsoft)",
+      "PROSE: " + prose.textContent,
+      "STATE: " + (revealed ? `mode: ${mode === "atk" ? "the attacker's callback link (login CSRF)" : "the user's own login"}; step ${step + 1}/${L().length}: ${L()[step].msg}. ${L()[step].detail}\nHTTP:\n${L()[step].http.req}\n---\n${L()[step].http.res}`.replace(/[⟦⟧]/g, "") : "prediction not made yet")
+    ].join("\n")
+  };
+}
+
+function buildTrustJwt(root, saved = {}) {
+  const ISS = "https://your-tenant.auth0.com/";
+  const API = "https://api.example.com";
+  const NOW = 1792915200; // the page's "now"
+  const ago = s => (s > 0 ? `in ${Math.round(s / 3600)} h` : `${Math.round(-s / 3600)} h ago`);
+  const base = { iss: ISS, sub: "waad|8f3c2e…", aud: [API, ISS + "userinfo"], azp: "OTHER_PAGE_CLIENT_ID", scope: "openid profile read:orders", iat: NOW - 3600, exp: NOW + 82800 };
+  const RS = { alg: "RS256", typ: "JWT", kid: "K1-your-tenant" };
+  const TOKENS = [
+    { id: "access", name: "Access token for your API", legit: true, header: RS, payload: base, sig: "ok" },
+    { id: "idtoken", name: "The other page's ID token", header: RS, sig: "ok",
+      payload: { iss: ISS, sub: "waad|8f3c2e…", aud: "OTHER_PAGE_CLIENT_ID", name: "Ada Weber", email: "ada@example.com", nonce: "n-Wd2…", iat: NOW - 3600, exp: NOW + 32400 } },
+    { id: "otherapi", name: "Access token for another API", header: RS, sig: "ok",
+      payload: { ...base, aud: ["https://billing.example.com", ISS + "userinfo"], scope: "openid read:invoices" } },
+    { id: "edited", name: "Access token, payload edited", header: RS, sig: "bad",
+      payload: { ...base, scope: "openid profile read:orders admin:all" } },
+    { id: "expired", name: "Access token, expired", header: RS, sig: "ok",
+      payload: { ...base, iat: NOW - 90000, exp: NOW - 3600 } },
+    { id: "none", name: "Unsigned token, alg: none", header: { alg: "none", typ: "JWT" }, sig: "none",
+      payload: { ...base, scope: "openid profile read:orders admin:all" } }
+  ];
+  const CHECKS = [
+    { id: "sig", label: "Signature verifies with your tenant's public keys (JWKS)" },
+    { id: "iss", label: `iss is ${ISS}` },
+    { id: "aud", label: `aud contains ${API}` },
+    { id: "exp", label: "exp is in the future" },
+    { id: "alg", label: "alg is on the allowlist (RS256)" }
+  ];
+  const on = { sig: true, iss: true, aud: true, exp: true, alg: true };
+
+  // One result per check: "pass" | "fail" | "off", with the reason it failed.
+  function evaluate(t) {
+    const p = t.payload, auds = [].concat(p.aud);
+    const r = {
+      sig: t.sig === "ok" ? ["pass"] : t.sig === "bad" ? ["fail", "signature does not match the payload"]
+        : on.alg ? ["fail", "nothing to verify: alg is none"] : ["pass", "the library read alg: none from the header and skipped verification"],
+      iss: p.iss === ISS ? ["pass"] : ["fail", `iss is ${p.iss}`],
+      aud: auds.includes(API) ? ["pass"] : ["fail", `aud is ${auds[0]}`],
+      exp: p.exp > NOW ? ["pass"] : ["fail", `expired ${ago(p.exp - NOW)}`],
+      alg: t.header.alg === "RS256" ? ["pass"] : ["fail", `alg is ${t.header.alg}`]
+    };
+    for (const k of Object.keys(r)) if (!on[k]) r[k] = ["off"];
+    const fails = Object.entries(r).filter(([, v]) => v[0] === "fail");
+    return { r, accepted: fails.length === 0, reason: fails.length ? fails[0][1][1] : "" };
+  }
+
+  let sel = "idtoken", revealed = false;
+  const prose = el("p", { class: "prose" });
+  prose.innerHTML = "The other page logs in through Auth0 on its own, then calls your API with <code>Authorization: Bearer &lt;token&gt;</code>. Your backend never saw that login. All it has is the token: a header, a payload of claims and a signature. Five checks decide whether it gets in.";
+
+  const picker = el("div", { class: "tok-list", role: "group", "aria-label": "Tokens the other page could send" });
+  const viewer = el("div", { class: "tok-view" });
+  const checksBox = el("div", { class: "checks", role: "group", "aria-label": "Your backend's checks" });
+  const verdict = el("p", { class: "verdict", "aria-live": "polite" });
+  const lock = el("div", { class: "lock-note" }, "Make your prediction below to see the verdict, try the other tokens and switch checks off.");
+
+  const b64 = o => btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/=+$/, "").replace(/\+/g, "-").replace(/\//g, "_");
+  const json = o => JSON.stringify(o, (k, v) => (k === "iat" || k === "exp") ? v : v, 2)
+    .replace(/"exp": (\d+)/, (m, n) => `"exp": ${n}   (${ago(+n - NOW)})`);
+
+  function paint() {
+    const t = TOKENS.find(x => x.id === sel);
+    const ev = evaluate(t);
+    picker.replaceChildren(...TOKENS.map(x => {
+      const e = evaluate(x);
+      const danger = e.accepted && !x.legit;
+      const badge = !revealed ? null : el("span", { class: "badge " + (e.accepted ? (danger ? "danger" : "ok") : "no") },
+        e.accepted ? (danger ? "⚠ let in" : "✓ 200") : "✕ 401");
+      return el("button", { class: "tok" + (x.id === sel ? " on" : ""), type: "button", disabled: !revealed && x.id !== sel,
+        "aria-pressed": String(x.id === sel), onclick: () => { sel = x.id; paint(); } }, el("span", {}, x.name), badge);
+    }));
+    const sigText = t.sig === "none" ? "(empty)" : "Rk9hZ3…" + (t.sig === "bad" ? "  (signed over the original payload)" : "");
+    viewer.replaceChildren(
+      el("div", { class: "jwt mono", "aria-label": "Encoded token" },
+        el("span", { class: "j-h" }, b64(t.header).slice(0, 18) + "…"), ".",
+        el("span", { class: "j-p" }, b64(t.payload).slice(0, 26) + "…"), ".",
+        el("span", { class: "j-s" }, t.sig === "none" ? "" : "Rk9hZ3…")),
+      el("div", { class: "jwt-part" }, el("div", { class: "http-h j-h" }, "Header"), el("pre", {}, json(t.header))),
+      el("div", { class: "jwt-part" }, el("div", { class: "http-h j-p" }, "Payload"), el("pre", {}, json(t.payload))),
+      el("div", { class: "jwt-part" }, el("div", { class: "http-h j-s" }, "Signature"), el("pre", {}, sigText)));
+    checksBox.replaceChildren(...CHECKS.map(c => {
+      const [state, why] = ev.r[c.id];
+      const id = `s3-chk-${c.id}`;
+      return el("div", { class: "chk" },
+        el("input", { type: "checkbox", id, checked: on[c.id], disabled: !revealed, onchange: e => { on[c.id] = e.target.checked; paint(); } }),
+        el("label", { for: id }, c.label),
+        revealed && state !== "off" ? el("span", { class: "chk-r " + state }, state === "pass" ? "✓ pass" : "✕ fail") : null,
+        revealed && why ? el("span", { class: "chk-why" }, why) : null);
+    }));
+    if (!revealed) { verdict.hidden = true; return; }
+    verdict.hidden = false;
+    const danger = ev.accepted && !t.legit;
+    verdict.className = "verdict " + (ev.accepted ? (danger ? "danger" : "ok") : "no");
+    verdict.innerHTML = ev.accepted
+      ? (danger ? `<b>200 OK, and it should not be.</b> With these checks off, this token gets into your API.` : `<b>200 OK.</b> Signed by your tenant, addressed to your API, not expired.`)
+      : `<b>401 Unauthorized.</b> ${esc(ev.reason)}.`;
+  }
+  const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+
+  const compare = el("div", { class: "compare", hidden: true },
+    html("div", { class: "cmp" }, `<h3>Your own frontend</h3><p><b>Sends:</b> your <code>session</code> cookie, which the browser attaches by itself.</p><p><b>Your backend:</b> looks the session id up on the server. No JWT checks.</p><p><b>Main risk:</b> CSRF, because the browser attaches the cookie to cross-site requests too. SameSite and CSRF defenses cover it.</p>`),
+    html("div", { class: "cmp" }, `<h3>The other page</h3><p><b>Sends:</b> <code>Authorization: Bearer</code> with an access token. The browser never attaches it by itself.</p><p><b>Your backend:</b> runs these five checks on every request, locally, with cached public keys.</p><p><b>Main risk:</b> a leaked token. Whoever holds it gets in until <code>exp</code>, from anywhere.</p>`));
+
+  const gate = predictionGate({
+    scene: "s3-trust-jwt",
+    question: "The other page sends its ID token instead of the access token. Auth0 really signed it and it has not expired. All five checks are on. Does your backend let it in?",
+    options: [
+      { id: "yes", label: "Yes: it is signed by Auth0 and not expired, so every check passes" },
+      { id: "sig", label: "No: the signature check fails, because ID tokens use a different key" },
+      { id: "aud", label: "No: the aud check fails, because the ID token is addressed to the other page" },
+      { id: "iss", label: "No: the iss check fails, because ID tokens come from a different issuer" }
+    ],
+    correct: "aud",
+    why: "Same issuer, same key, but an ID token's <code>aud</code> is the client that logged in, here the other page. Your API only accepts tokens addressed to itself. Now try the other tokens and switch checks off.",
+    onAnswer: () => { revealed = true; lock.hidden = true; compare.hidden = false; paint(); }
+  });
+
+  root.append(prose,
+    el("div", { class: "jwt-lab" },
+      el("div", { class: "lab-col" }, el("div", { class: "http-h" }, "Token the other page sends"), picker, viewer),
+      el("div", { class: "lab-col" }, el("div", { class: "http-h" }, "Your backend's checks"), checksBox, verdict)),
+    lock, gate, compare);
+  if (saved.on) Object.assign(on, saved.on);
+  if (saved.sel) sel = saved.sel;
+  if (saved.answer) gate.restore(saved.answer);
+  paint();
+
+  return {
+    getState: () => ({ answer: gate.answer(), sel, on: { ...on } }),
+    restoreRecord: r => gate.restore(r.answer_id || gate.byLabel(r.answer)),
+    stepper: () => null,
+    context: () => {
+      const t = TOKENS.find(x => x.id === sel), ev = evaluate(t);
+      return [
+        "SCENE: What makes your backend trust the other page's JWT? (lever sandbox: six tokens the other page could send as a Bearer token, five checks that can be switched off)",
+        "PROSE: " + prose.textContent,
+        `STATE: selected token = ${t.name}; header ${JSON.stringify(t.header)}; payload ${JSON.stringify(t.payload)}; checks on: ${Object.keys(on).filter(k => on[k]).join(", ") || "none"}; ` +
+          (revealed ? `verdict: ${ev.accepted ? "accepted" : "rejected: " + ev.reason}` : "prediction not made yet")
+      ].join("\n");
+    }
+  };
+}
+
+function buildSilentCheck(root, saved = {}) {
+  const BROWSERS = [
+    { id: "chrome", name: "Chrome", note: "third-party cookies on by default" },
+    { id: "safari", name: "Safari", note: "third-party cookies blocked" },
+    { id: "firefox", name: "Firefox", note: "third-party cookies partitioned" },
+    { id: "brave", name: "Brave", note: "third-party cookies blocked" }
+  ];
+  const METHODS = [
+    { id: "backend", name: "Your backend asks Auth0", how: "A server-to-server call from app.example.com's backend to Auth0." },
+    { id: "iframe", name: "Hidden iframe, prompt=none", how: "Your page loads your-tenant.auth0.com/authorize?prompt=none in an invisible iframe." },
+    { id: "custom", name: "Hidden iframe on a custom domain", how: "The same iframe, but Auth0 runs on login.example.com, the same site as app.example.com." },
+    { id: "top", name: "Whole page redirect, prompt=none", how: "On page load, the whole tab navigates to Auth0 with prompt=none and straight back." }
+  ];
+  let session = true, revealed = false, sel = { m: "iframe", b: "safari" };
+
+  // What happens for one method in one browser.
+  function outcome(m, b) {
+    if (m === "backend") return { kind: "na", short: "? can't ask",
+      cookie: "No cookie at all: Auth0's cookie lives in the browser, not on your server.",
+      result: "Auth0 has no idea which browser or user you mean. There is no API that answers 'does this browser have a session?'.",
+      frame: "server" };
+    const thirdParty = m === "iframe";
+    const blocked = thirdParty && b !== "chrome";
+    let cookie;
+    if (m === "top") cookie = "Sent. The whole tab is on Auth0's site, so Auth0's cookie is first-party.";
+    else if (m === "custom") cookie = "Sent. login.example.com and app.example.com are the same site, so the cookie is not third-party.";
+    else if (b === "chrome") cookie = "Sent. Inside your page Auth0's cookie is third-party, and Chrome still sends those by default.";
+    else if (b === "firefox") cookie = "Not found. Firefox keeps a separate cookie jar per top-level site; the jar for app.example.com never got Auth0's login cookie.";
+    else cookie = `Blocked. Inside your page Auth0's cookie is third-party, and ${b === "safari" ? "Safari" : "Brave"} blocks those.`;
+    const sees = session && !blocked;
+    const result = sees
+      ? (m === "top" ? "Auth0 finds the session and redirects back with a code. The user sees a quick flicker on page load, then is signed in."
+                     : "Auth0 finds the session and posts a code back to your page. Signed in without anything visible.")
+      : (blocked ? "Auth0 sees no cookie, so as far as it knows there is no session: error=login_required, although the user is logged in at Auth0."
+                 : (m === "top" ? "No Auth0 session: the tab comes back with error=login_required, and your app shows its own Login button."
+                                : "No Auth0 session: error=login_required. Your app shows its own Login button."));
+    return { kind: sees ? "yes" : "no", short: sees ? "✓ signed in" : "✕ login_required", cookie, result, frame: m === "top" ? "top" : "iframe", blocked };
+  }
+
+  const prose = el("p", { class: "prose" });
+  prose.innerHTML = "Your app wants to skip the Login click when Auth0 still has a session. There are three ways to ask without showing a login screen. Your backend can ask, a hidden iframe can ask with <code>prompt=none</code>, or the whole page can hop to Auth0 and straight back. It works only if the browser sends Auth0's cookie.";
+
+  const sessBtns = [[true, "Auth0 session alive"], [false, "Auth0 session expired"]].map(([v, label]) =>
+    el("button", { class: "seg", type: "button", "aria-pressed": String(v === session), "data-v": String(v),
+      onclick: () => { session = v; sessBtns.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === String(session)))); paint(); } }, label));
+  const grid = el("div", { class: "matrix-wrap" });
+  const detail = el("div", { class: "detail" });
+  const lock = el("div", { class: "lock-note" }, "Click any cell to see where the request goes. The results appear after your prediction below.");
+
+  function frameDiagram(o, m) {
+    const ck = !revealed ? el("span", { class: "cookie none" }, "auth0 cookie: ?")
+      : el("span", { class: "cookie " + (o.kind === "na" ? "none" : (o.blocked ? "blocked" : "sent")) },
+        o.kind === "na" ? "auth0 cookie: not here" : (o.blocked ? "auth0 cookie: ✕ not sent" : "auth0 cookie: ✓ sent"));
+    if (o.frame === "server") return el("div", { class: "frame server" },
+      el("div", { class: "frame-bar mono" }, "app.example.com backend → your-tenant.auth0.com"), el("div", { class: "frame-in" }, ck));
+    const auth0Host = m === "custom" ? "login.example.com" : "your-tenant.auth0.com";
+    if (o.frame === "top") return el("div", { class: "frame" },
+      el("div", { class: "frame-bar mono" }, `${auth0Host}/authorize?prompt=none…`),
+      el("div", { class: "frame-in" }, el("span", { class: "frame-label" }, "The whole tab is on Auth0 for a moment"), ck));
+    return el("div", { class: "frame" },
+      el("div", { class: "frame-bar mono" }, "app.example.com"),
+      el("div", { class: "frame-in" }, el("span", { class: "frame-label" }, "Your page"),
+        el("div", { class: "frame inner" }, el("div", { class: "frame-bar mono" }, `iframe: ${auth0Host}/authorize?prompt=none…`),
+          el("div", { class: "frame-in" }, ck))));
+  }
+
+  function paint() {
+    const table = el("table", { class: "matrix" },
+      el("thead", {}, el("tr", {}, el("th", { scope: "col" }, ""), BROWSERS.map(b => el("th", { scope: "col" }, b.name, el("span", { class: "th-note" }, b.note))))),
+      el("tbody", {}, METHODS.map(m => el("tr", {}, el("th", { scope: "row" }, m.name),
+        BROWSERS.map(b => {
+          const o = outcome(m.id, b.id);
+          const on = sel.m === m.id && sel.b === b.id;
+          return el("td", {}, el("button", { class: `cell ${revealed ? o.kind : "hidden"}${on ? " on" : ""}`, type: "button", "aria-pressed": String(on),
+            "aria-label": `${m.name} in ${b.name}${revealed ? ": " + o.short : ""}`,
+            onclick: () => { sel = { m: m.id, b: b.id }; paint(); } }, revealed ? o.short : "?"));
+        })))));
+    grid.replaceChildren(table);
+    const m = METHODS.find(x => x.id === sel.m), b = BROWSERS.find(x => x.id === sel.b);
+    const o = outcome(sel.m, sel.b);
+    detail.replaceChildren(
+      el("div", { class: "http-h" }, `${m.name} · ${b.name}`),
+      el("p", { class: "detail-how" }, m.how),
+      frameDiagram(o, sel.m),
+      revealed ? el("p", { class: "detail-line" }, el("b", {}, "Cookie: "), o.cookie) : "",
+      revealed ? el("p", { class: "detail-line" }, el("b", {}, "Result: "), o.result) : "");
+    if (revealed) announce(`${m.name} in ${b.name}: ${o.short}. ${o.result}`);
+  }
+
+  const gate = predictionGate({
+    scene: "s4-silent-check",
+    question: "Hidden iframe with prompt=none, in Safari, while the user's Auth0 session is alive. What comes back?",
+    options: [
+      { id: "code", label: "A code: Auth0 sees its session and signs the user in silently" },
+      { id: "loginreq", label: "login_required: Auth0 never sees its own cookie inside your page" },
+      { id: "form", label: "Auth0's login form, inside the hidden iframe" },
+      { id: "framed", label: "An error, because Auth0's login page refuses to be framed" }
+    ],
+    correct: "loginreq",
+    why: "Inside your page, Auth0 is a third-party site, and Safari doesn't send third-party cookies. Auth0 sees no session and says <code>login_required</code>, although the user is logged in there. The login page's framing block doesn't matter: <code>prompt=none</code> never shows a page. Now flip through the other cells and the session switch.",
+    onAnswer: () => { revealed = true; lock.hidden = true; paint(); }
+  });
+
+  root.append(prose,
+    el("div", { class: "segs", role: "group", "aria-label": "Auth0 session" }, el("span", { class: "segs-label" }, "At Auth0:"), sessBtns),
+    grid, detail, lock, gate);
+  if (saved.sel) sel = saved.sel;
+  if (typeof saved.session === "boolean") {
+    session = saved.session;
+    sessBtns.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === String(session))));
+  }
+  if (saved.answer) gate.restore(saved.answer);
+  paint();
+
+  return {
+    getState: () => ({ answer: gate.answer(), session, sel }),
+    restoreRecord: r => gate.restore(r.answer_id || gate.byLabel(r.answer)),
+    stepper: () => null,
+    context: () => {
+      const o = outcome(sel.m, sel.b);
+      return [
+        "SCENE: Why can't the app just ask Auth0 whether there's a session? (lever sandbox: 4 ways to check silently × 4 browsers, plus a switch for whether the Auth0 session is alive)",
+        "PROSE: " + prose.textContent,
+        `STATE: Auth0 session ${session ? "alive" : "expired"}; selected: ${METHODS.find(x => x.id === sel.m).name} in ${BROWSERS.find(x => x.id === sel.b).name}; ` +
+          (revealed ? `result: ${o.short}. Cookie: ${o.cookie} ${o.result}` : "prediction not made yet")
+      ].join("\n");
+    }
+  };
+}
+
+function buildAutoLogin(root, saved = {}) {
+  const DEPTHS = [
+    { id: 0, label: "Your app only" },
+    { id: 1, label: "App + Auth0" },
+    { id: 2, label: "App + Auth0 + Microsoft" }
+  ];
+  let auto = true, depth = 0, step = 0, revealed = false;
+
+  // The story for one lever setting: Ada logs out, Ben sits down.
+  function scenario() {
+    const s = { app: 1, auth0: 1, ms: 1 };
+    const out = [];
+    const push = (who, text) => out.push({ who, text, sess: { ...s } });
+    push("Ada", "Ada is logged in. All three sessions are alive.");
+    s.app = 0; if (depth >= 1) s.auth0 = 0; if (depth >= 2) s.ms = 0;
+    push("Ada", "Ada clicks Log out. Your backend deletes its session cookie" +
+      (depth >= 1 ? " and sends the browser to Auth0's /oidc/logout, which ends the Auth0 session" : "") +
+      (depth >= 2 ? ". With federated, Auth0 also sends it to Microsoft's logout" : "") + ".");
+    let loop = false;
+    if (auto) {
+      if (s.auth0) {
+        s.app = 1; loop = true;
+        push("Ada", "The logout lands on your start page. Auto-login hops to Auth0 with prompt=none. Auth0 still has Ada's session, so it hands back a code: Ada is logged in again a second after logging out.");
+      } else push("Ada", "The logout lands on your start page. Auto-login hops to Auth0 with prompt=none: no Auth0 session, login_required. Ada sees your Login button.");
+    } else push("Ada", "The logout lands on your start page. Ada sees your Login button.");
+    push("Ben", loop ? "Ada gives up and walks away with the app open. Ben sits down at the same computer." : "Ada walks away. Ben sits down at the same computer and opens the app.");
+    let verdict;
+    if (s.app) {
+      push("Ben", "Your app's cookie is valid. Ben is in Ada's account without clicking anything.");
+      verdict = { level: "danger", text: "Ben is in Ada's account with zero clicks, and Ada could never log out." };
+    } else if (s.auth0) {
+      push("Ben", "Ben clicks Login. Auth0 still has Ada's session: one flicker, and Ben is in Ada's account.");
+      verdict = { level: "danger", text: "One click puts Ben in Ada's account. Without auto-login the hole is the same: it only adds the click." };
+    } else if (s.ms) {
+      if (auto) push("Ben", "Auto-login asks Auth0 with prompt=none: no Auth0 session, login_required. Ben sees the Login button.");
+      push("Ben", "Ben clicks Login and picks Microsoft on Auth0's page. Microsoft still has Ada's session, so it offers Ada's account and signs in without a password.");
+      verdict = { level: "risky", text: "Ben needs two clicks and has to pick Ada's account. Better, but Microsoft still remembers Ada." };
+    } else {
+      if (auto) push("Ben", "Auto-login asks Auth0 with prompt=none: no Auth0 session, login_required. Ben sees the Login button.");
+      push("Ben", "Ben clicks Login, picks Microsoft, and Microsoft asks for a password. Ben has to use his own account.");
+      verdict = { level: "ok", text: "Clean: nobody remembers Ada. The cost: Ada is also signed out of Outlook, Teams and every other Microsoft app in this browser, which is why Auth0 calls federated logout 'not recommended' outside shared machines." };
+    }
+    return { steps: out, verdict, loop };
+  }
+
+  const prose = el("p", { class: "prose" },
+    "Auto-login means your start page hops to Auth0 with prompt=none the moment it loads, using the redirect from scene 4 that works in every browser. Log out can clear one, two or all three sessions from scene 1. The story is the same each time: Ada logs out at a shared computer, then Ben sits down.");
+
+  const seg = (name, items, get, set) => {
+    const btns = items.map(([v, label]) => el("button", { class: "seg", type: "button", "data-v": String(v), "aria-pressed": String(v === get()),
+      onclick: () => { set(v); btns.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === String(get())))); steps.reset(); } }, label));
+    return { row: el("div", { class: "segs", role: "group", "aria-label": name }, el("span", { class: "segs-label" }, name), btns), btns };
+  };
+  const autoSeg = seg("Auto-login on page load", [[false, "Off"], [true, "On"]], () => auto, v => { auto = v; });
+  const depthSeg = seg("Log out clears", DEPTHS.map(d => [d.id, d.label]), () => depth, v => { depth = v; });
+  const setLevers = enabled => [...autoSeg.btns, ...depthSeg.btns].forEach(b => { b.disabled = !enabled; });
+
+  const chips = el("div", { class: "sess-chips", "aria-label": "Sessions in this browser" });
+  const list = el("ol", { class: "story" });
+  const verdict = el("p", { class: "verdict", hidden: true });
+  const lock = el("div", { class: "lock-note" }, "The levers are set for the prediction below. Answer it to run the story and change the levers.");
+  const steps = stepper({ count: () => scenario().steps.length, render: i => { step = i; paint(); } });
+  const run = el("section", { class: "trace", hidden: true, "aria-label": "The shared computer, step by step" }, steps.el, list, verdict);
+
+  function paintChips(sess) {
+    chips.replaceChildren(...[["app", "Your app"], ["auth0", "Auth0"], ["ms", "Microsoft"]].map(([k, name]) =>
+      el("span", { class: "sess " + (sess[k] ? "alive" : "dead"), style: `--c:${LANES[k].color}` },
+        el("b", {}, name), sess[k] ? " ✓ alive" : " ✕ cleared")));
+  }
+  function paint() {
+    const sc = scenario();
+    if (!revealed) { paintChips({ app: 1, auth0: 1, ms: 1 }); return; }
+    const cur = sc.steps[Math.min(step, sc.steps.length - 1)];
+    paintChips(cur.sess);
+    list.replaceChildren(...sc.steps.slice(0, step + 1).map((st, i) =>
+      el("li", { class: i === step ? "current" : "past" },
+        el("span", { class: "who " + st.who.toLowerCase() }, st.who), el("span", {}, st.text))));
+    const last = step === sc.steps.length - 1;
+    verdict.hidden = !last;
+    verdict.className = "verdict " + (sc.verdict.level === "ok" ? "ok" : sc.verdict.level === "danger" ? "danger" : "no");
+    verdict.innerHTML = `<b>${sc.verdict.level === "ok" ? "Safe." : sc.verdict.level === "danger" ? "Ada's account is exposed." : "Still risky."}</b> ${sc.verdict.text}`;
+    announce(`${cur.who}: ${cur.text}`);
+  }
+
+  const gate = predictionGate({
+    scene: "s5-auto-login",
+    question: "Auto-login is on and Log out clears only your app's cookie. Ada logs out and leaves. Ben opens the app. Where does Ben end up?",
+    options: [
+      { id: "login", label: "On your Login page: he has to log in himself" },
+      { id: "ada", label: "In Ada's account, without clicking anything" },
+      { id: "auth0", label: "On Auth0's login page, with Ada's account suggested" },
+      { id: "error", label: "On an error page, because Ada's session was logged out" }
+    ],
+    correct: "ada",
+    why: "Logout left Auth0's session alive, so the moment the start page loads, auto-login gets Ada a fresh session. Ada can't even stay logged out herself. Now change the levers: auto-login off, then deeper logouts.",
+    onAnswer: () => { revealed = true; lock.hidden = true; run.hidden = false; setLevers(true); activeStepper = steps; steps.reset(); }
+  });
+
+  root.append(prose, el("div", { class: "levers" }, autoSeg.row, depthSeg.row), chips, lock, run, gate);
+  setLevers(false);
+  paint();
+  if (saved.answer) {
+    gate.restore(saved.answer);
+    if (typeof saved.auto === "boolean") autoSeg.btns.find(b => b.dataset.v === String(saved.auto)).click();
+    if (saved.depth != null) depthSeg.btns.find(b => b.dataset.v === String(saved.depth)).click();
+    if (saved.step) steps.go(saved.step);
+  }
+
+  return {
+    getState: () => ({ answer: gate.answer(), auto, depth, step }),
+    restoreRecord: r => gate.restore(r.answer_id || gate.byLabel(r.answer)),
+    stepper: () => (revealed ? steps : null),
+    context: () => {
+      const sc = scenario();
+      return [
+        "SCENE: What does auto-login cost? (break it: auto-login on page load on/off × how much Log out clears; Ada logs out at a shared computer, then Ben opens the app)",
+        "PROSE: " + prose.textContent,
+        `STATE: auto-login ${auto ? "on" : "off"}; logout clears ${DEPTHS[depth].label}; ` +
+          (revealed ? `step ${step + 1}/${sc.steps.length}: ${sc.steps[Math.min(step, sc.steps.length - 1)].text} Verdict: ${sc.verdict.text}` : "prediction not made yet")
+      ].join("\n");
+    }
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Stage: one scene at a time.
+// ---------------------------------------------------------------------------
+const stage = document.getElementById("stage");
+const dots = document.getElementById("dots");
+const built = {};
+let current = 0;
+
+// The page keeps its state across republishes and reloads: where you are in this browser
+// (localStorage, plus the viewer's hot-update hook), and which predictions you answered (db).
+const STORE_KEY = "idp-explorable-v1";
+let BOOT = { scenes: {} }, dbAnswers = {}, saveTimer = null;
+function collectState() {
+  const scenes = { ...(BOOT.scenes || {}) };
+  for (const [id, b] of Object.entries(built)) if (b.api.getState) scenes[id] = b.api.getState();
+  return { current, scenes };
+}
+function queueSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(collectState())); } catch (e) { /* storage unavailable */ }
+  }, 50);
+}
+function restoreFromDb(id) {
+  const b = built[id], r = dbAnswers[id];
+  if (b && r && b.api.getState && !b.api.getState().answer) b.api.restoreRecord(r);
+}
+
+function showScene(i) {
+  current = i;
+  const sc = SCENES[i];
+  if (!built[sc.id]) {
+    const sec = el("section", { class: "scene", "aria-labelledby": `${sc.id}-h` });
+    sec.append(el("h2", { id: `${sc.id}-h` }, sc.title));
+    if (sc.build) {
+      const body = el("div", { style: "display:grid;gap:18px" });
+      sec.append(body);
+      const api = sc.build(body, (BOOT.scenes || {})[sc.id] || {});
+      sec.append(askBox(sc.id, api.context));
+      built[sc.id] = { sec, api };
+    } else {
+      sec.append(el("p", { class: "upcoming" }, "This scene is being built. It arrives in the next turn of the session."));
+      built[sc.id] = { sec, api: { stepper: () => null } };
+    }
+  }
+  stage.replaceChildren(built[sc.id].sec);
+  restoreFromDb(sc.id);
+  queueSave();
+  activeStepper = built[sc.id].api.stepper();
+  [...dots.children].forEach((d, j) => j === i ? d.setAttribute("aria-current", "step") : d.removeAttribute("aria-current"));
+  document.getElementById("count").textContent = `Scene ${i + 1} of ${SCENES.length}`;
+  document.getElementById("prev").disabled = i === 0;
+  const nextB = document.getElementById("next");
+  const pending = i < SCENES.length - 1 && !SCENES[i + 1].build;
+  nextB.disabled = i === SCENES.length - 1 || pending;
+  nextB.textContent = pending ? `Scene ${i + 2}: say next in Claude Code` : "Next →";
+}
+
+SCENES.forEach((sc, i) => dots.append(el("button", {
+  class: "dot", type: "button", disabled: !sc.build, "aria-label": `Scene ${i + 1}: ${sc.title}${sc.build ? "" : " (coming next)"}`,
+  onclick: () => showScene(i)
+})));
+document.getElementById("prev").addEventListener("click", () => showScene(Math.max(0, current - 1)));
+document.getElementById("next").addEventListener("click", () => showScene(Math.min(SCENES.length - 1, current + 1)));
+
+document.addEventListener("keydown", e => {
+  const t = e.target;
+  if (t && (t.tagName === "TEXTAREA" || t.tagName === "INPUT" || t.isContentEditable)) return;
+  const s = built[SCENES[current].id] && built[SCENES[current].id].api.stepper();
+  if (!s) return;
+  if (e.key === "ArrowRight") { s.next(); e.preventDefault(); }
+  else if (e.key === "ArrowLeft") { s.prev(); e.preventDefault(); }
+  else if (e.key === "r" || e.key === "R") { s.replay(); }
+  else if (e.key === " " && (!t || t.tagName !== "BUTTON")) { s.toggle(); e.preventDefault(); }
+});
+
+["click", "input", "change", "keydown"].forEach(t => document.addEventListener(t, queueSave));
+
+function start(data) {
+  let local = {};
+  try { local = JSON.parse(localStorage.getItem(STORE_KEY) || "{}") || {}; } catch (e) { local = {}; }
+  BOOT = data && data.scenes ? data : (local.scenes ? local : { scenes: {} });
+  const want = Math.max(0, Math.min(SCENES.length - 1, BOOT.current || 0));
+  showScene(SCENES[want].build ? want : 0);
+}
+try { window.claude?.hot?.snapshot?.(() => collectState()); } catch (e) { /* no hot updates here */ }
+const hot = window.claude && window.claude.hot;
+if (hot && hot.ready) hot.ready(start); else start((hot && hot.data) || {});
+
+capsReady.then(async () => {
+  if (!db) return;
+  try {
+    const snap = await db.collection("attempts").get();
+    snap.docs.forEach(d => {
+      const r = d.data();
+      if (r.kind !== "prediction") return;
+      if (!dbAnswers[r.scene] || r.at > dbAnswers[r.scene].at) dbAnswers[r.scene] = r;
+    });
+    Object.keys(built).forEach(restoreFromDb);
+  } catch (e) { /* records unavailable: the page still works */ }
+});
+</script>

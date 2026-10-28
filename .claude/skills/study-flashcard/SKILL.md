@@ -132,6 +132,16 @@ A September 2026 audit found 70% of the deck asking what something *is* and only
 
 The strongest cards pair a **concrete front** (a real scenario to reason over) with a **transferable answer** (a principle that travels). Only 13% of the deck does both; that is the headroom.
 
+### Breadth first: the most general concept before the specifics
+
+The deck is for **width and systems thinking**: the general gist of how things work, kept for the long term. Details are looked up when needed, or added later on purpose.
+
+- **First cards on a topic are its most general, most transferable concepts**: the ones that hold across vendors, languages and tools, and that explain other parts of the system (separate session layers, signature vs. audience, first-party vs. third-party cookies). Ask "would this still be true with a different product?" A yes is a first-round card.
+- **Name the role, not the product.** "the identity provider", "the API", "the browser", not Auth0, Safari or Entra. A concrete scenario is still welcome; it just has to be portable.
+- **Specifics come later, on request.** Vendor quirks, version gotchas, exact parameters and per-browser behaviour stay on the wiki page as reference. They become cards only when the developer deepens the topic (a second walkthrough, `/study-walkthrough` in Refresh cadence, a card note, "add the details") or asks for them, and only once the general card on the same idea exists and holds up in review.
+- When a draft is specific, rewrite it one level up before suggesting it: "Why does Safari block Auth0's iframe check?" becomes "Why does a silent login check in a hidden iframe fail where third-party cookies are blocked?"
+
+
 ## Card Size & Scope: one question, short answer
 
 Enforced at write time by `create_card`/`update_card`. A violating card is rejected.

@@ -1140,22 +1140,28 @@
     ],
     "sections": [
       "Secret, Salt, and KDF: What Each Term Means",
-      "Why a KDF Stretches Instead of Concatenating",
+      "Two KDF Families: Slow for Passwords, Fast for Strong Secrets",
+      "How PBKDF2 Stretches a Password",
+      "The Salt Plays Two Roles, Neither Secret",
+      "Both Families in Rails",
       "Encrypting vs Signing: Confidentiality vs Integrity",
       "Why Reusing One Derived Key for Two Purposes Weakens Both",
-      "The Salt Does not Need to Be Secret, Only the Underlying Secret Does",
       "Purpose Strings in Rails as Domain Separators",
+      "Sources",
       "Related Concepts"
     ],
     "flashcard_ids": [
       "cmrq07c7z000dgl0metdea28f",
       "cmrq07dca000egl0md1eaxsmd",
       "cmrq07etm000fgl0m8ceqwt7m",
-      "cmrq07g3m000ggl0mvxnqgddj",
-      "cmne7xtdc015z0msomwlu8l9d"
+      "cmne7xtdc015z0msomwlu8l9d",
+      "cmvnnuvct0000cl1a6uswfhrf",
+      "cmvnnuwqp0001cl1asvz5qoap",
+      "cmvnnuxza0002cl1audfwuflg",
+      "cmvno7tt80003cl1ai8exu6tt"
     ],
     "created": "2026-07-18",
-    "updated": "2026-07-18"
+    "updated": "2026-10-25"
   },
   "security/same-origin-policy": {
     "file": "security/same-origin-policy.md",
@@ -1256,10 +1262,12 @@
       "cmruqe38w0000qo0m3plgjvt6",
       "cmruqe6da0001qo0mj1zcggx0",
       "cmruqe9fe0002qo0mx0jabxcf",
-      "cmruqebt50003qo0mufs2q74k"
+      "cmruqebt50003qo0mufs2q74k",
+      "cmuz7zzdo0000621a7e3hqtxc",
+      "cmvr6uvzr0000lp1agvqpc1sd"
     ],
     "created": "2026-07-21",
-    "updated": "2026-07-21"
+    "updated": "2026-10-27"
   },
   "software-design/judging-abstractions": {
     "file": "software-design/judging-abstractions.md",
@@ -1625,6 +1633,116 @@
       "cmne7y02502sx0msoqv2zedir"
     ],
     "created": "2026-10-20",
-    "updated": "2026-10-20"
+    "updated": "2026-10-23"
+  },
+  "security/content-security-policy": {
+    "file": "security/content-security-policy.md",
+    "title": "Content Security Policy",
+    "aliases": [
+      "CSP",
+      "strict CSP",
+      "nonce-based CSP",
+      "CSP nonce"
+    ],
+    "tags": [
+      "security",
+      "web",
+      "browser"
+    ],
+    "sections": [
+      "TL;DR",
+      "How the Browser Decides",
+      "Why Allowlists Fail",
+      "Strict CSP",
+      "Nonces Done Right",
+      "Where Nonces Break",
+      "Directives Without Fallback",
+      "What CSP Doesn't Stop",
+      "Rolling It Out",
+      "Tradeoffs & Gotchas",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [
+      "cmne7xw3001u90msomnfve6jo",
+      "cmne7xxvt029t0msogj8pet75",
+      "cmvh4ho0w0003jq1a3jwnstmy",
+      "cmne7xzvq02rh0msoh6nlzufz",
+      "cmne7yekm06dr0mso1do4nilp",
+      "cmne7y00302sf0mso7xre8ov6",
+      "cmotwgr4i000eqs0mf7xai9j6",
+      "cmnwwerrb000cfb0mufxjj4ok",
+      "cmne7xw6s01v30msovqrbgfj3",
+      "cmne7yej006db0msoxk3bi7i4",
+      "cmowkcjfo0005rb0mzam5b1cn",
+      "cmotwgt9j000fqs0mlndbc18s",
+      "cmne7xzzt02sd0mso8oq3x114",
+      "cmnwwesob000dfb0mzr99cij5",
+      "cmqdhhwjw000g920m3j9xewob",
+      "cmqdhhzim000h920manyyvmtv",
+      "cmowkwfn7000brb0mkj8ky9r2",
+      "cmowkwj7c000crb0mmzn3fei7",
+      "cmqkr772h0004yb0mweyvp3j9",
+      "cmqkr78xu0005yb0mcz8nk08i",
+      "cmqkr7aoj0006yb0mslqjly12",
+      "cmqkr7c6g0007yb0mhhuw37en",
+      "cmvj7bk3i00000f1ay79xkf43",
+      "cmvj7fs6b00010f1aqwc45bhv",
+      "cmne7xx2y022v0mso8tysqhgq",
+      "cmne7xwfd01x50msoyf2q0olt",
+      "cmne7xwii01xv0mso1g3ja3xv",
+      "cmne7xwgh01xf0mso5qaqk6cd",
+      "cmne7xxh902670msovwgksyrm",
+      "cmpre2fgd000gb20mk1bs7qt0",
+      "cmne7xx7v02410msol21qjnib"
+    ],
+    "created": "2026-10-23",
+    "updated": "2026-10-23"
+  },
+  "security/identity-providers": {
+    "file": "security/identity-providers.md",
+    "title": "Identity Providers",
+    "aliases": [
+      "idp",
+      "identity provider",
+      "oauth and openid connect login",
+      "id token vs access token"
+    ],
+    "tags": [
+      "security",
+      "web",
+      "auth",
+      "oauth",
+      "oidc",
+      "jwt"
+    ],
+    "sections": [
+      "TL;DR",
+      "Roles",
+      "Three Session Layers",
+      "The Login Round Trip",
+      "state and PKCE",
+      "ID Token vs Access Token",
+      "How a Backend Trusts a JWT",
+      "Silent Login and Third-Party Cookies",
+      "Auto-Login and Logout Depth",
+      "Tradeoffs & Gotchas",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [
+      "cmvnk1noi0000g61a2j2mnc23",
+      "cmvnk1p3a0001g61asigcy619",
+      "cmvnk1qhw0002g61apwoedjm1",
+      "cmvnkv43g0005g61az1607lwt",
+      "cmvnkv5on0006g61alh67bw83",
+      "cmvnkwfp10007g61ae9nj53eg",
+      "cmso9yoit000hx90mksjgn6nl",
+      "cmsabsyne0009680mecz7zq22",
+      "cmne7xzxj02rv0msoelt9emqc",
+      "cmne7xzx902rt0mso4dku4tk9"
+    ],
+    "created": "2026-10-25",
+    "updated": "2026-10-25"
   }
 }
