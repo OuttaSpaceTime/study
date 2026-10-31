@@ -110,7 +110,7 @@ Applies when there is an explorable: the `Context: explorable <url>` line, or a 
 
 ## Quality checks on every suggestion
 
-These mirror `/study`'s review-time flags and the Omvida grader's card check. Catching them here costs one draft; catching them in review costs months.
+These are the drafting side of `.claude/skills/references/card-quality.md`, which the card-quality gate holds every `create_card` and `update_card` to: a flawed card is refused with its flaws. Catching them in the draft saves the round trip; catching them in review costs months.
 
 - **One recall target.** No superlatives or judgments with several defensible answers ("the single most effective", "the best way"). Name the scenario or principle being tested instead.
 - **Self-contained front.** Exactly one answer is right without seeing the back. "What is the private key used for?" could mean TLS, JWT or SSH. Write "In a TLS handshake, what does the server's private key do?". This *Ambiguous front* is the most common defect in the deck.
