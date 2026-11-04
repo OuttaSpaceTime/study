@@ -23,6 +23,40 @@ from scripts.ankisync.merge import DELETED_TAG, AnkiCard, MasterCard, Review, Sc
 
 PROFILE = "StudySync"
 NOTETYPE = "Basic"
+# Two note types of our own, for code cards, the only cards with clozes
+# (flashcard-mcp refuses one on any other). A cloze needs a cloze note type, or
+# Anki shows the braces. Both carry a third field no template shows, the exercise as
+# JSON: front and back are all another machine would otherwise get of a card
+# (merge.py imports what it finds on Anki), and it could not run. Anki can't run
+# it either, so there the card is an ordinary one, rated by hand.
+#
+# Every deletion is c1: one note, one card, one schedule, which read_anki_cards
+# relies on.
+STUDY_CLOZE = "Study Cloze"
+STUDY_CODE = "Study Code"
+EXERCISE_FIELD = 2
+CLOZE_MARK = "{{c1::"
+STUDY_CSS = """.card { font-family: arial; font-size: 20px; text-align: left; color: black; background-color: white; }
+.card.nightMode { color: white; background-color: #2f2f31; }
+pre { font-size: 16px; white-space: pre-wrap; }
+.cloze { font-weight: bold; color: blue; }
+.card.nightMode .cloze { color: lightblue; }
+"""
+"""Field names and front/back templates of each of our note types; `kind` is Anki's."""
+STUDY_NOTETYPES = {
+    STUDY_CLOZE: {
+        "kind": 1,  # MODEL_CLOZE
+        "fields": ["Text", "Back Extra", "Exercise"],
+        "qfmt": "{{cloze:Text}}",
+        "afmt": "{{cloze:Text}}<br>{{Back Extra}}",
+    },
+    STUDY_CODE: {
+        "kind": 0,  # MODEL_STD
+        "fields": ["Front", "Back", "Exercise"],
+        "qfmt": "{{Front}}",
+        "afmt": "{{FrontSide}}<hr id=answer>{{Back}}",
+    },
+}
 
 
 def open_bridge() -> Collection:
@@ -80,6 +114,7 @@ def read_anki_cards(col: Collection) -> list[AnkiCard]:
                 guid=note.guid,
                 front=note.fields[0] if note.fields else "",
                 back=note.fields[1] if len(note.fields) > 1 else "",
+                exercise=note.fields[EXERCISE_FIELD] if len(note.fields) > EXERCISE_FIELD else "",
                 tags=tuple(note.tags),
                 deck=col.decks.name(card.did),
                 suspended=card.queue == -1,
@@ -109,12 +144,44 @@ def _deck_id(col: Collection, name: str) -> int:
     return did
 
 
+def _study_notetype(col: Collection, name: str) -> dict:
+    """One of our note types, made on the first card that needs it.
+
+    Looked up by name, so a machine syncing later finds the one that came down
+    from AnkiWeb rather than adding its own. Adding a note type does not force a
+    full sync; changing one a note uses would, which is why a card never changes
+    note type (flashcard-mcp's assertSameAnkiShape).
+    """
+    existing = col.models.by_name(name)
+    if existing is not None:
+        return existing
+    spec = STUDY_NOTETYPES[name]
+    notetype = col.models.new(name)
+    notetype["type"] = spec["kind"]
+    notetype["css"] = STUDY_CSS
+    for field in spec["fields"]:
+        col.models.add_field(notetype, col.models.new_field(field))
+    template = col.models.new_template("Card 1")
+    template["qfmt"], template["afmt"] = spec["qfmt"], spec["afmt"]
+    col.models.add_template(notetype, template)
+    col.models.add(notetype)
+    return col.models.by_name(name)
+
+
+def _notetype_for(col: Collection, card: MasterCard) -> dict:
+    if not card.exercise:
+        return col.models[NOTETYPE]
+    return _study_notetype(col, STUDY_CLOZE if CLOZE_MARK in card.front else STUDY_CODE)
+
+
 def create_card(col: Collection, card: MasterCard) -> int:
     """Create note (guid = master CUID) and write its scheduling. Returns note id."""
-    note = col.new_note(col.models[NOTETYPE])
+    note = col.new_note(_notetype_for(col, card))
     note.guid = card.id
     note.fields[0] = card.front
     note.fields[1] = card.back
+    if len(note.fields) > EXERCISE_FIELD:
+        note.fields[EXERCISE_FIELD] = card.exercise
     note.tags = list(card.tags)
     col.add_note(note, _deck_id(col, card.deck))
     for cid in col.card_ids_of_note(note.id):
@@ -126,6 +193,8 @@ def update_content(col: Collection, note_id: int, card: MasterCard) -> None:
     note = col.get_note(note_id)
     note.fields[0] = card.front
     note.fields[1] = card.back
+    if len(note.fields) > EXERCISE_FIELD:
+        note.fields[EXERCISE_FIELD] = card.exercise
     note.tags = list(card.tags)
     col.update_note(note)
     target = _deck_id(col, card.deck)

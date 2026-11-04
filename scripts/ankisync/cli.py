@@ -12,7 +12,7 @@ import sys
 
 from fastanki.core import data_path
 
-from scripts.ankisync import bridge, master
+from scripts.ankisync import bridge, master, params
 from scripts.ankisync.htmlize import to_anki_html
 from scripts.ankisync.merge import DELETED_TAG, is_cuid, plan_history, plan_sync
 
@@ -154,6 +154,10 @@ def cmd_sync(args) -> int:
 
         if not args.local:
             bridge.sync_remote(col, email, passw, media=args.media, upload=args.upload)
+        try:
+            print(params.sync_options(col))
+        except Exception as e:  # options are a nicety; never fail the sync over them
+            print(f"options: skipped ({e})")
         print(f"sync: done ({_summary(plan, hist)})")
         return 0
     finally:

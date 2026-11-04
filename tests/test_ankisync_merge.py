@@ -8,6 +8,7 @@ Direction contract:
 - No sync bookkeeping: every decision derives from current state of both sides.
 """
 
+from dataclasses import replace
 from datetime import UTC, datetime
 
 from scripts.ankisync.merge import (
@@ -52,6 +53,19 @@ def _anki(note_id=100, card_id=200, guid=CUID, front="F", back="B", tags=("ruby"
           deck="Software Engineering", suspended=False, sched=None):
     return AnkiCard(note_id=note_id, card_id=card_id, guid=guid, front=front, back=back,
                     tags=tuple(tags), deck=deck, suspended=suspended, sched=sched or _sched())
+
+
+class TestExercise:
+    def test_a_changed_exercise_is_a_content_update(self):
+        plan = plan_sync([replace(_master(), exercise='{"new":1}')], [replace(_anki(), exercise='{"old":1}')])
+        assert len(plan.update_content) == 1
+
+    def test_the_same_exercise_is_no_update(self):
+        plan = plan_sync([replace(_master(), exercise="{}")], [replace(_anki(), exercise="{}")])
+        assert plan.update_content == []
+
+    def test_a_plain_card_on_a_note_with_no_such_field_is_no_update(self):
+        assert plan_sync([_master()], [_anki()]).update_content == []
 
 
 class TestCuidShape:

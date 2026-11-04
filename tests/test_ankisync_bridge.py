@@ -6,9 +6,13 @@ when Anki last saw the card. It is also the only one we never overwrite:
 write_sched rewrites last_review_time on every push.
 """
 
+import dataclasses
+import re
+
 from anki.collection import Collection
 
 from scripts.ankisync import bridge
+from scripts.ankisync.merge import MasterCard, Sched
 
 CUID = "cmne7xoxj002z0msoiuekt37c"
 REVIEWED_MS = 1_757_000_000_000
@@ -40,6 +44,107 @@ def _add_revlog(col, cid, ms=REVIEWED_MS, ease=3):
         cid,
         ease,
     )
+
+
+class TestStudyNoteTypes:
+    """Clozes and code cards: their note types, made on demand, and the exercise that travels hidden."""
+
+    EXERCISE = '{"kind":"fill","source":"x = {{c1::Foo::Bar.new({ a: { b: 1 }})}}"}'
+    CLOZE_FRONT = "Do it.<br><pre><code>x = {{c1::Foo&#58;&#58;Bar.new({ a: { b: 1 &#125;&#125;)}}\ny</code></pre>"
+
+    def _master(self, **fields):
+        sched = Sched(due=None, stability=None, difficulty=None, reps=0, lapses=0, state=0,
+                      last_review=None, interval=0.0)
+        return MasterCard(id=CUID, tags=("ruby",), deck="Default", suspended=False, sched=sched, **fields)
+
+    def test_a_plain_card_stays_basic(self, tmp_path):
+        col = _collection(tmp_path)
+        try:
+            nid = bridge.create_card(col, self._master(front="F", back="B"))
+            assert col.get_note(nid).note_type()["name"] == "Basic"
+            assert col.models.by_name(bridge.STUDY_CLOZE) is None
+        finally:
+            col.close()
+
+    def test_a_card_with_no_exercise_never_gets_a_cloze_note_type(self, tmp_path):
+        # flashcard-mcp refuses such a card. Were one ever to arrive, Anki shows its braces as text
+        # rather than making cards the sync keeps no schedule for.
+        col = _collection(tmp_path)
+        try:
+            nid = bridge.create_card(col, self._master(front="A {{c1::x}}", back="B"))
+            assert col.get_note(nid).note_type()["name"] == "Basic"
+            assert col.models.by_name(bridge.STUDY_CLOZE) is None
+        finally:
+            col.close()
+
+    def test_a_cloze_with_all_its_blanks_is_one_card(self, tmp_path):
+        col = _collection(tmp_path)
+        try:
+            front = "A {{c1::x}} and a {{c1::y}}."
+            nid = bridge.create_card(col, self._master(front=front, back="B", exercise=self.EXERCISE))
+            assert col.get_note(nid).note_type()["name"] == bridge.STUDY_CLOZE
+            (cid,) = col.card_ids_of_note(nid)
+            assert "[...]" in col.get_card(cid).question()
+            answer = col.get_card(cid).answer()
+            assert "x" in answer and "y" in answer and "B" in answer
+        finally:
+            col.close()
+
+    def test_code_with_braces_and_colons_survives_the_cloze_parser(self, tmp_path):
+        col = _collection(tmp_path)
+        try:
+            nid = bridge.create_card(col, self._master(front=self.CLOZE_FRONT, back="B", exercise=self.EXERCISE))
+            card = col.get_card(col.card_ids_of_note(nid)[0])
+            # Anki keeps the deletion in an attribute of its [...], for its own scripts.
+            shown = re.sub(r'data-cloze="[^"]*"', "", card.question())
+            assert "Foo" not in shown and "[...]" in shown
+            assert "&#58;&#58;Bar.new({ a: { b: 1 &#125;&#125;)" in card.answer()
+        finally:
+            col.close()
+
+    def test_the_exercise_comes_back_and_no_template_shows_it(self, tmp_path):
+        col = _collection(tmp_path)
+        try:
+            nid = bridge.create_card(col, self._master(front=self.CLOZE_FRONT, back="B", exercise=self.EXERCISE))
+            (read,) = bridge.read_anki_cards(col)
+            assert read.exercise == self.EXERCISE
+            assert read.front == self.CLOZE_FRONT
+            card = col.get_card(col.card_ids_of_note(nid)[0])
+            assert '"kind"' not in card.question() and '"kind"' not in card.answer()
+        finally:
+            col.close()
+
+    def test_a_compose_card_is_front_and_back_with_the_exercise(self, tmp_path):
+        col = _collection(tmp_path)
+        try:
+            nid = bridge.create_card(col, self._master(front="<pre>___</pre>", back="B", exercise=self.EXERCISE))
+            assert col.get_note(nid).note_type()["name"] == bridge.STUDY_CODE
+            (read,) = bridge.read_anki_cards(col)
+            assert read.exercise == self.EXERCISE
+            assert read.back == "B"
+        finally:
+            col.close()
+
+    def test_an_edit_reaches_the_hidden_field(self, tmp_path):
+        col = _collection(tmp_path)
+        try:
+            nid = bridge.create_card(col, self._master(front=self.CLOZE_FRONT, back="B", exercise=self.EXERCISE))
+            bridge.update_content(col, nid, self._master(front=self.CLOZE_FRONT, back="C", exercise='{"new":1}'))
+            (read,) = bridge.read_anki_cards(col)
+            assert (read.back, read.exercise) == ("C", '{"new":1}')
+        finally:
+            col.close()
+
+    def test_a_second_card_reuses_the_note_type(self, tmp_path):
+        col = _collection(tmp_path)
+        try:
+            bridge.create_card(col, self._master(front="{{c1::a}}", back="", exercise=self.EXERCISE))
+            before = len(col.models.all_names_and_ids())
+            other = dataclasses.replace(self._master(front="{{c1::b}}", back="", exercise=self.EXERCISE), id=CUID + "x")
+            bridge.create_card(col, other)
+            assert len(col.models.all_names_and_ids()) == before
+        finally:
+            col.close()
 
 
 class TestAnkiLastReview:

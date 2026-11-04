@@ -92,7 +92,7 @@ def read_cards(con: sqlite3.Connection) -> list[MasterCard]:
     rows = con.execute(
         """SELECT c.id, c.front, c.back, c.tags, d.name, c.suspended,
                   c.due, c.stability, c.difficulty, c.reps, c.lapses,
-                  c.state, c.lastReview, c.interval, c.inheritedFrom
+                  c.state, c.lastReview, c.interval, c.inheritedFrom, c.exercise
            FROM Card c JOIN Deck d ON d.id = c.deckId"""
     ).fetchall()
     return [
@@ -104,6 +104,7 @@ def read_cards(con: sqlite3.Connection) -> list[MasterCard]:
             deck=r[4],
             suspended=bool(r[5]),
             inherited=bool(r[14]),
+            exercise=r[15] or "",
             sched=Sched(
                 due=parse_master_dt(r[6]),
                 stability=r[7],
@@ -247,8 +248,8 @@ def import_card(con: sqlite3.Connection, card: AnkiCard) -> None:
     con.execute(
         """INSERT INTO Card (id, deckId, front, back, tags, due, stability,
                               difficulty, reps, lapses, state, lastReview,
-                              interval, suspended, createdAt, updatedAt)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                              interval, suspended, createdAt, updatedAt, exercise)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (
             card.guid,
             deck_id,
@@ -266,5 +267,6 @@ def import_card(con: sqlite3.Connection, card: AnkiCard) -> None:
             int(card.suspended),
             created_at,
             now,
+            card.exercise or None,
         ),
     )

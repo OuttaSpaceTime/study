@@ -8,10 +8,12 @@ back to a fresh New card on its next review, silently discarding its real
 schedule).
 """
 
+import sqlite3
+from dataclasses import replace
 from datetime import UTC, datetime
 
-from scripts.ankisync.master import _fallback_memory_state
-from scripts.ankisync.merge import Sched
+from scripts.ankisync.master import _fallback_memory_state, import_card
+from scripts.ankisync.merge import AnkiCard, Sched
 
 
 def _sched(**overrides):
@@ -59,3 +61,22 @@ class TestFallbackMemoryState:
         stability, difficulty = _fallback_memory_state(sched)
         assert stability == 10.0
         assert difficulty == 5.0
+
+
+class TestImportKeepsTheExercise:
+    """A code card first seen on another machine has to arrive able to run."""
+
+    def test_the_exercise_comes_with_the_import(self):
+        con = sqlite3.connect(":memory:")
+        con.executescript(
+            """CREATE TABLE Deck (id TEXT PRIMARY KEY, name TEXT, createdAt TEXT);
+               CREATE TABLE Card (id TEXT PRIMARY KEY, deckId TEXT, front TEXT, back TEXT, tags TEXT,
+                 due TEXT, stability REAL, difficulty REAL, reps INT, lapses INT, state INT, lastReview TEXT,
+                 interval REAL, suspended INT, createdAt TEXT, updatedAt TEXT, exercise TEXT);"""
+        )
+        card = AnkiCard(note_id=1_757_000_000_000, card_id=2, guid="cmne7xoxj002z0msoiuekt37c", front="F", back="B",
+                        tags=(), deck="D", suspended=False, sched=_sched(stability=1.0, difficulty=5.0),
+                        exercise='{"kind":"fill"}')
+        import_card(con, card)
+        import_card(con, replace(card, guid="cmne7xoxj002z0msoiuekt37d", exercise=""))
+        assert [r[0] for r in con.execute("SELECT exercise FROM Card ORDER BY id")] == ['{"kind":"fill"}', None]

@@ -64,6 +64,7 @@ class MasterCard:
     suspended: bool
     sched: Sched
     inherited: bool = False  # split off an existing card, so reps came with it
+    exercise: str = ""  # a code card's JSON (flashcard-mcp's exercises.ts), else ""
 
 
 @dataclass(frozen=True)
@@ -77,6 +78,7 @@ class AnkiCard:
     deck: str
     suspended: bool
     sched: Sched
+    exercise: str = ""  # the hidden field, or "" on a note without one
 
 
 @dataclass(frozen=True)
@@ -111,7 +113,8 @@ class HistoryPlan:
 def _content(card: MasterCard | AnkiCard) -> tuple:
     # tags compared order- and case-insensitively: Anki sorts them and treats
     # casing as canonical-first-seen, so neither survives a push
-    return (card.front, card.back, tuple(sorted(t.casefold() for t in card.tags)), card.deck)
+    return (card.front, card.back, tuple(sorted(t.casefold() for t in card.tags)), card.deck,
+            card.exercise)
 
 
 def _is_deleted(anki: AnkiCard) -> bool:
