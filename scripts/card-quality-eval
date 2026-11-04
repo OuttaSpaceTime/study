@@ -1,0 +1,97 @@
+#!/usr/bin/env python3
+"""Hold the card-quality judge to its benchmark: `tests/card-quality/cases.json`, hand-labelled cards from
+the deck, from the flashcard literature, and traps written for it. It runs the real judge, on the
+subscription (`claude -p`), so it is not part of the test suite: run it after any change to the rubric, the
+judge's prompt or its model.
+
+    scripts/card-quality-eval                every case
+    scripts/card-quality-eval --split test   the held-out half: prompt work happens on `dev`
+    scripts/card-quality-eval --runs 2       each case twice, to see how steady the verdict is
+    scripts/card-quality-eval --model sonnet --effort high   another judge, to compare
+    scripts/card-quality-eval --only code-   the code cards alone
+
+Labels: `atomic` (asks more than one thing), `extra` (the back says more than asked), `other` (another real
+flaw), `clean` (sound). Exits non-zero below `MINIMUM`, which the judge met when it was set: a change that
+lets flawed cards through, or starts refusing sound ones, fails here before it reaches the deck.
+"""
+import argparse
+import collections
+import concurrent.futures
+import json
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from scripts import card_quality as gate  # noqa: E402 (after the path is set)
+
+CASES = ROOT / "tests" / "card-quality" / "cases.json"
+
+# Recall on the two kinds this benchmark exists for, by the flaw each is labelled for: a judge calling every card
+# vague would catch nothing here. And at most this many sound cards refused, for anything: the gate denies on any flaw.
+# Atomic sits lower because of one arguable label: "What two rules define DIP?" reads as a closed set, and every
+# judge passes it. Opus high met these on the held-out half (24/26, 32/32, 0/48), and Sonnet high did not (23/26, 29/32, 6/48).
+MINIMUM = {"atomic": 0.9, "extra": 0.95, "clean_false_alarms": 0.05}
+STRUCTURAL = {"not_atomic", "extra_info"}
+
+
+def score(results):
+    """{label: {n, flagged, structural}}; `structural` counts verdicts naming not_atomic or extra_info."""
+    out = collections.defaultdict(lambda: {"n": 0, "flagged": 0, "structural": 0})
+    for label, issues in results:
+        out[label]["n"] += 1
+        out[label]["flagged"] += bool(issues)
+        out[label]["structural"] += bool(set(issues) & STRUCTURAL)
+    return dict(out)
+
+
+def failures(scores):
+    bad = []
+    for label in ("atomic", "extra"):
+        s = scores.get(label)
+        if s and s["structural"] / s["n"] < MINIMUM[label]:
+            bad.append(f"{label}: caught {s['structural']}/{s['n']}")
+    s = scores.get("clean")
+    if s and s["flagged"] / s["n"] > MINIMUM["clean_false_alarms"]:
+        bad.append(f"clean: {s['flagged']}/{s['n']} sound cards refused")
+    return bad
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--split", choices=["dev", "test"])
+    ap.add_argument("--runs", type=int, default=1)
+    ap.add_argument("--only", help="only the cases whose key starts with this: `code-`")
+    ap.add_argument("--model", default=gate.MODEL)
+    ap.add_argument("--effort", default=gate.EFFORT)
+    args = ap.parse_args()
+    gate.MODEL, gate.EFFORT = args.model, args.effort
+    cases = [c for c in json.loads(CASES.read_text())
+             if (not args.split or c["split"] == args.split) and (not args.only or c["key"].startswith(args.only))]
+
+    # Repeated runs ask afresh: through the kept verdicts, each would only repeat the first answer.
+    def run(case):
+        out = gate.ask_judge(gate.judge_prompt(case)) if args.runs > 1 else gate.run_judge(case)
+        return case, [i["issue"] for i in gate.verdict(out, bool(case.get("code")))]
+
+    with concurrent.futures.ThreadPoolExecutor(5) as pool:
+        verdicts = list(pool.map(run, cases * args.runs))
+    for case, issues in verdicts:
+        wrong = bool(issues) != (case["label"] != "clean")
+        if wrong:
+            print(f"{case['label']:7} {case['key']:24} {issues or 'passed'}\n        {case['front'][:100]}")
+    scores = score([(c["label"], i) for c, i in verdicts])
+    seen = collections.defaultdict(set)
+    for case, issues in verdicts:
+        seen[case["key"]].add(bool(issues))
+    print(f"judge: {args.model} {args.effort}; cards whose verdict changed between runs: {sum(len(v) > 1 for v in seen.values())}")
+    print(json.dumps(scores))
+    bad = failures(scores)
+    for line in bad:
+        print("BELOW THE MINIMUM:", line)
+    sys.exit(1 if bad else 0)
+
+
+if __name__ == "__main__":
+    main()

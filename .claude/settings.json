@@ -2,7 +2,7 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "mcp__flashcard-mcp__(create_card|update_card)",
+        "matcher": "mcp__flashcard-mcp__(create_card|update_card|create_code_card|update_code_card)",
         "hooks": [
           {
             "type": "command",
@@ -14,7 +14,7 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "mcp__flashcard-mcp__(create_card|update_card|delete_card|delete_cards|resolve_leech|resolve_card_note|suspend_card|unsuspend_card|delete_deck)",
+        "matcher": "mcp__flashcard-mcp__(create_card|update_card|create_code_card|update_code_card|delete_card|delete_cards|resolve_leech|resolve_card_note|suspend_card|unsuspend_card|delete_deck)",
         "hooks": [
           {
             "type": "command",

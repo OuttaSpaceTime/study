@@ -1,0 +1,879 @@
+[
+ {
+  "key": "deck-13",
+  "front": "What are common examples of cross-origin requests?",
+  "back": "<ul><li>AJAX calls to different domains</li><li>Loading images from external servers</li><li>Requesting fonts from CDNs</li><li>Embedding iframes from other sites</li></ul>",
+  "label": "atomic",
+  "split": "dev"
+ },
+ {
+  "key": "deck-28",
+  "front": "What are three ways session hijacking can occur?",
+  "back": " Sniffing cookies in insecure networks, using public terminals where users didn't log out, and XSS exploits",
+  "label": "atomic",
+  "split": "test"
+ },
+ {
+  "key": "deck-41",
+  "front": "How can file uploads be exploited?",
+  "back": "Attackers can overwrite files, upload executable code, or conduct denial-of-service attacks.",
+  "label": "atomic",
+  "split": "dev"
+ },
+ {
+  "key": "deck-79",
+  "front": "What security measures can prevent XSS attacks?",
+  "back": "Input validation, output encoding, escaping content rendered in HTML, and Content Security Policy (CSP).",
+  "label": "atomic",
+  "split": "test"
+ },
+ {
+  "key": "deck-117",
+  "front": "What are the key characteristics of a well-designed module?",
+  "back": "High cohesion, low coupling, well-defined interfaces, and information hiding.",
+  "label": "atomic",
+  "split": "dev"
+ },
+ {
+  "key": "deck-221",
+  "front": "What are the three key details of how cookies function to consider for security?",
+  "back": "<ul><li>Sent automatically with every matching request (the CSRF surface)</li><li>Readable by JavaScript unless <code>HttpOnly</code> (the XSS theft surface)</li><li>Sent over plain HTTP unless <code>Secure</code> (the MITM surface)</li></ul>",
+  "label": "atomic",
+  "split": "test"
+ },
+ {
+  "key": "deck-226",
+  "front": "Name 3+ vectors attackers use to force a victim's browser to carry a chosen session ID (session fixation).",
+  "back": "<ul><li>Session ID in a URL (phishing link)</li><li>XSS writing <code>document.cookie</code></li><li>Cookie set from a compromised subdomain</li><li><code>Set-Cookie</code> injection via response splitting</li></ul>",
+  "label": "atomic",
+  "split": "dev"
+ },
+ {
+  "key": "deck-234",
+  "front": "What three properties must a CSP nonce have to actually defend against XSS?",
+  "back": "<ul><li>Cryptographically random, 128+ bits from a CSPRNG</li><li>Fresh per response, never reused</li><li>Identical in the header and on every trusted script tag</li></ul>",
+  "label": "atomic",
+  "split": "test"
+ },
+ {
+  "key": "deck-224",
+  "front": "What does CORS stand for and do?",
+  "back": "Cross-Origin Resource Sharing. A set of HTTP headers a server sends to explicitly permit browsers to load its resources from other origins.",
+  "label": "atomic",
+  "split": "dev"
+ },
+ {
+  "key": "deck-284",
+  "front": "Connascence: what is the strength reduction rule, with an example?",
+  "back": "Convert strong forms of connascence into weaker ones. Example: positional arguments become named arguments, or a magic <code>200</code> becomes a named constant. Weaker connascence is safer to change.",
+  "label": "atomic",
+  "split": "test"
+ },
+ {
+  "key": "deck-271",
+  "front": "Rank three fixes for a misusable API from weakest to strongest and name the axis: (a) document the precondition, (b) throw or assert loudly on misuse, (c) change the types so misuse will not compile.",
+  "back": "a, then b, then c. The axis is when misuse is caught: a comment only if read, an assert when the bad path runs, a type at compile time. Pushing to c makes illegal states unrepresentable.",
+  "label": "atomic",
+  "split": "dev"
+ },
+ {
+  "key": "deck-370",
+  "front": "With single sign-on, your app and the identity provider each keep their own session. What does that mean when the user logs in again, or logs out of only your app?",
+  "back": "While the IdP session lives, login skips the password. Clearing only your app's session does not log the user out: the next login, or an automatic one, gets the same account back.",
+  "label": "atomic",
+  "split": "test"
+ },
+ {
+  "key": "deck-378",
+  "front": "You need to store user passwords, and separately derive an encryption key and a signing key from a random master key. Which kind of KDF fits each job?",
+  "back": "<b>Passwords:</b> a slow, salted password KDF (bcrypt, scrypt, Argon2, PBKDF2) so each guess is costly.<br><b>Master key:</b> a fast extract-and-expand KDF like HKDF, one label per purpose.",
+  "label": "atomic",
+  "split": "dev"
+ },
+ {
+  "key": "deck-185",
+  "front": "Why is RAM not used for long-term file storage?",
+  "back": "It is volatile, meaning data is lost when power is turned off, and it is more expensive than long-term storage",
+  "label": "atomic",
+  "split": "test"
+ },
+ {
+  "key": "deck-195",
+  "front": "Why is it important to prefer libraries with minimal external dependencies?",
+  "back": "It correlates to a lower security attack surface, reduced version conflicts, and minimized bundle size bloat.",
+  "label": "atomic",
+  "split": "dev"
+ },
+ {
+  "key": "deck-303",
+  "front": "Why is an open redirect on your own domain more dangerous than an attacker simply mailing a link to <code>evil.com</code> directly?",
+  "back": "The visible link is your real domain, so it survives user inspection, mail filters, and link scanners. In OAuth a permissive <code>redirect_uri</code> also hands the attacker the authorization code.",
+  "label": "atomic",
+  "split": "test"
+ },
+ {
+  "key": "deck-282",
+  "front": "Does the salt used in key derivation need to be kept secret?",
+  "back": "No. Only the secret needs protecting. A password salt is random per user so equal passwords hash differently. A purpose label like <code>\"signed cookie\"</code> splits one master key into separate keys.",
+  "label": "atomic",
+  "split": "dev"
+ },
+ {
+  "key": "deck-146",
+  "front": "What two rules define the Dependency Inversion Principle (DIP)?",
+  "back": "<ol><li>High-level modules should not depend on low-level modules; both depend on abstractions. </li><li>Abstractions should not depend on details; details depend on abstractions.</li></ol>",
+  "label": "atomic",
+  "split": "test"
+ },
+ {
+  "key": "deck-220",
+  "front": "Which three cookie attributes are essential for protecting session tokens?",
+  "back": "Secure (HTTPS only), HttpOnly (blocks JS access), and SameSite (mitigates CSRF attacks).",
+  "label": "atomic",
+  "split": "dev"
+ },
+ {
+  "key": "deck-21",
+  "front": "What are two user-specific properties that can be saved in sessions as additional security?",
+  "back": " Remote IP address and user agent (web browser name)",
+  "label": "atomic",
+  "split": "test"
+ },
+ {
+  "key": "deck-228",
+  "front": "What three conditions cause ActiveRecord's <code>includes</code> to upgrade from two separate queries (preload semantics) to a single LEFT OUTER JOIN (eager_load semantics)?",
+  "back": "The WHERE or ORDER must reference the joined table: string SQL naming it, a hash keyed by the association, or an explicit <code>.references</code>. Parent-only conditions stay two queries.",
+  "label": "atomic",
+  "split": "dev"
+ },
+ {
+  "key": "deck-325",
+  "front": "A frontend app has two kinds of parsing. Where does each belong?",
+  "back": "Wire-to-domain parsing lives once at the data-access boundary, isolating the backend format's volatility. Domain-to-display formatting lives in the presentation layer, never at the boundary.",
+  "label": "atomic",
+  "split": "test"
+ },
+ {
+  "key": "deck-8",
+  "front": "What does the <code>Domain</code> attribute of a browser cookie do?",
+  "back": "It specifies the host the cookie is sent to. Omitted, it defaults to the current document's host, making it a host-only cookie.",
+  "label": "extra",
+  "split": "dev"
+ },
+ {
+  "key": "deck-16",
+  "front": "A Rails app stores a user's credit balance in its signed cookie session (<code>CookieStore</code>). The user saves the cookie, spends the credit, then sends the old copy back. What design change stops them getting the credit back?",
+  "back": "Keep the balance in the database and only the user id in the session. The signature proves the server wrote the old cookie, not that it is still current.",
+  "label": "extra",
+  "split": "test"
+ },
+ {
+  "key": "deck-30",
+  "front": "Why are form nonces for replay protection more complicated with multiple application servers?",
+  "back": "The server must remember which nonces it issued and which were consumed, so all servers need that state shared, in a database or Redis. CSP nonces need none: the browser compares header and tag.",
+  "label": "extra",
+  "split": "dev"
+ },
+ {
+  "key": "deck-93",
+  "front": "What is the Builder design pattern?",
+  "back": "Separates construction of a complex object from its representation, so the same steps can build different results. Typically a fluent chain of setters ending in <code>build()</code>.",
+  "label": "extra",
+  "split": "test"
+ },
+ {
+  "key": "deck-241",
+  "front": "You want only <code>app.example.com</code> to be allowed to embed your page in an iframe. How do you write the CSP header?",
+  "back": "<code>Content-Security-Policy: frame-ancestors https://app.example.com;</code><br>It controls which origins may frame the page, with <code>'none'</code> blocking all. It replaces <code>X-Frame-Options</code>.",
+  "label": "extra",
+  "split": "dev"
+ },
+ {
+  "key": "deck-231",
+  "front": "Inline event handlers like <code>onclick=\"...\"</code> are blocked by CSP's <code>script-src</code>. What do you need to allow them?",
+  "back": "<code>'unsafe-hashes'</code> plus the hash of the handler body. A nonce or plain hash matches <code>&lt;script&gt;</code> blocks but not event handlers. Better: move the logic to <code>addEventListener</code>.",
+  "label": "extra",
+  "split": "test"
+ },
+ {
+  "key": "deck-240",
+  "front": "Your app uses a signed and encrypted session cookie. An attacker steals the raw value via XSS and replays it. Does the signature stop them?",
+  "back": "No. Signing protects integrity and encryption protects confidentiality, but neither binds the cookie to a client, so a verbatim replay still validates. Prevent theft with <code>HttpOnly</code>.",
+  "label": "extra",
+  "split": "dev"
+ },
+ {
+  "key": "deck-255",
+  "front": "In Rails, why can a rollback inside a nested transaction block silently do nothing?",
+  "back": "A nested block joins the parent and gets no savepoint, so <code>ActiveRecord::Rollback</code> is swallowed and the outer transaction commits. Pass <code>requires_new: true</code> for a real SAVEPOINT.",
+  "label": "extra",
+  "split": "test"
+ },
+ {
+  "key": "deck-270",
+  "front": "A contract has preconditions (the caller must guarantee them) and postconditions (the function guarantees them). When each is broken, who is at fault?",
+  "back": "A broken precondition blames the caller, who called it wrong. A broken postcondition blames the callee, which lied about what it returns. This is Meyer's Design by Contract asymmetric blame.",
+  "label": "extra",
+  "split": "dev"
+ },
+ {
+  "key": "deck-275",
+  "front": "Why is <code>SET balance = 100</code> safe to retry but <code>balance += 10</code> is not?",
+  "back": "Set-to-target reaches the same final state however many times it runs. A delta accumulates on every replay, so retries corrupt the value. Prefer absolute assignment over increments.",
+  "label": "extra",
+  "split": "test"
+ },
+ {
+  "key": "deck-290",
+  "front": "A controller writes <code>label = membership.admin? ? \"Admin\" : \"Member\"</code>. Which design principle does this break?",
+  "back": "<b>Tell, Don't Ask</b>. The controller pulls <code>admin?</code> out of <code>membership</code> and makes the decision itself. Fix: <code>membership.role_label</code>, so the decision lives with the data.",
+  "label": "extra",
+  "split": "dev"
+ },
+ {
+  "key": "deck-307",
+  "front": "What does <code>SameSite=None</code> do?",
+  "back": "Sends the cookie on all requests, including cross-site ones. It requires the <code>Secure</code> attribute to be set.",
+  "label": "extra",
+  "split": "test"
+ },
+ {
+  "key": "deck-315",
+  "front": "What does a KDF (Key Derivation Function) actually do with a secret and a salt?",
+  "back": "It mixes secret and salt through a one-way function into a key of the needed length. The salt makes equal secrets give different keys. Password KDFs also repeat it many times so each guess is costly.",
+  "label": "extra",
+  "split": "dev"
+ },
+ {
+  "key": "deck-326",
+  "front": "Why regenerate the session id at login?",
+  "back": "To stop session fixation. An attacker can plant a known id before login, and if it survives authentication their copy is now an authenticated session. <code>reset_session</code> issues a fresh one.",
+  "label": "extra",
+  "split": "test"
+ },
+ {
+  "key": "deck-375",
+  "front": "Why do endpoints authenticated by a cookie need CSRF defenses, while endpoints that take an <code>Authorization: Bearer</code> token do not?",
+  "back": "The browser attaches cookies to cross-site requests by itself. A Bearer token is only sent when code adds it explicitly. The flip side: anyone holding a stolen Bearer token can use it.",
+  "label": "extra",
+  "split": "dev"
+ },
+ {
+  "key": "deck-11",
+  "front": "What is an \"origin\" in web security context?",
+  "back": "The combination of protocol, domain name, and port. <code>https://example.com:443</code> is one complete origin.",
+  "label": "extra",
+  "split": "test"
+ },
+ {
+  "key": "deck-82",
+  "front": "Please give an exmaple of an OAuth token header",
+  "back": "<code>Authorization: Bearer &lt;access_token&gt;</code><br>Sent on each API request to authenticate as the delegated user.",
+  "label": "extra",
+  "split": "dev"
+ },
+ {
+  "key": "deck-204",
+  "front": "What is a \"lock file\"?",
+  "back": "An auto-generated file (package-lock.json or yarn.lock) that nails down the exact version of every dependency and sub-dependency.",
+  "label": "extra",
+  "split": "test"
+ },
+ {
+  "key": "deck-63",
+  "front": "What is the recommended duration for HSTS max-age?",
+  "back": "At least one year (31536000 seconds). Required for preload-list submission. Two years (63072000 seconds) is the commonly recommended target. As long as possible, in general.",
+  "label": "extra",
+  "split": "dev"
+ },
+ {
+  "key": "deck-57",
+  "front": "To disable inline JavaScript in CSP while allowing external scripts, what directive and value should you use?",
+  "back": "script-src with 'nonce-<i>' or 'hash-</i>' values. Omitting 'unsafe-inline' prevents inline scripts from running. default-src can also be used as a fallback for all script types.",
+  "label": "extra",
+  "split": "test"
+ },
+ {
+  "key": "deck-350",
+  "front": "The request schema already rejects a missing email. Why is repeating that check in the service method worse than redundant?",
+  "back": "The rule now lives in two places that can drift. It also signals that input might be untrusted here. Check once at the edge, then trust it.",
+  "label": "extra",
+  "split": "dev"
+ },
+ {
+  "key": "deck-369",
+  "front": "The Rails CSP initializer suggests <code>content_security_policy_nonce_generator = -&gt;(request) { request.session.id.to_s }</code>. Why is that weaker than a nonce per request?",
+  "back": "The nonce repeats on every response of the session. Anyone who sees one page, say through a shared cache, can reuse it for injected scripts until the session ends. Use <code>SecureRandom.base64(16)</code>.",
+  "label": "extra",
+  "split": "test"
+ },
+ {
+  "key": "deck-274",
+  "front": "A conditional state check gives idempotency by acting only if the effect has not happened yet. Why is the naive version unsafe?",
+  "back": "The read and the act are separate steps, so two retries can both pass the check. Fold the condition into the write instead: <code>UPDATE ... WHERE status = 'pending'</code>.",
+  "label": "extra",
+  "split": "dev"
+ },
+ {
+  "key": "deck-260",
+  "front": "Why is calling <code>lock!</code> on a record outside of any transaction useless?",
+  "back": "A <code>FOR UPDATE</code> lock lives only until its transaction ends. Outside one every statement auto-commits, so the lock is gone the instant <code>lock!</code> returns. Use <code>with_lock</code>.",
+  "label": "extra",
+  "split": "test"
+ },
+ {
+  "key": "deck-300",
+  "front": "Connascence: what does <i>degree</i> measure?",
+  "back": "How many elements share the coupling. It is a count, not a distance. Ten call sites sharing one assumption is higher degree than two sharing it.",
+  "label": "extra",
+  "split": "dev"
+ },
+ {
+  "key": "deck-346",
+  "front": "After each feedback round on an MR, you re-read the whole thing and lose small details by the third pass. What changes so each round only needs a short review?",
+  "back": "Review only the interdiff since your last pass (GitLab version compare, <code>git range-diff</code>), not the whole MR. Full re-reads burn the attention that catches details.",
+  "label": "extra",
+  "split": "test"
+ },
+ {
+  "key": "deck-86",
+  "front": "An attacker injects a script into bank.com via XSS. Why doesn't the same-origin policy block its DOM reads?",
+  "back": "The injected script runs under bank.com's own origin, so this is same-origin access and SOP never applies. It can read any DOM node, plus any cookie without <code>HttpOnly</code>.",
+  "label": "extra",
+  "split": "dev"
+ },
+ {
+  "key": "deck-29",
+  "front": "What is a nonce in the context of session security?",
+  "back": "A server-issued, unpredictable value (\"number used once\") embedded in a form. The server marks it consumed on first use and rejects any reuse. That consumption defeats replay, not uniqueness.",
+  "label": "extra",
+  "split": "test"
+ },
+ {
+  "key": "deck-173",
+  "front": "What language does a computer speak natively?",
+  "back": "Machine code, the raw binary opcodes the CPU executes directly. Assembly is a human-readable mnemonic layer that an assembler translates into machine code first.",
+  "label": "extra",
+  "split": "dev"
+ },
+ {
+  "key": "deck-55",
+  "front": "Why should all resources be loaded over HTTPS?",
+  "back": "Plain-HTTP resources on an HTTPS page are \"mixed content\" and stay readable and tamperable by an on-path attacker. Browsers block active mixed content (scripts, iframes) and warn on passive.",
+  "label": "extra",
+  "split": "test"
+ },
+ {
+  "key": "deck-178",
+  "front": "What is a runtime?",
+  "back": "A program that compiles code while running it.",
+  "label": "other",
+  "split": "dev"
+ },
+ {
+  "key": "deck-148",
+  "front": "What does the Law of Demeter primarily reduce?",
+  "back": "Preventing long chains of method calls (\"train wrecks\").",
+  "label": "other",
+  "split": "test"
+ },
+ {
+  "key": "deck-4",
+  "front": "Why does adding a <code>__Secure-</code> prefix to a cookie name impose restrictions?",
+  "back": "Cookies with the <code>__Secure-</code> prefix must be set with the <code>Secure</code> flag from a page served over HTTPS.",
+  "label": "other",
+  "split": "dev"
+ },
+ {
+  "key": "deck-152",
+  "front": "Which software principle supports passing the full object?",
+  "back": "Encapsulation and Information Hiding.",
+  "label": "other",
+  "split": "test"
+ },
+ {
+  "key": "deck-164",
+  "front": "What is the private key used for?",
+  "back": "Decrypting data and creating digital signatures",
+  "label": "other",
+  "split": "dev"
+ },
+ {
+  "key": "deck-163",
+  "front": "What is the public key used for?",
+  "back": "Encrypting data and verifying digital signatures",
+  "label": "other",
+  "split": "test"
+ },
+ {
+  "key": "deck-217",
+  "front": "Which CSP directive should be avoided for inline scripts?",
+  "back": "Avoid using <code>'unsafe-inline'</code> as it undermines security.",
+  "label": "other",
+  "split": "dev"
+ },
+ {
+  "key": "deck-3",
+  "front": "Since 2020, how do Chromium browsers treat a cookie set without a <code>SameSite</code> attribute?",
+  "back": "As <code>SameSite=Lax</code>.",
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "deck-7",
+  "front": "What does the <code>Max-Age</code> attribute of a browser cookie do?",
+  "back": "The <code>Max-Age</code> attribute defines the lifetime of the cookie in seconds.",
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "deck-9",
+  "front": "What does the <code>Path</code> attribute of a browser cookie do?",
+  "back": "The <code>Path</code> attribute restricts the cookie to URLs matching a specific path.",
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "deck-10",
+  "front": "What does the <code>Secure</code> attribute of a browser cookie do?",
+  "back": "The <code>Secure</code> attribute ensures that the cookie is only sent over HTTPS requests.",
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "deck-33",
+  "front": "What happens if the <code>Expires</code> and <code>Max-Age</code> attributes are both present?",
+  "back": "If both are set,&nbsp;<code>Max-Age</code>&nbsp;takes precedence.",
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "deck-58",
+  "front": "What CSP directive prevents unauthorized framing?",
+  "back": "frame-ancestors 'none'",
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "deck-71",
+  "front": "How can CSP be tested before enforcing it?",
+  "back": "Use Content-Security-Policy-Report-Only to log violations without blocking content.",
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "deck-101",
+  "front": "What is the time complexity for element access in an array by index?",
+  "back": "O(1) (constant time).",
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "deck-104",
+  "front": "What operational principle do queues follow?",
+  "back": "FIFO (First-In-First-Out).",
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "deck-108",
+  "front": "What is the core statement of the DRY principle?",
+  "back": "Every piece of knowledge must have a single, unambiguous, authoritative representation within a system.",
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "deck-111",
+  "front": "What does the Single Responsibility Principle (SRP) state?",
+  "back": "A class should have only one reason to change.",
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "deck-143",
+  "front": "What does coupling measure?",
+  "back": "The degree of interdependence between separate software modules.",
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "deck-171",
+  "front": "What happens to data stored in RAM when the computer is turned off?",
+  "back": "The data is lost",
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "deck-212",
+  "front": "Which <b>SameSite</b> attribute ensures that cookies are sent <b>only</b> for same-site requests?",
+  "back": "Strict",
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "deck-147",
+  "front": "What is the colloquial summary of the Law of Demeter (LoD)?",
+  "back": "\"Only talk to your immediate friends.\"",
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "deck-142",
+  "front": "What does cohesion measure?",
+  "back": "How closely related, focused, and unified the elements are within a single module.",
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "deck-158",
+  "front": "What is the core principle of symmetric encryption?",
+  "back": "A single, identical key is used for both encryption and decryption",
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "deck-177",
+  "front": "What is the difference between A.O.T. (Ahead-of-Time) compilation and J.I.T. (Just-in-Time) compilation?",
+  "back": "A.O.T. compilation happens before the program runs, while J.I.T. compilation happens while the program is running",
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "deck-238",
+  "front": "How does a compiler differ from an interpreter?",
+  "back": "A compiler translates a program to a target language without executing it. An interpreter executes the program directly.",
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "deck-222",
+  "front": "What is the difference between script-src and default-src in CSP?",
+  "back": "<code>script-src</code> controls JavaScript execution. <code>default-src</code> is the fallback that applies to any resource type with no directive of its own.",
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "deck-259",
+  "front": "When would you choose optimistic locking over pessimistic locking?",
+  "back": "Optimistic (a version column plus retry) wins on read-heavy, low-conflict data where collisions are rare. Pessimistic (<code>FOR UPDATE</code>) wins on high-conflict rows where retries would be wasted.",
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "deck-330",
+  "front": "In SQL, why does <code>WHERE col &lt;&gt; 'x'</code> exclude rows where <code>col</code> is NULL, even though those rows aren't equal to <code>'x'</code>?",
+  "back": "Three-valued logic: any comparison with NULL evaluates to NULL, not TRUE or FALSE. <code>WHERE</code> only keeps rows evaluating to TRUE, so the row is dropped.",
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "deck-331",
+  "front": "Why can a UNIQUE index hold many rows with NULL in that column, but only one row where the column is an empty string?",
+  "back": "NULL is never considered equal to another NULL, so uniqueness never fires. An empty string is a real, comparable value, so two rows with <code>''</code> collide like any duplicate.",
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "deck-283",
+  "front": "Why does a single SQL statement like <code>UPDATE accounts SET balance = balance + 10 WHERE id = 1</code> avoid the lost-update problem that an app-code read-then-write doesn't?",
+  "back": "The read and write happen as one atomic operation under the row lock, with no round trip to application code where the value could go stale. Concurrent runs serialise, so both increments apply.",
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "deck-232",
+  "front": "Why does CSP <code>unsafe-inline</code> undermine XSS protection?",
+  "back": "The browser cannot tell a trusted inline script from an injected one, so it runs both. Without it CSP refuses every inline block and handler, including the attacker's.",
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "deck-337",
+  "front": "Why doesn't adding more parallel workers change how a sequential scan's cost scales with table size?",
+  "back": "Workers split the same linear work across processes, cutting wall-clock time only. Total work still scales with row count.",
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "deck-272",
+  "front": "How does an idempotency key make a retryable side effect safe?",
+  "back": "The caller sends a unique key per logical operation. The receiver stores that key with its result and, on a replay carrying the same key, returns the stored result instead of re-executing.",
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "deck-273",
+  "front": "How can you make a side effect idempotent using a natural dedupe key instead of a separate idempotency key?",
+  "back": "Key the effect on a value already unique to the operation, such as <code>order_id</code>, with a database unique index on it. The retry's insert is rejected, so the effect runs at most once.",
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "deck-44",
+  "front": "Why should httpOnly be used for cookies?",
+  "back": "To prevent JavaScript from accessing session cookies.",
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "deck-60",
+  "front": "Why should form-action 'self' be used in CSP?",
+  "back": "It prevents forms from being submitted to external sites, reducing CSRF risks.",
+  "label": "other",
+  "split": "dev"
+ },
+ {
+  "key": "deck-62",
+  "front": "What is the purpose of X-Content-Type-Options: nosniff?",
+  "back": "It prevents browsers from interpreting files as a different MIME type, reducing XSS risks.",
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "deck-73",
+  "front": "What is the frame-ancestors directive in CSP used for?",
+  "back": "It controls which domains can embed a page using &lt;iframe&gt;.",
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "deck-122",
+  "front": "What is the \"Feature Envy\" code smell?",
+  "back": "A method that seems more interested in the data of another class than its own.",
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "deck-123",
+  "front": "What is the \"Primitive Obsession\" code smell?",
+  "back": "Using primitive data types to represent complex domain concepts instead of creating dedicated value objects.",
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "deck-127",
+  "front": "Why is embedding a cross-cutting concern like authorization directly into business logic a bad practice?",
+  "back": "It violates the Single Responsibility Principle, coupling two concepts that should change independently.",
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "deck-133",
+  "front": "What does the Interface Segregation Principle (ISP) state?",
+  "back": "Clients should not be forced to depend upon interfaces or methods that they do not use.",
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "deck-181",
+  "front": "What is a \"lexer\"?",
+  "back": "A program that turns individual characters from source code into a collection of characters called \"tokens\"",
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "deck-364",
+  "front": "React escapes <code>{user.website}</code> in <code>&lt;a href={user.website}&gt;</code>. Why can a value like <code>javascript:alert(1)</code> still run script on click?",
+  "back": "Escaping only stops a value breaking out of its slot into new markup. Inside an <code>href</code> the value itself is run as a URL, and <code>javascript:alert(1)</code> contains nothing to escape.",
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "deck-218",
+  "front": "How does a CSP help to prevent XSS?",
+  "back": "It whitelists which scripts may run (<code>script-src</code>, nonces, hashes) and blocks inline scripts by default. An injected <code>&lt;script&gt;</code> tag then never executes.",
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "web-deadsea-bad",
+  "front": "What are the characteristics of the Dead Sea?",
+  "back": "Salt lake located on the border between Israel and Jordan. Its shoreline is the lowest point on Earth. It is 74 km long.",
+  "label": "atomic",
+  "split": "dev"
+ },
+ {
+  "key": "web-deadsea-good",
+  "front": "Where is the Dead Sea located?",
+  "back": "On the border between Israel and Jordan.",
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "web-stock-bad",
+  "front": "What do you need to make chicken stock?",
+  "back": "Chicken bones, onion, carrot, celery, bay leaf.",
+  "label": "atomic",
+  "split": "test"
+ },
+ {
+  "key": "web-stock-good",
+  "front": "What type of chicken parts are used in stock?",
+  "back": "Bones.",
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "web-stock-why",
+  "front": "How do bones produce a chicken stock's rich texture?",
+  "back": "They're full of gelatin.",
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "web-tcp",
+  "front": "What is the TCP three-way handshake and why does it exist?",
+  "back": "SYN, SYN-ACK, ACK. It synchronises sequence numbers so both sides know the connection works.",
+  "label": "atomic",
+  "split": "dev"
+ },
+ {
+  "key": "web-ln",
+  "front": "How do you create a soft link from <code>linkname</code> to <code>filename</code>?",
+  "back": "<code>ln -s filename linkname</code>",
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "web-plato",
+  "front": "Who was Plato?",
+  "back": "A Greek philosopher, student of Socrates, teacher of Aristotle, founder of the Academy, author of the Republic.",
+  "label": "atomic",
+  "split": "test"
+ },
+ {
+  "key": "trap-header-default",
+  "front": "Name the header that sets a CORS preflight's cache time, with its default value.",
+  "back": "<code>Access-Control-Max-Age</code>, 5 seconds.",
+  "label": "atomic",
+  "split": "dev"
+ },
+ {
+  "key": "trap-tail-fix",
+  "front": "Why does <code>Time.now</code> in a Rails scope body cause stale results when the scope is a constant?",
+  "back": "It is evaluated once at load. Wrap it in a lambda. Rubocop has a cop for this.",
+  "label": "extra",
+  "split": "dev"
+ },
+ {
+  "key": "trap-example",
+  "front": "What does the N+1 problem describe?",
+  "back": "One query for the parents, then one more per parent. Bullet detects it in development.",
+  "label": "extra",
+  "split": "test"
+ },
+ {
+  "key": "trap-history",
+  "front": "What does <code>Strict-Transport-Security</code> tell a browser?",
+  "back": "To use HTTPS only for this host for a set time. It was standardised in RFC 6797 in 2012.",
+  "label": "extra",
+  "split": "dev"
+ },
+ {
+  "key": "trap-and-clean",
+  "front": "What does <code>&amp;&amp;=</code> do in Ruby?",
+  "back": "Assigns only when the left side is truthy.",
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "trap-scenario-clean",
+  "front": "A worker reads a row, a second worker updates it, and the first then writes its stale value back. What is this anomaly called?",
+  "back": "A lost update.",
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "trap-chain-clean",
+  "front": "Why does a cross-site POST carry a <code>SameSite=None; Secure</code> cookie?",
+  "back": "<code>SameSite=None</code> exempts the cookie from the cross-site check, so the browser attaches it.",
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "trap-contrast-clean",
+  "front": "How does <code>preload</code> differ from <code>eager_load</code> in the SQL it runs?",
+  "back": "<code>preload</code> runs one query per table; <code>eager_load</code> runs one LEFT OUTER JOIN.",
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "trap-closed-set-clean",
+  "front": "What three parts make up a SemVer version?",
+  "back": "Major, minor and patch.",
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "code-deck-0",
+  "front": "Code card, kind predict: What does <code>doubled</code> hold?\n<pre>doubled = [1, 2].each { |x| x * 2 }\ndoubled  # => {{c1::[1, 2]}}</pre>",
+  "back": "<code>each</code> runs the block for its effect and returns its receiver. <code>map</code> is what collects the block's results.",
+  "code": true,
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "code-deck-1",
+  "front": "Code card, kind predict: Which way does each condition go?\n<pre>zero = 0\nblank = \"\"\nnothing = nil\nzero ? :yes : :no  # => {{c1:::yes}}\nblank ? :yes : :no  # => {{c1:::yes}}\nnothing ? :yes : :no  # => {{c1:::no}}</pre>",
+  "back": "Only <code>nil</code> and <code>false</code> are falsy in Ruby. Zero and the empty string count as true.",
+  "code": true,
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "code-deck-2",
+  "front": "Code card, kind predict: Two variables start out naming one string. What does each hold at the end?\n<pre>a = \"hi\"\nb = a\nb << \"!\"\nc = a\nc += \"?\"\na  # => {{c1::\"hi!\"}}\nc  # => {{c1::\"hi!?\"}}</pre>",
+  "back": "<code>&lt;&lt;</code> changes the object both names share. <code>+=</code> builds a new string and points only <code>c</code> at it.",
+  "code": true,
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "code-deck-3",
+  "front": "Code card, kind fill: Each key should get a list of its own, created the first time it is used.\n<pre>groups = Hash.new{{c1:: { |hash, key| hash[key] = [] }}}\ngroups[:a] << 1\ngroups[:b] << 2\ngroups  # => { a: [1], b: [2] }</pre>",
+  "back": "<code>Hash.new([])</code> would share one array between all keys. A block runs per missing key, and has to store what it makes.",
+  "code": true,
+  "label": "clean",
+  "split": "test"
+ },
+ {
+  "key": "code-deck-4",
+  "front": "Code card, kind compose: Write <code>my_map</code> using <code>each</code> and the block it is given.\n<pre>def my_map(list)\n{{c1::  result = []\n  list.each { |x| result << yield(x) }\n  result\n}}end\nmy_map([1, 2]) { |x| x * 2 }  # => [2, 4]\nmy_map([]) { |x| x * 2 }  # => []</pre>",
+  "back": "<code>yield</code> hands a value to the block and gives back what the block returned, which is all <code>map</code> needs.",
+  "code": true,
+  "label": "clean",
+  "split": "dev"
+ },
+ {
+  "key": "code-two-ideas",
+  "front": "Code card, kind fill: Keep the even numbers, and memoize the result across calls.\n<pre>def evens(list)\n  @evens ||= list.{{c1::select}}(&:even?)\nend\nevens([1, 2])  # => [2]\nevens([3, 4])  # => [2]</pre>",
+  "back": "<code>select</code> keeps what the block accepts. <code>||=</code> stores the first result.",
+  "code": true,
+  "label": "atomic",
+  "split": "dev"
+ },
+ {
+  "key": "code-two-ideas-2",
+  "front": "Code card, kind predict: What does each hold? This covers freezing and also integer division.\n<pre>s = 'a'.freeze\nt = s.frozen?\nn = 7 / 2\nt  # => {{c1::true}}\nn  # => {{c1::3}}</pre>",
+  "back": "A frozen string reports it. Integer division truncates.",
+  "code": true,
+  "label": "atomic",
+  "split": "test"
+ },
+ {
+  "key": "code-gives-away",
+  "front": "Code card, kind fill: Use <code>map</code> to double each number.\n<pre>[1, 2].{{c1::map}} { |x| x * 2 }\n[1, 2].map { |x| x * 2 }  # => [2, 4]</pre>",
+  "back": "<code>map</code> collects the block's results.",
+  "code": true,
+  "label": "other",
+  "split": "dev"
+ },
+ {
+  "key": "code-wrong-explain",
+  "front": "Code card, kind predict: What does <code>doubled</code> hold?\n<pre>doubled = [1, 2].each { |x| x * 2 }\ndoubled  # => {{c1::[1, 2]}}</pre>",
+  "back": "<code>each</code> returns the block's last value, which here equals the receiver.",
+  "code": true,
+  "label": "other",
+  "split": "test"
+ }
+]

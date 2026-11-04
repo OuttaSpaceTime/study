@@ -1,0 +1,326 @@
+#!/usr/bin/env python3
+"""Fix every flawed card in the deck, resumably: /study-card-check, the skill behind Omvida's Ctrl+Q, per card.
+
+    scripts/card-check-sweep                 judge the deck, fix what fails, wait out usage limits
+    scripts/card-check-sweep --dry-run       only say what fails
+    scripts/card-check-sweep --no-wait       stop at a usage limit instead
+    scripts/card-check-sweep --limit 10      at most this many fixes
+    scripts/card-check-sweep --retry         try again what could not be fixed before
+    scripts/card-check-sweep --one-session   all of them in one session, sharing what it reads (the cheap way)
+
+There is no state to lose: what is left is read off the deck each time, so **running it again is resuming**, after
+a limit, a crash or a reboot. A fixed card passes the judge, and the gate's kept verdicts make judging an unchanged
+card free. All it keeps (`RESULTS`) is what each card's fix said, so a card the skill could not fix is not tried again
+every run. Only one runs at a time.
+
+Which model rewrites: Haiku when all that is wrong is a back saying too much, a mechanical cut that the gate still
+judges; Sonnet when a card must be split, rethought or fact-checked. The verdict is always the gate's.
+One session per card is what Ctrl+Q needs, and what a whole deck can't afford: each starts from nothing and reads the
+rules again, at about $0.26 a card before the gate. `--one-session` gives one Sonnet session every plain card with its
+verdict, so nothing is read twice; it writes in parallel, and each write still passes the gate. A code card goes the
+per-card way afterwards, since it has to be run. Stopped part-way it resumes the same: what it fixed passes the judge.
+When done, or stopped, it relinks the wiki (`scripts/card-links-sync --prune`).
+"""
+import argparse
+import concurrent.futures
+import datetime
+import fcntl
+import json
+import re
+import sqlite3
+import subprocess
+import sys
+import threading
+import time
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from scripts import card_quality as gate  # noqa: E402 (after the path is set)
+
+
+STATE = Path.home() / ".cache" / "study-card-quality"
+RESULTS = STATE / "sweep-results.jsonl"
+# Omvida's list (Launch.CARD_CHECK_TOOLS), repeated: this repo does not depend on the app.
+TOOLS = ",".join(["Read", "Glob", "Grep", "Bash(scripts/card-quality-gate --judge *)", "Bash(scripts/card-links-sync)",
+                  "mcp__flashcard-mcp__get_card", "mcp__flashcard-mcp__find_similar_cards",
+                  "mcp__flashcard-mcp__update_card", "mcp__flashcard-mcp__create_card", "mcp__flashcard-mcp__delete_card",
+                  "mcp__flashcard-mcp__update_code_card", "mcp__flashcard-mcp__create_code_card",
+                  "mcp__flashcard-mcp__check_code_card", "mcp__qmd__query", "mcp__qmd__search", "mcp__qmd__get",
+                  "WebSearch", "WebFetch"])
+# What the skill's report is used for here: what became of the card, and a line to log.
+SCHEMA = {"type": "object", "properties": {
+    "outcome": {"type": "string", "enum": ["no_change", "fixed", "split", "unchanged"]},
+    "summary": {"type": "string"}},
+    "required": ["outcome", "summary"], "additionalProperties": False}
+MECHANICAL = {"extra_info"}
+GRACE = datetime.timedelta(minutes=2)
+
+
+class UsageLimit(Exception):
+    """claude refused for the subscription's limit; its message says when that lifts."""
+
+
+def model_for(issues):
+    return "haiku" if issues and set(issues) <= MECHANICAL else "sonnet"
+
+
+def limit_lifts(message, now):
+    """When a limit message says it lifts ("resets 8:30am"), the next such moment after `now`, or an hour on."""
+    m = re.search(r"resets\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)", message, re.I)
+    if not m:
+        return now + datetime.timedelta(hours=1)
+    hour = int(m.group(1)) % 12 + (12 if m.group(3).lower() == "pm" else 0)
+    at = now.replace(hour=hour, minute=int(m.group(2) or 0), second=0, microsecond=0)
+    # Just past means already lifted: reading it as tomorrow's slept through a whole day's window (2026-11-04).
+    if at <= now and now - at < datetime.timedelta(minutes=15):
+        return now + GRACE
+    return (at if at > now else at + datetime.timedelta(days=1)) + GRACE
+
+
+def is_limit(text):
+    return bool(re.search(r"(usage|hour|weekly|session).{0,12}limit|limit.{0,20}resets", str(text), re.I))
+
+
+def wanted(cards, verdicts, gave_up, retry=False):
+    """The cards to fix, wrong backs first, then those that lapse the most."""
+    todo = [c for c in cards if verdicts.get(c["id"]) and (retry or c["id"] not in gave_up)]
+    return sorted(todo, key=lambda c: ("incorrect" not in verdicts[c["id"]], -c["lapses"]))
+
+
+def gave_up_on(cards):
+    """The cards not to try again: their last fix failed, and they still read as they did then. An edit since, by
+    hand or by a later fix, is a new card to judge. A crash can tear the file's last line, which costs that line."""
+    if not RESULTS.exists():
+        return set()
+    latest = {}
+    for line in RESULTS.read_text().splitlines():
+        try:
+            row = json.loads(line)
+        except ValueError:
+            continue
+        latest[row["id"]] = row
+    sides = {c["id"]: (c["front"], c["back"]) for c in cards}
+    return {card for card, row in latest.items()
+            if row.get("outcome") in ("unchanged", "failed") and (row.get("front"), row.get("back")) == sides.get(card)}
+
+
+def deck():
+    db = sqlite3.connect(f"file:{gate.master_db()}?mode=ro", uri=True)
+    db.row_factory = sqlite3.Row
+    try:
+        return [dict(r) for r in db.execute("SELECT id, deckId, front, back, tags, type, exercise, lapses FROM Card WHERE suspended = 0")]
+    finally:
+        db.close()
+
+
+def judge_all(cards, workers, wait):
+    def one(card):
+        subject = gate.subject(card)
+        while True:
+            try:
+                return card["id"], [i["issue"] for i in gate.judge(subject)]
+            except Exception as e:  # noqa: BLE001 (a limit is waited out; anything else is that card's alone)
+                if is_limit(e):
+                    if not wait:
+                        raise UsageLimit(str(e)) from e
+                    sleep_past(str(e))
+                else:
+                    log(f"could not judge {card['id']}: {e}")
+                    return card["id"], []
+
+    with concurrent.futures.ThreadPoolExecutor(workers) as pool:
+        return dict(pool.map(one, cards))
+
+
+def sleep_past(message):
+    until = limit_lifts(message, datetime.datetime.now())
+    log(f"usage limit: waiting until {until:%H:%M}. Stopping now loses nothing: run this again to resume.")
+    # By the clock, in small steps, since a laptop that sleeps through one long sleep would overshoot it by the nap.
+    while datetime.datetime.now() < until:
+        time.sleep(30)
+
+
+def log(text):
+    print(f"{datetime.datetime.now():%H:%M:%S} {text}", flush=True)
+
+
+def fix(card_id, issues):
+    argv = ["claude", "-p", f"/study-card-check {card_id}", "--model", model_for(issues), "--output-format", "json",
+            "--json-schema", json.dumps(SCHEMA), "--allowedTools", TOOLS]
+    p = subprocess.run(argv, cwd=ROOT, capture_output=True, text=True, stdin=subprocess.DEVNULL, timeout=900)
+    try:
+        event = json.loads(p.stdout)
+    except ValueError:
+        message = (p.stderr or p.stdout).strip()[:300]
+        raise UsageLimit(message) if is_limit(message) else RuntimeError(message or f"claude exited {p.returncode}") from None
+    if event.get("is_error") or event.get("subtype") != "success":
+        message = str(event.get("result"))[:300]
+        raise UsageLimit(message) if is_limit(message) else RuntimeError(message)
+    out = event.get("structured_output") or {"outcome": "failed", "summary": str(event.get("result"))[:300]}
+    return out
+
+
+BATCH_PROMPT = """Fix these flashcards. The card-quality judge has already judged each one: below are its verdict and
+the flaws to fix. Don't judge again: a card here failed. Nobody can answer questions in this run.
+
+Read once, before starting: `.claude/skills/references/card-quality.md` ("Fixing a flaw: keep the information") and
+`.claude/skills/references/card-patterns.md`. Read nothing else unless a fact needs checking.
+
+- **Work in parallel, to save turns.** Send the writes for 5 to 10 cards in one message, then go on. Every
+  create_card, update_card and delete_card is judged by the gate; a refusal gives its reason. Revise and retry a
+  refused card at most twice, then leave it as it is and report it `unchanged`.
+- Fix each flaw as the reference says. `already_has_parts` lists cards an interrupted run already made from this one:
+  don't make those again.
+- `incorrect`: check the fact first, with mcp__qmd__query or the web. The judge's word alone is not enough.
+- find_similar_cards only for a new card whose idea this deck may already hold; in parallel, not one at a time.
+- Never drop a fact no other card holds. Format: simple HTML (<code>, <b>, <br>), never markdown, no em dashes; back
+  at most 200 visible characters and 4 sentences.
+- Don't rate, touch notes, or edit any card other than these and their parts.
+
+Report every card in `results`: its id, its outcome (`fixed`, `split` or `unchanged`) and what you did, in a few words.
+
+The cards:
+"""
+BATCH_SCHEMA = {"type": "object", "properties": {"results": {"type": "array", "items": {
+    "type": "object", "properties": {"id": {"type": "string"}, "outcome": {"type": "string", "enum": ["fixed", "split", "unchanged"]},
+                                     "summary": {"type": "string"}},
+    "required": ["id", "outcome", "summary"], "additionalProperties": False}}},
+    "required": ["results"], "additionalProperties": False}
+
+
+def batch_card(card, parts):
+    """What the session is told of one card: all it needs to fix it without reading anything of its own."""
+    out = gate.run_judge(card)
+    return {"id": card["id"], "deckId": card["deckId"], "tags": card["tags"], "type": card["type"],
+            "front": card["front"], "back": card["back"],
+            "asked": out["asked"],
+            "extra": [c["text"] for c in out["claims"] if c.get("role") == "extra"],
+            "flaws": [{"issue": i["issue"], "detail": i["detail"]} for i in gate.verdict(out)],
+            "already_has_parts": parts}
+
+
+def one_session(plain):
+    log(f"one session for {len(plain)} cards")
+    prompt = BATCH_PROMPT + json.dumps([batch_card(c, gate.stored_parts(c["id"])) for c in plain], ensure_ascii=False, indent=1)
+    argv = ["claude", "-p", "--model", "sonnet", "--output-format", "json", "--json-schema", json.dumps(BATCH_SCHEMA),
+            "--allowedTools", TOOLS]
+    p = subprocess.run(argv, cwd=ROOT, input=prompt, capture_output=True, text=True, timeout=4 * 3600)
+    try:
+        event = json.loads(p.stdout)
+    except ValueError:
+        raise RuntimeError((p.stderr or p.stdout).strip()[:300] or f"claude exited {p.returncode}") from None
+    log(f"session: {event.get('num_turns')} turns, ${event.get('total_cost_usd')}, {event.get('subtype')}")
+    if event.get("is_error") or event.get("subtype") != "success":
+        message = str(event.get("result"))[:300]
+        raise UsageLimit(message) if is_limit(message) else RuntimeError(message)
+    before = {c["id"]: c for c in plain}
+    with RESULTS.open("a") as f:
+        for r in (event.get("structured_output") or {}).get("results", []):
+            card = before.get(r["id"], {})
+            f.write(json.dumps({**r, "front": card.get("front"), "back": card.get("back")}) + "\n")
+            log(f"{r['outcome']}: {r['summary'][:120]}")
+
+
+def sweep(args):
+    """Exit status: 3 when a usage limit stopped it (--no-wait), else 0."""
+    try:
+        return run_sweep(args)
+    except UsageLimit:
+        log("usage limit: stopped. Run this again to resume.")
+        return 3
+
+
+def run_sweep(args):
+    cards = deck()
+    log(f"judging {len(cards)} cards (kept verdicts are free)")
+    verdicts = judge_all(cards, args.workers, not args.no_wait)
+    todo = wanted(cards, verdicts, gave_up_on(cards), args.retry)
+    log(f"{sum(bool(v) for v in verdicts.values())} flawed, {len(todo)} to fix now")
+    if args.dry_run:
+        for card in todo:
+            print(card["id"], ",".join(verdicts[card["id"]]), model_for(verdicts[card["id"]]))
+        return 0
+    todo = todo[:args.limit] if args.limit else todo
+    if args.one_session:
+        plain = [c for c in todo if not c["exercise"]]
+        todo = [c for c in todo if c["exercise"]]
+        try:
+            if plain:
+                one_session(plain)
+        except UsageLimit as e:
+            if args.no_wait:
+                raise
+            # What it fixed before the limit passes now: starting over is resuming.
+            sleep_past(str(e))
+            return run_sweep(args)
+        finally:
+            relink()
+    done, lock = [0], threading.Lock()
+    paused = threading.Event()
+    paused.set()
+    waits = [0]  # How many limits have been waited out, so a worker refused before a wait doesn't wait again after it.
+
+    def one(card):
+        for _ in range(5):
+            paused.wait()
+            seen = waits[0]
+            try:
+                out = fix(card["id"], verdicts[card["id"]])
+                break
+            except UsageLimit as e:
+                if args.no_wait:
+                    return "limit"
+                with lock:
+                    if waits[0] == seen:
+                        paused.clear()
+                        sleep_past(str(e))
+                        waits[0] += 1
+                        paused.set()
+            except Exception as e:  # noqa: BLE001 (this card's alone: the next run tries it again)
+                log(f"{card['id']}: {e}")
+                return "error"
+        else:
+            return "error"
+        with lock:
+            done[0] += 1
+            with RESULTS.open("a") as f:
+                f.write(json.dumps({"id": card["id"], "issues": verdicts[card["id"]], "front": card["front"], "back": card["back"], **out}) + "\n")
+            log(f"[{done[0]}/{len(todo)}] {out.get('outcome')}: {str(out.get('summary'))[:120]}")
+        return "done"
+
+    with concurrent.futures.ThreadPoolExecutor(args.workers) as pool:
+        results = list(pool.map(one, todo))
+    relink()
+    if "limit" in results:
+        log("usage limit: stopped. Run this again to resume.")
+        return 3
+    log(f"done: {results.count('done')} fixed or checked, {results.count('error')} to try again next run")
+    return 0
+
+
+def relink():
+    subprocess.run([str(ROOT / "scripts" / "card-links-sync"), "--prune"], check=False)
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--no-wait", action="store_true")
+    ap.add_argument("--retry", action="store_true")
+    ap.add_argument("--one-session", action="store_true")
+    ap.add_argument("--limit", type=int)
+    ap.add_argument("--workers", type=int, default=3)
+    args = ap.parse_args()
+    STATE.mkdir(parents=True, exist_ok=True)
+    with (STATE / "sweep.lock").open("w") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            sys.exit("a sweep is already running")
+        sys.exit(sweep(args))
+
+
+if __name__ == "__main__":
+    main()

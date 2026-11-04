@@ -1,0 +1,116 @@
+#!/usr/bin/env python3
+"""Keep wiki pages' `flashcard_ids` true after a card is split.
+
+A split deletes a card and leaves parts that name it in `Card.inheritedFrom`, and a page listing the old id
+would then lose those cards from its modal and from /study's page suggestions. This follows each listed id to
+what it became: an id that is gone is replaced by its parts, and a surviving id whose extra moved to a new card
+gains that card. It is what `create_card` with `inheritFrom` already recorded, so nothing here is a judgement,
+and it can run any number of times. An id that is gone with no parts is reported, and removed with `--prune` only
+when the deck has its tombstone (`DeletedCard`), so a deleted card for sure. Absence alone proves nothing: on a
+machine whose pages came from git before its deck had synced, or with a deck restored from a backup, a live card
+is missing too, and pruning on that would lose the links.
+
+Prints what changed, as one line per page, and rebuilds the index the viewer and the linter read when a page
+changed. /study-card-check and every other split run it after a write; `--check` only reports.
+"""
+import argparse
+import re
+import sqlite3
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from scripts.config import master_db  # noqa: E402 (after the path is set)
+
+# Both ways YAML writes a list, within the frontmatter only: `scripts/wiki-write` leaves the block form.
+INLINE = re.compile(r"^flashcard_ids:[ \t]*\[(.*?)\][ \t]*$", re.M)
+BLOCK = re.compile(r"^flashcard_ids:[ \t]*\n((?:[ \t]*-[ \t]+.*\n)+)", re.M)
+
+
+def deck():
+    db = sqlite3.connect(f"file:{master_db()}?mode=ro", uri=True)
+    try:
+        rows = db.execute("SELECT id, inheritedFrom FROM Card").fetchall()
+        deleted = {r[0] for r in db.execute("SELECT cardId FROM DeletedCard")}
+    finally:
+        db.close()
+    alive = {r[0] for r in rows}
+    children = {}
+    for card, parent in rows:
+        if parent:
+            children.setdefault(parent, []).append(card)
+    return alive, children, deleted
+
+
+def resolved(card, alive, children):
+    """The id itself if it lives, then whatever descends from it, in order."""
+    out = [card] if card in alive else []
+    for child in children.get(card, []):
+        out += resolved(child, alive, children)
+    return out
+
+
+def followed(ids, alive, children, prunable=frozenset()):
+    new, lost = [], []
+    for card in ids:
+        found = resolved(card, alive, children)
+        if not found:
+            lost.append(card)
+            found = [] if card in prunable else [card]
+        new += [f for f in found if f not in new]
+    return new, lost
+
+
+def relink(text, alive, children, prunable=frozenset()):
+    """The page's text with its ids followed, and the ids that lead nowhere."""
+    end = text.find("\n---", 3)
+    if not text.startswith("---") or end == -1:
+        return text, []
+    head, rest = text[:end + 1], text[end + 1:]
+    block = BLOCK.search(head)
+    if block:
+        ids = [line.strip()[1:].strip().strip("\"'") for line in block.group(1).splitlines()]
+        new, lost = followed(ids, alive, children, prunable)
+        listed = "".join(f"- {i}\n" for i in new)
+        head = head[:block.start()] + ("flashcard_ids:\n" + listed if new else "flashcard_ids: []\n") + head[block.end():]
+        return head + rest, lost
+    inline = INLINE.search(head)
+    if not inline:
+        return text, []
+    ids = [i.strip().strip("\"'") for i in inline.group(1).split(",") if i.strip()]
+    new, lost = followed(ids, alive, children, prunable)
+    if new == ids:
+        return text, lost
+    head = head[:inline.start()] + f"flashcard_ids: [{', '.join(new)}]" + head[inline.end():]
+    return head + rest, lost
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--check", action="store_true", help="report, write nothing")
+    ap.add_argument("--prune", action="store_true", help="remove ids of cards deleted with no parts")
+    args = ap.parse_args()
+    alive, children, deleted = deck()
+    prunable = deleted if args.prune else frozenset()
+    wiki = ROOT / "wiki"
+    wrote = False
+    for page in sorted(wiki.rglob("*.md")):
+        text = page.read_text()
+        new, lost = relink(text, alive, children, prunable)
+        if new != text:
+            if not args.check:
+                page.write_text(new)
+                wrote = True
+            print(f"{page.relative_to(wiki)}: relinked")
+        if lost:
+            named = ", ".join(f"{i} (removed)" if i in prunable else i for i in lost)
+            print(f"{page.relative_to(wiki)}: gone with no parts: {named}")
+    if wrote:
+        subprocess.run([str(ROOT / "scripts" / "wiki-reindex")], check=False, capture_output=True)
+
+
+if __name__ == "__main__":
+    main()
