@@ -18,8 +18,11 @@ flashcard_ids:
 - cmrq07etm000fgl0m8ceqwt7m
 - cmne7xtdc015z0msomwlu8l9d
 - cmvnnuvct0000cl1a6uswfhrf
+- cmw25w0zt0014m81akcpwfyoc
+- cmw25w3mt0015m81azmzl7y4h
 - cmvnnuwqp0001cl1asvz5qoap
 - cmvnnuxza0002cl1audfwuflg
+- cmw25wbn40016m81a33bobj7y
 - cmvno7tt80003cl1ai8exu6tt
 ---
 

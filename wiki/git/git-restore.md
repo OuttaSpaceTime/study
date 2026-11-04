@@ -9,16 +9,7 @@ tags:
 created: '2026-04-09'
 updated: '2026-04-22'
 source_skill: study-walkthrough
-flashcard_ids:
-- cmne7xz9202lx0msonsbfhp3j
-- cmne7xz1y02k30msouw64srcz
-- cmne7xyv602if0msoa0ryw0o7
-- cmne7xyw902in0msoac5c4qm5
-- cmne7xyox02gx0msovt0cjf5p
-- cmne7xyge02ez0msohehvs3gj
-- cmne7xyd402e70mso1xuwru3o
-- cmne7xya902dh0msotg5sajyw
-- cmne7xy9k02d90mso2ibigeht
+flashcard_ids: []
 ---
 
 # git restore

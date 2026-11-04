@@ -8,7 +8,7 @@ tags:
 - security
 - web
 created: '2026-05-07'
-updated: '2026-10-20'
+updated: 2026-10-31
 source_skill: study-walkthrough
 flashcard_ids:
 - cmne7xush01in0mso1vx4q703
@@ -16,8 +16,12 @@ flashcard_ids:
 - cmne7xuu901j30msorwq72fbt
 - cmne7xv7k01md0mso1ibkgfta
 - cmne7y02502sx0msoqv2zedir
+- cmw1tdjmz0000u61a8hc2k8ur
+- cmw1tdqp80001u61a9sqv6oyf
 - cmne7xxbf024v0msolzlfh20f
 - cmso9yrl2000ix90mwzdcjppu
+- cmw2em9js0001a01af56feyui
+- cmvw0u9kd0000va1aiz4zgqrx
 ---
 
 # CSRF (Cross-Site Request Forgery)
@@ -28,7 +32,7 @@ An attacker tricks the victim's browser into sending a state-changing request to
 
 The browser attaches cookies to every request targeting a domain, regardless of which page triggered the request. A form on `evil.com` that posts to `bank.com/transfer` will carry the victim's `bank.com` session cookie. The server sees a valid session and treats the request as legitimate.
 
-**Modern default:** Since ~2020, browsers default to `SameSite=Lax`, which blocks cross-site cookies on subresource requests (forms, `fetch`, `img`). POST, PUT, and DELETE are always blocked cross-site under Lax. In practice this stops most naive CSRF. It is not a complete fix though. Top-level GET navigations still send the cookie (leaving state-changing GET endpoints exposed), and requests from a same-site subdomain (`evil.example.com → app.example.com`) are not blocked at all. Same-site is not the same as same-origin.
+**Modern default:** Since 2020, Chromium browsers (Chrome, Edge, Opera) treat a cookie without a `SameSite` attribute as `Lax`. Firefox and Safari never adopted that default, so set `SameSite` explicitly. `Lax` withholds the cookie on cross-site subresource requests (`fetch`, `img`, iframes) and on cross-site navigations that are not GET, such as a submitted POST form. In practice this stops most naive CSRF. It is not a complete fix though. Top-level GET navigations still send the cookie (leaving state-changing GET endpoints exposed), and requests from a same-site subdomain (`evil.example.com → app.example.com`) are not blocked at all. Same-site is not the same as same-origin.
 
 ## Three Preconditions for a Successful CSRF Attack
 
@@ -40,7 +44,7 @@ All three must hold. Remove any one and CSRF is blocked:
 
 ## Why SameSite=Lax Doesn't Fully Protect Against Subdomain Attacks
 
-SameSite=Lax (browser default since ~2020) blocks cross-site cookies on subresource requests (forms, `fetch`, `img`). It still sends cookies on **top-level GET navigations**, so any state-changing GET endpoint is unprotected.
+SameSite=Lax (the Chromium default since 2020) withholds the cookie on cross-site subresource requests (`fetch`, `img`, iframes) and on cross-site POST forms. It still sends cookies on **top-level GET navigations**, so any state-changing GET endpoint is unprotected.
 
 More critically, SameSite is scoped to **eTLD+1** (registrable domain), not the full origin. `app.example.com` and `evil.example.com` share the same eTLD+1 (`example.com`), so they are **same-site**. SameSite=Strict still sends the cookie on requests from `evil.example.com` to `app.example.com`.
 
@@ -80,3 +84,4 @@ Standard CSRF tokens are tied to an authenticated session. The login form has no
 - [OWASP CSRF Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html): canonical defense taxonomy; synchronizer token, double-submit, Fetch Metadata, SameSite details
 - [MDN: Cross-site request forgery (CSRF)](https://developer.mozilla.org/en-US/docs/Web/Security/Attacks/CSRF): browser-model perspective; cross-origin vs. cross-site distinction
 - [MDN: SameSite cookies](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite): exact semantics of Strict/Lax/None and default-Lax behavior
+- [OWASP: SameSite](https://owasp.org/www-community/SameSite): which browsers default to Lax (Chromium only, as of December 2024)

@@ -18,7 +18,11 @@ source_skill: study-walkthrough
 flashcard_ids:
 - cmu3ogyu500002r1akvmh5qiv
 - cmu3ogyzl00012r1aj2p085vy
-- cmu3ogzvy00022r1aq6lu6ymb
+- cmw25pgnx000fm81a01h9hnvn
+- cmw25pnoz000gm81abwamyv02
+- cmw25pvk8000hm81aex4152n8
+- cmw25qbyr000lm81aaoy8f39g
+- cmw25qeiv000mm81as5vccm5x
 ---
 
 # Nullable Columns

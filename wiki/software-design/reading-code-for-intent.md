@@ -16,8 +16,12 @@ updated: '2026-08-10'
 source_skill: study-walkthrough
 flashcard_ids:
 - cmr3mfpvn000avi0mwndjb23g
-- cmr3mfu74000cvi0mp1wy11c5
+- cmw25gau200026a1acxlfk0uw
+- cmw25gkba00046a1amgas8di9
+- cmw25gowp00056a1ahv3lwwur
+- cmw25gr8j00066a1amci4dxzu
 - cmsnp5cgz0000fg0msajjyd08
+- cmw1i55a00000n21ah3uk8vyn
 ---
 
 # Reading code for intent

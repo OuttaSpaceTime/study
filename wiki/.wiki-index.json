@@ -141,8 +141,12 @@
     ],
     "flashcard_ids": [
       "cmr3kzoif0005vi0m6saz3h2t",
+      "cmw25fwzp00006a1a35k7xw7v",
+      "cmw25g0lg00016a1az9m0v1nx",
+      "cmw25gz6n00076a1a4vpp4k1s",
       "cmr3kzuq10007vi0ml2cjtub2",
-      "cmr3kzwwp0008vi0macw7zben"
+      "cmw25mhyo0000m81a45aurrjy",
+      "cmw25n9ka0003m81ai1ptsubf"
     ],
     "created": "2026-07-02",
     "updated": "2026-07-21"
@@ -168,17 +172,7 @@
       "Interactive: -p",
       "Common Patterns"
     ],
-    "flashcard_ids": [
-      "cmne7xz9202lx0msonsbfhp3j",
-      "cmne7xz1y02k30msouw64srcz",
-      "cmne7xyv602if0msoa0ryw0o7",
-      "cmne7xyw902in0msoac5c4qm5",
-      "cmne7xyox02gx0msovt0cjf5p",
-      "cmne7xyge02ez0msohehvs3gj",
-      "cmne7xyd402e70mso1xuwru3o",
-      "cmne7xya902dh0msotg5sajyw",
-      "cmne7xy9k02d90mso2ibigeht"
-    ],
+    "flashcard_ids": [],
     "created": "2026-04-09",
     "updated": "2026-06-09"
   },
@@ -579,7 +573,10 @@
       "Related Concepts"
     ],
     "flashcard_ids": [
-      "cmosqcwsg0000h30mvfne2v51",
+      "cmw1i74ik0000uo1alwjmgjob",
+      "cmw1i77u50001uo1anf8vxslh",
+      "cmw1i7dbv0002uo1aw598ivis",
+      "cmw1i7ful0003uo1axaov0oaz",
       "cmosqd3r80001h30mwd2tbpht"
     ],
     "created": "2026-05-05",
@@ -666,9 +663,15 @@
     ],
     "flashcard_ids": [
       "cmqu0tqlr0004150miu3h07bc",
-      "cmqu0ts1l0005150mcb26qlt0",
+      "cmv0n1wtv0000qn1allpussvd",
+      "cmv0n1y4r0001qn1a5vnkxw3k",
+      "cmw1t8ort0000l61a0s106w6a",
+      "cmw1t8tes0001l61amownjplu",
       "cmqu0ttxx0006150myqedtn6q",
-      "cmqu0tvnw0007150msfy24wz5"
+      "cmvxkd8vd0000jt1ah8zzsvjv",
+      "cmw259zji0000021aceh3py70",
+      "cmqu0tvnw0007150msfy24wz5",
+      "cmw25anxq00003r1au4un8ndr"
     ],
     "created": "2026-06-25",
     "updated": "2026-09-16"
@@ -741,10 +744,15 @@
     ],
     "flashcard_ids": [
       "cmqu0tx600008150m7a48y2lr",
+      "cmw25b3r400009p1a4bngjd9z",
       "cmqu0tyy80009150ma3fm8a5h",
+      "cmw25baon0000ym1ag7tqgfld",
       "cmqu0u0ef000a150muv3hmvrl",
+      "cmw1t506i0000zr1awrq8oagj",
+      "cmw1t50zj0001zr1ai7bt4klt",
       "cmqu0u1ur000b150m6ttrks13",
-      "cmqu0u3eu000c150m44rrl72z"
+      "cmqu0u3eu000c150m44rrl72z",
+      "cmw25bc2t0000ek1as0608j7p"
     ],
     "created": "2026-06-25",
     "updated": "2026-09-16"
@@ -1056,6 +1064,91 @@
     "created": "2026-04-17",
     "updated": "2026-07-18"
   },
+  "security/content-security-policy": {
+    "file": "security/content-security-policy.md",
+    "title": "Content Security Policy",
+    "aliases": [
+      "CSP",
+      "strict CSP",
+      "nonce-based CSP",
+      "CSP nonce"
+    ],
+    "tags": [
+      "security",
+      "web",
+      "browser"
+    ],
+    "sections": [
+      "TL;DR",
+      "How the Browser Decides",
+      "Why Allowlists Fail",
+      "Strict CSP",
+      "Nonces Done Right",
+      "Where Nonces Break",
+      "Directives Without Fallback",
+      "What CSP Doesn't Stop",
+      "Rolling It Out",
+      "Tradeoffs & Gotchas",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [
+      "cmne7xw3001u90msomnfve6jo",
+      "cmw1id5s60000v11anah5trtb",
+      "cmw1id83c0001v11ati03auh5",
+      "cmvh4ho0w0003jq1a3jwnstmy",
+      "cmne7xzvq02rh0msoh6nlzufz",
+      "cmw1tccs500003v1azviov09z",
+      "cmne7yekm06dr0mso1do4nilp",
+      "cmne7y00302sf0mso7xre8ov6",
+      "cmw1id9he0000k41aw7tj0926",
+      "cmotwgr4i000eqs0mf7xai9j6",
+      "cmnwwerrb000cfb0mufxjj4ok",
+      "cmne7xw6s01v30msovqrbgfj3",
+      "cmw1i401l0000k71ai1jjhe7d",
+      "cmne7yej006db0msoxk3bi7i4",
+      "cmw2eqrkk000ca01aorhn79qb",
+      "cmowkcjfo0005rb0mzam5b1cn",
+      "cmotwgt9j000fqs0mlndbc18s",
+      "cmw1t4c890000zh1a8jo5vn5e",
+      "cmw1t4cub0001zh1az0ogvt45",
+      "cmw1td9hb0000uf1a13r1fayh",
+      "cmw1tdaej0001uf1ajrnh0ngu",
+      "cmw2557090000fx1adh9f658f",
+      "cmw255ky60001fx1a1e7xjiu0",
+      "cmqdhhwjw000g920m3j9xewob",
+      "cmqdhhzim000h920manyyvmtv",
+      "cmw25907p00000m1aynz1mxam",
+      "cmw2595j100010m1a7j0yu5e5",
+      "cmw25981900020m1age1k0h0k",
+      "cmw256umd0000fc1aoyno3dk4",
+      "cmw256y0n0001fc1ai9jbw4x6",
+      "cmowkwj7c000crb0mmzn3fei7",
+      "cmw1t45jk0000711ajtsrklls",
+      "cmw1t4a6j0001711axgieqemh",
+      "cmqkr772h0004yb0mweyvp3j9",
+      "cmqkr78xu0005yb0mcz8nk08i",
+      "cmw258y7g0000vy1a5i9kq4gw",
+      "cmqkr7aoj0006yb0mslqjly12",
+      "cmw259ihc0000aq1aaojh6ges",
+      "cmqkr7c6g0007yb0mhhuw37en",
+      "cmvj7bk3i00000f1ay79xkf43",
+      "cmw25uv7m000ym81aokaicjid",
+      "cmvj7fs6b00010f1aqwc45bhv",
+      "cmw25v05u000zm81a05cp2vd7",
+      "cmne7xx2y022v0mso8tysqhgq",
+      "cmne7xwfd01x50msoyf2q0olt",
+      "cmne7xwii01xv0mso1g3ja3xv",
+      "cmne7xwgh01xf0mso5qaqk6cd",
+      "cmne7xxh902670msovwgksyrm",
+      "cmpre2fgd000gb20mk1bs7qt0",
+      "cmw258jgd0000tu1ad7vumxte",
+      "cmw258o930001tu1a3hjjq0k3",
+      "cmne7xx7v02410msol21qjnib"
+    ],
+    "created": "2026-10-23",
+    "updated": "2026-10-23"
+  },
   "security/csrf": {
     "file": "security/csrf.md",
     "title": "CSRF",
@@ -1084,11 +1177,15 @@
       "cmne7xuu901j30msorwq72fbt",
       "cmne7xv7k01md0mso1ibkgfta",
       "cmne7y02502sx0msoqv2zedir",
+      "cmw1tdjmz0000u61a8hc2k8ur",
+      "cmw1tdqp80001u61a9sqv6oyf",
       "cmne7xxbf024v0msolzlfh20f",
-      "cmso9yrl2000ix90mwzdcjppu"
+      "cmso9yrl2000ix90mwzdcjppu",
+      "cmw2em9js0001a01af56feyui",
+      "cmvw0u9kd0000va1aiz4zgqrx"
     ],
     "created": "2026-05-07",
-    "updated": "2026-10-20"
+    "updated": "2026-10-31"
   },
   "security/hsts": {
     "file": "security/hsts.md",
@@ -1119,10 +1216,64 @@
       "cmne7xw1v01u10msoxw2b49vt",
       "cmne7xw2401u30msofm43aa2a",
       "cmne7xvym01t50msou805xi7h",
-      "cmne7xwri02050mso5k9tqzu4"
+      "cmne7xwri02050mso5k9tqzu4",
+      "cmw1tb1s000007d1al7go1hw2"
     ],
     "created": "2026-04-10",
     "updated": "2026-07-31"
+  },
+  "security/identity-providers": {
+    "file": "security/identity-providers.md",
+    "title": "Identity Providers",
+    "aliases": [
+      "idp",
+      "identity provider",
+      "oauth and openid connect login",
+      "id token vs access token"
+    ],
+    "tags": [
+      "security",
+      "web",
+      "auth",
+      "oauth",
+      "oidc",
+      "jwt"
+    ],
+    "sections": [
+      "TL;DR",
+      "Roles",
+      "Three Session Layers",
+      "The Login Round Trip",
+      "state and PKCE",
+      "ID Token vs Access Token",
+      "How a Backend Trusts a JWT",
+      "Silent Login and Third-Party Cookies",
+      "Auto-Login and Logout Depth",
+      "Tradeoffs & Gotchas",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [
+      "cmw25v2kh0010m81a8jz9ezck",
+      "cmw25v5970011m81ab1z4bn0p",
+      "cmvnk1p3a0001g61asigcy619",
+      "cmvnk1qhw0002g61apwoedjm1",
+      "cmw25viv20012m81a6m4nxxk9",
+      "cmvnkv43g0005g61az1607lwt",
+      "cmvnkv5on0006g61alh67bw83",
+      "cmvnkwfp10007g61ae9nj53eg",
+      "cmw25vnut0013m81axxqhnxmn",
+      "cmso9yoit000hx90mksjgn6nl",
+      "cmw25os54000bm81am7gyqjn8",
+      "cmw25owuu000cm81a96bk7kdn",
+      "cmne7xzxj02rv0msoelt9emqc",
+      "cmw1tcddl0000ft1afl63q32j",
+      "cmne7xzx902rt0mso4dku4tk9",
+      "cmw1tc6k00000a91aca7fe82i",
+      "cmw1tc70u0001a91asoabfitl"
+    ],
+    "created": "2026-10-25",
+    "updated": "2026-10-25"
   },
   "security/key-derivation-and-domain-separation": {
     "file": "security/key-derivation-and-domain-separation.md",
@@ -1156,8 +1307,11 @@
       "cmrq07etm000fgl0m8ceqwt7m",
       "cmne7xtdc015z0msomwlu8l9d",
       "cmvnnuvct0000cl1a6uswfhrf",
+      "cmw25w0zt0014m81akcpwfyoc",
+      "cmw25w3mt0015m81azmzl7y4h",
       "cmvnnuwqp0001cl1asvz5qoap",
       "cmvnnuxza0002cl1audfwuflg",
+      "cmw25wbn40016m81a33bobj7y",
       "cmvno7tt80003cl1ai8exu6tt"
     ],
     "created": "2026-07-18",
@@ -1188,17 +1342,69 @@
       "cmne7xpyj00c10mso9loaa64l",
       "cmsczz3bh0006h60mldeg8dtl",
       "cmne7y7lc04mx0msoktupiqjb",
+      "cmw1tf0k10000mp1a4yfy3wxz",
       "cmne7xxqf028l0msopfmu8ibl",
-      "cmne7xxsd02910msozec0bg74",
+      "cmw1tbnf00000xl1aun8r79dv",
+      "cmw1tbock0001xl1ah27jpanx",
+      "cmw1tbork0002xl1a5u7s0p2a",
       "cmne7xq2u00d30msoazu1lx9q",
-      "cmne7xq5f00dp0mso5wt9t51f",
+      "cmw1iainx00005s1airelehgb",
+      "cmw1iaksy00015s1auyihxwaf",
+      "cmw1iatub00025s1a8p3auph3",
+      "cmw1iaxz800035s1andi94wn4",
       "cmsczz1wf0005h60mx7pqz6wy",
-      "cmo6tvg0e0009dn0mmgbkhcb5",
+      "cmw0yd67d0000tf1a8t8b9enn",
+      "cmw0yda9e0001tf1a40hq6dsg",
       "cmne7xwzl02230msoc69hmui0",
-      "cmne7xzvq02rh0msoh6nlzufz"
+      "cmne7xzvq02rh0msoh6nlzufz",
+      "cmw1tccs500003v1azviov09z",
+      "cmvw0u9kd0000va1aiz4zgqrx"
     ],
     "created": "2026-04-29",
-    "updated": "2026-10-20"
+    "updated": "2026-10-31"
+  },
+  "security/xss": {
+    "file": "security/xss.md",
+    "title": "XSS",
+    "aliases": [
+      "cross-site scripting",
+      "DOM-based XSS",
+      "Trusted Types"
+    ],
+    "tags": [
+      "security",
+      "web",
+      "browser"
+    ],
+    "sections": [
+      "TL;DR",
+      "The Slot Decides What Is Dangerous",
+      "Escape for the Parser That Reads the Slot",
+      "DOM-Based XSS",
+      "Rendering User HTML with a Sanitizer",
+      "Enforcing It at the Sink with Trusted Types",
+      "Tradeoffs & Gotchas",
+      "Related Concepts",
+      "References"
+    ],
+    "flashcard_ids": [
+      "cmvh4hkad0000jq1aro023kh5",
+      "cmvh4hlma0001jq1a5kb6oecs",
+      "cmvh4hmro0002jq1aih2gg344",
+      "cmw25tw7d000wm81apgj3mpiz",
+      "cmw25tymf000xm81ay023c1sr",
+      "cmvh4ho0w0003jq1a3jwnstmy",
+      "cmowkcmwt0006rb0m3v0pbih8",
+      "cmw1id5s60000v11anah5trtb",
+      "cmw1id83c0001v11ati03auh5",
+      "cmne7xxu2029f0msowdgy7bej",
+      "cmne7y02502sx0msoqv2zedir",
+      "cmw1tdjmz0000u61a8hc2k8ur",
+      "cmw1tdqp80001u61a9sqv6oyf",
+      "cmvw0ubwe0001va1a04no9hqr"
+    ],
+    "created": "2026-10-20",
+    "updated": "2026-10-31"
   },
   "software-design/delegating-to-agents-without-losing-the-map": {
     "file": "software-design/delegating-to-agents-without-losing-the-map.md",
@@ -1226,6 +1432,7 @@
     ],
     "flashcard_ids": [
       "cmruqtz2l0006qo0mqs7euwx0",
+      "cmw2enm4e0008a01a7ayq86o3",
       "cmruqu0wr0007qo0morqmixps"
     ],
     "created": "2026-07-03",
@@ -1261,9 +1468,11 @@
     "flashcard_ids": [
       "cmruqe38w0000qo0m3plgjvt6",
       "cmruqe6da0001qo0mj1zcggx0",
-      "cmruqe9fe0002qo0mx0jabxcf",
-      "cmruqebt50003qo0mufs2q74k",
       "cmuz7zzdo0000621a7e3hqtxc",
+      "cmw264v080000f71a3k9ilcd0",
+      "cmw2ebp6n0000uw1avgbshj7i",
+      "cmruqe9fe0002qo0mx0jabxcf",
+      "cmw25nzcs0008m81a0tkuk566",
       "cmvr6uvzr0000lp1agvqpc1sd"
     ],
     "created": "2026-07-21",
@@ -1296,9 +1505,9 @@
       "References"
     ],
     "flashcard_ids": [
-      "cmr352mhn0000vi0my4yi3fk0",
       "cmr352oou0001vi0m2ma2kmqz",
-      "cmr352qkt0002vi0mmvsrf7ou"
+      "cmr352qkt0002vi0mmvsrf7ou",
+      "cmw1syrg00000pp1aw3gd6k8p"
     ],
     "created": "2026-07-02",
     "updated": "2026-07-20"
@@ -1331,7 +1540,10 @@
     "flashcard_ids": [
       "cmryjbp5600004a0mvoh3k398",
       "cmryjbr2d00014a0mqbyls1e7",
+      "cmw1t6g0500000t1az4zs8o9h",
       "cmryjbszm00024a0mleqwrfsr",
+      "cmw1t0hgw00002u1a4ouay6ih",
+      "cmw1t0nla00012u1a78h7ugr2",
       "cmryjbulo00034a0mxj33riwf"
     ],
     "created": "2026-07-24",
@@ -1367,8 +1579,12 @@
     ],
     "flashcard_ids": [
       "cmr3mfpvn000avi0mwndjb23g",
-      "cmr3mfu74000cvi0mp1wy11c5",
-      "cmsnp5cgz0000fg0msajjyd08"
+      "cmw25gau200026a1acxlfk0uw",
+      "cmw25gkba00046a1amgas8di9",
+      "cmw25gowp00056a1ahv3lwwur",
+      "cmw25gr8j00066a1amci4dxzu",
+      "cmsnp5cgz0000fg0msajjyd08",
+      "cmw1i55a00000n21ah3uk8vyn"
     ],
     "created": "2026-07-02",
     "updated": "2026-08-10"
@@ -1433,11 +1649,10 @@
       "References"
     ],
     "flashcard_ids": [
-      "cmr3h5scb0003vi0mlc9rdm2i",
-      "cmr3h5u7c0004vi0mk8acp5vl"
+      "cmvw0vdo40000vs1a3dga3lvp"
     ],
     "created": "2026-07-02",
-    "updated": "2026-07-21"
+    "updated": "2026-10-31"
   },
   "sql/array-agg": {
     "file": "sql/array-agg.md",
@@ -1537,7 +1752,11 @@
     "flashcard_ids": [
       "cmu3ogyu500002r1akvmh5qiv",
       "cmu3ogyzl00012r1aj2p085vy",
-      "cmu3ogzvy00022r1aq6lu6ymb"
+      "cmw25pgnx000fm81a01h9hnvn",
+      "cmw25pnoz000gm81abwamyv02",
+      "cmw25pvk8000hm81aex4152n8",
+      "cmw25qbyr000lm81aaoy8f39g",
+      "cmw25qeiv000mm81as5vccm5x"
     ],
     "created": "2026-05-05",
     "updated": "2026-09-16"
@@ -1597,152 +1816,5 @@
     "flashcard_ids": [],
     "created": "2026-07-15",
     "updated": "2026-07-15"
-  },
-  "security/xss": {
-    "file": "security/xss.md",
-    "title": "XSS",
-    "aliases": [
-      "cross-site scripting",
-      "DOM-based XSS",
-      "Trusted Types"
-    ],
-    "tags": [
-      "security",
-      "web",
-      "browser"
-    ],
-    "sections": [
-      "TL;DR",
-      "The Slot Decides What Is Dangerous",
-      "Escape for the Parser That Reads the Slot",
-      "DOM-Based XSS",
-      "Rendering User HTML with a Sanitizer",
-      "Enforcing It at the Sink with Trusted Types",
-      "Tradeoffs & Gotchas",
-      "Related Concepts",
-      "References"
-    ],
-    "flashcard_ids": [
-      "cmvh4hkad0000jq1aro023kh5",
-      "cmvh4hlma0001jq1a5kb6oecs",
-      "cmvh4hmro0002jq1aih2gg344",
-      "cmvh4ho0w0003jq1a3jwnstmy",
-      "cmowkcmwt0006rb0m3v0pbih8",
-      "cmne7xxvt029t0msogj8pet75",
-      "cmne7xxu2029f0msowdgy7bej",
-      "cmne7y02502sx0msoqv2zedir"
-    ],
-    "created": "2026-10-20",
-    "updated": "2026-10-23"
-  },
-  "security/content-security-policy": {
-    "file": "security/content-security-policy.md",
-    "title": "Content Security Policy",
-    "aliases": [
-      "CSP",
-      "strict CSP",
-      "nonce-based CSP",
-      "CSP nonce"
-    ],
-    "tags": [
-      "security",
-      "web",
-      "browser"
-    ],
-    "sections": [
-      "TL;DR",
-      "How the Browser Decides",
-      "Why Allowlists Fail",
-      "Strict CSP",
-      "Nonces Done Right",
-      "Where Nonces Break",
-      "Directives Without Fallback",
-      "What CSP Doesn't Stop",
-      "Rolling It Out",
-      "Tradeoffs & Gotchas",
-      "Related Concepts",
-      "References"
-    ],
-    "flashcard_ids": [
-      "cmne7xw3001u90msomnfve6jo",
-      "cmne7xxvt029t0msogj8pet75",
-      "cmvh4ho0w0003jq1a3jwnstmy",
-      "cmne7xzvq02rh0msoh6nlzufz",
-      "cmne7yekm06dr0mso1do4nilp",
-      "cmne7y00302sf0mso7xre8ov6",
-      "cmotwgr4i000eqs0mf7xai9j6",
-      "cmnwwerrb000cfb0mufxjj4ok",
-      "cmne7xw6s01v30msovqrbgfj3",
-      "cmne7yej006db0msoxk3bi7i4",
-      "cmowkcjfo0005rb0mzam5b1cn",
-      "cmotwgt9j000fqs0mlndbc18s",
-      "cmne7xzzt02sd0mso8oq3x114",
-      "cmnwwesob000dfb0mzr99cij5",
-      "cmqdhhwjw000g920m3j9xewob",
-      "cmqdhhzim000h920manyyvmtv",
-      "cmowkwfn7000brb0mkj8ky9r2",
-      "cmowkwj7c000crb0mmzn3fei7",
-      "cmqkr772h0004yb0mweyvp3j9",
-      "cmqkr78xu0005yb0mcz8nk08i",
-      "cmqkr7aoj0006yb0mslqjly12",
-      "cmqkr7c6g0007yb0mhhuw37en",
-      "cmvj7bk3i00000f1ay79xkf43",
-      "cmvj7fs6b00010f1aqwc45bhv",
-      "cmne7xx2y022v0mso8tysqhgq",
-      "cmne7xwfd01x50msoyf2q0olt",
-      "cmne7xwii01xv0mso1g3ja3xv",
-      "cmne7xwgh01xf0mso5qaqk6cd",
-      "cmne7xxh902670msovwgksyrm",
-      "cmpre2fgd000gb20mk1bs7qt0",
-      "cmne7xx7v02410msol21qjnib"
-    ],
-    "created": "2026-10-23",
-    "updated": "2026-10-23"
-  },
-  "security/identity-providers": {
-    "file": "security/identity-providers.md",
-    "title": "Identity Providers",
-    "aliases": [
-      "idp",
-      "identity provider",
-      "oauth and openid connect login",
-      "id token vs access token"
-    ],
-    "tags": [
-      "security",
-      "web",
-      "auth",
-      "oauth",
-      "oidc",
-      "jwt"
-    ],
-    "sections": [
-      "TL;DR",
-      "Roles",
-      "Three Session Layers",
-      "The Login Round Trip",
-      "state and PKCE",
-      "ID Token vs Access Token",
-      "How a Backend Trusts a JWT",
-      "Silent Login and Third-Party Cookies",
-      "Auto-Login and Logout Depth",
-      "Tradeoffs & Gotchas",
-      "Related Concepts",
-      "References"
-    ],
-    "flashcard_ids": [
-      "cmvnk1noi0000g61a2j2mnc23",
-      "cmvnk1p3a0001g61asigcy619",
-      "cmvnk1qhw0002g61apwoedjm1",
-      "cmvnkv43g0005g61az1607lwt",
-      "cmvnkv5on0006g61alh67bw83",
-      "cmvnkwfp10007g61ae9nj53eg",
-      "cmso9yoit000hx90mksjgn6nl",
-      "cmsabsyne0009680mecz7zq22",
-      "cmne7xzxj02rv0msoelt9emqc",
-      "cmne7xzx902rt0mso4dku4tk9"
-    ],
-    "created": "2026-10-25",
-    "updated": "2026-10-25"
   }
 }

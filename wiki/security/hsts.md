@@ -17,6 +17,7 @@ flashcard_ids:
 - cmne7xw2401u30msofm43aa2a
 - cmne7xvym01t50msou805xi7h
 - cmne7xwri02050mso5k9tqzu4
+- cmw1tb1s000007d1al7go1hw2
 ---
 
 # HSTS (HTTP Strict-Transport-Security)

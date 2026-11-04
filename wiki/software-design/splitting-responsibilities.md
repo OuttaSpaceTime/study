@@ -12,11 +12,10 @@ tags:
 - coupling
 - code-review
 created: '2026-07-02'
-updated: '2026-07-02'
+updated: '2026-10-31'
 source_skill: study-walkthrough
 flashcard_ids:
-- cmr3h5scb0003vi0mlc9rdm2i
-- cmr3h5u7c0004vi0mk8acp5vl
+- cmvw0vdo40000vs1a3dga3lvp
 ---
 
 # Splitting responsibilities
