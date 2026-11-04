@@ -24,7 +24,7 @@ If you notice mid-flow that the preflight was skipped, run the check and surface
    | Axis | Field | warn | pause |
    |---|---|---|---|
    | Review backlog | `flashcardsDue` | 20 | 50 |
-   | Intake today | `newToday` | 5 | 10 |
+   | Intake today | `newToday` | 5 | 15 |
 
    **`flashcardsDue` is the review backlog only — it excludes new cards.** New cards are an optional pool you draw from, not a scheduled backlog, so they never drive review pressure: warning on a pile of fresh material with zero backlog would force `maxNewCards: 0` and you could never start it. Intake is policed by the separate `newToday` axis. The pool is reported on its own as `newAvailable`, for visibility. Consequence: a large pile of *new* cards with no review backlog reads as `ok`, not `warn` — that is correct.
 
