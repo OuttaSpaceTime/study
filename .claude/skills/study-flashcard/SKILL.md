@@ -23,7 +23,7 @@ See `~/.claude/skills/references/interactive-principles.md` for the shared princ
 
 ## MCP Server Dependency
 
-Requires `flashcard-mcp`. Tools: `check_pressure`, `list_decks`, `find_similar_cards`, `create_card`, `get_card`, `update_card`. Use `find_similar_cards` for duplicate checks: it is semantic. `search_cards` is substring only.
+Requires `flashcard-mcp`. Tools: `check_pressure`, `list_decks`, `find_similar_cards`, `create_card`, `create_code_card`, `check_code_card`, `get_card`, `update_card`, `update_code_card`. Use `find_similar_cards` for duplicate checks: it is semantic. `search_cards` is substring only.
 
 Reading an explorable's recorded answers uses the `ArtifactData` tool (deferred: load it via ToolSearch the first time).
 
@@ -59,7 +59,8 @@ Call `check_pressure` before anything else and follow `references/srs-pressure-c
 3. **Explorable misses.** See "Seeding from an explorable".
 
 The lookups in 1-3 do not depend on each other: make them in one turn.
-4. **Draft and filter.** Draft more fronts than you will show, then drop any that fail the quality checks below or sit above 80% similarity to an existing card. Only suggestions that already pass are shown.
+4. **Claims, then cards.** First list the claims worth remembering, silently: a subject (a named thing, no pronouns), a predicate (exactly one assertion, no "and"), the conditions it holds under, and a concrete moment where this one claim decides what happens. Then write one card per claim: the back says that predicate and nothing else, and the front asks for only that, from its moment. A claim that won't fit one predicate is two claims. Done this way, 30 of 40 drafts passed the gate first time, against 23 of 40 drafting cards directly (2026-11-03).
+5. **Filter.** Drop any that fail the quality checks below or sit above 80% similarity to an existing card. Only suggestions that already pass are shown.
 
 ## Step 3: Suggest (one message)
 
@@ -112,6 +113,10 @@ Applies when there is an explorable: the `Context: explorable <url>` line, or a 
 
 These are the drafting side of `.claude/skills/references/card-quality.md`, which the card-quality gate holds every `create_card` and `update_card` to: a flawed card is refused with its flaws. Catching them in the draft saves the round trip; catching them in review costs months.
 
+**Read `.claude/skills/references/card-patterns.md` before drafting**: the good and bad patterns, and what to reach for on code.
+
+- **Count what is asked: exactly one.** A rider ("with its default", "and name the axis") or a chosen list ("three ways") is more than one, each its own card.
+- **Count what the back says: nothing the front did not ask.** Cover each sentence: if the answer still stands, it is extra. A fix, a default, a name, an example sentence goes on its own card or goes away. The gate counts these on every write and refuses a card that fails.
 - **One recall target.** No superlatives or judgments with several defensible answers ("the single most effective", "the best way"). Name the scenario or principle being tested instead.
 - **Self-contained front.** Exactly one answer is right without seeing the back. "What is the private key used for?" could mean TLS, JWT or SSH. Write "In a TLS handshake, what does the server's private key do?". This *Ambiguous front* is the most common defect in the deck.
 - **A back worth learning.** A precise one-liner is fine; a vague gesture ("store sensitive data in the database") is not.
@@ -154,25 +159,33 @@ Enforced at write time by `create_card`/`update_card`. A violating card is rejec
 
 Markup is free, so `<code>`, `<b>` and `<ul>` never cost budget. Fronts have **no** length limit: a grounded scenario front is good.
 
-**Write the answer like this:** the answer first, then at most one clause of why. No throat-clearing, no restated question, no summary sentence.
+**Write the answer like this:** the shortest correct answer to this front, and stop. A "why" gets the causal steps it needs; a "what" gets no why, unless the front asks. No throat-clearing, no restated question, no summary sentence, no advice the front did not ask for.
 
 Too long (300 chars), the last clause is filler:
 
 > Access and manipulate sensitive data, make authenticated requests, and interact with the DOM. For example, a malicious script running on evil.com could extract banking details from your authenticated bank.com session, effectively seeing everything you can see and stealing your sensitive information.
 
-On point (161 chars):
+On point:
 
-> It acts as the user. It can read the DOM, make authenticated requests, and exfiltrate data from the target origin. Anything the user can see or do, the script can.
+> It acts as the user: anything the user can see or do, the script can.
 
 ### When a write is rejected
 
 The error names the field and both remedies. In this order:
 
-1. **Reduce.** Cut filler, the restated question, the trailing summary. Most rejections are padding. This is the developer's stated preference.
+1. **Reduce.** Cut filler, the restated question, the trailing summary. Most size rejections are padding.
 2. **Drop the extra question.** Keep the one the card is really about.
-3. **Split**, only when the dropped idea has no other card (check with `find_similar_cards`). A split off a reviewed parent passes `inheritFrom`.
+3. **Split** what the drop would lose, when no other card has it (check with `find_similar_cards`). A split off a reviewed parent passes `inheritFrom`.
 
 Never rephrase just to slip past the check. The one-question check is a regex and can misfire: if it rejects a front that asks **one** question, show the developer the flagged phrase and let them decide. It already allows conjunctions that join subjects ("how do Bundler <b>and</b> Yarn resolve…").
+
+## Code cards: when the answer can be run
+
+When what's being learned is how code behaves and running it can tell right from wrong, suggest a code card: **read `.claude/skills/references/code-cards.md` first**. It has when to write one, the kinds and how to write them. In short, prefer `predict` and find-the-bug over blanks that test spelling.
+
+- **Draft with `check_code_card`**, silently, before suggesting: read what each case really gives. Only a draft that passes is shown.
+- **Suggest it rendered**, its kind named: the brief, the code with its blanks, the goals (hidden on `predict`) and the why, in the same numbered list as plain cards.
+- **Create it with `create_code_card`**, which makes the same checks. Everything else in this skill applies: pressure, `find_similar_cards` on the brief, the developer's pick, the sync and the wiki link.
 
 ## Card Content Format: simple HTML, never markdown
 
@@ -184,7 +197,7 @@ Cards sync to AnkiWeb, and Anki fields are **HTML**: markdown renders literally,
 - Lists `<ul>`/`<ol>` with `<li>`, never `- ` or `1. ` lines
 - Literal angle brackets entity-escaped: `&lt;script&gt;`, typically inside `<code>`
 - No markdown links and no `[[wikilinks]]`: wiki linkage lives in the page's `flashcard_ids`
-- **No cloze deletions (`{{c1::…}}`).** Question and answer only. A cloze hands over the sentence frame and tests recognition, not retrieval.
+- **No cloze deletions (`{{c1::…}}`) on these cards.** Question and answer only: a cloze hands over the sentence frame and tests recognition, not retrieval. `create_card` refuses them. Only code cards have clozes, written from their blanks (`create_code_card`). A card can't change kind later (plain or code): that takes a new card with `inheritFrom`.
 - **No em dashes (`—`, `&mdash;`, `&#8212;`, `&#x2014;`), ever.** Write two sentences, or use a colon after a bold label. En dashes in ranges (`1–4`) are fine.
 
 Show drafts rendered in chat, never as raw HTML. These rules are enforced by `create_card`/`update_card` with a per-field error; fix the draft per the error and retry. `scripts/card-htmlize` converts markdown stragglers, but new cards should be born clean.

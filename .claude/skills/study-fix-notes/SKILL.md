@@ -18,7 +18,7 @@ While studying in the Omvida app (`~/Code/omvida`) the developer notes a card in
 
 ## MCP Server Dependency
 
-Requires `flashcard-mcp`. Tools: `list_card_notes`, `resolve_card_note`, `get_card`, `update_card`, `create_card`, `delete_card`, `find_similar_cards`.
+Requires `flashcard-mcp`. Tools: `list_card_notes`, `resolve_card_note`, `get_card`, `update_card`, `create_card`, `delete_card`, `find_similar_cards`; on a code card `check_code_card`, `update_code_card` and `create_code_card`.
 
 ## Invocation
 
@@ -39,7 +39,7 @@ Open with one line: how many notes, and the cards' fronts in a few words each.
 
 Show the card (its front and back rendered, not raw HTML) and the note verbatim. Then decide what the note asks for, and say which in a few words:
 
-- **A change to the card** (reword, tighten, split, fix a wrong back, retag): draft the fix following `/study-flashcard`'s card content format and size rules (read its skill file for them). Show the draft, and write it once the developer agrees: `update_card` for an edit; for a split, `create_card` for each part with `inheritFrom: "<the card's id>"` so the parts keep its schedule, then `delete_card` the original. Run `find_similar_cards` on a new front first, as `/study-flashcard` does.
+- **A change to the card** (reword, tighten, split, fix a wrong back, retag): draft the fix following `/study-flashcard`'s card content format and size rules (read its skill file for them) and `.claude/skills/references/card-patterns.md`. Show the draft, and write it once the developer agrees: `update_card` for an edit; for a split, `create_card` for each part with `inheritFrom: "<the card's id>"` so the parts keep its schedule, then `delete_card` the original. Run `find_similar_cards` on a new front first, as `/study-flashcard` does. A code card (`get_card` returns its `exercise`) follows `.claude/skills/references/code-cards.md`: try the draft with `check_code_card`, and write it with `update_code_card`, or for a split or a change of kind `create_code_card` with `inheritFrom`. A note can also be a reason to make a plain card a code card, the same way. After a split, `scripts/card-links-sync`, so wiki pages list the parts.
 - **Something to understand better** (a "why", a confusion, a link to another idea): use `/study`'s Socratic mode, as its section "Fast Feedback by Default, Socratic on Request" describes: decompose into smaller questions, never hand over the answer. If a gap shows, offer a card for it (`/study-flashcard`'s rules) or `/study-walkthrough <topic>` in one line.
 - **Anything else** the note asks: do it, within the study repo's rules (AGENTS.md).
 - **Unclear:** ask what the note meant in one line.

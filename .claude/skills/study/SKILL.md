@@ -178,8 +178,8 @@ The four ways out, and what each does:
 
 | Action | Call | Effect |
 |---|---|---|
-| **Rewrite** (default) | `update_card` | clears the flag and resets `lapses` to 0 — the failure history belonged to the old wording |
-| **Split** | `create_card` with `inheritFrom`, then `delete_card` | new cards keep the schedule but not the flag or the lapse count |
+| **Rewrite** (default) | `update_card` (a code card: `update_code_card`) | clears the flag and resets `lapses` to 0 — the failure history belonged to the old wording |
+| **Split** | `create_card` (a code card: `create_code_card`) with `inheritFrom`, then `delete_card`, then `scripts/card-links-sync` so wiki pages list the parts | new cards keep the schedule but not the flag or the lapse count |
 | **Drop** | `delete_card` | card is gone |
 | **Keep as-is** | `resolve_leech(cardId, "defer")` | stops blocking until the card lapses *again* |
 
@@ -203,9 +203,10 @@ Then loop:
    - **Don't stage what's already concrete.** A front that already carries its own snippet or values is presented as written — re-dressing it is ceremony.
    - **Keep the setup short enough to read in one screen.** Elide bodies with `...` / `# 240 lines` rather than inventing filler code.
    - When the question expects a code answer, anchor the expected shape and say a rough outline is fine.
-   - **Cloze cards are not staged — they're flagged.** A front containing `{{c1::…}}` is a quality issue (see step 5). Present it as a plain question by reading the deletion as the thing to supply, and raise the rewrite offer after rating. Never author a new cloze.
+   - **Code cards are presented as they ask.** A code card (`get_next_card` carries its `exercise`) is the only kind with `{{c1::…}}` in its front: show the brief and the code with its blanks, never `back`, which has the solution. Its answer is checked by running it, not judged: step 3b.
 3. **Wait for the developer's answer**
 3a. **Probe option for code-shaped cards.** When the card is code-shaped (git, Python, shell, SQL, HTTP, regex, algorithms) **and** the developer's answer is uncertain, partial, or asserts a specific output, offer one quick probe before evaluating: a `python -c` line, a `git` command, a `curl | jq`, a small unit assertion. The developer runs it and pastes the output. Compare to what they predicted. If prediction and output disagree, name the gap explicitly (`predicted X, got Y`) before rating — that gap is the rating signal, not a side note. Skip the probe entirely for theory-only cards or when the developer's recall was clearly solid — probing in that case is ceremony.
+3b. **A code card is checked, not graded** (`references/code-cards.md`). `run_code_card` with the developer's answers, and show its result: each case's output beside what was expected, and any error as Ruby printed it. Wrong or an error: they try again, as often as they like, and it costs nothing. On a pass, `submit_review` with the `rating` it returned. If they give up, `reveal_code_card`, show the solution and the why, and `submit_review` with its `rating`. The rubric below doesn't apply.
 4. **Evaluate the answer** against the card back (and the probe output, when one was run):
    - `Again (1)`: Wrong or fundamentally misses the concept
    - `Hard (2)`: Mostly correct but significant gaps
@@ -217,7 +218,7 @@ Then loop:
 
    **Only two things stop the loop:**
 
-   1. **Quality issue** (cloze, too broad, ambiguous, leech) → raise it, stop advancing.
+   1. **Quality issue** (too broad, ambiguous, leech) → raise it, stop advancing.
    2. **The developer asked something** → answer it in Socratic mode (see that section), then resume fast feedback on the next card.
 
    Otherwise: rate, advance, same message. This is what the "advance immediately, don't wait for *next*" rule in Session Rules means.
@@ -228,16 +229,8 @@ Then loop:
    - **Socratic-mode mechanisms — off unless the developer opened the mode.** The *missing-half follow-up* (confirm the half they got, then ask for the other half as a fresh question, moving the goalposts to a case that isolates it) and the *generation prompt* ("can you give me a scenario where this applies?") are real teaching tools, but both cost a round trip per card. They belong to Socratic mode, at the rate the calibration verdict sets. Never fire either one to close out a default-mode card.
    - **Do not state the rating yet.** The rating line is emitted *once*, after `submit_review` returns (step 6), so it can carry the next interval. Decide the rating here, on the unaided answer, but do not print a bare "Rated: …" line in this step — printing it here and again in step 6 double-states it.
    - **Flashcard quality check:** Evaluate the card itself — not just the answer. Flag genuinely weak cards:
-     - **Too vague:** back doesn't give enough concrete detail to learn from (not just short — a precise one-liner is fine)
-     - **Too broad:** front covers multiple distinct concepts that should be separate cards
-     - **Outdated:** code examples reference deprecated APIs or patterns no longer in use
-     - **Ambiguous front:** question is unclear without seeing the back
-     - **Non-atomic / opinion-bait front:** front asks for a superlative or judgment ("the single most effective", "the best way", "the right approach") or otherwise admits several defensible answers, so there is no single recall target. The fix is to name the specific scenario or principle being tested — e.g. rewrite "What's the single most effective technique for loose coupling?" to "Which design principle reduces coupling by depending on an abstraction instead of a concrete collaborator?". Distinct from *Too broad* (many concepts) and *Ambiguous front* (unclear meaning): here the meaning is clear but the answer space is open.
-     - **Mismatched Q/A:** front asks "what" but back explains "why", or vice versa
-     - **Cloze format:** front contains `{{c1::…}}`. Cards must be question/answer style — a cloze hands over the sentence frame, so it tests recognition of a missing word rather than a full retrieval attempt. Offer to rewrite it as one or more Q/A cards with `inheritFrom`. A cloze carrying **two facts in one deletion** (e.g. `{{c1::all requests}}` … `{{c1::the Secure attribute}}`) is also a one-fact-per-card violation and splits into separate cards.
-     - **Verbose answer:** the back pads the answer with a restated question, a trailing summary clause, or a second idea the front never asked for. Answers are capped at **200 visible characters and 4 sentences** (enforced by `update_card`), and the fix is almost always to cut filler rather than to split. Offer the tightened wording directly instead of asking the developer to draft it.
-     - **Two questions on the front:** the front asks two things ("what does X do <b>and</b> what is its default?"). Keep the one the card is really about; split only if the dropped idea has no other card (check with `search_cards`).
-     - Do NOT flag cards that are intentionally minimal — simple recall cards with precise, correct backs are fine.
+     - Against `.claude/skills/references/card-quality.md`, the deck's one list. Count what the front asks and what the back says as it does: more than one thing asked, or a claim the front did not ask for, is a flaw. So are its other issues: wrong, vague, ambiguous, opinion bait, yes/no, mismatched, outdated. `scripts/card-quality-gate --judge <card id>` gives the gate's verdict when in doubt.
+     - Do NOT flag cards that are intentionally minimal: simple recall cards with precise, correct backs are fine.
      - **When a quality issue is detected: stop advancing.** Explicitly describe the problem and ask the developer to fix it before continuing. Example: "This card's front is ambiguous — it could mean X or Y. Want to edit it to be more specific, or split it?" Wait for the developer to edit, split, or explicitly say "skip" before moving on.
    - One-liner reminder: *(explore · harder/easier · edit · split · delete · show in browser)*
 6. **Call `submit_review`** with the rating, then state the rating line **once** — complete with the next interval from the returned schedule (`due`, `interval`, `state`, `intraDay`). This is the only place the rating is printed. Read the schedule silently; show only the formatted phrase, never the raw JSON. Format:
@@ -340,11 +333,11 @@ Chain into `/study-walkthrough` on the current card's topic. When complete, ask:
 
 ### "edit" / "this card is wrong" / "fix this card"
 
-Show current front and back. Developer provides corrections. Call `update_card`. Resume.
+Show current front and back. Developer provides corrections. Call `update_card`. A code card is `update_code_card`, per `references/code-cards.md`. Resume.
 
 **Card content format (edit & split):** any front/back written via `update_card`/`create_card` must use the simple-HTML format from `/study-flashcard`'s "Card Content Format" section (`<br>`, `<code>`, `<b>`, `<ul>`, entities for literal `<`/`>`) — never markdown or bare newlines. Cards sync to Anki, which renders fields as HTML. Present drafts in chat rendered, not as raw HTML.
 
-**Card size limits (edit & split):** the back must be at most **200 visible characters** and **4 sentences**, and the front must ask **one question**. Both are enforced by `update_card`, which rejects a violating edit with a per-field error naming the remedy. Markup does not count toward the limit, and fronts have no length cap. See "Card Size & Scope" in `/study-flashcard`. When an edit is rejected, reduce the text first — splitting adds review load and is the last resort.
+**Card size limits (edit & split):** the back must be at most **200 visible characters** and **4 sentences**, and the front must ask **one question**. Both are enforced by `update_card`, which rejects a violating edit with a per-field error naming the remedy. Markup does not count toward the limit, and fronts have no length cap. See "Card Size & Scope" in `/study-flashcard`. When an edit is rejected, reduce the text first. What the reduction would lose moves to its own card: `.claude/skills/references/card-patterns.md`, "Fixing a back that says too much".
 
 ### "actually, your last explanation was wrong" / correction mid-feedback
 
@@ -404,7 +397,7 @@ If developer says "actually harder" or "actually easier" after feedback, acknowl
 - Link lapses to wiki pages when they exist
 
 **Never:**
-- Author a cloze-deletion card (`{{c1::…}}`) — cards are question/answer style, and existing clozes get offered a Q/A rewrite
+- Author a cloze-deletion card (`{{c1::…}}`). Cards are question/answer style, `create_card` refuses them, and only code cards have clozes, written from their blanks
 - Let the calibration verdict touch the rating rubric — see "The rating rubric is never a lever" in Phase 2
 - Stack more than one follow-up onto a Good answer — see the precedence list in step 5
 - Report a duration you didn't measure — see the duration rule in Phase 3

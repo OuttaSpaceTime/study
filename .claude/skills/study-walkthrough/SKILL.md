@@ -55,7 +55,7 @@ Omit it only when the developer opted out of the interactive flow (non-interacti
 
 ## MCP and Tool Dependencies
 
-- `flashcard-mcp`: `check_pressure`, `find_similar_cards`, `search_cards`, `get_card`.
+- `flashcard-mcp`: `check_pressure`, `find_similar_cards`, `search_cards`, `get_card`. Cards are `/study-flashcard`'s, which offers code cards where running the code is the test (`references/code-cards.md`).
 - The global **`explorable`** skill: builds, smoke-tests and publishes the page, reads its `attempts`, and answers the questions the page sends to the chat (Artifact, ArtifactData and ArtifactComments tools).
 
 ## Research Grounding
