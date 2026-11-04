@@ -35,7 +35,6 @@ flashcard_ids:
 - cmw1td9hb0000uf1a13r1fayh
 - cmw1tdaej0001uf1ajrnh0ngu
 - cmw2557090000fx1adh9f658f
-- cmw255ky60001fx1a1e7xjiu0
 - cmqdhhwjw000g920m3j9xewob
 - cmqdhhzim000h920manyyvmtv
 - cmw25907p00000m1aynz1mxam
@@ -48,7 +47,6 @@ flashcard_ids:
 - cmw1t4a6j0001711axgieqemh
 - cmqkr772h0004yb0mweyvp3j9
 - cmqkr78xu0005yb0mcz8nk08i
-- cmw258y7g0000vy1a5i9kq4gw
 - cmqkr7aoj0006yb0mslqjly12
 - cmw259ihc0000aq1aaojh6ges
 - cmqkr7c6g0007yb0mhhuw37en
@@ -57,13 +55,11 @@ flashcard_ids:
 - cmvj7fs6b00010f1aqwc45bhv
 - cmw25v05u000zm81a05cp2vd7
 - cmne7xx2y022v0mso8tysqhgq
-- cmne7xwfd01x50msoyf2q0olt
 - cmne7xwii01xv0mso1g3ja3xv
 - cmne7xwgh01xf0mso5qaqk6cd
 - cmne7xxh902670msovwgksyrm
 - cmpre2fgd000gb20mk1bs7qt0
 - cmw258jgd0000tu1ad7vumxte
-- cmw258o930001tu1a3hjjq0k3
 - cmne7xx7v02410msol21qjnib
 ---
 

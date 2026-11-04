@@ -26,7 +26,6 @@ flashcard_ids:
 - cmw1t50zj0001zr1ai7bt4klt
 - cmqu0u1ur000b150m6ttrks13
 - cmqu0u3eu000c150m44rrl72z
-- cmw25bc2t0000ek1as0608j7p
 ---
 
 # Row locking and concurrency

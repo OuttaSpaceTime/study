@@ -21,7 +21,6 @@ flashcard_ids:
 - cmw1t8tes0001l61amownjplu
 - cmqu0ttxx0006150myqedtn6q
 - cmvxkd8vd0000jt1ah8zzsvjv
-- cmw259zji0000021aceh3py70
 - cmqu0tvnw0007150msfy24wz5
 - cmw25anxq00003r1au4un8ndr
 ---
