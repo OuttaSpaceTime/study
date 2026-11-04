@@ -176,7 +176,7 @@ Read once, before starting: `.claude/skills/references/card-quality.md` ("Fixing
 - `incorrect`: check the fact first, with mcp__qmd__query or the web. The judge's word alone is not enough.
 - find_similar_cards only for a new card whose idea this deck may already hold; in parallel, not one at a time.
 - Never drop a fact no other card holds. Format: simple HTML (<code>, <b>, <br>), never markdown, no em dashes; back
-  at most 200 visible characters and 4 sentences.
+  at most 150 visible characters and 3 sentences.
 - Don't rate, touch notes, or edit any card other than these and their parts.
 
 Report every card in `results`: its id, its outcome (`fixed`, `split` or `unchanged`) and what you did, in a few words.

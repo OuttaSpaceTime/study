@@ -153,8 +153,8 @@ Enforced at write time by `create_card`/`update_card`. A violating card is rejec
 
 | Rule | Limit | Measured on |
 | --- | --- | --- |
-| Answer length | **200 characters** | Visible text: markup and entities are not counted |
-| Answer shape | **4 sentences** | Terminal punctuation, plus each `<li>` and `<br>` |
+| Answer length | **150 characters** | Visible text: markup and entities are not counted |
+| Answer shape | **3 sentences** | Terminal punctuation, plus each `<li>` and `<br>` |
 | Front | **one question** | Heuristic: 2+ question marks, or `and`/`or` + a question word |
 
 Markup is free, so `<code>`, `<b>` and `<ul>` never cost budget. Fronts have **no** length limit: a grounded scenario front is good.

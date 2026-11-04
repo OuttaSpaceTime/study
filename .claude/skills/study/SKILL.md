@@ -337,7 +337,7 @@ Show current front and back. Developer provides corrections. Call `update_card`.
 
 **Card content format (edit & split):** any front/back written via `update_card`/`create_card` must use the simple-HTML format from `/study-flashcard`'s "Card Content Format" section (`<br>`, `<code>`, `<b>`, `<ul>`, entities for literal `<`/`>`) — never markdown or bare newlines. Cards sync to Anki, which renders fields as HTML. Present drafts in chat rendered, not as raw HTML.
 
-**Card size limits (edit & split):** the back must be at most **200 visible characters** and **4 sentences**, and the front must ask **one question**. Both are enforced by `update_card`, which rejects a violating edit with a per-field error naming the remedy. Markup does not count toward the limit, and fronts have no length cap. See "Card Size & Scope" in `/study-flashcard`. When an edit is rejected, reduce the text first. What the reduction would lose moves to its own card: `.claude/skills/references/card-patterns.md`, "Fixing a back that says too much".
+**Card size limits (edit & split):** the back must be at most **150 visible characters** and **3 sentences**, and the front must ask **one question**. Both are enforced by `update_card`, which rejects a violating edit with a per-field error naming the remedy. Markup does not count toward the limit, and fronts have no length cap. See "Card Size & Scope" in `/study-flashcard`. When an edit is rejected, reduce the text first. What the reduction would lose moves to its own card: `.claude/skills/references/card-patterns.md`, "Fixing a back that says too much".
 
 ### "actually, your last explanation was wrong" / correction mid-feedback
 

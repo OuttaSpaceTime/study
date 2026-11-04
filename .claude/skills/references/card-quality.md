@@ -61,7 +61,7 @@ prefers judgement cards, but that is a drafting preference, not a flaw), or for 
 chosen differently: only clear flaws here, and a simplification is not `incorrect`. A code card is fine for
 having `{{c1::...}}` blanks, the only cards allowed them, and its goals flashcard-mcp has already run. A
 cloze on any other card is refused before it gets here. Format
-and size (HTML, the 200-character back, one question mark) are enforced by flashcard-mcp itself and are
+and size (HTML, the back's size, one question mark) are enforced by flashcard-mcp itself and are
 not judged here.
 
 | Issue | The card is flawed when |
