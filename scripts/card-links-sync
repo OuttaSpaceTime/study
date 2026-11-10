@@ -104,7 +104,7 @@ def main():
             if not args.check:
                 page.write_text(new)
                 wrote = True
-            print(f"{page.relative_to(wiki)}: relinked")
+            print(f"{page.relative_to(wiki)}: {'would relink' if args.check else 'relinked'}")
         if lost:
             named = ", ".join(f"{i} (removed)" if i in prunable else i for i in lost)
             print(f"{page.relative_to(wiki)}: gone with no parts: {named}")

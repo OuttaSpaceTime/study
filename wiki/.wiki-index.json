@@ -1264,10 +1264,11 @@
       "cmw1tcddl0000ft1afl63q32j",
       "cmne7xzx902rt0mso4dku4tk9",
       "cmw1tc6k00000a91aca7fe82i",
-      "cmw1tc70u0001a91asoabfitl"
+      "cmw1tc70u0001a91asoabfitl",
+      "cmwaxtdr20000261aqw8fu2uj"
     ],
     "created": "2026-10-25",
-    "updated": "2026-10-25"
+    "updated": "2026-11-10"
   },
   "security/key-derivation-and-domain-separation": {
     "file": "security/key-derivation-and-domain-separation.md",

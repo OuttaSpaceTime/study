@@ -1,12 +1,12 @@
 ---
 name: study-walkthrough
-description: "Explore a topic hands-on: builds an interactive explorable page (animated step-throughs, lever sandboxes, break-it scenes, predictions) scene by scene, then discusses the developer's questions, optionally challenges them Socratically, and writes the wiki page. Trigger keywords: deepen, walkthrough, explore, explorable, study deeper, revisit, create reference, document this pattern."
+description: "Explore a topic hands-on: builds an interactive explorable page (animated step-throughs, lever sandboxes, break-it scenes, predictions) right after a short calibration, gates each next scene behind an assessment question in the chat, then discusses the developer's questions, optionally challenges them Socratically, and writes the wiki page. Trigger keywords: deepen, walkthrough, explore, explorable, study deeper, revisit, create reference, document this pattern."
 user_invocable: true
 ---
 
 # /study-walkthrough: Explore, Discuss, Challenge, Write
 
-The developer explores a topic first, in an **explorable**: a small interactive page built scene by scene, published as a private claude.ai Artifact. Then they bring their questions to Claude, optionally get challenged further, and the session ends with a wiki page that links the explorable.
+The developer explores a topic first, in an **explorable**: a small interactive page built whole after a short calibration and published as a private claude.ai Artifact. Each next scene unlocks only once the developer answers an assessment question in the chat. Then they bring their questions to Claude, optionally get challenged further, and the session ends with a wiki page that links the explorable.
 
 **Core guarantee:** the developer finishes understanding the mechanism, not having read about it. Every scene made them predict before it revealed, every miss is recorded, and the misses drive the discussion, the challenge and the flashcards.
 
@@ -20,7 +20,7 @@ This skill reads from and writes to the developer wiki at `wiki/`. See `referenc
 
 For additional shared interactive principles (scope, handling disagreement, non-interactive mode), see `~/.claude/skills/references/interactive-principles.md`.
 
-- **One scene per turn.** Build it, smoke-test it, publish it, end the turn with one line on what to try. Never build the whole page in one go: one scene is under a minute of waiting, a whole page is a slot machine (AGENTS.md, anti-slot-machine).
+- **Build once, gate every Next.** The calibration probes go one per turn. After the last answer, the storyboard and the whole page are built in one turn, with a line in chat per scene written (the explorable skill's Build). From then on, each Next is locked until the developer passes an assessment question on the scene in the chat: a good answer unlocks at once, anything less goes Socratic until they state it fully (the explorable skill's Explore loop). The developer explores without waiting between scenes, and the gate keeps the tight feedback (AGENTS.md, anti-slot-machine).
 - Start each phase with `Phase X/5: <title>`. Pause after each phase; never auto-advance.
 - If the developer says "skip" or "I know this", fast-forward immediately.
 - **Read silently, never cat.** `mcp__qmd__query`, `Read` of wiki/index/log files, `mcp__flashcard-mcp__*`, `ArtifactData` reads and the smoke test run without narration and without echoing output. The chat shows only synthesized output: the storyboard, the scene link, the misses, the next question.
@@ -37,7 +37,7 @@ The explorable reveals by design: the developer predicts, then sees. What Claude
 
 For sessions longer than ~3 phase messages, keep a tiny ledger at the top of each phase message (one line per field, skip empty fields):
 
-- **Explorable:** the artifact URL, `scene k/n published`
+- **Explorable:** the artifact URL, `scene k/n unlocked`
 - **Missed:** predictions or challenges the developer got wrong (scene id + one phrase)
 - **Open questions:** from the chat (the page's Ask box sends there too), not yet resolved
 - **Queued:** flashcard / wiki deltas to propose at Phase 5
@@ -158,7 +158,7 @@ Run it before Phase 1 and before any other tool call, regardless of mode or flag
 **Step 2: present what exists and calibrate, in one message.** Name existing pages with their `updated` date, their explorable if they have one, and the card count. Then **one** calibration question:
 
 - Existing material: one targeted recall question from the page or the hardest card back.
-- None: "What do you already know about <topic>, and what do you want to be able to do after this?", plus 2-3 quick probes on the load-bearing concepts from the research. Practical exposure is not conceptual knowledge (2026-10-25: the developer had built an Auth0 login but missed 3 of 5 predictions on what ID tokens, signatures and third-party cookies are). The answers set each scene's mode: **Learn** (worked example, check afterwards) for new concepts, **Predict** only for parts already known; see the `explorable` skill.
+- None: "What do you already know about <topic>, and what do you want to be able to do after this?", then 2-3 quick probes on the load-bearing concepts from the research, **one probe per turn** (the developer asked for this, 2026-11-07). Practical exposure is not conceptual knowledge (2026-10-25: the developer had built an Auth0 login but missed 3 of 5 predictions on what ID tokens, signatures and third-party cookies are). The answers set each scene's mode: **Learn** (worked example, check afterwards) for new concepts, **Predict** only for parts already known; see the `explorable` skill.
 
 **Step 3: storyboard** as the `explorable` skill's storyboard step describes, from the calibration answer and with the scene count per cadence. For write-focused mode, add the page type (Tutorial/Concept, Problem-Solution, Pattern/Technique, Feature/Tool Overview) and scope: a topic with >5 sub-concepts → suggest splitting; a single fact → suggest adding it to an existing page.
 
@@ -166,19 +166,20 @@ Run it before Phase 1 and before any other tool call, regardless of mode or flag
 > 2. **What does SameSite change?** Lever sandbox: Strict / Lax / None × GET link / POST form / fetch. *Predict: which cells carry the cookie under Lax?*
 > 3. ...
 >
-> Edit, reorder, drop, or `go`.
+> The page is being built now. Say `stop` to change the plan first.
 
-Wait for the developer's go. The storyboard is the contract for Phase 2.
+Go straight on to Phase 2 in the same turn. A storyboard edit the developer asks for later is a correction in place.
 
-### Phase 2/5: Explore (scene by scene)
+### Phase 2/5: Explore (built once, one gate per scene)
 
-Run the `explorable` skill's Explore loop with the study settings:
+Run the `explorable` skill's Build and Explore loop with the study settings:
 
 - **Source path:** `explore/<folder>/<slug>.html`, git-tracked, where `<folder>/<slug>` is the wiki page key it belongs to (for a new topic, the key the page will get now).
 - **Facts:** the research-grounding facts (Research Grounding).
 - **Extending:** the page's `explorables` URL, when it has one.
 - **Footer:** `Scene 2/5 · Phase 2/5 — Explore`.
-- **Misses** go into the ledger's **Missed**; short chat questions are answered under Discuss rules, big ones go to **Open questions**.
+- **Misses** go into the ledger's **Missed**, and so does a scene gate that needed more than one follow-up; short chat questions are answered under Discuss rules, big ones go to **Open questions**.
+- **Gates** are Socratic never-reveal, like Phase 4: the developer produces the answer.
 - **After the last scene,** come back to this flow:
 
 After the last scene: "That's the whole page. Want to discuss what came up, or go straight to a challenge / the write?"
@@ -263,8 +264,9 @@ Writing style: concise, technically precise, practical, insightful, no emojis.
 ## Guardrails
 
 **Always:**
-- Preflight first; storyboard approved before the first scene.
-- One scene per turn, smoke-tested before every publish, always published from the same source path.
+- Preflight first; calibration probes one per turn, then the whole page built in one turn.
+- Smoke-tested before every publish, always published from the same source path.
+- Every Next unlocked by Claude only after the developer passed that scene's assessment question.
 - Every scene asks one question and gates its reveal behind a prediction.
 - Read the page's `attempts` when the developer comes back, and let the misses drive Discuss, Challenge and the flashcards. Questions from the page arrive in the chat.
 - Ground scenes and chat answers in the authoritative research; opinions stay labelled.

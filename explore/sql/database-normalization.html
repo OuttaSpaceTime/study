@@ -1,0 +1,1275 @@
+<title>One Fact, One Place</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one narrow column, a scene stepper, each scene one working surface built around a live table. */
+:root {
+  --bg: #f0f3f1;
+  --surface: #ffffff;
+  --sunk: #e5eae7;
+  --ink: #16201b;
+  --muted: #55635c;
+  --line: #cbd4cf;
+  --accent: #1d6b59;
+  --changed: #2c64c4;
+  --stale: #9a5a00;
+  --ok: #1c7640;
+  --bad: #b2262f;
+  --f-display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1412; --surface: #161e1a; --sunk: #1e2823; --ink: #e3ebe6; --muted: #98a9a0;
+    --line: #2b3832; --accent: #5fc7a9; --changed: #82a9ff; --stale: #e3a64a; --ok: #5ccb86; --bad: #f2777e;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1412; --surface: #161e1a; --sunk: #1e2823; --ink: #e3ebe6; --muted: #98a9a0;
+  --line: #2b3832; --accent: #5fc7a9; --changed: #82a9ff; --stale: #e3a64a; --ok: #5ccb86; --bad: #f2777e;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--ink);
+  font: 17px/1.5 var(--f-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 56px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: grid; gap: 20px; }
+header { display: grid; gap: 6px; }
+.eyebrow { font: 600 12px/1 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font: 800 clamp(30px, 5.5vw, 44px)/1.02 var(--f-display); margin: 0; text-wrap: balance; letter-spacing: -.01em; }
+.promise { margin: 0; color: var(--muted); max-width: 62ch; }
+code, .mono { font-family: var(--f-mono); font-size: .86em; }
+
+/* stepper */
+nav.stepper { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.dots { display: flex; gap: 6px; flex: 1; min-width: 0; }
+.dot { flex: 1; height: 6px; border-radius: 3px; background: var(--line); border: 0; padding: 0; cursor: pointer; }
+.dot[aria-current="step"] { background: var(--accent); }
+.dot:disabled { cursor: default; opacity: .5; }
+.count { font: 600 13px/1 var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+button { font: inherit; color: inherit; }
+.btn {
+  border: 1px solid var(--line); background: var(--surface); border-radius: 8px;
+  padding: 7px 12px; cursor: pointer; font-size: 15px; line-height: 1.2;
+}
+.btn:hover:not(:disabled) { border-color: var(--accent); }
+.btn:disabled { opacity: .45; cursor: default; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 700; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* scene */
+.scene { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; display: grid; gap: 18px; }
+.scene h2 { font: 700 clamp(21px, 3.4vw, 26px)/1.15 var(--f-display); margin: 0; text-wrap: balance; }
+.prose { margin: 0; max-width: 64ch; }
+.upcoming { color: var(--muted); }
+
+/* data table */
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.tbl-cap { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 8px 12px; border-bottom: 1px solid var(--line); font: 600 13px/1.2 var(--f-mono); color: var(--muted); }
+.tbl-cap b { color: var(--ink); }
+table.data { border-collapse: collapse; width: 100%; min-width: 560px; font: 13.5px/1.3 var(--f-mono); font-variant-numeric: tabular-nums; }
+.data th { text-align: left; font-weight: 600; color: var(--muted); padding: 8px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.data th .grp { display: none; font: 600 10.5px/1.2 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; }
+.data.groups th .grp { display: block; }
+.data th.g-order .grp { color: var(--accent); }
+.data th.g-cust .grp { color: var(--changed); }
+.data td { padding: 8px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; transition: background-color .35s, color .35s, opacity .35s; }
+.data tr:last-child td { border-bottom: 0; }
+.data td.changed { background: color-mix(in srgb, var(--changed) 16%, transparent); color: var(--changed); font-weight: 600; }
+.data td.stale { background: color-mix(in srgb, var(--stale) 16%, transparent); color: var(--stale); font-weight: 600; }
+.data td.flag::after { content: attr(data-flag); display: block; font: 600 10.5px/1.2 var(--f-mono); margin-top: 2px; }
+.data tr.removed td { text-decoration: line-through; color: var(--bad); opacity: .55; }
+.data tr.ghost td { border: 1px dashed var(--bad); border-width: 1px 0; color: var(--bad); font-style: italic; }
+.data tr.ghost td:first-child { border-left-width: 1px; }
+.data tr.ghost td:last-child { border-right-width: 1px; }
+.data tr.pulse td { animation: pulse .5s ease; }
+@keyframes pulse { 0% { background-color: color-mix(in srgb, var(--accent) 22%, transparent); } 100% { background-color: transparent; } }
+
+/* operations list */
+.ops-head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.ops-head h3 { font: 700 17px/1.2 var(--f-display); margin: 0 auto 0 0; }
+ol.ops { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; counter-reset: op; }
+.ops li { display: grid; gap: 4px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); counter-increment: op; transition: border-color .3s, background-color .3s, opacity .3s; min-width: 0; }
+.ops li .op-t { font-weight: 700; }
+.ops li .op-t::before { content: counter(op) " · "; font-family: var(--f-mono); color: var(--muted); }
+.ops li pre { margin: 0; font: 12.5px/1.45 var(--f-mono); white-space: pre-wrap; overflow-wrap: anywhere; color: var(--muted); }
+.ops li .op-r { margin: 4px 0 0; font-size: 15.5px; }
+.ops li .op-v { margin: 2px 0 0; font-weight: 700; color: var(--bad); }
+.ops li.current { border-color: var(--accent); background: var(--surface); box-shadow: 0 0 0 1px var(--accent); }
+.ops li.current pre { color: var(--ink); }
+.ops li.past { opacity: .72; }
+.err { color: var(--bad); }
+.outcome { margin: 0; padding: 10px 12px; border-left: 3px solid var(--accent); background: var(--sunk); border-radius: 0 8px 8px 0; }
+.ctrls { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.ctrls .count { margin-left: 4px; }
+.lock-note { font-size: 14px; color: var(--muted); }
+
+/* prediction gate */
+.gate { border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 10px; }
+.gate .q { font-weight: 700; margin: 0; }
+.opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.opt { text-align: left; border: 1px solid var(--line); background: var(--bg); border-radius: 10px; padding: 10px 12px; cursor: pointer; font-size: 16px; display: flex; gap: 8px; }
+.opt:hover:not(:disabled) { border-color: var(--accent); }
+.opt:disabled { cursor: default; }
+.opt .mark { font-family: var(--f-mono); font-weight: 600; min-width: 1.2em; }
+.opt.right { border-color: var(--ok); }
+.opt.wrong { border-color: var(--bad); }
+.opt.right .mark { color: var(--ok); }
+.opt.wrong .mark { color: var(--bad); }
+.feedback { margin: 0; padding: 10px 12px; border-radius: 10px; background: var(--sunk); }
+.feedback b.right { color: var(--ok); }
+.feedback b.wrong { color: var(--bad); }
+.rec { font-size: 12px; color: var(--muted); }
+.btn.unsure { font-size: 14px; color: var(--muted); }
+
+/* ask */
+details.ask { border-top: 1px solid var(--line); padding-top: 12px; }
+details.ask summary { cursor: pointer; font-weight: 700; color: var(--muted); }
+.ask-body { display: grid; gap: 8px; margin-top: 10px; }
+.ask textarea { width: 100%; min-height: 70px; resize: vertical; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--bg); color: var(--ink); font: 16px/1.4 var(--f-body); }
+.ask-out { margin: 0; font-size: 14px; color: var(--muted); }
+.ask-out:empty { display: none; }
+
+/* scene 2: find the split */
+.data th.key, .data td.key { font-weight: 600; }
+.data th .pk { display: inline-block; margin-left: 4px; font-size: 10px; color: var(--accent); }
+.data td.focus, .data th.focus { background: color-mix(in srgb, var(--changed) 14%, transparent); color: var(--changed); }
+.data td.det, .data th.det { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); font-weight: 600; }
+.data td.placed, .data th.placed { opacity: .38; }
+.data th .moved { display: block; font: 600 10.5px/1.2 var(--f-mono); color: var(--accent); }
+.learn { display: grid; gap: 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.learn .tagline { font: 600 11px/1 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.learn p { margin: 0; }
+.learn .q { font-weight: 700; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font: 600 13.5px/1.2 var(--f-mono); cursor: pointer; }
+.chip:hover:not(:disabled) { border-color: var(--accent); }
+.chip:disabled { cursor: default; }
+.chip.wrong { border-color: var(--bad); color: var(--bad); text-decoration: line-through; }
+.chip.right { border-color: var(--ok); color: var(--ok); }
+.hint { color: var(--stale); }
+.tables { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+.tcard { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); min-width: 0; transition: border-color .3s; }
+.tcard.fresh { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.tcard h4 { margin: 0; padding: 7px 10px; border-bottom: 1px solid var(--line); font: 600 13.5px/1.2 var(--f-mono); }
+.tcard ul { list-style: none; margin: 0; padding: 6px 10px 8px; display: grid; gap: 3px; font: 13px/1.3 var(--f-mono); }
+.tcard li { display: flex; justify-content: space-between; gap: 6px; flex-wrap: wrap; border-radius: 4px; padding: 1px 3px; }
+.tcard li.new { background: color-mix(in srgb, var(--accent) 16%, transparent); }
+.tcard .badge { font-size: 10.5px; color: var(--muted); }
+.tcard .badge.pk { color: var(--accent); font-weight: 600; }
+
+/* scene 3: guards */
+.levers { display: grid; gap: 8px; }
+.lever { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.lever-name { font: 600 13.5px/1.3 var(--f-mono); min-width: 0; flex: 1 1 260px; }
+.lever-name small { display: block; font: 400 13px/1.3 var(--f-body); color: var(--muted); }
+.seg { border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 5px 12px; font-size: 14px; cursor: pointer; }
+.seg[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.seg:disabled { cursor: default; opacity: .6; }
+.lever-group { display: flex; gap: 4px; flex-wrap: wrap; }
+.writes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.wcard { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: var(--bg); display: grid; gap: 6px; align-content: start; min-width: 0; transition: border-color .3s; }
+.wcard h4 { margin: 0; font: 700 15.5px/1.25 var(--f-body); }
+.wcard .path { font-size: 13px; color: var(--muted); }
+.wcard pre { margin: 0; font: 12px/1.45 var(--f-mono); white-space: pre-wrap; overflow-wrap: anywhere; color: var(--muted); }
+.wres { display: grid; gap: 4px; padding-top: 6px; border-top: 1px dashed var(--line); }
+.verdict-badge { justify-self: start; font: 600 12px/1 var(--f-mono); padding: 4px 8px; border-radius: 999px; border: 1px solid currentColor; }
+.verdict-badge.blocked { color: var(--ok); }
+.verdict-badge.through { color: var(--bad); }
+.verdict-badge.lossy { color: var(--stale); }
+.verdict-badge.hidden { color: var(--muted); }
+.wres .msg { font-size: 14px; overflow-wrap: anywhere; }
+.wres .msg code { color: var(--muted); }
+.wcard.through { border-color: var(--bad); }
+.wcard.lossy { border-color: var(--stale); }
+.wcard.flash { animation: pulse .5s ease; }
+
+/* scene 4: cost */
+.panels { display: grid; gap: 12px; }
+.panel { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: var(--bg); display: grid; gap: 10px; min-width: 0; }
+.panel h4 { margin: 0; font: 700 16px/1.25 var(--f-display); }
+pre.code { margin: 0; padding: 8px 10px; background: var(--sunk); border-radius: 8px; font: 12.5px/1.45 var(--f-mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+.trips { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; font-size: 15px; }
+.big { font: 700 28px/1 var(--f-display); font-variant-numeric: tabular-nums; }
+.big.off { color: var(--bad); }
+.bar { display: inline-block; height: 10px; width: calc(var(--n) * 22px); max-width: 100%; border-radius: 3px; background: repeating-linear-gradient(90deg, var(--accent) 0 18px, transparent 18px 22px); transition: width .35s ease; }
+ol.qlog { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; font: 12px/1.4 var(--f-mono); }
+.qlog li { padding: 4px 8px; border-radius: 6px; background: var(--surface); border: 1px solid var(--line); white-space: pre-wrap; overflow-wrap: anywhere; }
+.qlog li.more { background: transparent; border-style: dashed; color: var(--muted); }
+.plan { display: grid; gap: 6px; }
+.plan .msg { font-size: 15px; }
+
+/* scene 5: copies */
+.legend { margin: 0; display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; color: var(--muted); }
+.legend b { color: var(--ink); }
+.sort { display: grid; gap: 8px; }
+.sort-row { display: grid; grid-template-columns: minmax(0, 1fr) auto 80px; gap: 6px 12px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.sort-name { display: grid; gap: 2px; min-width: 0; }
+.sort-name code { font-size: 13.5px; font-weight: 600; overflow-wrap: anywhere; }
+.sort-name small { color: var(--muted); font-size: 14px; }
+.sort-mark { font: 600 13px/1.2 var(--f-mono); text-align: right; }
+.sort-mark.right { color: var(--ok); }
+.sort-mark.wrong { color: var(--bad); }
+.sort-why { grid-column: 1 / -1; margin: 0; font-size: 14.5px; }
+.drift-nums { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.drift-nums > div { display: grid; gap: 4px; padding: 8px 10px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); min-width: 0; }
+.drift-nums small { font: 11.5px/1.3 var(--f-mono); color: var(--muted); overflow-wrap: anywhere; }
+.ops-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.ops-btns .btn { display: grid; gap: 2px; text-align: left; }
+.op-path { font: 11.5px/1.2 var(--f-mono); color: var(--muted); }
+.drift-note { margin: 0; font-size: 15px; }
+
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (max-width: 640px) {
+  .scene { padding: 16px; }
+  .opts { grid-template-columns: minmax(0, 1fr); }
+  .writes { grid-template-columns: minmax(0, 1fr); }
+  .sort-row { grid-template-columns: minmax(0, 1fr) 70px; }
+  .sort-row .lever-group { grid-column: 1 / -1; grid-row: 2; }
+  .drift-nums { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Explorable · Database normalization</div>
+    <h1>One Fact, One Place</h1>
+    <p class="promise">Break a real orders table, split it, guard it, pay for it, then decide when a copy is fine. By the end you can spot a bad table in code review and say what denormalizing would cost.</p>
+  </header>
+  <nav class="stepper" aria-label="Scenes">
+    <button class="btn" id="prev" type="button">← Back</button>
+    <div class="dots" id="dots"></div>
+    <span class="count" id="count"></span>
+    <button class="btn" id="next" type="button">Next →</button>
+  </nav>
+  <main id="stage"></main>
+  <div class="sr" aria-live="polite" id="live"></div>
+</div>
+
+<script>
+// ---------------------------------------------------------------------------
+// Capabilities (optional): recording and Send-to-chat light up when they resolve.
+// ---------------------------------------------------------------------------
+let db = null, comments = null;
+const capsReady = (async () => {
+  if (!window.claude || !window.claude.use) return;
+  try { db = await window.claude.use("db"); } catch (e) { db = null; }
+  try { comments = await window.claude.use("comments"); } catch (e) { comments = null; }
+})();
+
+async function record(collection, data) {
+  await capsReady;
+  if (!db) return false;
+  try { await db.collection(collection).add(data); return true; }
+  catch (e) { return false; }
+}
+
+const live = document.getElementById("live");
+function announce(msg) { live.textContent = ""; setTimeout(() => { live.textContent = msg; }, 30); }
+
+function el(tag, attrs = {}, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v;
+    else if (k === "style") n.setAttribute("style", v);
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+    else if (v !== false && v != null) n.setAttribute(k, v === true ? "" : v);
+  }
+  for (const k of kids.flat()) if (k != null) n.append(k.nodeType ? k : document.createTextNode(k));
+  return n;
+}
+function html(tag, attrs, markup) { const n = el(tag, attrs); n.innerHTML = markup; return n; }
+
+// ---------------------------------------------------------------------------
+// Shared pieces: prediction gate, step-through controls, Ask box.
+// ---------------------------------------------------------------------------
+function predictionGate({ scene, question, options, correct, why, onAnswer, kind = "prediction" }) {
+  const box = el("div", { class: "gate" });
+  box.append(el("p", { class: "q" }, question));
+  const opts = el("div", { class: "opts", role: "group", "aria-label": question });
+  const fb = el("div");
+  const unsure = el("button", { class: "btn unsure", type: "button", id: `${scene}-unsure` }, "I don't know yet, show me");
+  let answered = null;
+  // A fresh answer is recorded; a restored one (after a reload) is only shown.
+  async function show(id, fresh) {
+    if (answered) return;
+    answered = id;
+    const isUnsure = id === "(unsure)";
+    const ok = id === correct;
+    opts.querySelectorAll("button").forEach(x => x.disabled = true);
+    unsure.disabled = true;
+    const picked = opts.querySelector(`[data-opt="${id}"]`);
+    if (picked) picked.classList.add(ok ? "right" : "wrong");
+    opts.querySelector(`[data-opt="${correct}"]`).classList.add("right");
+    const lead = isUnsure ? "<b>Here it is.</b>" : `<b class="${ok ? "right" : "wrong"}">${ok ? "Right." : "Not quite."}</b>`;
+    fb.replaceChildren(html("p", { class: "feedback" }, `${lead} ${why}`));
+    if (fresh) announce(lead.replace(/<[^>]+>/g, "") + " " + why.replace(/<[^>]+>/g, ""));
+    onAnswer(id, ok);
+    queueSave();
+    if (!fresh) return;
+    const saved = await record("attempts", {
+      scene, kind, gate: true, answer: isUnsure ? "(unsure)" : options.find(x => x.id === id).label,
+      answer_id: id, expected: options.find(x => x.id === correct).label,
+      correct: ok, unsure: isUnsure, at: new Date().toISOString()
+    });
+    if (!saved && window.claude) fb.append(el("div", { class: "rec" }, "Not recorded."));
+  }
+  options.forEach((o, i) => {
+    opts.append(el("button", { class: "opt", type: "button", id: `${scene}-opt-${o.id}`, "data-opt": o.id, onclick: () => show(o.id, true) },
+      el("span", { class: "mark" }, String.fromCharCode(65 + i)), el("span", {}, o.label)));
+  });
+  unsure.addEventListener("click", () => show("(unsure)", true));
+  box.append(opts, el("div", {}, unsure), fb);
+  box.restore = id => { if (id === "(unsure)" || options.some(o => o.id === id)) show(id, false); };
+  box.answer = () => answered;
+  box.byId = answerId => answerId;
+  return box;
+}
+
+function stepper({ count, render }) {
+  let i = 0, timer = null;
+  const counter = el("span", { class: "count" });
+  const back = el("button", { class: "btn", type: "button" }, "← Step");
+  const fwd = el("button", { class: "btn primary", type: "button" }, "Step →");
+  const play = el("button", { class: "btn", type: "button" }, "Play");
+  const replay = el("button", { class: "btn", type: "button" }, "Replay");
+  function stop() { clearInterval(timer); timer = null; play.textContent = "Play"; }
+  function go(n) {
+    i = Math.max(0, Math.min(count() - 1, n));
+    back.disabled = i === 0; fwd.disabled = i >= count() - 1;
+    counter.textContent = `Step ${i + 1} of ${count()}`;
+    render(i);
+    if (i >= count() - 1) stop();
+    queueSave();
+  }
+  back.addEventListener("click", () => { stop(); go(i - 1); });
+  fwd.addEventListener("click", () => { stop(); go(i + 1); });
+  replay.addEventListener("click", () => { stop(); go(0); });
+  play.addEventListener("click", () => {
+    if (timer) return stop();
+    if (i >= count() - 1) go(0);
+    play.textContent = "Pause";
+    timer = setInterval(() => go(i + 1), 1800);
+  });
+  return { el: el("div", { class: "ctrls" }, back, fwd, play, replay, counter),
+    go, at: () => i, next() { stop(); go(i + 1); }, prev() { stop(); go(i - 1); },
+    toggle() { play.click(); }, replay() { stop(); go(0); } };
+}
+
+// The page never answers: a question goes to the Claude Code chat (comments → sendToClaude),
+// or to the clipboard when that is not possible here.
+function askBox(sceneId, sceneIndex, sceneTitle, getState, sectionEl) {
+  const id = `${sceneId}-ask`;
+  const ta = el("textarea", { id, maxlength: 3000, placeholder: "A question about this scene. It goes to your Claude Code chat, with what you see here." });
+  const out = el("p", { class: "ask-out", "aria-live": "polite" });
+  const send = el("button", { class: "btn primary", type: "button" }, "Send to Claude Code");
+  send.addEventListener("click", async () => {
+    const q = ta.value.trim();
+    if (!q) return;
+    const state = getState();
+    const text = `[Scene ${sceneIndex + 1}/${SCENES.length}: ${sceneTitle}] ${q}\n\nState: ${state}`;
+    send.disabled = true;
+    let sent = "clipboard";
+    try {
+      await capsReady;
+      if (comments && (await comments.canSendToClaude()) === "available") {
+        await comments.sendToClaude({ anchor: await comments.anchorFor(sectionEl), text });
+        sent = "chat";
+      }
+    } catch (e) { sent = "clipboard"; }
+    if (sent === "chat") {
+      out.textContent = "Sent to your Claude Code chat. The answer comes there.";
+      ta.value = "";
+    } else {
+      try { await navigator.clipboard.writeText(text); out.textContent = "Copied. Paste it into your Claude Code chat."; }
+      catch (e) { ta.value = text; ta.select(); out.textContent = "Select-all is on: copy this text into your Claude Code chat."; }
+    }
+    send.disabled = false;
+    record("questions", { scene: sceneId, question: q, state, sent, at: new Date().toISOString() });
+  });
+  return el("details", { class: "ask" },
+    el("summary", {}, "Ask Claude Code about this scene"),
+    el("div", { class: "ask-body" }, el("label", { for: id, class: "sr" }, "Your question"), ta,
+      el("div", { class: "ctrls" }, send), out));
+}
+
+// ---------------------------------------------------------------------------
+// Scenes
+// ---------------------------------------------------------------------------
+const SCENES = [
+  { id: "s1-wide-table", title: "What breaks in one wide table?", build: buildWideTable },
+  { id: "s2-find-split", title: "How do you find where to split?", build: buildFindSplit },
+  { id: "s3-schema-guards", title: "What does the schema enforce, and what is left to your code?", build: buildGuards },
+  { id: "s4-cost", title: "What does normalizing cost?", build: buildCost },
+  { id: "s5-copies", title: "When is a copy the right answer?", build: buildCopies }
+];
+
+const ORDER_COLS = [
+  { key: "id", label: "id", grp: "order", cls: "g-order" },
+  { key: "name", label: "customer_name", grp: "customer", cls: "g-cust" },
+  { key: "email", label: "customer_email", grp: "customer", cls: "g-cust" },
+  { key: "city", label: "customer_city", grp: "customer", cls: "g-cust" },
+  { key: "total", label: "total", grp: "order", cls: "g-order" }
+];
+
+function buildWideTable(root, saved = {}) {
+  const BASE = [
+    { id: 101, name: "Ana", email: "ana@old.io", city: "Berlin", total: "40.00" },
+    { id: 102, name: "Ana", email: "ana@old.io", city: "Berlin", total: "15.50" },
+    { id: 103, name: "Ben", email: "ben@post.de", city: "Hamburg", total: "22.00" },
+    { id: 104, name: "Ana", email: "ana@old.io", city: "Berlin", total: "60.00" }
+  ];
+  // Each step: the table state after running operations 1..k, and what to mark.
+  const STEPS = [
+    { rows: BASE, marks: {}, caption: "Four orders, two customers. Ana's email sits on three rows." },
+    { rows: BASE.map(r => r.id === 104 ? { ...r, email: "ana@new.io" } : r),
+      marks: { "104:email": ["changed", "edited"], "101:email": ["stale", "old copy"], "102:email": ["stale", "old copy"] },
+      caption: "Who is Ana? The table now gives two answers." },
+    { rows: BASE.map(r => r.id === 104 ? { ...r, email: "ana@new.io" } : r),
+      ghost: { id: "?", name: "Cleo", email: "cleo@mail.de", city: "Köln", total: "?" },
+      marks: {}, caption: "Cleo has no row to live in until she orders something." },
+    { rows: BASE.map(r => r.id === 104 ? { ...r, email: "ana@new.io" } : r), removed: 103,
+      marks: {}, caption: "Ben's only row is gone, and with it his email and city." }
+  ];
+  const OPS = [
+    { title: "Ana changes her email on the account page",
+      sql: "UPDATE orders SET customer_email = 'ana@new.io'\nWHERE id = 104;  -- the order the page had loaded",
+      result: "Row 104 changes. Rows 101 and 102 still say ana@old.io, and nothing in the schema notices.",
+      verdict: "Update anomaly: one fact, three copies, one edited." },
+    { title: "Cleo signs up for the newsletter, no order yet",
+      sql: "INSERT INTO orders (customer_name, customer_email, customer_city)\nVALUES ('Cleo', 'cleo@mail.de', 'Köln');",
+      result: "<span class=\"err mono\">ERROR: null value in column \"total\" violates not-null constraint.</span> The usual workaround, a fake order with total 0, then shows up in every revenue report.",
+      verdict: "Insert anomaly: you can't record one fact without inventing another." },
+    { title: "Ben's only order is refunded and deleted",
+      sql: "DELETE FROM orders WHERE id = 103;",
+      result: "The order goes, and so does everything you knew about Ben. Support can no longer reach him.",
+      verdict: "Delete anomaly: removing one fact erases another." }
+  ];
+
+  let answer = null;
+
+  const prose = el("p", { class: "prose" },
+    "A shop keeps orders in one table, customer details included. Your app runs the three everyday operations below. The table and the SQL are all there is: no other tables, no triggers.");
+
+  const cap = el("div", { class: "tbl-cap" });
+  const table = el("table", { class: "data" });
+  const thead = el("thead", {}, el("tr", {}, ORDER_COLS.map(c =>
+    el("th", { class: c.cls, scope: "col" }, el("span", { class: "grp" }, c.grp), c.label))));
+  const tbody = el("tbody");
+  table.append(thead, tbody);
+  const tblWrap = el("div", { class: "tbl-wrap", role: "region", "aria-label": "orders table", tabindex: "0" },
+    html("div", { class: "tbl-cap-inner" }, ""), table);
+  tblWrap.replaceChild(cap, tblWrap.firstChild);
+
+  const opsList = el("ol", { class: "ops" });
+  const opItems = OPS.map(o => {
+    const r = html("p", { class: "op-r", hidden: true }, o.result);
+    const v = el("p", { class: "op-v", hidden: true }, o.verdict);
+    const li = el("li", {}, el("span", { class: "op-t" }, o.title), el("pre", {}, o.sql), r, v);
+    opsList.append(li);
+    return { li, r, v };
+  });
+  const outcome = el("p", { class: "outcome", hidden: true },
+    "All three have one cause: each row holds two kinds of fact at once, an order (id, total) and a customer (name, email, city). A customer only exists while some order carries them.");
+  const lockNote = el("p", { class: "lock-note" }, "Make your prediction below to run the operations against the table.");
+
+  const steps = stepper({ count: () => STEPS.length, render: i => paint(i) });
+  steps.el.hidden = true;
+
+  function paint(i) {
+    const s = STEPS[i];
+    cap.innerHTML = `<span><b>orders</b> · ${s.rows.length - (s.removed ? 1 : 0)} rows</span><span>${s.caption}</span>`;
+    const rows = s.rows.map(r => {
+      const tr = el("tr", { class: s.removed === r.id ? "removed" : "" });
+      ORDER_COLS.forEach(c => {
+        const m = s.marks[`${r.id}:${c.key}`];
+        tr.append(el("td", m ? { class: `${m[0]} flag`, "data-flag": m[1] } : {}, String(r[c.key])));
+      });
+      return tr;
+    });
+    if (s.ghost) {
+      const tr = el("tr", { class: "ghost", "aria-label": "Rejected insert" });
+      ORDER_COLS.forEach(c => tr.append(el("td", {}, s.ghost[c.key])));
+      rows.push(tr);
+    }
+    tbody.replaceChildren(...rows);
+    if (i > 0 && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const target = s.ghost ? tbody.lastChild : null;
+      if (target) target.classList.add("pulse");
+    }
+    opItems.forEach((o, k) => {
+      const done = answer && k < i;
+      o.li.className = answer && k === i - 1 ? "current" : done ? "past" : "";
+      o.r.hidden = !done; o.v.hidden = !done;
+    });
+    outcome.hidden = !(answer && i === STEPS.length - 1);
+    if (answer && i > 0) announce(`${OPS[i - 1].verdict}`);
+  }
+
+  const gate = predictionGate({
+    scene: "s1-wide-table",
+    question: "The app runs all three operations. Which of them leave the data wrong, or make you lose or fake a fact?",
+    options: [
+      { id: "update-only", label: "Only the email change" },
+      { id: "update-delete", label: "The email change and the refund" },
+      { id: "all", label: "All three" },
+      { id: "none", label: "None, as long as the app code is careful" }
+    ],
+    correct: "all",
+    why: "Each row stores an order and a customer together. An edit can miss copies, a customer without an order has nowhere to go, and deleting a customer's last order deletes the customer. Careful code can fix the first one by updating every row; it can't fix the other two. Step through to watch each one.",
+    onAnswer: id => { answer = id; table.classList.add("groups"); lockNote.hidden = true; steps.el.hidden = false; paint(steps.at()); }
+  });
+
+  root.append(prose, tblWrap,
+    el("div", { class: "ops-head" }, el("h3", {}, "What the app runs"), steps.el),
+    lockNote, opsList, outcome, gate);
+  steps.go(0);
+
+  if (saved.answer) { gate.restore(saved.answer); steps.go(saved.step || 0); }
+
+  return {
+    getState: () => ({ answer, step: steps.at() }),
+    restoreRecord: r => { gate.restore(r.answer_id); },
+    stateLine: () => `${answer ? `predicted "${answer}"` : "no prediction yet"}; step ${steps.at() + 1} of ${STEPS.length}${steps.at() > 0 ? ` (after: ${OPS[steps.at() - 1].title})` : ""}`,
+    stepper: () => answer ? steps : null
+  };
+}
+
+function buildFindSplit(root, saved = {}) {
+  const COLS = ["order_id", "product_id", "qty", "order_date", "customer_id", "customer_email", "product_name"];
+  const KEY = ["order_id", "product_id"];
+  const ROWS = [
+    ["1", "P7", "2", "2026-11-02", "C1", "ana@new.io", "Mug"],
+    ["1", "P9", "1", "2026-11-02", "C1", "ana@new.io", "Teapot"],
+    ["2", "P7", "4", "2026-11-05", "C2", "ben@post.de", "Mug"],
+    ["3", "P9", "1", "2026-11-06", "C1", "ana@new.io", "Teapot"],
+    ["3", "P2", "3", "2026-11-06", "C1", "ana@new.io", "Filter"]
+  ];
+  const CHOICES = [
+    { id: "key", label: "order_id + product_id" },
+    { id: "order_id", label: "order_id" },
+    { id: "product_id", label: "product_id" },
+    { id: "customer_id", label: "customer_id" }
+  ];
+  const DET_COLS = { key: KEY, order_id: ["order_id"], product_id: ["product_id"], customer_id: ["customer_id"] };
+  // Where each table's columns come from. Key columns are there from the start of each table.
+  const TABLE_KEYS = {
+    order_lines: [["order_id", "PK · FK → orders"], ["product_id", "PK · FK → products"]],
+    products: [["product_id", "PK"]],
+    orders: [["order_id", "PK"]],
+    customers: [["customer_id", "PK"]]
+  };
+  const STEPS = [
+    { text: "The key is <b>order_id + product_id</b>: together they pick exactly one row. Step on to test the other columns one by one." },
+    { col: "qty", det: "key", to: "order_lines", worked: true,
+      text: "<b>qty</b>: order 1 has 2 Mugs and 1 Teapot, so order_id alone isn't enough. P7 appears with qty 2 and qty 4, so product_id alone isn't either. It takes the whole key, so qty stays in <b>order_lines</b>." },
+    { col: "product_name", det: "product_id", to: "products", worked: true,
+      text: "<b>product_name</b>: every P7 row says Mug, whatever the order. product_id alone decides it, so it moves to a <b>products</b> table keyed by product_id. A column that depends on only part of the key breaks second normal form (2NF)." },
+    { col: "order_date", det: "order_id", to: "orders",
+      q: "Which column alone decides order_date?",
+      hint: "Look at the two rows of order 1, then the two rows of order 3. What is the same on both rows of each pair?",
+      why: "Both rows of order 1 say 2026-11-02, both rows of order 3 say 2026-11-06. order_id alone decides it, so it moves to an <b>orders</b> table. The same 2NF move as product_name." },
+    { col: "customer_id", det: "order_id", to: "orders",
+      q: "Which column alone decides customer_id?",
+      hint: "Can one order ever belong to two customers?",
+      why: "One order has one customer, so order_id decides customer_id and it moves to <b>orders</b> too. That column is how an order points at its customer: a foreign key." },
+    { col: "customer_email", det: "customer_id", to: "customers",
+      q: "Which column directly decides customer_email?",
+      hint: "order_id does lead to the email, but only by way of another column. Ana's email is on orders 1 and 3. What else do those rows share?",
+      why: "Ana's email is on orders 1 and 3, and what those rows share is customer_id C1. It depends on a non-key column, which breaks third normal form (3NF), so it moves to a <b>customers</b> table keyed by customer_id. orders keeps only the pointer." },
+    { final: true,
+      text: "Four tables, every fact once. Ana's email is now one row in customers, and a customer without orders has a home. That test is the whole method: for each column, ask what decides it. The whole key: it stays. Part of the key (2NF) or another non-key column (3NF): it moves to a table keyed by whatever decides it." }
+  ];
+  const FILL_STEPS = STEPS.map((s, i) => (s.col && !s.worked ? i : -1)).filter(i => i >= 0);
+
+  let step = 0, reached = 0;
+  const fills = { ...(saved.fills || {}) };   // step index → { first, tries, done }
+  let transfer = null;
+
+  const prose = el("p", { class: "prose" },
+    "Here is one table of order lines. For each column, ask what decides its value. If the answer is the whole key, the column stays. If it is only part of the key, or another column, it moves to a table keyed by whatever decides it.");
+
+  // source data table
+  const head = el("tr");
+  const thEls = COLS.map(c => {
+    const th = el("th", { scope: "col", class: KEY.includes(c) ? "key" : "" }, c);
+    if (KEY.includes(c)) th.append(el("span", { class: "pk" }, "KEY"));
+    head.append(th); return th;
+  });
+  const tbody = el("tbody");
+  const cellEls = ROWS.map(r => { const tr = el("tr"); const tds = r.map((v, j) => { const td = el("td", { class: KEY.includes(COLS[j]) ? "key" : "" }, v); tr.append(td); return td; }); tbody.append(tr); return tds; });
+  const table = el("table", { class: "data" }, el("thead", {}, head), tbody);
+  const srcWrap = el("div", { class: "tbl-wrap", role: "region", "aria-label": "order_lines before the split", tabindex: "0" },
+    html("div", { class: "tbl-cap" }, "<span><b>order_lines</b> · before the split</span><span>key: order_id + product_id</span>"), table);
+
+  // learn box
+  const tagline = el("div", { class: "tagline" });
+  const learnText = html("p", {}, "");
+  const learnQ = el("p", { class: "q", hidden: true });
+  const chips = el("div", { class: "chips", role: "group", hidden: true });
+  const hint = html("p", { class: "hint", hidden: true }, "");
+  const why = html("p", { hidden: true }, "");
+  const learn = el("div", { class: "learn", "aria-live": "polite" }, tagline, learnText, learnQ, chips, hint, why);
+
+  // controls
+  const back = el("button", { class: "btn", type: "button" }, "← Step");
+  const fwd = el("button", { class: "btn primary", type: "button" }, "Step →");
+  const counter = el("span", { class: "count" });
+  const ctrls = el("div", { class: "ctrls" }, back, fwd, counter);
+  back.addEventListener("click", () => go(step - 1));
+  fwd.addEventListener("click", () => go(step + 1));
+
+  // destination tables
+  const tablesEl = el("div", { class: "tables", "aria-label": "Tables after the split" });
+
+  // transfer check
+  const gate = predictionGate({
+    scene: "s2-find-split", kind: "check",
+    question: "New case: students(student_id, advisor, advisor_room). Every student of Dr. Lee shows room 214. Where does advisor_room belong?",
+    options: [
+      { id: "stay", label: "It stays in students: it describes the student's advisor" },
+      { id: "advisors", label: "In an advisors table keyed by advisor" },
+      { id: "rooms", label: "In a rooms table keyed by advisor_room" },
+      { id: "index", label: "Anywhere, as long as it's indexed" }
+    ],
+    correct: "advisors",
+    why: "advisor_room is decided by advisor, a non-key column, so it moves to a table keyed by advisor. Dr. Lee changes rooms: one row to update instead of one per student. The same 3NF move as customer_email.",
+    onAnswer: id => { transfer = id; }
+  });
+  gate.hidden = true;
+
+  function isDone(i) { const s = STEPS[i]; return !s.col || s.worked || (fills[i] && fills[i].done); }
+  function placedUpTo(i) { const out = []; for (let k = 1; k <= i; k++) if (STEPS[k].col && isDone(k)) out.push(STEPS[k]); return out; }
+
+  function paint() {
+    const s = STEPS[step];
+    const placed = placedUpTo(step);
+    const placedCols = new Set(placed.filter(p => p.to !== "order_lines").map(p => p.col));
+    const done = isDone(step);
+    // data table marks
+    COLS.forEach((c, j) => {
+      const isFocus = s.col === c;
+      const isDet = s.col && done && DET_COLS[s.det].includes(c);
+      const isPlaced = placedCols.has(c) && !isFocus;
+      const cls = [KEY.includes(c) ? "key" : "", isFocus ? "focus" : "", isDet ? "det" : "", isPlaced ? "placed" : ""].join(" ").trim();
+      thEls[j].className = cls;
+      const moved = placed.find(p => p.col === c && p.to !== "order_lines");
+      thEls[j].querySelector(".moved")?.remove();
+      if (moved) thEls[j].append(el("span", { class: "moved" }, `→ ${moved.to}`));
+      cellEls.forEach(tds => { tds[j].className = cls; });
+    });
+    // learn box
+    const f = fills[step];
+    tagline.textContent = s.final ? "Result" : !s.col ? "Start" : s.worked ? "Worked example" : "Your turn";
+    learnText.innerHTML = s.q ? `<b>${s.col}</b>: ${done ? "" : "the highlighted column."}` : s.text;
+    learnText.hidden = !!(s.q && done);
+    learnQ.hidden = !s.q; learnQ.textContent = s.q || "";
+    chips.hidden = !s.q;
+    if (s.q) {
+      chips.setAttribute("aria-label", s.q);
+      // A column trivially decides itself, so it is never offered as its own answer.
+      chips.replaceChildren(...CHOICES.filter(c => c.id !== s.col).map(c => {
+        const b = el("button", { class: "chip", type: "button", id: `s2-${step}-${c.id}`, onclick: () => choose(c.id) }, c.label);
+        if (f && f.wrong && f.wrong.includes(c.id)) b.classList.add("wrong");
+        if (done && c.id === s.det) b.classList.add("right");
+        b.disabled = done || (f && f.wrong && f.wrong.includes(c.id));
+        return b;
+      }));
+    }
+    hint.hidden = !(s.q && f && !done && f.tries > 0); hint.innerHTML = s.hint ? `Hint: ${s.hint}` : "";
+    why.hidden = !(s.q && done); why.innerHTML = s.why || "";
+    // destination tables
+    const cards = [];
+    const fresh = s.col && done ? s.to : null;
+    Object.entries(TABLE_KEYS).forEach(([name, keys]) => {
+      const extra = placed.filter(p => p.to === name);
+      if (name !== "order_lines" && !extra.length) return;
+      const ul = el("ul", {}, keys.map(([c, b]) => el("li", {}, el("span", {}, c), el("span", { class: "badge pk" }, b))));
+      extra.forEach(p => {
+        const fk = p.col === "customer_id" && placed.some(q => q.to === "customers") ? "FK → customers" : "";
+        ul.append(el("li", { class: p === s && done ? "new" : "" }, el("span", {}, p.col), el("span", { class: "badge" }, fk)));
+      });
+      cards.push(el("div", { class: "tcard" + (fresh === name ? " fresh" : "") }, el("h4", {}, name), ul));
+    });
+    tablesEl.replaceChildren(...cards);
+    // controls
+    back.disabled = step === 0;
+    fwd.disabled = step >= STEPS.length - 1 || !done;
+    fwd.textContent = !done ? "Answer to continue" : "Step →";
+    counter.textContent = `Step ${step + 1} of ${STEPS.length}`;
+    gate.hidden = !(reached >= STEPS.length - 1);
+  }
+
+  function go(n) {
+    step = Math.max(0, Math.min(STEPS.length - 1, n));
+    if (step > reached) reached = step;
+    paint(); queueSave();
+  }
+
+  async function choose(id) {
+    const s = STEPS[step];
+    const f = fills[step] || (fills[step] = { first: id, tries: 0, done: false, wrong: [] });
+    if (f.done) return;
+    if (id === s.det) { f.done = true; announce(`Right. ${s.why.replace(/<[^>]+>/g, "")}`); }
+    else {
+      f.tries += 1; f.wrong.push(id);
+      if (f.tries >= 2) { f.done = true; announce(`It's ${s.det}. ${s.why.replace(/<[^>]+>/g, "")}`); }
+      else announce(`Not quite. Hint: ${s.hint}`);
+    }
+    paint(); queueSave();
+    if (f.done) {
+      const label = c => (CHOICES.find(x => x.id === c) || {}).label || c;
+      record("attempts", {
+        scene: "s2-find-split", kind: "check", step: `${s.col}`, answer: label(f.first), answer_id: f.first,
+        expected: label(s.det), correct: f.first === s.det, unsure: false, at: new Date().toISOString()
+      });
+    }
+  }
+
+  root.append(prose, srcWrap, el("div", { class: "ops-head" }, el("h3", {}, "Test each column"), ctrls), learn, tablesEl, gate);
+
+  reached = Math.min(STEPS.length - 1, saved.reached || 0);
+  step = Math.min(reached, saved.step || 0);
+  paint();
+  if (saved.transfer) gate.restore(saved.transfer);
+
+  const api = { next() { if (!fwd.disabled) go(step + 1); }, prev() { go(step - 1); }, toggle() {}, replay() { go(0); } };
+  return {
+    getState: () => ({ answer: transfer, transfer, step, reached, fills }),
+    restoreRecord: r => { if (reached >= STEPS.length - 1) gate.restore(r.answer_id); },
+    stateLine: () => {
+      const s = STEPS[step];
+      const missed = FILL_STEPS.filter(i => fills[i] && fills[i].done && fills[i].first !== STEPS[i].det).map(i => STEPS[i].col);
+      return `step ${step + 1} of ${STEPS.length}${s.col ? ` (column ${s.col}${isDone(step) ? `, decided by ${s.det}` : ", not answered yet"})` : ""}; first-try misses: ${missed.join(", ") || "none"}; transfer: ${transfer || "not answered"}`;
+    },
+    stepper: () => api
+  };
+}
+
+function buildGuards(root, saved = {}) {
+  const DEFAULTS = { fk: false, onDelete: "noaction", unique: false, notnull: false, app: true };
+  const lv = { ...DEFAULTS, ...(saved.levers || {}) };
+  let answer = null;
+
+  const LEVERS = [
+    { key: "fk", name: "FOREIGN KEY orders.customer_id → customers", note: "Every order must point at a customer that exists." },
+    { key: "unique", name: "UNIQUE (customers.email)", note: "No two customers share an email. Creates an index." },
+    { key: "notnull", name: "NOT NULL customers.email", note: "A customer row must have an email." },
+    { key: "app", name: "App validations (in the model)", note: "belongs_to, validates :email, presence: true, uniqueness: true" }
+  ];
+  const ON_DELETE = [
+    { id: "noaction", label: "NO ACTION (default)" },
+    { id: "cascade", label: "CASCADE" },
+    { id: "setnull", label: "SET NULL" }
+  ];
+
+  // Each bad write: how it reaches the database, and what each guard does to it.
+  const WRITES = [
+    { id: "orphan", title: "An import script adds an order for customer 99",
+      path: "Raw SQL from a script, so the model never runs.",
+      sql: "INSERT INTO orders (customer_id, total) VALUES (99, 20.00);",
+      judge: l => l.fk
+        ? { v: "blocked", badge: "rejected by FK", msg: "<code>ERROR: insert or update on table \"orders\" violates foreign key constraint \"orders_customer_id_fkey\"</code>" }
+        : { v: "through", badge: "goes through", msg: "An order that points at nobody. Every report that joins orders to customers silently drops it." } },
+    { id: "delete", title: "Support deletes customer 1, who has 3 orders",
+      path: "An admin tool runs a plain DELETE.",
+      sql: "DELETE FROM customers WHERE id = 1;",
+      judge: l => !l.fk
+        ? { v: "through", badge: "goes through", msg: "Customer 1 is gone, and 3 orders now point at an id that doesn't exist." }
+        : l.onDelete === "noaction"
+          ? { v: "blocked", badge: "rejected by FK", msg: "<code>ERROR: update or delete on table \"customers\" violates foreign key constraint \"orders_customer_id_fkey\" on table \"orders\"</code>" }
+          : l.onDelete === "cascade"
+            ? { v: "lossy", badge: "allowed: cascades", msg: "Customer 1 and all 3 orders are deleted. Consistent, but last month's revenue just shrank." }
+            : { v: "lossy", badge: "allowed: sets NULL", msg: "Customer 1 is deleted, and 3 orders keep their totals with customer_id NULL. Consistent, but nobody knows who bought." } },
+    { id: "race", title: "Two signups with ana@new.io arrive at the same moment",
+      path: "Both go through the model. Each checks for the email before either has saved.",
+      sql: "-- request A: SELECT … WHERE email = 'ana@new.io' → none\n-- request B: SELECT … WHERE email = 'ana@new.io' → none\nINSERT …;  INSERT …;",
+      judge: l => l.unique
+        ? { v: "blocked", badge: "rejected by UNIQUE", msg: "The second INSERT fails: <code>ERROR: duplicate key value violates unique constraint \"customers_email_key\"</code>" }
+        : { v: "through", badge: "goes through", msg: l.app ? "Both model checks passed, because neither row existed yet. Now there are two Anas." : "Nothing checks at all. Now there are two Anas." } },
+    { id: "blank", title: "A signup form posts no email",
+      path: "Goes through the model.",
+      sql: "INSERT INTO customers (name, email) VALUES ('Dee', NULL);",
+      judge: l => l.app
+        ? { v: "blocked", badge: "rejected by the app", msg: "The model's presence check stops it before any SQL runs." }
+        : l.notnull
+          ? { v: "blocked", badge: "rejected by NOT NULL", msg: "<code>ERROR: null value in column \"email\" of relation \"customers\" violates not-null constraint</code>" }
+          : { v: "through", badge: "goes through", msg: "A customer nobody can contact." } }
+  ];
+
+  const prose = el("p", { class: "prose" },
+    "A common starting point: the tables are split, but the schema declares no constraints and all the checking lives in the app's models. Four bad writes come in, each by its own path.");
+
+  const leverEls = {};
+  const leversBox = el("div", { class: "levers", role: "group", "aria-label": "Guards" });
+  LEVERS.forEach(L => {
+    const on = el("button", { class: "seg", type: "button", id: `s3-${L.key}-on` }, "on");
+    const off = el("button", { class: "seg", type: "button", id: `s3-${L.key}-off` }, "off");
+    on.addEventListener("click", () => set(L.key, true));
+    off.addEventListener("click", () => set(L.key, false));
+    const row = el("div", { class: "lever" }, el("div", { class: "lever-name" }, L.name, el("small", {}, L.note)), el("div", { class: "lever-group" }, on, off));
+    leverEls[L.key] = { on, off };
+    leversBox.append(row);
+    if (L.key === "fk") {
+      const segs = ON_DELETE.map(o => {
+        const b = el("button", { class: "seg", type: "button", id: `s3-ondelete-${o.id}` }, o.label);
+        b.addEventListener("click", () => set("onDelete", o.id));
+        return b;
+      });
+      const odRow = el("div", { class: "lever" }, el("div", { class: "lever-name" }, "  ON DELETE", el("small", {}, "What the FK does when a customer with orders is deleted.")), el("div", { class: "lever-group" }, segs));
+      leverEls.onDelete = { segs, row: odRow };
+      leversBox.append(odRow);
+    }
+  });
+
+  const lockNote = el("p", { class: "lock-note" }, "Make your prediction below to see the results and unlock the switches.");
+  const writesEl = el("div", { class: "writes" });
+  const cards = WRITES.map(w => {
+    const badge = el("span", { class: "verdict-badge hidden" }, "?");
+    const msg = html("div", { class: "msg" }, "");
+    const card = el("div", { class: "wcard" }, el("h4", {}, w.title), el("div", { class: "path" }, w.path), el("pre", {}, w.sql), el("div", { class: "wres" }, badge, msg));
+    writesEl.append(card);
+    return { w, card, badge, msg };
+  });
+  const outcome = el("p", { class: "outcome", hidden: true },
+    "A constraint is checked on every write, whatever path it came from: scripts, admin tools, a second service, two requests at once. An app validation runs only when the write goes through the model, one request at a time. Keep the validations for friendly error messages; let the schema be the guard.");
+
+  function set(key, val) {
+    if (!answer) return;
+    lv[key] = val;
+    paint(key);
+    queueSave();
+  }
+
+  function paint(changed) {
+    LEVERS.forEach(L => {
+      leverEls[L.key].on.setAttribute("aria-pressed", String(!!lv[L.key]));
+      leverEls[L.key].off.setAttribute("aria-pressed", String(!lv[L.key]));
+      leverEls[L.key].on.disabled = leverEls[L.key].off.disabled = !answer;
+    });
+    leverEls.onDelete.row.hidden = !lv.fk;
+    leverEls.onDelete.segs.forEach((b, i) => { b.setAttribute("aria-pressed", String(lv.onDelete === ON_DELETE[i].id)); b.disabled = !answer; });
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    cards.forEach(c => {
+      if (!answer) { c.badge.className = "verdict-badge hidden"; c.badge.textContent = "?"; c.msg.innerHTML = ""; c.card.className = "wcard"; return; }
+      const r = c.w.judge(lv);
+      const prev = c.badge.textContent;
+      c.badge.className = `verdict-badge ${r.v}`; c.badge.textContent = r.badge; c.msg.innerHTML = r.msg;
+      c.card.className = `wcard ${r.v === "blocked" ? "" : r.v}`;
+      if (changed && prev !== r.badge && !reduce) { c.card.classList.add("flash"); setTimeout(() => c.card.classList.remove("flash"), 500); }
+    });
+    if (changed && answer) {
+      const through = cards.filter(c => c.w.judge(lv).v === "through").length;
+      announce(`${through} of 4 bad writes get through.`);
+    }
+    lockNote.hidden = !!answer;
+    outcome.hidden = !answer;
+  }
+
+  const gate = predictionGate({
+    scene: "s3-schema-guards",
+    question: "Schema constraints off, app validations on. Which of the four bad writes get through?",
+    options: [
+      { id: "none", label: "None: the app validates everything" },
+      { id: "orphan", label: "Only the import script's order" },
+      { id: "three", label: "All but the missing email" },
+      { id: "all", label: "All four" }
+    ],
+    correct: "three",
+    why: "The model only guards writes that go through the model, one request at a time. The script and the admin DELETE skip it entirely, and the two signups both pass the uniqueness check before either has saved. Only the empty email is caught. Now switch the schema guards on and watch each write bounce off.",
+    onAnswer: id => { answer = id; paint(); }
+  });
+
+  root.append(prose, leversBox, lockNote, writesEl, outcome, gate);
+  paint();
+  if (saved.answer) gate.restore(saved.answer);
+
+  return {
+    getState: () => ({ answer, levers: { ...lv } }),
+    restoreRecord: r => gate.restore(r.answer_id),
+    stateLine: () => `${answer ? `predicted "${answer}"` : "no prediction yet"}; FK ${lv.fk ? `on (ON DELETE ${lv.onDelete})` : "off"}, UNIQUE email ${lv.unique ? "on" : "off"}, NOT NULL email ${lv.notnull ? "on" : "off"}, app validations ${lv.app ? "on" : "off"}`,
+    stepper: () => null
+  };
+}
+
+function buildCost(root, saved = {}) {
+  const lv = { strategy: "lazy", index: false, size: "1m", ...(saved.levers || {}) };
+  let answer = null;
+  const IDS = [1, 2, 1, 3, 5, 2, 1, 4, 5, 3];
+  const STRATS = [
+    { id: "lazy", label: "Lazy loop", code: "Order.limit(10).each { |o| puts o.customer.name }" },
+    { id: "includes", label: "includes", code: "Order.includes(:customer).limit(10).each { … }" },
+    { id: "join", label: "eager_load (JOIN)", code: "Order.eager_load(:customer).limit(10).each { … }" }
+  ];
+  function log(strategy) {
+    if (strategy === "lazy") return ["SELECT * FROM orders LIMIT 10",
+      ...IDS.map(id => `SELECT * FROM customers WHERE id = ${id} LIMIT 1`)];
+    if (strategy === "includes") return ["SELECT * FROM orders LIMIT 10",
+      `SELECT * FROM customers WHERE id IN (${[...new Set(IDS)].join(", ")})`];
+    return ["SELECT orders.*, customers.* FROM orders\n  LEFT OUTER JOIN customers ON customers.id = orders.customer_id\n  LIMIT 10"];
+  }
+
+  const prose = el("p", { class: "prose" },
+    "Normalizing moved the customer's name out of orders, so showing it now means reaching into another table. Two everyday pages pay that cost: the order list, and one customer's order history.");
+
+  const stratSegs = STRATS.map(st => {
+    const b = el("button", { class: "seg", type: "button", id: `s4-strat-${st.id}` }, st.label);
+    b.addEventListener("click", () => set("strategy", st.id));
+    return b;
+  });
+  const idxOn = el("button", { class: "seg", type: "button", id: "s4-idx-on" }, "on");
+  const idxOff = el("button", { class: "seg", type: "button", id: "s4-idx-off" }, "off");
+  idxOn.addEventListener("click", () => set("index", true));
+  idxOff.addEventListener("click", () => set("index", false));
+  const sizeSegs = [["1k", "1,000"], ["1m", "1,000,000"]].map(([id, label]) => {
+    const b = el("button", { class: "seg", type: "button", id: `s4-size-${id}` }, label);
+    b.addEventListener("click", () => set("size", id));
+    return b;
+  });
+
+  // Panel A: the order list
+  const codeA = el("pre", { class: "code" });
+  const tripsA = el("div", { class: "trips" });
+  const logA = el("ol", { class: "qlog" });
+  const panelA = el("div", { class: "panel" },
+    el("h4", {}, "Page 1 · the order list: 10 orders with the customer's name"),
+    el("div", { class: "lever" }, el("div", { class: "lever-name" }, "Loading", el("small", {}, "How the app fetches each order's customer.")), el("div", { class: "lever-group" }, stratSegs)),
+    codeA, tripsA, logA);
+
+  // Panel B: one customer's orders
+  const planB = el("div", { class: "plan" });
+  const panelB = el("div", { class: "panel" },
+    el("h4", {}, "Page 2 · Ana's order history"),
+    el("pre", { class: "code" }, "SELECT * FROM orders WHERE customer_id = 1;  -- Ana has 3 orders"),
+    el("div", { class: "lever" }, el("div", { class: "lever-name" }, "Index on orders.customer_id", el("small", {}, "The foreign key column. Postgres does not index it for you.")), el("div", { class: "lever-group" }, idxOn, idxOff)),
+    el("div", { class: "lever" }, el("div", { class: "lever-name" }, "Rows in orders", el("small", {}, "A young shop, then a few years later.")), el("div", { class: "lever-group" }, sizeSegs)),
+    planB);
+
+  const lockNote = el("p", { class: "lock-note" }, "Make your prediction below to see the queries and unlock the switches.");
+  const outcome = el("p", { class: "outcome", hidden: true },
+    "The usual costs of a normalized schema are round trips and a missing index, not the join itself. Fix them in the app (includes or a join) and in the schema (index the foreign key; Rails' t.references does by default). Copying the name into orders would also remove the query, but it brings back the update anomaly from scene 1.");
+
+  function set(k, v) { if (!answer) return; lv[k] = v; paint(true); queueSave(); }
+
+  function paint(changed) {
+    stratSegs.forEach((b, i) => { b.setAttribute("aria-pressed", String(lv.strategy === STRATS[i].id)); b.disabled = !answer; });
+    idxOn.setAttribute("aria-pressed", String(lv.index)); idxOff.setAttribute("aria-pressed", String(!lv.index));
+    sizeSegs.forEach((b, i) => { b.setAttribute("aria-pressed", String(lv.size === ["1k", "1m"][i])); b.disabled = !answer; });
+    idxOn.disabled = idxOff.disabled = !answer;
+    const st = STRATS.find(x => x.id === lv.strategy);
+    codeA.textContent = st.code;
+    if (!answer) {
+      tripsA.innerHTML = "<span class=\"big\">?</span> queries";
+      logA.replaceChildren(); planB.innerHTML = "<span class=\"verdict-badge hidden\">?</span>";
+    } else {
+      const q = log(lv.strategy);
+      tripsA.innerHTML = `<span class="big">${q.length}</span> ${q.length === 1 ? "query" : "queries"}, ${q.length} round ${q.length === 1 ? "trip" : "trips"} to the database <span class="bar" style="--n:${q.length}"></span>`;
+      const shown = q.length > 5 ? [...q.slice(0, 4), `… ${q.length - 5} more like this …`, q[q.length - 1]] : q;
+      logA.replaceChildren(...shown.map(t => el("li", { class: t.startsWith("…") ? "more" : "" }, t)));
+      const rows = lv.size === "1m" ? 1000000 : 1000;
+      planB.innerHTML = lv.index
+        ? `<span class="verdict-badge blocked">Index Scan</span><div class="msg">Reads <b>3</b> rows via <code>index_orders_on_customer_id</code>, at ${rows.toLocaleString("en")} rows or at a hundred million.</div>`
+        : `<span class="verdict-badge ${rows > 1000 ? "through" : "lossy"}">Seq Scan</span><div class="msg">Reads all <b>${rows.toLocaleString("en")}</b> rows to find Ana's 3. ${rows > 1000 ? "This is the slow join people blame on normalization." : "Fast enough at this size, which is why nobody notices until the table grows."} Deleting a customer runs the same scan, because the foreign key check looks for orders that still point at them.</div>`;
+      if (changed) announce(`${q.length} queries on page 1. Page 2: ${lv.index ? "index scan, 3 rows" : `sequential scan, ${rows} rows`}.`);
+    }
+    lockNote.hidden = !!answer; outcome.hidden = !answer;
+  }
+
+  const gate = predictionGate({
+    scene: "s4-cost",
+    question: "Page 1 with the lazy loop: how many queries does showing 10 orders with their customer's name send to the database?",
+    options: [
+      { id: "1", label: "1: the ORM joins for you" },
+      { id: "2", label: "2: one for orders, one for customers" },
+      { id: "11", label: "11: one for orders, then one per order" },
+      { id: "6", label: "6: one for orders, one per distinct customer" }
+    ],
+    correct: "11",
+    why: "Each <code>o.customer</code> is loaded on first touch, one query per order, even when the customer repeats: 1 + 10. That is the N+1 query problem. It's an app loading pattern, so the fix is in the app: switch to includes or eager_load and watch the count drop.",
+    onAnswer: id => { answer = id; paint(); }
+  });
+
+  root.append(prose, lockNote, el("div", { class: "panels" }, panelA, panelB), outcome, gate);
+  paint();
+  if (saved.answer) gate.restore(saved.answer);
+
+  return {
+    getState: () => ({ answer, levers: { ...lv } }),
+    restoreRecord: r => gate.restore(r.answer_id),
+    stateLine: () => `${answer ? `predicted ${answer} queries` : "no prediction yet"}; loading ${lv.strategy}, FK index ${lv.index ? "on" : "off"}, orders rows ${lv.size}`,
+    stepper: () => null
+  };
+}
+
+function buildCopies(root, saved = {}) {
+  const BINS = [
+    { id: "snapshot", label: "Snapshot", note: "records a moment: keep it" },
+    { id: "cache", label: "Cache", note: "derived: fine if every write keeps it true" },
+    { id: "bug", label: "Bug", note: "a second home for a live fact" }
+  ];
+  const ITEMS = [
+    { id: "unit_price", name: "order_lines.unit_price", desc: "Copied from products.price at checkout.", bin: "snapshot",
+      why: "It's what the customer paid then. Joining to today's price would rewrite last month's invoices." },
+    { id: "email", name: "orders.customer_email", desc: "Copied onto each order so the order list needs no join.", bin: "bug",
+      why: "The email is a live fact about the customer. This is scene 1's update anomaly again, to save a join includes does cheaply." },
+    { id: "shipping", name: "orders.shipping_address", desc: "Copied from the customer's address at checkout.", bin: "snapshot",
+      why: "Where this parcel went. When Ana moves, the old order must still show the old address." },
+    { id: "count", name: "customers.orders_count", desc: "Kept up to date so the admin list can sort by it.", bin: "cache",
+      why: "Derived from COUNT(*) over orders. Fine, as long as every write path keeps it true. Try the drift below." },
+    { id: "report", name: "revenue_by_month", desc: "A table rebuilt every night for the dashboard.", bin: "cache",
+      why: "Derived and allowed to be a day old. Staleness is the known, accepted price." }
+  ];
+  const picks = { ...(saved.picks || {}) };
+  let checked = !!saved.checked, unsure = !!saved.unsure;
+
+  const prose = el("p", { class: "prose" },
+    "Normalized does not mean no copies. Sort each copied column, then check your sort.");
+
+  const list = el("div", { class: "sort" });
+  const rows = ITEMS.map(it => {
+    const segs = BINS.map(b => {
+      const btn = el("button", { class: "seg", type: "button", id: `s5-${it.id}-${b.id}` }, b.label);
+      btn.addEventListener("click", () => { if (checked) return; picks[it.id] = b.id; paint(); queueSave(); });
+      return btn;
+    });
+    const mark = el("span", { class: "sort-mark" });
+    const why = el("p", { class: "sort-why", hidden: true }, it.why);
+    const row = el("div", { class: "sort-row" },
+      el("div", { class: "sort-name" }, el("code", {}, it.name), el("small", {}, it.desc)),
+      el("div", { class: "lever-group", role: "group", "aria-label": `Sort ${it.name}` }, segs), mark, why);
+    list.append(row);
+    return { it, segs, mark, why, row };
+  });
+  const legend = el("p", { class: "legend" }, BINS.map(b => el("span", {}, el("b", {}, b.label), ` ${b.note}`)));
+  const checkBtn = el("button", { class: "btn primary", type: "button", id: "s5-check" }, "Check my sort");
+  const unsureBtn = el("button", { class: "btn unsure", type: "button", id: "s5-unsure" }, "I don't know yet, show me");
+  const fb = el("div");
+  checkBtn.addEventListener("click", () => finish(false));
+  unsureBtn.addEventListener("click", () => finish(true));
+
+  // drift lever
+  const drift = { actual: 3, counter: 3, log: [] };
+  Object.assign(drift, saved.drift || {});
+  const OPS = [
+    { id: "checkout", label: "Checkout creates an order", path: "Order.create, the callback runs", d: 1, c: 1 },
+    { id: "import", label: "Import adds 2 orders", path: "Order.insert_all, skips callbacks", d: 2, c: 0 },
+    { id: "delete", label: "Admin deletes an order", path: "Order.where(…).delete_all, skips callbacks", d: -1, c: 0 }
+  ];
+  const actualEl = el("span", { class: "big" }), counterEl = el("span", { class: "big" });
+  const driftNote = el("p", { class: "drift-note", "aria-live": "polite" });
+  const opBtns = OPS.map(o => {
+    const b = el("button", { class: "btn", type: "button", id: `s5-op-${o.id}` }, o.label, el("small", { class: "op-path" }, o.path));
+    b.addEventListener("click", () => { drift.actual += o.d; drift.counter += o.c; drift.log.push(o.id); paintDrift(); queueSave(); });
+    return b;
+  });
+  const reset = el("button", { class: "btn", type: "button", id: "s5-reset" }, "Reset");
+  reset.addEventListener("click", () => { drift.actual = 3; drift.counter = 3; drift.log = []; paintDrift(); queueSave(); });
+  const driftBox = el("div", { class: "panel", hidden: true },
+    el("h4", {}, "Make the counter drift: Ana's orders_count, kept by an after_create callback"),
+    el("div", { class: "drift-nums" },
+      el("div", {}, el("small", {}, "SELECT COUNT(*) FROM orders WHERE customer_id = 1"), actualEl),
+      el("div", {}, el("small", {}, "customers.orders_count"), counterEl)),
+    el("div", { class: "ops-btns" }, opBtns, reset), driftNote);
+  const outcome = el("p", { class: "outcome", hidden: true },
+    "Keep a copy when it records a moment (a snapshot), or when you own every write path and have measured the read it saves (a cache). Rails' counter_cache covers creates and destroys through the model; insert_all, delete_all and raw SQL still skip it, so a counter you care about gets a database trigger or a periodic recount. Anything else is scene 1's update anomaly with extra steps.");
+
+  function paintDrift() {
+    actualEl.textContent = drift.actual; counterEl.textContent = drift.counter;
+    const off = drift.counter - drift.actual;
+    counterEl.className = "big" + (off ? " off" : "");
+    driftNote.textContent = off ? `The counter is off by ${off > 0 ? "+" : ""}${off}. Nothing errors. The admin list just sorts by a wrong number.` : "Counter and reality agree.";
+  }
+
+  async function finish(isUnsure) {
+    if (checked) return;
+    checked = true; unsure = isUnsure;
+    paint();
+    const right = ITEMS.filter(it => picks[it.id] === it.bin).length;
+    const ok = !isUnsure && right === ITEMS.length;
+    announce(isUnsure ? "Here is the sort." : `${right} of ${ITEMS.length} sorted right.`);
+    queueSave();
+    const saved = await record("attempts", {
+      scene: "s5-copies", kind: "prediction", gate: true,
+      answer: isUnsure ? "(unsure)" : ITEMS.map(it => `${it.name}: ${picks[it.id]}`).join("; "),
+      answer_id: isUnsure ? "(unsure)" : JSON.stringify(picks),
+      expected: ITEMS.map(it => `${it.name}: ${it.bin}`).join("; "),
+      correct: ok, unsure: isUnsure, at: new Date().toISOString()
+    });
+    if (!saved && window.claude) fb.append(el("div", { class: "rec" }, "Not recorded."));
+  }
+
+  function paint() {
+    rows.forEach(r => {
+      r.segs.forEach((b, i) => { b.setAttribute("aria-pressed", String(picks[r.it.id] === BINS[i].id)); b.disabled = checked; });
+      const ok = picks[r.it.id] === r.it.bin;
+      r.mark.textContent = checked ? (ok ? "✓" : `✕ ${BINS.find(b => b.id === r.it.bin).label}`) : "";
+      r.mark.className = "sort-mark " + (checked ? (ok ? "right" : "wrong") : "");
+      r.why.hidden = !checked;
+    });
+    const all = ITEMS.every(it => picks[it.id]);
+    checkBtn.disabled = checked || !all; unsureBtn.disabled = checked;
+    if (checked) {
+      const right = ITEMS.filter(it => picks[it.id] === it.bin).length;
+      fb.replaceChildren(html("p", { class: "feedback" }, unsure ? "<b>Here it is.</b> Each row says why." : `<b class="${right === ITEMS.length ? "right" : "wrong"}">${right} of ${ITEMS.length}.</b> Each row says why.`));
+    }
+    driftBox.hidden = !checked; outcome.hidden = !checked;
+    paintDrift();
+  }
+
+  root.append(prose, legend, list, el("div", { class: "ctrls" }, checkBtn, unsureBtn), fb, driftBox, outcome);
+  paint();
+
+  return {
+    getState: () => ({ answer: checked ? (unsure ? "(unsure)" : "checked") : null, picks: { ...picks }, checked, unsure, drift: { ...drift } }),
+    restoreRecord: r => {
+      if (checked) return;
+      if (r.answer_id === "(unsure)") { unsure = true; } else { try { Object.assign(picks, JSON.parse(r.answer_id)); } catch (e) { return; } }
+      checked = true; paint();
+    },
+    stateLine: () => `${checked ? `sorted: ${ITEMS.map(it => `${it.name}=${picks[it.id] || "?"}`).join(", ")}` : `sorting, picked ${Object.keys(picks).length} of ${ITEMS.length}`}; drift: actual ${drift.actual}, counter ${drift.counter}`,
+    stepper: () => null
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Stage: one scene at a time.
+// ---------------------------------------------------------------------------
+const stage = document.getElementById("stage");
+const dots = document.getElementById("dots");
+const built = {};
+let current = 0;
+
+// State survives republishes and reloads: where you are (localStorage plus the viewer's
+// hot-update hook) and which predictions you answered (db).
+const STORE_KEY = "normalization-explorable-v1";
+let BOOT = { scenes: {} }, dbAnswers = {}, saveTimer = null;
+// Scene gates: Next to scene k+1 opens once Claude writes unlocks/<scene k id>. Without db, all open.
+let gatesActive = false, unlocked = new Set();
+function isOpen(i) { return i === 0 || !gatesActive || unlocked.has(SCENES[i - 1].id); }
+function collectState() {
+  const scenes = { ...(BOOT.scenes || {}) };
+  for (const [id, b] of Object.entries(built)) if (b.api.getState) scenes[id] = b.api.getState();
+  return { current, scenes };
+}
+function queueSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(collectState())); } catch (e) { /* storage unavailable */ }
+  }, 50);
+}
+function restoreFromDb(id) {
+  const b = built[id], r = dbAnswers[id];
+  if (b && r && b.api.getState && !b.api.getState().answer) b.api.restoreRecord(r);
+}
+
+function showScene(i) {
+  current = i;
+  const sc = SCENES[i];
+  if (!built[sc.id]) {
+    const sec = el("section", { class: "scene", "aria-labelledby": `${sc.id}-h` });
+    sec.append(el("h2", { id: `${sc.id}-h` }, sc.title));
+    if (sc.build) {
+      const body = el("div", { style: "display:grid;gap:18px" });
+      sec.append(body);
+      const api = sc.build(body, (BOOT.scenes || {})[sc.id] || {});
+      sec.append(askBox(sc.id, i, sc.title, () => api.stateLine(), sec));
+      built[sc.id] = { sec, api };
+    } else {
+      sec.append(el("p", { class: "upcoming" }, "This scene is being built. It arrives in the next turn of the session."));
+      built[sc.id] = { sec, api: { stepper: () => null } };
+    }
+  }
+  stage.replaceChildren(built[sc.id].sec);
+  restoreFromDb(sc.id);
+  queueSave();
+  refreshNav();
+}
+function refreshNav() {
+  const i = current;
+  [...dots.children].forEach((d, j) => {
+    j === i ? d.setAttribute("aria-current", "step") : d.removeAttribute("aria-current");
+    d.disabled = !SCENES[j].build || !isOpen(j);
+  });
+  document.getElementById("count").textContent = `Scene ${i + 1} of ${SCENES.length}`;
+  document.getElementById("prev").disabled = i === 0;
+  const nextB = document.getElementById("next");
+  const last = i === SCENES.length - 1;
+  const locked = !last && !isOpen(i + 1);
+  nextB.disabled = last || locked;
+  nextB.textContent = locked ? `Answer the check in Claude Code to unlock scene ${i + 2}` : "Next →";
+}
+
+SCENES.forEach((sc, i) => dots.append(el("button", {
+  class: "dot", type: "button", disabled: !sc.build, "aria-label": `Scene ${i + 1}: ${sc.title}`,
+  onclick: () => { if (isOpen(i)) showScene(i); }
+})));
+document.getElementById("prev").addEventListener("click", () => showScene(Math.max(0, current - 1)));
+document.getElementById("next").addEventListener("click", () => { if (isOpen(current + 1)) showScene(Math.min(SCENES.length - 1, current + 1)); });
+
+document.addEventListener("keydown", e => {
+  const t = e.target;
+  if (t && (t.tagName === "TEXTAREA" || t.tagName === "INPUT" || t.isContentEditable)) return;
+  const s = built[SCENES[current].id] && built[SCENES[current].id].api.stepper();
+  if (!s) return;
+  if (e.key === "ArrowRight") { s.next(); e.preventDefault(); }
+  else if (e.key === "ArrowLeft") { s.prev(); e.preventDefault(); }
+  else if (e.key === "r" || e.key === "R") { s.replay(); }
+  else if (e.key === " " && (!t || t.tagName !== "BUTTON")) { s.toggle(); e.preventDefault(); }
+});
+
+["click", "input", "change", "keydown"].forEach(t => document.addEventListener(t, queueSave));
+
+function start(data) {
+  let local = {};
+  try { local = JSON.parse(localStorage.getItem(STORE_KEY) || "{}") || {}; } catch (e) { local = {}; }
+  BOOT = data && data.scenes ? data : (local.scenes ? local : { scenes: {} });
+  const want = Math.max(0, Math.min(SCENES.length - 1, BOOT.current || 0));
+  showScene(SCENES[want].build ? want : 0);
+}
+try { window.claude?.hot?.snapshot?.(() => collectState()); } catch (e) { /* no hot updates here */ }
+const hot = window.claude && window.claude.hot;
+if (hot && hot.ready) hot.ready(start); else start((hot && hot.data) || {});
+
+capsReady.then(() => {
+  if (!db) return;
+  gatesActive = true;
+  refreshNav();
+  let answeredOnce = false;
+  const timer = setTimeout(() => { if (!answeredOnce) { gatesActive = false; refreshNav(); } }, 10000);
+  try {
+    db.collection("unlocks").onSnapshot(snap => {
+      answeredOnce = true; clearTimeout(timer);
+      unlocked = new Set(snap.docs.filter(d => d.exists).map(d => d.id));
+      // A scene restored from an earlier visit stays reachable only if it is open.
+      let back = current; while (back > 0 && !isOpen(back)) back--;
+      if (back !== current) showScene(back); else refreshNav();
+    }, () => { clearTimeout(timer); gatesActive = false; refreshNav(); });
+  } catch (e) { gatesActive = false; refreshNav(); }
+});
+
+capsReady.then(async () => {
+  if (!db) return;
+  try {
+    const snap = await db.collection("attempts").get();
+    snap.docs.forEach(d => {
+      const r = d.data();
+      if (r.kind !== "prediction" && !r.gate) return;
+      if (!dbAnswers[r.scene] || r.at > dbAnswers[r.scene].at) dbAnswers[r.scene] = r;
+    });
+    Object.keys(built).forEach(restoreFromDb);
+  } catch (e) { /* records unavailable: the page still works */ }
+});
+</script>

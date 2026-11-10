@@ -49,7 +49,19 @@ In Anthropic's 2026 trial, debugging was where learning with AI fell furthest be
   gives. Several cases are several inputs, and a good second case catches the tempting wrong answer.
 - **`explain`**: the why, shown once it is over. It is feedback, not an answer to recall, so naming the tempting wrong answer is fine and the gate doesn't count it as extra. It can still be wrong, or give the card away. A card's back limits apply.
 - **Blanks**: always `c1`. Every blank is hidden and answered together, as one review.
-- Only Ruby has a runner so far. It runs the newest Ruby mise has, which can differ between machines.
+- **`lang`** is `ruby`, `python`, `javascript`, `typescript` or `postgres`. Each has a real runner, and
+  the newest interpreter on the machine runs it, which can differ between machines. A `goal` is an
+  expression in that language, compared the language's own way: `==` in Ruby and Python (Python takes
+  `True` for `True`, never for `1`); deep and strict in JavaScript and TypeScript, so `{ a: 1 }` is
+  an object and a `Set` equals a `Set`.
+- **TypeScript** is type-checked (`tsc --strict`) before any case runs, so a type error is what the
+  developer sees first. That makes "why does the compiler refuse this" a card Ruby and JavaScript can't
+  have. Only `console` is declared: no DOM, no Node types.
+- **Postgres**: `source` is SQL that sets up an empty database. A case's `expr` is one query and its
+  `goal` the rows as an array of row arrays, `[[1, "ada"], [2, "bob"]]`. Add `ORDER BY` when order is
+  part of the answer, because rows are compared as they come. Each case is rolled back, so an
+  `UPDATE ... RETURNING` doesn't change the next case. Numeric values are the text Postgres prints
+  (`"1.50"`), a bigint is a number, a date is its ISO text.
 
 ## Checking one: run it, don't trust it
 
@@ -74,8 +86,9 @@ Execute Program's rules, which the deck server holds:
 - **Tries are unlimited, and wrong ones and errors cost nothing.** A pass is Good however many it took.
 - **Giving up is the one failure**: it shows the solution and rates Again.
 - The developer doesn't rate it. The result does.
-- A `predict` card shows nothing of the real value until it passes. The others show their output as
-  the developer types, with errors as Ruby prints them.
+- Nothing runs until the developer submits (Shift+Enter), never while typing. A `predict` card shows
+  nothing of the real value until it passes. The others show the output of each submit, with errors as
+  the language prints them.
 
 On the phone there is no runner, so a code card is an ordinary cloze or front-and-back card, rated by
 hand. The schedule is shared. It stays FSRS: Execute Program's own review levels aren't copied.

@@ -33,6 +33,7 @@ flashcard_ids:
 - cmne7xzx902rt0mso4dku4tk9
 - cmw1tc6k00000a91aca7fe82i
 - cmw1tc70u0001a91asoabfitl
+- cmwaxtdr20000261aqw8fu2uj
 explorables:
 - https://claude.ai/artifact/7t2SJ2yyQZZb6sYLbSADFa
 ---
