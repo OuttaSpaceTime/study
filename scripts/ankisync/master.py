@@ -68,11 +68,13 @@ def read_tombstones(con: sqlite3.Connection) -> set[str]:
 
 
 def soft_delete_card(con: sqlite3.Connection, card_id: str) -> None:
-    """Record a deletion made on another machine and drop our row and history for it.
+    """Record a deletion made on another machine and drop our row, history and note for it.
 
-    Review rows go explicitly: Python's sqlite3 leaves foreign keys off, so the
-    schema's ON DELETE CASCADE never fires here the way it does for Prisma's
-    delete, and orphaned reviews would still count toward calibration.
+    Review and CardNote rows go explicitly: Python's sqlite3 leaves foreign keys
+    off, so the schema's ON DELETE CASCADE never fires here the way it does for
+    Prisma's delete. Orphaned reviews would still count toward calibration, and
+    an orphaned note makes flashcard-mcp's listCardNotes throw on its card
+    relation. CardNote is skipped on a database that predates the table.
     """
     con.execute(
         """CREATE TABLE IF NOT EXISTS DeletedCard (
@@ -85,6 +87,8 @@ def soft_delete_card(con: sqlite3.Connection, card_id: str) -> None:
         (card_id, format_master_dt(now_utc())),
     )
     con.execute("DELETE FROM Review WHERE cardId = ?", (card_id,))
+    if con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='CardNote'").fetchone():
+        con.execute("DELETE FROM CardNote WHERE cardId = ?", (card_id,))
     con.execute("DELETE FROM Card WHERE id = ?", (card_id,))
 
 
@@ -132,17 +136,24 @@ def apply_pull_sched(con: sqlite3.Connection, card_id: str, sched: Sched) -> Non
     """Overwrite a card's scheduling block with the Anki-side winner.
 
     stability/difficulty keep their current values when Anki has no FSRS memory
-    state (e.g. reviews done on a device with FSRS disabled).
+    state (e.g. reviews done on a device with FSRS disabled), but only a real,
+    positive local one: a card that was New here holds 0.0, and a non-New card
+    with stability<=0 is what flashcard-mcp resets to New, so it gets
+    _fallback_memory_state's values instead. A pulled New card keeps its 0.0.
     """
+    fb_stability, fb_difficulty = _fallback_memory_state(sched)
     con.execute(
-        """UPDATE Card SET due = ?, stability = COALESCE(?, stability),
-                  difficulty = COALESCE(?, difficulty), reps = ?,
-                  lapses = ?, state = ?, lastReview = ?, interval = ?
+        """UPDATE Card SET due = ?,
+                  stability = COALESCE(?, CASE WHEN stability > 0 THEN stability ELSE ? END),
+                  difficulty = COALESCE(?, CASE WHEN difficulty > 0 THEN difficulty ELSE ? END),
+                  reps = ?, lapses = ?, state = ?, lastReview = ?, interval = ?
            WHERE id = ?""",
         (
             format_master_dt(sched.due) if sched.due else None,
             sched.stability,
+            fb_stability,
             sched.difficulty,
+            fb_difficulty,
             sched.reps,
             sched.lapses,
             sched.state,

@@ -12,7 +12,7 @@ import sqlite3
 from dataclasses import replace
 from datetime import UTC, datetime
 
-from scripts.ankisync.master import _fallback_memory_state, import_card
+from scripts.ankisync.master import _fallback_memory_state, apply_pull_sched, import_card
 from scripts.ankisync.merge import AnkiCard, Sched
 
 
@@ -80,3 +80,27 @@ class TestImportKeepsTheExercise:
         import_card(con, card)
         import_card(con, replace(card, guid="cmne7xoxj002z0msoiuekt37d", exercise=""))
         assert [r[0] for r in con.execute("SELECT exercise FROM Card ORDER BY id")] == ['{"kind":"fill"}', None]
+
+
+class TestPullKeepsAUsableMemoryState:
+    """A pull with no Anki memory state must not leave a non-New card at stability 0."""
+
+    def _pulled(self, stability, difficulty, **sched):
+        con = sqlite3.connect(":memory:")
+        con.execute("CREATE TABLE Card (id TEXT, due TEXT, stability REAL, difficulty REAL, reps INT,"
+                    " lapses INT, state INT, lastReview TEXT, interval REAL)")
+        con.execute("INSERT INTO Card (id, stability, difficulty, state) VALUES ('c', ?, ?, 0)",
+                    (stability, difficulty))
+        apply_pull_sched(con, "c", _sched(**sched))
+        return con.execute("SELECT stability, difficulty FROM Card").fetchone()
+
+    def test_a_locally_new_card_gets_the_fallback(self):
+        stability, difficulty = self._pulled(0.0, 0.0, interval=7.0)
+        assert stability == 7.0
+        assert 1 <= difficulty <= 10
+
+    def test_a_real_local_memory_state_is_kept(self):
+        assert self._pulled(12.5, 4.2) == (12.5, 4.2)
+
+    def test_a_pulled_new_card_stays_at_zero(self):
+        assert self._pulled(0.0, 0.0, state=0, reps=0, interval=0.0) == (0.0, 0.0)

@@ -16,7 +16,7 @@ from types import SimpleNamespace
 import pytest
 from anki.collection import Collection
 
-from scripts.ankisync import bridge, cli
+from scripts.ankisync import bridge, cli, master
 from scripts.ankisync.convert import format_master_dt
 from scripts.ankisync.merge import DELETED_TAG
 
@@ -121,6 +121,20 @@ def note_of(env, guid):
 def test_fixture_starts_converged(env, capsys):
     assert plan_line(env, capsys) == "plan: nothing to do"
     assert note_of(env, GONE).revlog == REVIEWS_EACH
+
+
+def test_soft_delete_drops_the_cards_note(env):
+    """No ON DELETE CASCADE here, so a left-behind CardNote would break listCardNotes."""
+    with sqlite3.connect(env.master) as con:
+        con.execute(
+            """CREATE TABLE CardNote (cardId TEXT PRIMARY KEY REFERENCES Card(id) ON DELETE CASCADE,
+                                      body TEXT NOT NULL, createdAt DATETIME, updatedAt DATETIME)"""
+        )
+        con.executemany(
+            "INSERT INTO CardNote (cardId, body) VALUES (?, 'fix later')", [(KEEP,), (GONE,)]
+        )
+        master.soft_delete_card(con, GONE)
+    assert master_rows(env, "SELECT cardId FROM CardNote") == [(KEEP,)]
 
 
 class TestDeletedHere:
