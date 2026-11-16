@@ -4,8 +4,9 @@ The deck server schedules with ts-fsrs and shows the rating keys' intervals,
 so it must use the options Anki uses or the two disagree ("Good" 10m here, 6d
 there). The bridge collection has the desktop's deck options after a sync
 down, so they are read from it on every sync and written to master.db's
-Config: learning and relearning steps, desired retention and the FSRS weights.
-Only these four columns are ever written, and only when they differ.
+Config: learning and relearning steps, desired retention, the FSRS weights,
+Easy Days and the daily limits. Only these columns are ever written, and only
+when they differ.
 
 One preset is used for everything: the one most cards' decks point at. The
 study repo keeps all its decks on one preset; a deck with its own would need
@@ -24,6 +25,19 @@ from scripts.ankisync import master
 # empty params until the user optimizes, which means "its defaults", the same as
 # ts-fsrs's.
 _WEIGHT_COUNTS = (21, 19)
+
+
+# The Config columns mirrored, in master.db's names.
+_COLUMNS = (
+    "learningSteps",
+    "relearningSteps",
+    "requestRetention",
+    "fsrsWeights",
+    "easyDays",
+    "newPerDay",
+    "reviewsPerDay",
+    "newCardsIgnoreReviewLimit",
+)
 
 
 def _fmt_step(minutes: float) -> str:
@@ -53,18 +67,26 @@ def read_options(col: Collection) -> dict | None:
         "learningSteps": ",".join(_fmt_step(m) for m in cfg.learn_steps),
         "relearningSteps": ",".join(_fmt_step(m) for m in cfg.relearn_steps),
         "requestRetention": round(cfg.desired_retention, 4) or 0.9,
-        "fsrsWeights": json.dumps([round(w, 8) for w in weights]) if len(weights) in _WEIGHT_COUNTS else "",
+        "fsrsWeights": json.dumps([round(w, 8) for w in weights])
+        if len(weights) in _WEIGHT_COUNTS
+        else "",
+        # Seven loads, Monday first; all normal (Anki's default) is the feature off.
+        "newPerDay": cfg.new_per_day,
+        "reviewsPerDay": cfg.reviews_per_day,
+        # Collection-wide in Anki, not on the preset.
+        "newCardsIgnoreReviewLimit": int(bool(col.get_config("newCardsIgnoreReviewLimit", False))),
+        "easyDays": json.dumps([round(p, 4) for p in days])
+        if len(days := list(cfg.easy_days_percentages)) == 7 and any(p < 1 for p in days)
+        else "",
     }
 
 
 def write_options(con: sqlite3.Connection, opts: dict) -> list[str]:
     """Write the options that changed to Config; returns the changed column names."""
-    row = con.execute(
-        "select learningSteps, relearningSteps, requestRetention, fsrsWeights from Config where id = 'default'"
-    ).fetchone()
+    names = list(_COLUMNS)
+    row = con.execute(f"select {', '.join(names)} from Config where id = 'default'").fetchone()  # noqa: S608 - fixed list
     if row is None:  # the deck server creates it on first use; nothing to mirror into yet
         return []
-    names = ["learningSteps", "relearningSteps", "requestRetention", "fsrsWeights"]
     changed = [n for n, old in zip(names, row, strict=True) if old != opts[n]]
     for n in changed:
         con.execute(f"update Config set {n} = ? where id = 'default'", (opts[n],))  # noqa: S608 - n is from the fixed list

@@ -369,34 +369,23 @@ function stepper({ count, render }) {
     toggle() { play.click(); }, replay() { stop(); go(0); } };
 }
 
-// The page never answers: a question goes to the Claude Code chat (comments → sendToClaude),
-// or to the clipboard when that is not possible here.
+// The page never answers: a question is copied to the clipboard with the scene's state,
+// and the learner pastes it into the Claude Code chat.
 function askBox(sceneId, sceneIndex, sceneTitle, getState, sectionEl) {
   const id = `${sceneId}-ask`;
-  const ta = el("textarea", { id, maxlength: 3000, placeholder: "A question about this scene. It goes to your Claude Code chat, with what you see here." });
+  const ta = el("textarea", { id, maxlength: 3000, placeholder: "A question about this scene. It is copied with what you see here; paste it into your Claude Code chat." });
   const out = el("p", { class: "ask-out", "aria-live": "polite" });
-  const send = el("button", { class: "btn primary", type: "button" }, "Send to Claude Code");
+  const send = el("button", { class: "btn primary", type: "button" }, "Copy for Claude Code");
   send.addEventListener("click", async () => {
     const q = ta.value.trim();
     if (!q) return;
     const state = getState();
     const text = `[Scene ${sceneIndex + 1}/${SCENES.length}: ${sceneTitle}] ${q}\n\nState: ${state}`;
     send.disabled = true;
-    let sent = "clipboard";
-    try {
-      await capsReady;
-      if (comments && (await comments.canSendToClaude()) === "available") {
-        await comments.sendToClaude({ anchor: await comments.anchorFor(sectionEl), text });
-        sent = "chat";
-      }
-    } catch (e) { sent = "clipboard"; }
-    if (sent === "chat") {
-      out.textContent = "Sent to your Claude Code chat. The answer comes there.";
-      ta.value = "";
-    } else {
-      try { await navigator.clipboard.writeText(text); out.textContent = "Copied. Paste it into your Claude Code chat."; }
-      catch (e) { ta.value = text; ta.select(); out.textContent = "Select-all is on: copy this text into your Claude Code chat."; }
-    }
+    // Clipboard only: a posted comment thread got answered inside the page instead of in the chat.
+    const sent = "clipboard";
+    try { await navigator.clipboard.writeText(text); out.textContent = "Copied. Paste it into your Claude Code chat."; ta.value = ""; }
+    catch (e) { ta.value = text; ta.select(); out.textContent = "Select-all is on: copy this text into your Claude Code chat."; }
     send.disabled = false;
     record("questions", { scene: sceneId, question: q, state, sent, at: new Date().toISOString() });
   });

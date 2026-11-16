@@ -131,10 +131,10 @@ Example when nothing is due:
 | Pressure verdict | `maxNewCards` | `maxReviewCards` |
 |------------------|--------------:|-----------------:|
 | `ok` | 5 (default) | 15 (default) |
-| `warn` | **0** | 15 |
-| `pause` | **0** | 15 |
+| `warn` (review backlog) | **0** | 15 |
+| `pause` (review backlog) | **0** | 15 |
 
-**The trigger is the overall verdict, whichever axis raised it — never a single axis.** A `warn` raised only by `newToday` still means `maxNewCards: 0`: cards already added today are load the developer has not yet felt, so adding more on top is exactly the move to refuse. Over-adding under load is the recurring failure mode (see `feedback_srs_over_adding`), so do not reason from `flashcardsDue` in isolation to justify pulling new cards. The developer can override explicitly ("include new cards anyway") — pass their requested number and note the override in the session log. At `pause` the server refuses fresh `create_card` calls outright, so an override there can only widen the *study* queue, never create material.
+**The trigger is the review backlog axis (`flashcardsDue`) only, never `newToday`.** `warn`/`pause` raised by the review backlog means `maxNewCards: 0`. A `warn` raised only by `newToday` (cards added today) is about creating cards, not studying them: studying cards already made adds no load, and holding them back locked the developer out of their own fresh cards (2026-11-11), so use the default `maxNewCards`. Omvida applies the same rule. The developer can override explicitly ("include new cards anyway") — pass their requested number and note the override in the session log. At `pause` the server refuses fresh `create_card` calls outright, so an override there can only widen the *study* queue, never create material.
 
 **Surface the cap in the opening line of Phase 2** so the developer never wonders where the new cards went. Example:
 

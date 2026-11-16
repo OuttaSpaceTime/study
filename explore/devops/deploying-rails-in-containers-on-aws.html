@@ -1,0 +1,1050 @@
+<title>Shipping Rails in Containers</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,600..800&family=IBM+Plex+Sans:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one narrow column, a scene stepper, each scene one working surface (stacks, layers, buckets, task tiles). */
+:root {
+  --bg: #eef1f4;
+  --surface: #ffffff;
+  --sunk: #e2e7ec;
+  --ink: #141a21;
+  --muted: #56616d;
+  --line: #c8d0d8;
+  --accent: #0d5f8c;
+  --v1: #4f6478;
+  --v2: #a85f00;
+  --ok: #1c7a45;
+  --bad: #b3261e;
+  --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1318; --surface: #151c23; --sunk: #1d262f; --ink: #e4eaf0; --muted: #98a6b4;
+    --line: #2b3742; --accent: #5cb6e8; --v1: #9db2c7; --v2: #f0a640; --ok: #5ccb86; --bad: #f2777e;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1318; --surface: #151c23; --sunk: #1d262f; --ink: #e4eaf0; --muted: #98a6b4;
+  --line: #2b3742; --accent: #5cb6e8; --v1: #9db2c7; --v2: #f0a640; --ok: #5ccb86; --bad: #f2777e;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--ink);
+  font: 17px/1.5 var(--f-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 56px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: grid; gap: 20px; }
+header { display: grid; gap: 6px; }
+.eyebrow { font: 600 12px/1 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font: 800 clamp(30px, 5.5vw, 46px)/1.02 var(--f-display); font-stretch: 82%; margin: 0; text-wrap: balance; letter-spacing: -.005em; text-transform: uppercase; }
+.promise { margin: 0; color: var(--muted); max-width: 62ch; }
+code, .mono { font-family: var(--f-mono); font-size: .86em; }
+
+/* stepper */
+nav.stepper { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.dots { display: flex; gap: 6px; flex: 1; min-width: 0; }
+.dot { flex: 1; height: 6px; border-radius: 1px; background: var(--line); border: 0; padding: 0; cursor: pointer; }
+.dot[aria-current="step"] { background: var(--accent); }
+.dot:disabled { cursor: default; opacity: .5; }
+.count { font: 600 13px/1 var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+button { font: inherit; color: inherit; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 7px 12px; cursor: pointer; font-size: 15px; line-height: 1.2; }
+.btn:hover:not(:disabled) { border-color: var(--accent); }
+.btn:disabled { opacity: .45; cursor: default; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 700; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* scene */
+.scene { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 22px; display: grid; gap: 18px; }
+.scene h2 { font: 700 clamp(21px, 3.4vw, 27px)/1.12 var(--f-display); font-stretch: 90%; margin: 0; text-wrap: balance; }
+.prose { margin: 0; max-width: 64ch; }
+.upcoming { color: var(--muted); }
+.ctrls { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.ctrls .count { margin-left: 4px; }
+.outcome { margin: 0; padding: 10px 12px; border-left: 3px solid var(--accent); background: var(--sunk); border-radius: 0 6px 6px 0; }
+.lock-note { margin: 0; font-size: 14px; color: var(--muted); }
+
+/* prediction gate */
+.gate { border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 10px; }
+.gate .q { font-weight: 700; margin: 0; }
+.opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.opt { text-align: left; border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 10px 12px; cursor: pointer; font-size: 16px; display: flex; gap: 8px; }
+.opt:hover:not(:disabled) { border-color: var(--accent); }
+.opt:disabled { cursor: default; }
+.opt .mark { font-family: var(--f-mono); font-weight: 600; min-width: 1.2em; }
+.opt.right { border-color: var(--ok); }
+.opt.wrong { border-color: var(--bad); }
+.opt.right .mark { color: var(--ok); }
+.opt.wrong .mark { color: var(--bad); }
+.feedback { margin: 0; padding: 10px 12px; border-radius: 8px; background: var(--sunk); }
+.feedback b.right { color: var(--ok); }
+.feedback b.wrong { color: var(--bad); }
+.rec { font-size: 12px; color: var(--muted); }
+.btn.unsure { font-size: 14px; color: var(--muted); }
+
+/* learn box (fill-in steps) */
+.learn { display: grid; gap: 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+.learn .tagline { font: 600 11px/1 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.learn p { margin: 0; }
+.learn .q { font-weight: 700; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font: 600 13.5px/1.25 var(--f-body); cursor: pointer; text-align: left; }
+.chip:hover:not(:disabled) { border-color: var(--accent); }
+.chip:disabled { cursor: default; }
+.chip.wrong { border-color: var(--bad); color: var(--bad); text-decoration: line-through; }
+.chip.right { border-color: var(--ok); color: var(--ok); }
+.hint { color: var(--v2); }
+
+/* ask */
+details.ask { border-top: 1px solid var(--line); padding-top: 12px; }
+details.ask summary { cursor: pointer; font-weight: 700; color: var(--muted); }
+.ask-body { display: grid; gap: 8px; margin-top: 10px; }
+.ask textarea { width: 100%; min-height: 70px; resize: vertical; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; background: var(--bg); color: var(--ink); font: 16px/1.4 var(--f-body); }
+.ask-out { margin: 0; font-size: 14px; color: var(--muted); }
+.ask-out:empty { display: none; }
+
+/* scene 1: stacks */
+.stacks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.stack-col { display: grid; gap: 6px; align-content: end; min-width: 0; }
+.stack-col h4 { margin: 0; font: 700 14px/1.2 var(--f-mono); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.stack { display: flex; flex-direction: column-reverse; gap: 4px; min-height: 340px; justify-content: flex-start; }
+.layer { border: 1px solid var(--line); border-radius: 4px; padding: 6px 10px; background: var(--bg); display: grid; gap: 1px; transition: border-color .35s, background-color .35s, opacity .35s; }
+.layer b { font: 600 14px/1.25 var(--f-body); }
+.layer small { font: 12px/1.3 var(--f-mono); color: var(--muted); }
+.layer.shared { background: var(--sunk); }
+.layer.hl { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.layer.ghost { border-style: dashed; opacity: .55; }
+.boxed { border: 2px dashed var(--accent); border-radius: 6px; padding: 6px; display: flex; flex-direction: column-reverse; gap: 4px; position: relative; }
+.boxed .ns { display: flex; flex-wrap: wrap; gap: 4px; }
+.ns span { font: 600 11px/1 var(--f-mono); padding: 4px 6px; border-radius: 3px; background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
+.ns span.hl { background: var(--accent); color: var(--bg); }
+.syscall { font: 600 11.5px/1.3 var(--f-mono); color: var(--accent); padding: 2px 4px; }
+
+/* scene 2: build layers */
+.levers { display: grid; gap: 8px; }
+.lever { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.lever-name { font: 600 13.5px/1.3 var(--f-mono); min-width: 0; flex: 1 1 220px; }
+.lever-name small { display: block; font: 400 13px/1.3 var(--f-body); color: var(--muted); }
+.lever-group { display: flex; gap: 4px; flex-wrap: wrap; }
+.seg { border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 5px 12px; font-size: 14px; cursor: pointer; }
+.seg[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.seg:disabled { cursor: default; opacity: .6; }
+.dockerfile { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--bg); }
+.df-head { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; padding: 8px 12px; border-bottom: 1px solid var(--line); font: 600 13px/1.2 var(--f-mono); color: var(--muted); }
+.df-head b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.df-row { display: grid; grid-template-columns: minmax(0, 1fr) 118px; gap: 8px; align-items: center; padding: 7px 12px; border-bottom: 1px solid var(--line); transition: background-color .35s; }
+.df-row:last-child { border-bottom: 0; }
+.df-row code { font-size: 12.5px; overflow-wrap: anywhere; }
+.df-row .st { font: 600 12px/1.2 var(--f-mono); text-align: right; font-variant-numeric: tabular-nums; }
+.df-row.cached .st { color: var(--ok); }
+.df-row.run { background: color-mix(in srgb, var(--v2) 13%, transparent); }
+.df-row.run .st { color: var(--v2); }
+.df-row.first { box-shadow: inset 3px 0 0 var(--v2); }
+.df-row.unknown .st { color: var(--muted); }
+.final-img { display: grid; gap: 6px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+.final-img h4 { margin: 0; font: 700 14px/1.2 var(--f-mono); }
+.final-img ul { margin: 0; padding-left: 18px; font-size: 15px; }
+.final-img li.gone { color: var(--muted); text-decoration: line-through; }
+
+/* scene 3: buckets */
+.incoming { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border: 1px dashed var(--accent); border-radius: 8px; }
+.incoming .tag { font: 600 11px/1 var(--f-mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.incoming b { font-size: 16px; }
+.buckets { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.bucket { border: 1px solid var(--line); border-radius: 8px; background: var(--bg); min-width: 0; display: grid; align-content: start; }
+.bucket h4 { margin: 0; padding: 8px 10px; border-bottom: 1px solid var(--line); font: 700 13.5px/1.25 var(--f-display); }
+.bucket h4 small { display: block; font: 400 12px/1.3 var(--f-mono); color: var(--muted); }
+.bucket ul { list-style: none; margin: 0; padding: 8px; display: grid; gap: 5px; min-height: 60px; }
+.bucket li { font-size: 14px; padding: 5px 8px; border-radius: 4px; background: var(--surface); border: 1px solid var(--line); overflow-wrap: anywhere; }
+.bucket li.new { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+
+/* scene 4: rollout */
+.rollout { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+.ro-top { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font: 600 13px/1.3 var(--f-mono); color: var(--muted); }
+.ro-top b { color: var(--ink); }
+.alb { justify-self: center; font: 700 13px/1.2 var(--f-mono); padding: 7px 14px; border-radius: 4px; background: var(--ink); color: var(--bg); text-align: center; }
+.tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.tile { border: 1px solid var(--line); border-radius: 6px; padding: 8px; display: grid; gap: 4px; background: var(--surface); min-width: 0; transition: border-color .35s, opacity .35s, background-color .35s; }
+.tile .ver { font: 700 13px/1 var(--f-mono); }
+.tile.v1 .ver { color: var(--v1); }
+.tile.v2 .ver { color: var(--v2); }
+.tile .state { font: 600 11.5px/1.25 var(--f-mono); color: var(--muted); }
+.tile .traffic { font: 600 11.5px/1.2 var(--f-mono); }
+.tile .traffic.yes { color: var(--ok); }
+.tile .traffic.no { color: var(--muted); }
+.tile.serving { border-color: var(--ok); }
+.tile.absent { opacity: .3; border-style: dashed; }
+.tile.hl { box-shadow: 0 0 0 2px var(--accent); }
+.hc { font: 12px/1.4 var(--f-mono); color: var(--muted); }
+
+/* scene 5: migrations */
+.mig-pick { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.mig-pick .seg { border-radius: 6px; text-align: left; padding: 8px 10px; display: grid; gap: 2px; }
+.mig-pick .seg code { font-size: 12px; }
+.board { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.lane { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: var(--bg); display: grid; gap: 6px; align-content: start; min-width: 0; }
+.lane h4 { margin: 0; font: 700 14px/1.2 var(--f-mono); }
+.lane.v1 h4 { color: var(--v1); }
+.lane.v2 h4 { color: var(--v2); }
+.lane .res { font-size: 15px; }
+.lane .err { font: 12px/1.45 var(--f-mono); color: var(--bad); overflow-wrap: anywhere; }
+.badge { justify-self: start; font: 600 12px/1 var(--f-mono); padding: 4px 8px; border-radius: 999px; border: 1px solid currentColor; }
+.badge.ok { color: var(--ok); }
+.badge.bad { color: var(--bad); }
+.safe { margin: 0; padding: 10px 12px; border-radius: 8px; background: var(--sunk); font-size: 15.5px; }
+.opinion { font-size: 14px; color: var(--muted); margin: 0; }
+
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (max-width: 640px) {
+  .scene { padding: 16px; }
+  .opts, .mig-pick, .board { grid-template-columns: minmax(0, 1fr); }
+  .buckets { grid-template-columns: minmax(0, 1fr); }
+  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stack { min-height: 300px; }
+  .df-row { grid-template-columns: minmax(0, 1fr) 92px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Explorable · Docker deploys of Rails on AWS</div>
+    <h1>Shipping Rails in Containers</h1>
+    <p class="promise">Take apart what a container is, how its image gets built, what goes into it, and what a deploy on ECS does to live traffic. By the end you can explain why the image is the release, and spot a migration that breaks a rolling deploy.</p>
+  </header>
+  <nav class="stepper" aria-label="Scenes">
+    <button class="btn" id="prev" type="button">← Back</button>
+    <div class="dots" id="dots"></div>
+    <span class="count" id="count"></span>
+    <button class="btn" id="next" type="button">Next →</button>
+  </nav>
+  <main id="stage"></main>
+  <div class="sr" aria-live="polite" id="live"></div>
+</div>
+
+<script>
+// ---------------------------------------------------------------------------
+// Capabilities (optional): recording and Send-to-chat light up when they resolve.
+// ---------------------------------------------------------------------------
+let db = null, comments = null;
+const capsReady = (async () => {
+  if (!window.claude || !window.claude.use) return;
+  try { db = await window.claude.use("db"); } catch (e) { db = null; }
+  try { comments = await window.claude.use("comments"); } catch (e) { comments = null; }
+})();
+
+async function record(collection, data) {
+  await capsReady;
+  if (!db) return false;
+  try { await db.collection(collection).add(data); return true; }
+  catch (e) { return false; }
+}
+
+const live = document.getElementById("live");
+function announce(msg) { live.textContent = ""; setTimeout(() => { live.textContent = msg; }, 30); }
+
+function el(tag, attrs = {}, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v;
+    else if (k === "style") n.setAttribute("style", v);
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+    else if (v !== false && v != null) n.setAttribute(k, v === true ? "" : v);
+  }
+  for (const k of kids.flat()) if (k != null) n.append(k.nodeType ? k : document.createTextNode(k));
+  return n;
+}
+function html(tag, attrs, markup) { const n = el(tag, attrs); n.innerHTML = markup; return n; }
+
+// ---------------------------------------------------------------------------
+// Shared pieces: prediction gate, step-through controls, Ask box.
+// ---------------------------------------------------------------------------
+function predictionGate({ scene, question, options, correct, why, onAnswer, kind = "prediction" }) {
+  const box = el("div", { class: "gate" });
+  box.append(el("p", { class: "q" }, question));
+  const opts = el("div", { class: "opts", role: "group", "aria-label": question });
+  const fb = el("div");
+  const unsure = el("button", { class: "btn unsure", type: "button", id: `${scene}-unsure` }, "I don't know yet, show me");
+  let answered = null;
+  // A fresh answer is recorded; a restored one (after a reload) is only shown.
+  async function show(id, fresh) {
+    if (answered) return;
+    answered = id;
+    const isUnsure = id === "(unsure)";
+    const ok = id === correct;
+    opts.querySelectorAll("button").forEach(x => x.disabled = true);
+    unsure.disabled = true;
+    const picked = opts.querySelector(`[data-opt="${id}"]`);
+    if (picked) picked.classList.add(ok ? "right" : "wrong");
+    opts.querySelector(`[data-opt="${correct}"]`).classList.add("right");
+    const lead = isUnsure ? "<b>Here it is.</b>" : `<b class="${ok ? "right" : "wrong"}">${ok ? "Right." : "Not quite."}</b>`;
+    fb.replaceChildren(html("p", { class: "feedback" }, `${lead} ${why}`));
+    if (fresh) announce(lead.replace(/<[^>]+>/g, "") + " " + why.replace(/<[^>]+>/g, ""));
+    onAnswer(id, ok);
+    queueSave();
+    if (!fresh) return;
+    const saved = await record("attempts", {
+      scene, kind, gate: true, answer: isUnsure ? "(unsure)" : options.find(x => x.id === id).label,
+      answer_id: id, expected: options.find(x => x.id === correct).label,
+      correct: ok, unsure: isUnsure, at: new Date().toISOString()
+    });
+    if (!saved && window.claude) fb.append(el("div", { class: "rec" }, "Not recorded."));
+  }
+  options.forEach((o, i) => {
+    opts.append(el("button", { class: "opt", type: "button", id: `${scene}-opt-${o.id}`, "data-opt": o.id, onclick: () => show(o.id, true) },
+      el("span", { class: "mark" }, String.fromCharCode(65 + i)), el("span", {}, o.label)));
+  });
+  unsure.addEventListener("click", () => show("(unsure)", true));
+  box.append(opts, el("div", {}, unsure), fb);
+  box.restore = id => { if (id === "(unsure)" || options.some(o => o.id === id)) show(id, false); };
+  box.answer = () => answered;
+  box.byId = answerId => answerId;
+  return box;
+}
+
+function stepper({ count, render }) {
+  let i = 0, timer = null;
+  const counter = el("span", { class: "count" });
+  const back = el("button", { class: "btn", type: "button" }, "← Step");
+  const fwd = el("button", { class: "btn primary", type: "button" }, "Step →");
+  const play = el("button", { class: "btn", type: "button" }, "Play");
+  const replay = el("button", { class: "btn", type: "button" }, "Replay");
+  function stop() { clearInterval(timer); timer = null; play.textContent = "Play"; }
+  function go(n) {
+    i = Math.max(0, Math.min(count() - 1, n));
+    back.disabled = i === 0; fwd.disabled = i >= count() - 1;
+    counter.textContent = `Step ${i + 1} of ${count()}`;
+    render(i);
+    if (i >= count() - 1) stop();
+    queueSave();
+  }
+  back.addEventListener("click", () => { stop(); go(i - 1); });
+  fwd.addEventListener("click", () => { stop(); go(i + 1); });
+  replay.addEventListener("click", () => { stop(); go(0); });
+  play.addEventListener("click", () => {
+    if (timer) return stop();
+    if (i >= count() - 1) go(0);
+    play.textContent = "Pause";
+    timer = setInterval(() => go(i + 1), 1800);
+  });
+  return { el: el("div", { class: "ctrls" }, back, fwd, play, replay, counter),
+    go, at: () => i, next() { stop(); go(i + 1); }, prev() { stop(); go(i - 1); },
+    toggle() { play.click(); }, replay() { stop(); go(0); } };
+}
+
+// The page never answers: a question goes to the Claude Code chat (comments → sendToClaude),
+// or to the clipboard when that is not possible here.
+function askBox(sceneId, sceneIndex, sceneTitle, getState, sectionEl) {
+  const id = `${sceneId}-ask`;
+  const ta = el("textarea", { id, maxlength: 3000, placeholder: "A question about this scene. It goes to your Claude Code chat, with what you see here." });
+  const out = el("p", { class: "ask-out", "aria-live": "polite" });
+  const send = el("button", { class: "btn primary", type: "button" }, "Send to Claude Code");
+  send.addEventListener("click", async () => {
+    const q = ta.value.trim();
+    if (!q) return;
+    const state = getState();
+    const text = `[Scene ${sceneIndex + 1}/${SCENES.length}: ${sceneTitle}] ${q}\n\nState: ${state}`;
+    send.disabled = true;
+    let sent = "clipboard";
+    try {
+      await capsReady;
+      if (comments && (await comments.canSendToClaude()) === "available") {
+        await comments.sendToClaude({ anchor: await comments.anchorFor(sectionEl), text });
+        sent = "chat";
+      }
+    } catch (e) { sent = "clipboard"; }
+    if (sent === "chat") {
+      out.textContent = "Sent to your Claude Code chat. The answer comes there.";
+      ta.value = "";
+    } else {
+      try { await navigator.clipboard.writeText(text); out.textContent = "Copied. Paste it into your Claude Code chat."; }
+      catch (e) { ta.value = text; ta.select(); out.textContent = "Select-all is on: copy this text into your Claude Code chat."; }
+    }
+    send.disabled = false;
+    record("questions", { scene: sceneId, question: q, state, sent, at: new Date().toISOString() });
+  });
+  return el("details", { class: "ask" },
+    el("summary", {}, "Ask Claude Code about this scene"),
+    el("div", { class: "ask-body" }, el("label", { for: id, class: "sr" }, "Your question"), ta,
+      el("div", { class: "ctrls" }, send), out));
+}
+
+// ---------------------------------------------------------------------------
+// Scenes
+// ---------------------------------------------------------------------------
+const SCENES = [
+  { id: "s1-container", title: "What does a container share with its host?", build: buildContainer },
+  { id: "s2-cache", title: "Why does one changed line skip bundle install?", build: buildCache },
+  { id: "s3-image", title: "What goes into the image, and what stays out?", build: buildSort },
+  { id: "s4-rollout", title: "What happens to traffic during a deploy?", build: buildRollout },
+  { id: "s5-migrations", title: "Which migration is safe while v1 still serves?", build: buildMigrations }
+];
+
+// Learn engine: worked steps play, fill-in steps wait for one answer (a hint after a miss,
+// the step plays with its why after a second miss). Each fill-in is recorded as kind "check".
+function learnEngine({ scene, steps, render, saved = {}, onFinish }) {
+  let step = 0;
+  const fills = {};
+  Object.entries(saved.fills || {}).forEach(([k, v]) => { fills[k] = { ...v, wrong: [...(v.wrong || [])] }; });
+  const tagline = el("div", { class: "tagline" });
+  const lead = html("p", {}, "");
+  const q = el("p", { class: "q" });
+  const chips = el("div", { class: "chips", role: "group" });
+  const hint = el("p", { class: "hint" });
+  const why = html("p", {}, "");
+  const box = el("div", { class: "learn", "aria-live": "polite" }, tagline, lead, q, chips, hint, why);
+  const back = el("button", { class: "btn", type: "button" }, "← Step");
+  const fwd = el("button", { class: "btn primary", type: "button" }, "Step →");
+  const counter = el("span", { class: "count" });
+  const ctrls = el("div", { class: "ctrls" }, back, fwd, counter);
+  const isDone = i => !steps[i].q || !!(fills[i] && fills[i].done);
+  const allDone = () => steps.every((_, i) => isDone(i));
+  const labelOf = (s, id) => ((s.choices || []).find(c => c.id === id) || {}).label || id;
+
+  function paint() {
+    const s = steps[step], f = fills[step], done = isDone(step);
+    tagline.textContent = !s.q ? "Worked example" : done ? "Your step" : "Your turn";
+    lead.innerHTML = s.lead || ""; lead.hidden = !s.lead;
+    q.hidden = !s.q; q.textContent = s.q || "";
+    chips.hidden = !s.q;
+    chips.replaceChildren(...(s.choices || []).map(c => {
+      const wrong = f && f.wrong.includes(c.id);
+      const right = done && c.id === s.correct;
+      return el("button", {
+        class: `chip${wrong ? " wrong" : ""}${right ? " right" : ""}`, type: "button",
+        id: `${scene}-${step}-${c.id}`, disabled: done || wrong, onclick: () => choose(c.id)
+      }, c.label);
+    }));
+    hint.hidden = !(f && !f.done && f.wrong.length && s.hint);
+    hint.textContent = s.hint ? `Hint: ${s.hint}` : "";
+    if (s.q) {
+      why.hidden = !done;
+      why.innerHTML = done ? `${f && f.solved ? "<b>Right.</b> " : `<b>It's “${labelOf(s, s.correct)}”.</b> `}${s.why}` : "";
+    } else { why.hidden = !s.why; why.innerHTML = s.why || ""; }
+    back.disabled = step === 0;
+    fwd.disabled = step >= steps.length - 1 || !done;
+    counter.textContent = `Step ${step + 1} of ${steps.length}`;
+    render(step, done);
+    if (allDone() && onFinish) onFinish();
+  }
+  function go(n) {
+    const firstOpen = steps.findIndex((_, i) => !isDone(i));
+    const max = firstOpen === -1 ? steps.length - 1 : firstOpen;
+    step = Math.max(0, Math.min(n, max, steps.length - 1));
+    paint(); queueSave();
+  }
+  function choose(id) {
+    const s = steps[step];
+    const f = fills[step] || (fills[step] = { first: id, tries: 0, done: false, solved: false, wrong: [] });
+    if (f.done) return;
+    f.tries++;
+    if (id === s.correct) { f.done = true; f.solved = true; }
+    else { f.wrong.push(id); if (f.tries >= 2) f.done = true; }
+    if (f.done) {
+      announce((f.solved ? "Right. " : `It's ${labelOf(s, s.correct)}. `) + s.why.replace(/<[^>]+>/g, ""));
+      record("attempts", {
+        scene, kind: "check", step: step + 1, question: s.q, answer: labelOf(s, f.first), answer_id: f.first,
+        expected: labelOf(s, s.correct), correct: f.first === s.correct, unsure: false, at: new Date().toISOString()
+      });
+    }
+    paint(); queueSave();
+  }
+  back.addEventListener("click", () => go(step - 1));
+  fwd.addEventListener("click", () => go(step + 1));
+  const missed = () => steps.map((s, i) => (s.q && fills[i] && fills[i].done && fills[i].first !== s.correct ? i + 1 : null)).filter(Boolean);
+  return {
+    box, ctrls, go, allDone, at: () => step, missed,
+    getState: () => ({ step, fills }),
+    api: { next() { if (!fwd.disabled) go(step + 1); }, prev() { go(step - 1); }, toggle() {}, replay() { go(0); } }
+  };
+}
+
+function transferGate(scene, spec, onAnswer = () => {}) {
+  const g = predictionGate({ scene, kind: "check", onAnswer, ...spec });
+  const wrap = el("div", { hidden: true }, g);
+  return { wrap, gate: g };
+}
+
+// --- Scene 1 ----------------------------------------------------------------
+function buildContainer(root, saved = {}) {
+  const prose = el("p", { class: "prose" },
+    "The same Rails app on the same AWS host, twice: once inside a virtual machine, once as a container. Step through and build both stacks from the hardware up.");
+  const layer = (label, sub, cls = "") => el("div", { class: `layer ${cls}` }, el("b", {}, label), sub ? el("small", {}, sub) : null);
+
+  const V = {
+    hw: layer("Hardware", "CPU · memory · network card", "shared"),
+    kern: layer("Host kernel", "Linux", "shared"),
+    hyp: layer("Hypervisor", "fakes a whole machine"),
+    gkern: layer("Guest kernel", "a second kernel, booted"),
+    gos: layer("Full guest OS", "init · services · files"),
+    ruby: layer("Ruby + gems"),
+    app: layer("Rails process")
+  };
+  const C = {
+    hw: layer("Hardware", "CPU · memory · network card", "shared"),
+    kern: layer("Host kernel", "Linux · the only kernel here", "shared"),
+    rt: layer("Container runtime", "containerd · starts processes"),
+    img: layer("Image files", "Debian slim userland, no kernel"),
+    ruby: layer("Ruby + gems"),
+    app: layer("Rails process", "PID 1 inside its namespaces")
+  };
+  const sys = el("div", { class: "syscall" }, "↓ system calls go straight to the host kernel");
+  const nsEls = { mnt: el("span", {}, "mnt: own filesystem"), pid: el("span", {}, "pid: own process list"), net: el("span", {}, "net: own IP 10.0.3.27"), uts: el("span", {}, "uts: own hostname"), cg: el("span", {}, "cgroups: 1 vCPU · 2 GB") };
+  const ns = el("div", { class: "ns" }, Object.values(nsEls));
+  const boxed = el("div", { class: "boxed", "aria-label": "Container boundary" }, sys, C.img, C.ruby, C.app, ns);
+
+  const vmStack = el("div", { class: "stack" }, V.hw, V.kern, V.hyp, V.gkern, V.gos, V.ruby, V.app);
+  const ctStack = el("div", { class: "stack" }, C.hw, C.kern, C.rt, boxed);
+  const stacks = el("div", { class: "stacks" },
+    el("div", { class: "stack-col" }, el("h4", {}, "Virtual machine"), vmStack),
+    el("div", { class: "stack-col" }, el("h4", {}, "Container"), ctStack));
+
+  const STEPS = [
+    { lead: "Both stacks start on the same host: the hardware, and the host's Linux <b>kernel</b>. The kernel is the one program that talks to the hardware. It runs processes, hands out memory and owns the network card." },
+    { lead: "The VM gets fake hardware from a <b>hypervisor</b>, then boots a whole computer on it: its own guest kernel and a full operating system. That boot takes tens of seconds, and every VM pays memory for a second kernel." },
+    { lead: "The container side has no hypervisor. The runtime unpacks the image's files and starts your Rails process.",
+      q: "Which kernel does the Rails process inside the container run on?",
+      choices: [{ id: "own", label: "A kernel shipped in the image" }, { id: "host", label: "The host's kernel" }, { id: "emu", label: "None: Docker emulates one" }],
+      correct: "host", hint: "Look at the container column. Is there a kernel layer of its own?",
+      why: "An image holds files only: Debian's userland, Ruby, your gems, your code. No kernel. The container is an ordinary Linux process, and its system calls go straight to the host kernel." },
+    { lead: "So the Rails process is a normal process on the host.",
+      q: "Then why can't it see the host's other processes and files?",
+      choices: [{ id: "img", label: "The image hides them" }, { id: "ns", label: "The kernel gives it private views of the system" }, { id: "hyp", label: "A hypervisor blocks them" }, { id: "can", label: "It can see them" }],
+      correct: "ns", hint: "Something decides what a process gets to see. Which layer is in charge of every process?",
+      why: "The kernel gives the process <b>namespaces</b>: its own filesystem root (the image's files), its own process list where Rails is PID 1, its own network stack and hostname. <b>cgroups</b> cap its CPU and memory. Nothing boots, so a container starts in about a second." },
+    { lead: "In probe 1 you guessed that the network is what it shares.",
+      q: "In a default setup, does the container share the host's network interface and ports?",
+      choices: [{ id: "yes", label: "Yes, same interface and ports" }, { id: "no", label: "No, it has its own network namespace" }, { id: "aws", label: "Only on AWS" }],
+      correct: "no", hint: "Look at the badges on the container's boundary.",
+      why: "It has its own interface, IP and ports. On ECS Fargate each task even gets its own network interface in your VPC (<code>awsvpc</code> mode). Port mappings, or <code>--network host</code> on Docker, are what you opt into to connect it to the host's." }
+  ];
+
+  function render(i, done) {
+    const showV = { hw: 1, kern: 1, hyp: i >= 1, gkern: i >= 1, gos: i >= 1, ruby: i >= 1, app: i >= 1 };
+    Object.entries(V).forEach(([k, n]) => { n.hidden = !showV[k]; n.classList.toggle("hl", (i === 0 && (k === "hw" || k === "kern")) || (i === 1 && ["hyp", "gkern", "gos"].includes(k))); });
+    const after2 = i > 2 || (i === 2 && done), after3 = i > 3 || (i === 3 && done), after4 = i === 4 && done;
+    C.rt.hidden = i < 2; boxed.hidden = i < 2;
+    sys.hidden = !after2;
+    ns.hidden = !after3;
+    C.hw.classList.toggle("hl", i === 0);
+    C.kern.classList.toggle("hl", i === 0 || (i === 2 && done));
+    Object.entries(nsEls).forEach(([k, n]) => n.classList.toggle("hl", (i === 3 && done) || (after4 && k === "net")));
+  }
+
+  const t = transferGate("s1-container", {
+    question: "Your image is built FROM ruby:3.4-slim (Debian). The ECS host runs Amazon Linux. Inside the container you run uname -r, which prints the kernel version. What does it print?",
+    options: [{ id: "debian", label: "Debian's kernel version" }, { id: "host", label: "The Amazon Linux host's kernel version" }, { id: "err", label: "An error: containers have no kernel" }, { id: "docker", label: "Docker's version" }],
+    correct: "host",
+    why: "The host's. The image brought Debian's files and tools, but there is one kernel on the machine. It is also why a Linux image needs a Linux kernel underneath, and why Docker Desktop on a Mac quietly runs a small Linux VM."
+  });
+  const eng = learnEngine({ scene: "s1-container", steps: STEPS, render, saved, onFinish: () => { t.wrap.hidden = false; } });
+  root.append(prose, stacks, eng.box, eng.ctrls, t.wrap);
+  eng.go(saved.step || 0);
+  if (saved.answer) t.gate.restore(saved.answer);
+  return {
+    getState: () => ({ ...eng.getState(), answer: t.gate.answer() }),
+    restoreRecord: r => t.gate.restore(r.answer_id),
+    stateLine: () => `step ${eng.at() + 1} of ${STEPS.length}; fill-ins missed: ${eng.missed().join(", ") || "none"}; check: ${t.gate.answer() || "not answered"}`,
+    stepper: () => eng.api
+  };
+}
+
+// --- Scene 2 ----------------------------------------------------------------
+function buildCache(root, saved = {}) {
+  const L = {
+    from: { code: "FROM ruby:3.4-slim AS base", t: 0, inputs: [], short: "FROM ruby" },
+    apt: { code: "RUN apt-get install … libpq5 libvips", t: 40, inputs: [], short: "RUN apt-get" },
+    gems: { code: "COPY Gemfile Gemfile.lock ./", t: 1, inputs: ["gemfile"], short: "COPY Gemfile*" },
+    bundle: { code: "RUN bundle install", t: 180, inputs: [], short: "RUN bundle install" },
+    app: { code: "COPY . .", t: 2, inputs: ["gemfile", "code"], short: "COPY . ." },
+    assets: { code: "RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile", t: 60, inputs: [], short: "RUN assets:precompile" }
+  };
+  const ORDER = { rails: ["from", "apt", "gems", "bundle", "app", "assets"], naive: ["from", "apt", "app", "bundle", "assets"] };
+  const CHANGES = [{ id: "none", label: "nothing" }, { id: "code", label: "a controller" }, { id: "gemfile", label: "Gemfile.lock" }];
+  const fmt = s => s >= 60 ? `${Math.floor(s / 60)}m ${String(s % 60).padStart(2, "0")}s` : `${s}s`;
+  const lv = { order: "rails", change: "none", ...(saved.levers || {}) };
+
+  const prose = el("p", { class: "prose" },
+    "Each Dockerfile instruction produces a layer. On a rebuild, Docker reuses a cached layer while the instruction and the files it copies are unchanged. Times below are example values for a mid-size app.");
+
+  const head = el("div", { class: "df-head" });
+  const rowsEl = el("div");
+  const df = el("div", { class: "dockerfile", role: "region", "aria-label": "Dockerfile build, layer by layer" }, head, rowsEl);
+
+  const segs = { order: {}, change: {} };
+  const mkLever = (key, name, note, opts) => {
+    const group = el("div", { class: "lever-group" }, opts.map(o => {
+      const b = el("button", { class: "seg", type: "button", id: `s2-${key}-${o.id}`, "aria-pressed": "false", onclick: () => setLever(key, o.id) }, o.label);
+      segs[key][o.id] = b; return b;
+    }));
+    return el("div", { class: "lever" }, el("div", { class: "lever-name" }, name, el("small", {}, note)), group);
+  };
+  const levers = el("div", { class: "levers", role: "group", "aria-label": "Build levers" },
+    mkLever("change", "What changed", "since the last build", CHANGES),
+    mkLever("order", "Layer order", "where the app gets copied", [{ id: "rails", label: "Gemfiles first (Rails)" }, { id: "naive", label: "Whole app first" }]));
+  const leverNote = el("p", { class: "lock-note" }, "The levers unlock once you've finished the steps.");
+
+  const finalImg = el("div", { class: "final-img", hidden: true },
+    el("h4", {}, "In the pushed image (final stage)"),
+    el("ul", {},
+      el("li", {}, "ruby:3.4-slim base with runtime libraries only"),
+      el("li", {}, "the installed gems, copied from the build stage"),
+      el("li", {}, "your app and its precompiled assets"),
+      el("li", {}, "a non-root user, uid 1000"),
+      el("li", { class: "gone" }, "compilers, build headers, git (left in the build stage)")));
+
+  function drawRows(order, change, unknown) {
+    const ids = ORDER[order];
+    const firstRun = change === "none" ? -1 : ids.findIndex(id => L[id].inputs.includes(change));
+    let total = 2;
+    rowsEl.replaceChildren(...ids.map((id, k) => {
+      const run = firstRun !== -1 && k >= firstRun;
+      if (run) total += L[id].t;
+      const cls = unknown ? "unknown" : run ? "run" + (k === firstRun ? " first" : "") : "cached";
+      return el("div", { class: `df-row ${cls}` }, el("code", {}, L[id].code),
+        el("span", { class: "st" }, unknown ? "?" : run ? `RUN ${fmt(L[id].t)}` : "CACHED"));
+    }));
+    head.replaceChildren(el("span", {}, `Dockerfile · ${order === "rails" ? "Gemfiles copied first" : "whole app copied first"} · changed: ${CHANGES.find(c => c.id === change).label}`),
+      el("span", {}, "build time ", el("b", {}, unknown ? "?" : fmt(total))));
+    Object.entries(segs).forEach(([key, m]) => Object.entries(m).forEach(([id, b]) => b.setAttribute("aria-pressed", String((key === "order" ? order : change) === id))));
+  }
+
+  const STEPS = [
+    { order: "rails", change: "none", lead: "The first build is done and cached. Rebuild with nothing changed: every layer comes from the cache, and the build takes seconds." },
+    { order: "rails", change: "gemfile", lead: "You add a gem, so <code>Gemfile.lock</code> changes. The first instruction that copies it now has a new input, so that layer rebuilds, and so does <b>every layer after it</b>. bundle install runs again." },
+    { order: "rails", change: "code", q: "You edit orders_controller.rb. Which is the first layer that rebuilds?",
+      choices: ORDER.rails.map(id => ({ id, label: L[id].short })), correct: "app",
+      hint: "Which instruction is the first to copy the controller file into the image?",
+      why: "<code>COPY . .</code> is the first instruction whose input contains the controller. bundle install sits above it, and its inputs (the two Gemfiles) didn't change, so it stays cached. About 3 minutes saved on every code change." },
+    { order: "naive", change: "code", q: "Same edit, but this Dockerfile copies the whole app before bundle install. Does bundle install rerun?",
+      choices: [{ id: "yes", label: "Yes" }, { id: "no", label: "No" }], correct: "yes",
+      hint: "Find the first layer whose input changed. What comes after it?",
+      why: "<code>COPY . .</code> is now the first changed layer, and bundle install comes after it, so every code change reinstalls every gem. Copying the two Gemfiles first is the whole trick, and the Dockerfile Rails generates does exactly that." },
+    { order: "rails", change: "code", q: "Rails' Dockerfile builds in a build stage with compilers, then starts a fresh stage FROM base and copies only the installed gems and the app into it. What ends up in the image you push?",
+      choices: [{ id: "all", label: "Compilers, gems and app" }, { id: "ga", label: "Gems and app, no compilers" }, { id: "app", label: "Only the app code" }], correct: "ga",
+      hint: "The final stage starts from base, not from the build stage.",
+      why: "The compilers and build headers stay behind in the build stage. The pushed image is smaller and carries less an attacker could use. It also runs as a non-root user." }
+  ];
+
+  function setLever(key, id) {
+    if (!eng.allDone()) return;
+    lv[key] = id; drawRows(lv.order, lv.change, false); queueSave();
+  }
+  function render(i, done) {
+    const s = STEPS[i];
+    drawRows(s.order, s.change, !!s.q && !done);
+    finalImg.hidden = !(i === 4 && done);
+  }
+  const t = transferGate("s2-cache", {
+    question: "Your CI starts every run on a fresh machine with an empty Docker cache. You change one controller. Does bundle install rerun in CI?",
+    options: [{ id: "no", label: "No, the layer order takes care of it" }, { id: "yes", label: "Yes, there is no cache to reuse" }, { id: "gem", label: "Only if the Gemfile changed" }],
+    correct: "yes",
+    why: "The cache lives on the machine that built before. A fresh runner has none, so every layer runs, unless the pipeline imports a cache, for example from the registry with <code>docker buildx build --cache-from</code>. That is the 'it depends on the pipeline' part of your answer in probe 2."
+  });
+  const eng = learnEngine({
+    scene: "s2-cache", steps: STEPS, render, saved,
+    onFinish: () => { t.wrap.hidden = false; leverNote.hidden = true; Object.values(segs).forEach(m => Object.values(m).forEach(b => b.disabled = false)); }
+  });
+  Object.values(segs).forEach(m => Object.values(m).forEach(b => b.disabled = true));
+  root.append(prose, df, finalImg, eng.box, eng.ctrls, levers, leverNote, t.wrap);
+  eng.go(saved.step || 0);
+  if (saved.levers && eng.allDone() && eng.at() === STEPS.length - 1) drawRows(lv.order, lv.change, false);
+  if (saved.answer) t.gate.restore(saved.answer);
+  return {
+    getState: () => ({ ...eng.getState(), levers: { ...lv }, answer: t.gate.answer() }),
+    restoreRecord: r => t.gate.restore(r.answer_id),
+    stateLine: () => `step ${eng.at() + 1} of ${STEPS.length}; levers: order ${lv.order}, changed ${lv.change}; fill-ins missed: ${eng.missed().join(", ") || "none"}; check: ${t.gate.answer() || "not answered"}`,
+    stepper: () => eng.api
+  };
+}
+
+// --- Scene 3 ----------------------------------------------------------------
+function buildSort(root, saved = {}) {
+  const BUCKETS = [
+    { id: "image", label: "In the image", sub: "built once, same everywhere" },
+    { id: "inject", label: "Injected at start", sub: "env vars and secrets" },
+    { id: "outside", label: "Outside the container", sub: "a managed service" }
+  ];
+  const ITEMS = [
+    { id: "code", label: "Your app code and installed gems", bucket: "image", worked: true,
+      why: "Built once in CI, identical wherever it runs. That is the point of an image." },
+    { id: "pg", label: "Postgres (a service in your docker-compose.yml)", bucket: "outside", worked: true,
+      why: "In production it becomes a managed database such as RDS. A database must outlive every deploy, and a container's own disk is thrown away whenever the container is replaced." },
+    { id: "key", label: "RAILS_MASTER_KEY", bucket: "inject", hint: "Would you want it readable by anyone who can pull the image?",
+      why: "ECS reads it from Secrets Manager or Parameter Store when the task starts and hands it to the container as an environment variable. The Dockerfile even precompiles assets with <code>SECRET_KEY_BASE_DUMMY=1</code>, so no real secret lands in an image layer." },
+    { id: "dburl", label: "The database address (DATABASE_URL)", bucket: "inject", hint: "Is it the same on staging and production?",
+      why: "Staging and production run the same image against different databases. The address is configuration, not code." },
+    { id: "uploads", label: "Files users upload (Active Storage)", bucket: "outside", hint: "What happens to a container's disk at the next deploy?",
+      why: "They go to S3. The container's disk is gone after the next deploy, and with two tasks running, a file saved on one is invisible to the other." },
+    { id: "assets", label: "Compiled CSS and JS assets", bucket: "image", hint: "Do they differ between staging and production, or only when the code changes?",
+      why: "<code>assets:precompile</code> runs at build time, so every task serves the same files and boots fast." }
+  ];
+  const bLabel = id => BUCKETS.find(b => b.id === id).label;
+  const prose = el("p", { class: "prose" },
+    "The image CI builds is the one that runs on staging and in production. Anything that differs between those places, or must outlive a container, can't be baked in. Sort each item into where it lives in production.");
+
+  const incoming = el("div", { class: "incoming" });
+  const lists = {};
+  const buckets = el("div", { class: "buckets" }, BUCKETS.map(b => {
+    lists[b.id] = el("ul", { "aria-label": b.label });
+    return el("div", { class: "bucket" }, el("h4", {}, b.label, el("small", {}, b.sub)), lists[b.id]);
+  }));
+  const outcome = html("p", { class: "outcome", hidden: true },
+    "This is the payoff of containers: one artifact, built and tested once, runs the same on your laptop, in CI and in production, and only the injected configuration differs. A deploy means running the new image, and a rollback means running the previous one. A broken server gets replaced instead of repaired.");
+
+  const STEPS = ITEMS.map(it => it.worked
+    ? { lead: `<b>${it.label}</b> goes <b>${bLabel(it.bucket).toLowerCase()}</b>. ${it.why}` }
+    : { q: `Where does “${it.label}” live in production?`, choices: BUCKETS.map(b => ({ id: b.id, label: b.label })), correct: it.bucket, hint: it.hint, why: it.why });
+
+  function render(i, done) {
+    const it = ITEMS[i];
+    incoming.replaceChildren(el("span", { class: "tag" }, `Item ${i + 1} of ${ITEMS.length}`), el("b", {}, it.label));
+    Object.values(lists).forEach(l => l.replaceChildren());
+    ITEMS.forEach((x, k) => {
+      if (k < i || (k === i && done)) lists[x.bucket].append(el("li", { class: k === i ? "new" : "" }, x.label));
+    });
+    outcome.hidden = !(i === ITEMS.length - 1 && done);
+  }
+  const t = transferGate("s3-image", {
+    question: "Your docker-compose.yml mounts your source folder into the container (volumes: - .:/rails), so code changes show up without a rebuild. Should production do the same?",
+    options: [{ id: "yes", label: "Yes, it saves a rebuild per deploy" }, { id: "no", label: "No, production runs the code baked into the image" }, { id: "cfg", label: "Only for config files" }],
+    correct: "no",
+    why: "The bind mount is a development convenience. Production runs exactly the image CI built and tested. That is why you rebuild and push on every deploy: the image is the release."
+  });
+  const eng = learnEngine({ scene: "s3-image", steps: STEPS, render, saved, onFinish: () => { t.wrap.hidden = false; } });
+  root.append(prose, incoming, buckets, eng.box, eng.ctrls, outcome, t.wrap);
+  eng.go(saved.step || 0);
+  if (saved.answer) t.gate.restore(saved.answer);
+  return {
+    getState: () => ({ ...eng.getState(), answer: t.gate.answer() }),
+    restoreRecord: r => t.gate.restore(r.answer_id),
+    stateLine: () => `item ${eng.at() + 1} of ${ITEMS.length} (${ITEMS[eng.at()].label}); fill-ins missed: ${eng.missed().map(n => ITEMS[n - 1].label).join(", ") || "none"}; check: ${t.gate.answer() || "not answered"}`,
+    stepper: () => eng.api
+  };
+}
+
+// --- Scene 4 ----------------------------------------------------------------
+function buildRollout(root, saved = {}) {
+  const S = {
+    off: { state: "not started", traffic: "none", absent: true },
+    serve: { state: "running · healthy", traffic: "yes" },
+    boot: { state: "starting · entrypoint runs db:prepare", traffic: "no" },
+    check: { state: "running · health check 2 of 5", traffic: "no" },
+    stopping: { state: "being stopped", traffic: "?" },
+    drain: { state: "draining · then SIGTERM", traffic: "open" },
+    gone: { state: "stopped", traffic: "none", absent: true }
+  };
+  const TRAFFIC = { yes: "receives requests", no: "no requests", open: "open requests only", none: "", "?": "?" };
+  const TILES = [{ id: "v1a", v: "v1" }, { id: "v1b", v: "v1" }, { id: "v2a", v: "v2" }, { id: "v2b", v: "v2" }];
+  const prose = el("p", { class: "prose" },
+    "An ECS service keeps 2 tasks of your app running behind a load balancer. You deploy v2 with the service defaults: at least 100% of the desired count healthy, at most 200% running.");
+
+  const top = el("div", { class: "ro-top" });
+  const tileEls = TILES.map(tl => {
+    const n = { ver: el("span", { class: "ver" }, `${tl.v} · task ${tl.id.slice(2)}`), state: el("span", { class: "state" }), traffic: el("span", { class: "traffic" }) };
+    n.root = el("div", { class: `tile ${tl.v}` }, n.ver, n.state, n.traffic);
+    return n;
+  });
+  const board = el("div", { class: "rollout", role: "region", "aria-label": "Rolling deployment" },
+    top, el("div", { class: "alb" }, "Load balancer → target group"),
+    el("div", { class: "hc" }, "Health check: GET /up every 30 s · 5 passes to join · 2 failures to leave"),
+    el("div", { class: "tiles" }, tileEls.map(t => t.root)));
+
+  const STEPS = [
+    { clock: "0:00", before: ["serve", "serve", "off", "off"],
+      lead: "Two v1 tasks serve all traffic. You pushed image v2 to ECR and registered a new task definition revision that points at it. The service starts a deployment." },
+    { clock: "0:15", before: ["serve", "serve", "boot", "boot"],
+      lead: "The service may run up to 200% of the desired count (4 tasks) and must keep 100% (2 tasks) healthy. So it starts two v2 tasks next to the old ones. Nothing is stopped yet." },
+    { clock: "0:45", before: ["serve", "serve", "check", "check"], hlTiles: [2, 3],
+      q: "The v2 containers are up and Puma is listening. Do they receive requests yet?",
+      choices: [{ id: "yes", label: "Yes, as soon as the process runs" }, { id: "hc", label: "No, not until the health check passes" }, { id: "v1", label: "No, not until v1 has stopped" }],
+      correct: "hc", hint: "Who decides where a request goes: the task itself, or the load balancer in front of it?",
+      why: "The target group polls <code>/up</code>. With AWS defaults it checks every 30 s and needs 5 passes in a row, about 2.5 minutes, before a task counts as healthy. Rails' <code>/up</code> returns 200 once the app has booted. It does not check the database." },
+    { clock: "3:15", before: ["serve", "serve", "serve", "serve"], unknownTraffic: true, hlTiles: [0, 1, 2, 3],
+      q: "Both v2 tasks have passed the health check. Which tasks receive requests now?",
+      choices: [{ id: "v2", label: "Only v2" }, { id: "v1", label: "Only v1" }, { id: "both", label: "v1 and v2" }],
+      correct: "both", hint: "Has anything stopped v1 yet?",
+      why: "For a few minutes old and new code answer requests side by side, on the same database. In probe 3 you pictured a short gap. There is no gap; there is an overlap instead, and the overlap is what makes migrations tricky (scene 5)." },
+    { clock: "3:20", before: ["stopping", "stopping", "serve", "serve"], after: ["drain", "drain", "serve", "serve"], hlTiles: [0, 1],
+      q: "ECS now stops the v1 tasks. What happens to a request a v1 task is still answering?",
+      choices: [{ id: "cut", label: "It is cut off" }, { id: "drain", label: "The load balancer sends v1 no new requests and lets open ones finish" }, { id: "wait", label: "ECS waits until v1 gets no more traffic at all" }],
+      correct: "drain", hint: "The load balancer hears about it first. What does it stop doing?",
+      why: "ECS first deregisters v1 from the target group: no new requests, open ones may finish (deregistration delay, 300 s by default, over sooner when nothing is open). Then ECS sends SIGTERM, and SIGKILL if the process is still running after the stop timeout (30 s by default)." },
+    { clock: "≈ 3:30 to 8:20", before: ["gone", "gone", "serve", "serve"],
+      lead: "v1 is gone and v2 serves alone. Users never hit a gap. If v2 had failed its health checks, v1 would simply have kept serving. With the deployment circuit breaker turned on (it is off by default), ECS also rolls back to the last good deployment by itself." }
+  ];
+
+  function render(i, done) {
+    const s = STEPS[i];
+    const states = done && s.after ? s.after : s.before;
+    let healthy = 0, running = 0;
+    states.forEach((key, k) => {
+      const st = S[key], n = tileEls[k];
+      const tr = s.unknownTraffic && !done ? "?" : (key === "stopping" && done ? "open" : st.traffic);
+      n.state.textContent = st.state;
+      n.traffic.textContent = TRAFFIC[tr];
+      n.traffic.className = `traffic ${tr === "yes" ? "yes" : "no"}`;
+      n.root.classList.toggle("absent", !!st.absent);
+      n.root.classList.toggle("serving", tr === "yes");
+      n.root.classList.toggle("hl", (s.hlTiles || []).includes(k));
+      if (!st.absent) running++;
+      if (key === "serve") healthy++;
+    });
+    top.replaceChildren(el("span", {}, "t = ", el("b", {}, s.clock)), el("span", {}, "desired 2 · min healthy 100% · max 200%"), el("span", {}, `running ${running} · healthy ${healthy}`));
+  }
+  const t = transferGate("s4-rollout", {
+    question: "Same service, now with minimum healthy 50% and maximum 100%. What changes during the deploy?",
+    options: [{ id: "same", label: "Nothing" }, { id: "half", label: "ECS stops a v1 task before it starts each v2 task, so capacity halves for a while" }, { id: "four", label: "It runs 4 tasks at once" }, { id: "down", label: "There is a moment with no healthy task" }],
+    correct: "half",
+    why: "Maximum 100% leaves no room for extra tasks, so ECS stops one v1 first (50% of 2 lets one healthy task suffice), starts a v2 in its place, then repeats. There is no downtime, but there is half the capacity for a while, and old and new code still overlap."
+  });
+  const eng = learnEngine({ scene: "s4-rollout", steps: STEPS, render, saved, onFinish: () => { t.wrap.hidden = false; } });
+  root.append(prose, board, eng.box, eng.ctrls, t.wrap);
+  eng.go(saved.step || 0);
+  if (saved.answer) t.gate.restore(saved.answer);
+  return {
+    getState: () => ({ ...eng.getState(), answer: t.gate.answer() }),
+    restoreRecord: r => t.gate.restore(r.answer_id),
+    stateLine: () => `step ${eng.at() + 1} of ${STEPS.length} (t = ${STEPS[eng.at()].clock}); fill-ins missed: ${eng.missed().join(", ") || "none"}; check: ${t.gate.answer() || "not answered"}`,
+    stepper: () => eng.api
+  };
+}
+
+// --- Scene 5 ----------------------------------------------------------------
+function buildMigrations(root, saved = {}) {
+  const MIGS = [
+    { id: "rename", label: "Rename a column", code: "rename_column :users, :name, :full_name",
+      v1: { ok: false, res: "Every v1 page that reads or writes users.name raises an error, until the last v1 task has drained.", err: "PG::UndefinedColumn: ERROR: column users.name does not exist" },
+      v2: { ok: true, res: "Reads and writes full_name. Fine." },
+      verdict: "Breaks v1 for the whole overlap.",
+      safe: "Expand, then contract: add <code>full_name</code>, deploy code that writes both and reads the new one, backfill, and drop <code>name</code> in a later deploy." },
+    { id: "drop", label: "Drop a column v2 stopped using", code: "remove_column :users, :legacy_flag",
+      v1: { ok: false, res: "Creating a user on v1 fails. v1's Active Record loaded the column list at boot and, with Rails 7+ defaults, writes every column on INSERT.", err: "PG::UndefinedColumn: ERROR: column \"legacy_flag\" of relation \"users\" does not exist" },
+      v2: { ok: true, res: "Never mentions the column. Fine." },
+      verdict: "Breaks v1 writes for the whole overlap.",
+      safe: "First deploy code with <code>self.ignored_columns += [\"legacy_flag\"]</code>, so Active Record forgets the column. Drop it in the next deploy." },
+    { id: "notnull", label: "Add a NOT NULL column, no default", code: "add_column :users, :country, :string, null: false",
+      v1: { ok: true, res: "Keeps serving, because v2 never takes over." },
+      v2: { ok: false, res: "The migration itself fails on the existing rows. The entrypoint exits, the task stops, ECS starts another, and the loop repeats.", err: "PG::NotNullViolation: column \"country\" of relation \"users\" contains null values" },
+      verdict: "No outage, but the deploy never finishes. ECS keeps relaunching v2 unless the circuit breaker is on to roll it back.",
+      safe: "Add it nullable or with a default, backfill, then enforce NOT NULL in a later deploy." },
+    { id: "add", label: "Add a nullable column", code: "add_column :users, :nickname, :string",
+      v1: { ok: true, res: "Never mentions nickname. Its INSERTs leave it NULL." },
+      v2: { ok: true, res: "Uses the new column." },
+      verdict: "Safe during the overlap.",
+      safe: "Nothing to do. Additive, nullable changes are the safe default." }
+  ];
+  const WHERE = {
+    entry: "The first v2 task to boot runs the migration, while both v1 tasks keep serving.",
+    task: "A one-off task (same image, command <code>bin/rails db:migrate</code>) migrates before the service is updated, so v1 runs on the new schema even longer. For a rename or a drop that changes nothing: v1 still breaks. What it changes: a failing migration stops the pipeline before any v2 task starts, and web tasks no longer migrate on boot."
+  };
+  const st = { answer: null, mig: "rename", where: "entry", ...(saved.mig ? { mig: saved.mig } : {}), ...(saved.where ? { where: saved.where } : {}) };
+
+  const prose = html("p", { class: "prose" },
+    "The <code>bin/docker-entrypoint</code> Rails generates runs <code>rails db:prepare</code> whenever a container starts the server, and that runs pending migrations. So the schema changes when the first v2 task boots, while the v1 tasks keep serving for minutes (scene 4).");
+
+  const migBtns = {};
+  const pick = el("div", { class: "mig-pick", role: "group", "aria-label": "Migration in v2" }, MIGS.map(m => {
+    const b = el("button", { class: "seg", type: "button", id: `s5-mig-${m.id}`, "aria-pressed": "false", onclick: () => { st.mig = m.id; paint(); queueSave(); } },
+      el("span", {}, m.label), el("code", {}, m.code));
+    migBtns[m.id] = b; return b;
+  }));
+  const whereBtns = {};
+  const whereLever = el("div", { class: "lever" }, el("div", { class: "lever-name" }, "Where migrations run", el("small", {}, "the Rails default, or a separate step first")),
+    el("div", { class: "lever-group" }, [["entry", "entrypoint on boot (Rails default)"], ["task", "one-off task before the update"]].map(([id, label]) => {
+      const b = el("button", { class: "seg", type: "button", id: `s5-where-${id}`, "aria-pressed": "false", onclick: () => { st.where = id; paint(); queueSave(); } }, label);
+      whereBtns[id] = b; return b;
+    })));
+  const whereNote = html("p", { class: "lock-note" }, "");
+  const opinion = el("p", { class: "opinion" }, "Running migrations in a separate task is practitioner advice (the consensus in the posts researched), not a Rails default.");
+
+  const laneEl = v => { const n = { badge: el("span", { class: "badge" }), res: el("div", { class: "res" }), err: el("div", { class: "err" }) }; n.root = el("div", { class: `lane ${v}` }, el("h4", {}, `${v} tasks during the overlap`), n.badge, n.res, n.err); return n; };
+  const lanes = { v1: laneEl("v1"), v2: laneEl("v2") };
+  const verdict = el("p", { class: "outcome" });
+  const safe = html("p", { class: "safe" }, "");
+  const reveal = el("div", { hidden: true, style: "display:grid;gap:14px" },
+    el("p", { class: "lock-note" }, "Pick the migration v2 ships, and where it runs:"), pick, whereLever,
+    el("div", { class: "board" }, lanes.v1.root, lanes.v2.root), verdict, safe, whereNote, opinion);
+
+  function paint() {
+    const m = MIGS.find(x => x.id === st.mig);
+    Object.entries(migBtns).forEach(([id, b]) => b.setAttribute("aria-pressed", String(id === st.mig)));
+    Object.entries(whereBtns).forEach(([id, b]) => b.setAttribute("aria-pressed", String(id === st.where)));
+    ["v1", "v2"].forEach(v => {
+      const r = m[v], n = lanes[v];
+      n.badge.className = `badge ${r.ok ? "ok" : "bad"}`; n.badge.textContent = r.ok ? "works" : "errors";
+      n.res.textContent = r.res; n.err.textContent = r.err || ""; n.err.hidden = !r.err;
+    });
+    let v = m.verdict;
+    if (st.where === "task" && m.id === "notnull") v = "The migration task fails and the pipeline stops before the service is updated: a clean failure instead of a relaunch loop. v1 keeps serving.";
+    if (st.where === "task" && m.id === "notnull") { lanes.v2.res.textContent = "Never started: the migration task failed first."; }
+    verdict.textContent = v;
+    safe.innerHTML = `<b>Safe pattern.</b> ${m.safe}`;
+    whereNote.innerHTML = WHERE[st.where];
+  }
+
+  const gate = predictionGate({
+    scene: "s5-migrations",
+    question: "v2 ships a migration that renames users.name to users.full_name. What do users whose requests hit v1 see during the rollout?",
+    options: [
+      { id: "nothing", label: "Nothing: v1 isn't affected" },
+      { id: "v1err", label: "Errors on every v1 page that reads or writes name, until v1 is gone" },
+      { id: "fail", label: "Nothing: the deploy fails before it migrates" },
+      { id: "v2err", label: "Nothing, but v2 can't boot" }
+    ],
+    correct: "v1err",
+    why: "v1's code still names a column that no longer exists, so those requests raise errors until the last v1 task has drained. The new code was fine; the old code broke. Try the other migrations below.",
+    onAnswer: id => { st.answer = id; reveal.hidden = false; paint(); }
+  });
+  root.append(prose, gate, reveal);
+  paint();
+  if (saved.answer) gate.restore(saved.answer);
+  return {
+    getState: () => ({ answer: gate.answer(), mig: st.mig, where: st.where }),
+    restoreRecord: r => gate.restore(r.answer_id),
+    stateLine: () => `${gate.answer() ? `predicted "${gate.answer()}"` : "no prediction yet"}; migration: ${st.mig}; migrations run: ${st.where}`,
+    stepper: () => null
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Stage: one scene at a time.
+// ---------------------------------------------------------------------------
+const stage = document.getElementById("stage");
+const dots = document.getElementById("dots");
+const built = {};
+let current = 0;
+
+// State survives republishes and reloads: where you are (localStorage plus the viewer's
+// hot-update hook) and which predictions you answered (db).
+const STORE_KEY = "rails-containers-explorable-v1";
+let BOOT = { scenes: {} }, dbAnswers = {}, saveTimer = null;
+// Scene gates: Next to scene k+1 opens once Claude writes unlocks/<scene k id>. Without db, all open.
+let gatesActive = false, unlocked = new Set();
+function isOpen(i) { return i === 0 || !gatesActive || unlocked.has(SCENES[i - 1].id); }
+function collectState() {
+  const scenes = { ...(BOOT.scenes || {}) };
+  for (const [id, b] of Object.entries(built)) if (b.api.getState) scenes[id] = b.api.getState();
+  return { current, scenes };
+}
+function queueSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(collectState())); } catch (e) { /* storage unavailable */ }
+  }, 50);
+}
+function restoreFromDb(id) {
+  const b = built[id], r = dbAnswers[id];
+  if (b && r && b.api.getState && !b.api.getState().answer) b.api.restoreRecord(r);
+}
+
+function showScene(i) {
+  current = i;
+  const sc = SCENES[i];
+  if (!built[sc.id]) {
+    const sec = el("section", { class: "scene", "aria-labelledby": `${sc.id}-h` });
+    sec.append(el("h2", { id: `${sc.id}-h` }, sc.title));
+    if (sc.build) {
+      const body = el("div", { style: "display:grid;gap:18px" });
+      sec.append(body);
+      const api = sc.build(body, (BOOT.scenes || {})[sc.id] || {});
+      sec.append(askBox(sc.id, i, sc.title, () => api.stateLine(), sec));
+      built[sc.id] = { sec, api };
+    } else {
+      sec.append(el("p", { class: "upcoming" }, "This scene is being built. It arrives in the next turn of the session."));
+      built[sc.id] = { sec, api: { stepper: () => null } };
+    }
+  }
+  stage.replaceChildren(built[sc.id].sec);
+  restoreFromDb(sc.id);
+  queueSave();
+  refreshNav();
+}
+function refreshNav() {
+  const i = current;
+  [...dots.children].forEach((d, j) => {
+    j === i ? d.setAttribute("aria-current", "step") : d.removeAttribute("aria-current");
+    d.disabled = !SCENES[j].build || !isOpen(j);
+  });
+  document.getElementById("count").textContent = `Scene ${i + 1} of ${SCENES.length}`;
+  document.getElementById("prev").disabled = i === 0;
+  const nextB = document.getElementById("next");
+  const last = i === SCENES.length - 1;
+  const locked = !last && !isOpen(i + 1);
+  nextB.disabled = last || locked;
+  nextB.textContent = locked ? `Answer the check in Claude Code to unlock scene ${i + 2}` : "Next →";
+}
+
+SCENES.forEach((sc, i) => dots.append(el("button", {
+  class: "dot", type: "button", disabled: !sc.build, "aria-label": `Scene ${i + 1}: ${sc.title}`,
+  onclick: () => { if (isOpen(i)) showScene(i); }
+})));
+document.getElementById("prev").addEventListener("click", () => showScene(Math.max(0, current - 1)));
+document.getElementById("next").addEventListener("click", () => { if (isOpen(current + 1)) showScene(Math.min(SCENES.length - 1, current + 1)); });
+
+document.addEventListener("keydown", e => {
+  const t = e.target;
+  if (t && (t.tagName === "TEXTAREA" || t.tagName === "INPUT" || t.isContentEditable)) return;
+  const s = built[SCENES[current].id] && built[SCENES[current].id].api.stepper();
+  if (!s) return;
+  if (e.key === "ArrowRight") { s.next(); e.preventDefault(); }
+  else if (e.key === "ArrowLeft") { s.prev(); e.preventDefault(); }
+  else if (e.key === "r" || e.key === "R") { s.replay(); }
+  else if (e.key === " " && (!t || t.tagName !== "BUTTON")) { s.toggle(); e.preventDefault(); }
+});
+
+["click", "input", "change", "keydown"].forEach(t => document.addEventListener(t, queueSave));
+
+function start(data) {
+  let local = {};
+  try { local = JSON.parse(localStorage.getItem(STORE_KEY) || "{}") || {}; } catch (e) { local = {}; }
+  BOOT = data && data.scenes ? data : (local.scenes ? local : { scenes: {} });
+  const want = Math.max(0, Math.min(SCENES.length - 1, BOOT.current || 0));
+  showScene(SCENES[want].build ? want : 0);
+}
+try { window.claude?.hot?.snapshot?.(() => collectState()); } catch (e) { /* no hot updates here */ }
+const hot = window.claude && window.claude.hot;
+if (hot && hot.ready) hot.ready(start); else start((hot && hot.data) || {});
+
+capsReady.then(() => {
+  if (!db) return;
+  gatesActive = true;
+  refreshNav();
+  let answeredOnce = false;
+  const timer = setTimeout(() => { if (!answeredOnce) { gatesActive = false; refreshNav(); } }, 10000);
+  try {
+    db.collection("unlocks").onSnapshot(snap => {
+      answeredOnce = true; clearTimeout(timer);
+      unlocked = new Set(snap.docs.filter(d => d.exists).map(d => d.id));
+      // A scene restored from an earlier visit stays reachable only if it is open.
+      let back = current; while (back > 0 && !isOpen(back)) back--;
+      if (back !== current) showScene(back); else refreshNav();
+    }, () => { clearTimeout(timer); gatesActive = false; refreshNav(); });
+  } catch (e) { gatesActive = false; refreshNav(); }
+});
+
+capsReady.then(async () => {
+  if (!db) return;
+  try {
+    const snap = await db.collection("attempts").get();
+    snap.docs.forEach(d => {
+      const r = d.data();
+      if (r.kind !== "prediction" && !r.gate) return;
+      if (!dbAnswers[r.scene] || r.at > dbAnswers[r.scene].at) dbAnswers[r.scene] = r;
+    });
+    Object.keys(built).forEach(restoreFromDb);
+  } catch (e) { /* records unavailable: the page still works */ }
+});
+</script>

@@ -25,7 +25,7 @@ flashcard_ids:
 - cmvnkv5on0006g61alh67bw83
 - cmvnkwfp10007g61ae9nj53eg
 - cmw25vnut0013m81axxqhnxmn
-- cmso9yoit000hx90mksjgn6nl
+- cmw4mx7cb0000x81a6lg7l681
 - cmw25os54000bm81am7gyqjn8
 - cmw25owuu000cm81a96bk7kdn
 - cmne7xzxj02rv0msoelt9emqc

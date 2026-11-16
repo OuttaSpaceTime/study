@@ -21,6 +21,10 @@ def test_defaults_are_ankis(col):
         "relearningSteps": "10m",
         "requestRetention": 0.9,
         "fsrsWeights": "",
+        "easyDays": "",
+        "newPerDay": 20,
+        "reviewsPerDay": 200,
+        "newCardsIgnoreReviewLimit": 0,
     }
 
 
@@ -37,16 +41,39 @@ def test_changed_options_are_read_and_written(col):
     assert opts["requestRetention"] == 0.85
 
     con = sqlite3.connect(":memory:")
-    con.execute("create table Config(id, learningSteps, relearningSteps, requestRetention, fsrsWeights)")
-    con.execute("insert into Config values('default','1m,10m','10m',0.9,'')")
-    assert params.write_options(con, opts) == ["learningSteps", "relearningSteps", "requestRetention"]
+    con.execute(
+        "create table Config(id, learningSteps, relearningSteps, requestRetention, fsrsWeights, easyDays, newPerDay, reviewsPerDay, newCardsIgnoreReviewLimit)"
+    )
+    con.execute("insert into Config values('default','1m,10m','10m',0.9,'','',20,200,0)")
+    assert params.write_options(con, opts) == [
+        "learningSteps",
+        "relearningSteps",
+        "requestRetention",
+    ]
     assert params.write_options(con, opts) == []  # nothing changed the second time
 
 
 def test_no_config_row_yet_writes_nothing():
     con = sqlite3.connect(":memory:")
-    con.execute("create table Config(id, learningSteps, relearningSteps, requestRetention, fsrsWeights)")
-    assert params.write_options(con, {"learningSteps": "1m", "relearningSteps": "1m", "requestRetention": 0.9, "fsrsWeights": ""}) == []
+    con.execute(
+        "create table Config(id, learningSteps, relearningSteps, requestRetention, fsrsWeights, easyDays, newPerDay, reviewsPerDay, newCardsIgnoreReviewLimit)"
+    )
+    assert (
+        params.write_options(
+            con,
+            {
+                "learningSteps": "1m",
+                "relearningSteps": "1m",
+                "requestRetention": 0.9,
+                "fsrsWeights": "",
+                "easyDays": "",
+                "newPerDay": 20,
+                "reviewsPerDay": 200,
+                "newCardsIgnoreReviewLimit": 0,
+            },
+        )
+        == []
+    )
 
 
 def test_a_sub_minute_step_stays_in_minutes_since_ts_fsrs_has_no_seconds():
@@ -64,3 +91,24 @@ def test_no_steps_are_read_as_none_not_as_the_defaults(col):
     col.decks.update_config(conf)
     opts = params.read_options(col)
     assert (opts["learningSteps"], opts["relearningSteps"]) == ("", "")
+
+
+def test_easy_days_are_read_monday_first(col):
+    conf = col.decks.get_config(1)
+    conf["easyDaysPercentages"] = [1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0]
+    col.decks.update_config(conf)
+    assert params.read_options(col)["easyDays"] == "[1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0]"
+
+
+def test_daily_limits_and_the_collection_wide_switch_are_read(col):
+    conf = col.decks.get_config(1)
+    conf["new"]["perDay"] = 5
+    conf["rev"]["perDay"] = 50
+    col.decks.update_config(conf)
+    col.set_config("newCardsIgnoreReviewLimit", True)
+    opts = params.read_options(col)
+    assert (opts["newPerDay"], opts["reviewsPerDay"], opts["newCardsIgnoreReviewLimit"]) == (
+        5,
+        50,
+        1,
+    )
