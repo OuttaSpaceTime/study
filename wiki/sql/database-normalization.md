@@ -29,6 +29,8 @@ flashcard_ids:
 - cmwivweyv0002kr1a6rcd9hg3
 - cmwbt7a940009s71anct4wrbh
 - cmwbt6spw0006s71acdh1hcu4
+- cmwiyboih00004q1ajmf134so
+- cmwiyc0pp00014q1aney5ms4x
 explorables:
 - https://claude.ai/artifact/SpWnxwZAjPCj3XMH3nbE82
 ---
