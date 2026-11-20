@@ -48,7 +48,10 @@ CREATE TABLE DeletedCard (cardId TEXT PRIMARY KEY, deletedAt DATETIME NOT NULL);
 def env(tmp_path, monkeypatch):
     master_path = tmp_path / "master.db"
     col_path = tmp_path / "bridge.anki2"
-    base = datetime(2026, 9, 1, tzinfo=UTC)
+    # Relative to now: the fresh collection is created today, and a due day
+    # before its creation clamps to day 0 (convert.dt_to_anki_due), which the
+    # sync would then see as a moved due date on every run.
+    base = datetime.now(UTC).replace(microsecond=0) - timedelta(days=REVIEWS_EACH + 2)
 
     with sqlite3.connect(master_path) as con:
         con.executescript(SCHEMA)

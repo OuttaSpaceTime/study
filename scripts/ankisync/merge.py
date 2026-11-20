@@ -2,7 +2,8 @@
 
 Direction contract:
 - master.db owns card existence and content (one-way push to Anki, master wins).
-- Scheduling flows both ways: the side with the newer last review wins wholesale.
+- Scheduling flows both ways: the side with the newer last review wins wholesale;
+  on a tie with different due dates, master's (a due moved without a review).
 - Review history is append-only: union by (card, timestamp), nothing overwritten.
 - Anki-only notes (non-CUID guid) are reported, never imported into master.
 
@@ -26,6 +27,8 @@ CUID at creation time (the same convention flashcard-mcp's .apkg export uses).
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
+
+from scripts.ankisync.convert import STATE_LEARNING, STATE_RELEARNING
 
 CUID_RE = re.compile(r"^c[a-z0-9]{20,}$")
 
@@ -172,6 +175,23 @@ def _plan_sched(plan: SyncPlan, card: MasterCard, anki: AnkiCard) -> None:
         plan.push_sched.append((card, anki.card_id))
     elif ours is None or theirs > ours:
         plan.pull_sched.append((card.id, anki.sched))
+    elif _anki_due(card.sched) != _anki_due(anki.sched):
+        # Same last review, different due date: a due moved without a review,
+        # i.e. flashcard-mcp's `easy-days` pass. Master owns the schedule until
+        # the next review, so this also undoes a reschedule made in Anki, whose
+        # ease-0 revlog row is not a review here (bridge._newest_reviews).
+        plan.push_sched.append((card, anki.card_id))
+
+
+def _anki_due(sched: Sched) -> tuple:
+    """The due date as Anki stores it (convert.dt_to_anki_due): the UTC day of a
+    review, the second of a (re)learning step. A finer compare would see master's
+    time of day, which Anki never keeps, as a difference on every sync."""
+    if sched.due is None:
+        return (sched.state, None)
+    if sched.state in (STATE_LEARNING, STATE_RELEARNING):
+        return (sched.state, int(sched.due.timestamp()))
+    return (sched.state, sched.due.date())
 
 
 def _review_key(r: Review) -> tuple[str, int]:

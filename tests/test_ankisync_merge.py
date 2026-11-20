@@ -203,6 +203,23 @@ class TestPlanScheduling:
         plan = plan_sync([_master(sched=s)], [_anki(sched=s)])
         assert not plan.push_sched and not plan.pull_sched
 
+    def test_a_due_moved_without_a_review_pushes(self):
+        # flashcard-mcp's easy-days pass: same last review, the due day moved
+        card = _master(sched=_sched(last_review="2026-11-11T09:00", reps=3, state=2,
+                                    due="2026-11-20T04:00"))
+        anki = _anki(sched=_sched(last_review="2026-11-11T09:00", reps=3, state=2,
+                                  due="2026-11-21T04:00"))
+        plan = plan_sync([card], [anki])
+        assert plan.push_sched == [(card, 200)]
+        assert not plan.pull_sched
+
+    def test_a_time_of_day_anki_does_not_keep_is_no_difference(self):
+        # a review card's Anki due is a day; master's 14:32 reads back as 04:00
+        ours = _sched(last_review="2026-11-11T14:32", reps=3, state=2, due="2026-11-20T14:32")
+        theirs = _sched(last_review="2026-11-11T14:32", reps=3, state=2, due="2026-11-20T04:00")
+        plan = plan_sync([_master(sched=ours)], [_anki(sched=theirs)])
+        assert not plan.push_sched and not plan.pull_sched
+
     def test_subsecond_difference_is_not_a_newer_review(self):
         # Anki stores last_review_time in whole seconds; master keeps milliseconds
         ours = _sched(last_review="2026-06-07T09:00:53.164", reps=1, state=2)
