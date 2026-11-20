@@ -22,7 +22,7 @@ flashcard_ids:
 - cmne7yekm06dr0mso1do4nilp
 - cmne7y00302sf0mso7xre8ov6
 - cmw1id9he0000k41aw7tj0926
-- cmotwgr4i000eqs0mf7xai9j6
+- cmwols1jf00006i1a38usa4nr
 - cmnwwerrb000cfb0mufxjj4ok
 - cmne7xw6s01v30msovqrbgfj3
 - cmw1i401l0000k71ai1jjhe7d
@@ -53,7 +53,6 @@ flashcard_ids:
 - cmvj7bk3i00000f1ay79xkf43
 - cmw25uv7m000ym81aokaicjid
 - cmvj7fs6b00010f1aqwc45bhv
-- cmw25v05u000zm81a05cp2vd7
 - cmne7xx2y022v0mso8tysqhgq
 - cmne7xwii01xv0mso1g3ja3xv
 - cmne7xwgh01xf0mso5qaqk6cd

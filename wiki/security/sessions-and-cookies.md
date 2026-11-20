@@ -82,7 +82,6 @@ flashcard_ids:
 - cmw25ozq4000dm81agvzu6y5k
 - cmtiqqlfb0007mn0mly4dsb6r
 - cmvj7fs6b00010f1aqwc45bhv
-- cmw25v05u000zm81a05cp2vd7
 - cmvnkwfp10007g61ae9nj53eg
 - cmw25vnut0013m81axxqhnxmn
 - cmvno7tt80003cl1ai8exu6tt

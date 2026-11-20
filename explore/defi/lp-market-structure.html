@@ -1,0 +1,922 @@
+<title>Who Pays the LP</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one narrow column, a scene stepper, each scene a trading-desk panel: venues, levers, readouts. */
+:root {
+  --bg: #eef1f6;
+  --surface: #ffffff;
+  --sunk: #e2e7ef;
+  --ink: #121826;
+  --muted: #566176;
+  --line: #c9d1de;
+  --accent: #3346c4;
+  --gain: #0f7a5a;
+  --loss: #c2412d;
+  --out: #9a6200;
+  --f-display: "Sora", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d111a; --surface: #151b28; --sunk: #1c2433; --ink: #e4e9f2; --muted: #95a0b5;
+    --line: #2a3446; --accent: #8e9bff; --gain: #4fd1a1; --loss: #ff8a72; --out: #e8b04a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d111a; --surface: #151b28; --sunk: #1c2433; --ink: #e4e9f2; --muted: #95a0b5;
+  --line: #2a3446; --accent: #8e9bff; --gain: #4fd1a1; --loss: #ff8a72; --out: #e8b04a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--ink);
+  font: 17px/1.5 var(--f-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 56px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: grid; gap: 20px; }
+header { display: grid; gap: 6px; }
+.eyebrow { font: 600 12px/1 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font: 800 clamp(30px, 5.5vw, 44px)/1.04 var(--f-display); margin: 0; text-wrap: balance; letter-spacing: -.02em; }
+.promise { margin: 0; color: var(--muted); max-width: 62ch; }
+code, .mono { font-family: var(--f-mono); font-size: .86em; }
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+
+nav.stepper { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.dots { display: flex; gap: 6px; flex: 1; min-width: 0; }
+.dot { flex: 1; height: 6px; border-radius: 3px; background: var(--line); border: 0; padding: 0; cursor: pointer; }
+.dot[aria-current="step"] { background: var(--accent); }
+.dot:disabled { cursor: default; opacity: .5; }
+.count { font: 600 13px/1 var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+button { font: inherit; color: inherit; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 7px 12px; cursor: pointer; font-size: 15px; line-height: 1.2; }
+.btn:hover:not(:disabled) { border-color: var(--accent); }
+.btn:disabled { opacity: .45; cursor: default; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 700; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.scene { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; display: grid; gap: 18px; }
+.scene h2 { font: 700 clamp(21px, 3.4vw, 26px)/1.2 var(--f-display); margin: 0; text-wrap: balance; letter-spacing: -.01em; }
+.prose { margin: 0; max-width: 64ch; }
+.note { margin: 0; font-size: 14px; color: var(--muted); max-width: 70ch; }
+.outcome { margin: 0; padding: 10px 12px; border-left: 3px solid var(--accent); background: var(--sunk); border-radius: 0 8px 8px 0; }
+.ctrls { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.ctrls .count { margin-left: 4px; }
+
+/* gate */
+.gate { border-top: 1px solid var(--line); padding-top: 16px; display: grid; gap: 10px; }
+.gate .q { font-weight: 700; margin: 0; }
+.opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.opt { text-align: left; border: 1px solid var(--line); background: var(--bg); border-radius: 10px; padding: 10px 12px; cursor: pointer; font-size: 16px; display: flex; gap: 8px; }
+.opt:hover:not(:disabled) { border-color: var(--accent); }
+.opt:disabled { cursor: default; }
+.opt .mark { font-family: var(--f-mono); font-weight: 600; min-width: 1.2em; }
+.opt.right { border-color: var(--gain); }
+.opt.wrong { border-color: var(--loss); }
+.opt.right .mark { color: var(--gain); }
+.opt.wrong .mark { color: var(--loss); }
+.feedback { margin: 0; padding: 10px 12px; border-radius: 10px; background: var(--sunk); }
+.feedback b.right { color: var(--gain); }
+.feedback b.wrong { color: var(--loss); }
+.rec { font-size: 12px; color: var(--muted); }
+.btn.unsure { font-size: 14px; color: var(--muted); }
+
+/* ask */
+details.ask { border-top: 1px solid var(--line); padding-top: 12px; }
+details.ask summary { cursor: pointer; font-weight: 700; color: var(--muted); }
+.ask-body { display: grid; gap: 8px; margin-top: 10px; }
+.ask textarea { width: 100%; min-height: 70px; resize: vertical; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--bg); color: var(--ink); font: 16px/1.4 var(--f-body); }
+.ask-out { margin: 0; font-size: 14px; color: var(--muted); }
+.ask-out:empty { display: none; }
+
+/* scene 1: venues */
+.venues { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.venue { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; background: var(--bg); display: grid; gap: 6px; align-content: start; min-width: 0; transition: border-color .3s, box-shadow .3s; }
+.venue h4 { margin: 0; font: 600 12px/1.2 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.venue .price { font: 700 26px/1.1 var(--f-display); font-variant-numeric: tabular-nums; }
+.venue .sub { font-size: 14px; color: var(--muted); overflow-wrap: anywhere; }
+.venue .sub b { color: var(--ink); }
+.venue.changed { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); animation: pulse .5s ease; }
+.venue.bot .act { font-size: 15px; overflow-wrap: anywhere; }
+.venue .tag { justify-self: start; font: 600 11.5px/1 var(--f-mono); padding: 4px 8px; border-radius: 999px; border: 1px solid currentColor; }
+.tag.gain { color: var(--gain); } .tag.loss { color: var(--loss); } .tag.muted { color: var(--muted); }
+@keyframes pulse { 0% { background-color: color-mix(in srgb, var(--accent) 18%, var(--bg)); } 100% { background-color: var(--bg); } }
+.steptext { margin: 0; min-height: 3em; }
+.learn { display: grid; gap: 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.learn .tagline { font: 600 11px/1 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.learn p { margin: 0; }
+.learn .q { font-weight: 700; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-size: 15px; cursor: pointer; }
+.chip:hover:not(:disabled) { border-color: var(--accent); }
+.chip:disabled { cursor: default; }
+.chip.wrong { border-color: var(--loss); color: var(--loss); text-decoration: line-through; }
+.chip.right { border-color: var(--gain); color: var(--gain); }
+.hint { color: var(--out); }
+
+/* levers + readouts */
+.levers { display: grid; gap: 10px; }
+.lever { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.lever label, .lever .lname { font-weight: 600; flex: 1 1 200px; min-width: 0; }
+.lever .lname small, .lever label small { display: block; font-weight: 400; font-size: 13.5px; color: var(--muted); }
+.lever input[type=range] { flex: 2 1 220px; accent-color: var(--accent); min-width: 0; }
+.lever output { font: 600 15px/1 var(--f-mono); min-width: 4.5em; text-align: right; }
+.seggroup { display: flex; gap: 4px; flex-wrap: wrap; }
+.seg { border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 5px 12px; font-size: 14px; cursor: pointer; font-family: var(--f-mono); }
+.seg[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.seg:disabled, .lever input:disabled { cursor: default; opacity: .55; }
+.locked { font-size: 14px; color: var(--muted); margin: 0; }
+.bars { display: grid; gap: 8px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.barrow { display: grid; grid-template-columns: 9.5em minmax(0, 1fr) 6em; gap: 10px; align-items: center; font-size: 15px; }
+.barrow .track { height: 14px; border-radius: 4px; background: var(--sunk); overflow: hidden; }
+.barrow .fill { height: 100%; border-radius: 4px; transition: width .4s ease; }
+.fill.gain { background: var(--gain); } .fill.loss { background: var(--loss); }
+.barrow .val { font: 600 15px/1 var(--f-mono); text-align: right; font-variant-numeric: tabular-nums; }
+.netline { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; border-top: 1px dashed var(--line); padding-top: 8px; font-weight: 700; }
+.pos { color: var(--gain); } .neg { color: var(--loss); }
+
+/* scene 3: path chart */
+.chartbox { border: 1px solid var(--line); border-radius: 10px; background: var(--bg); padding: 8px; overflow-x: auto; }
+.chartbox svg { display: block; width: 100%; height: auto; }
+.readouts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.ro { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; background: var(--bg); display: grid; gap: 2px; min-width: 0; }
+.ro small { font-size: 13px; color: var(--muted); }
+.ro b { font: 700 19px/1.2 var(--f-mono); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+
+/* scene 4: dashboard */
+.dash-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+table.dash { border-collapse: collapse; width: 100%; min-width: 520px; font-size: 15px; }
+.dash th, .dash td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
+.dash tr:last-child td, .dash tr:last-child th { border-bottom: 0; }
+.dash thead th { font: 600 12.5px/1.2 var(--f-mono); color: var(--muted); }
+.dash td.v { font: 600 15px/1.2 var(--f-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.dash tr.hl td, .dash tr.hl th { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.dash tr.fresh td { animation: pulse .5s ease; }
+.dash th[scope=row] { font-weight: 600; }
+.dash th[scope=row] small { display: block; font-weight: 400; font-size: 13px; color: var(--muted); }
+.hiddenval { color: var(--muted); letter-spacing: .2em; }
+
+/* scene 5: sort */
+.bins { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+.bin { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; background: var(--bg); min-width: 0; }
+.bin b { display: block; font-size: 15px; }
+.bin span { font-size: 13.5px; color: var(--muted); }
+.sort { display: grid; gap: 8px; }
+.sort-row { display: grid; grid-template-columns: minmax(0, 1fr) 13em; gap: 6px 12px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.sort-row .qtext { min-width: 0; }
+.sort-row select { width: 100%; font: 15px var(--f-body); padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+.sort-row .why { grid-column: 1 / -1; margin: 0; font-size: 14.5px; }
+.sort-row .why b.right { color: var(--gain); } .sort-row .why b.wrong { color: var(--loss); }
+
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (max-width: 640px) {
+  .scene { padding: 16px; }
+  .opts { grid-template-columns: minmax(0, 1fr); }
+  .venues { grid-template-columns: minmax(0, 1fr); }
+  .barrow { grid-template-columns: 7.5em minmax(0, 1fr) 5em; font-size: 14px; }
+  .sort-row { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Explorable · Liquidity providing</div>
+    <h1>Who Pays the LP</h1>
+    <p class="promise">Follow one price move through your pool, weigh fees against what arbitrage takes, stretch and squeeze a range, see through a dashboard APR, then sort the tools professional LPs use by the question each one answers.</p>
+  </header>
+  <nav class="stepper" aria-label="Scenes">
+    <button class="btn" id="prev" type="button">← Back</button>
+    <div class="dots" id="dots"></div>
+    <span class="count" id="count"></span>
+    <button class="btn" id="next" type="button">Next →</button>
+  </nav>
+  <main id="stage"></main>
+  <div class="sr" aria-live="polite" id="live"></div>
+</div>
+
+<script>
+// ---------------------------------------------------------------------------
+// Capabilities (optional): recording and Send-to-chat light up when they resolve.
+// ---------------------------------------------------------------------------
+let db = null, comments = null;
+const capsReady = (async () => {
+  if (!window.claude || !window.claude.use) return;
+  try { db = await window.claude.use("db"); } catch (e) { db = null; }
+  try { comments = await window.claude.use("comments"); } catch (e) { comments = null; }
+})();
+
+async function record(collection, data) {
+  await capsReady;
+  if (!db) return false;
+  try { await db.collection(collection).add(data); return true; }
+  catch (e) { return false; }
+}
+
+const live = document.getElementById("live");
+function announce(msg) { live.textContent = ""; setTimeout(() => { live.textContent = msg; }, 30); }
+
+function el(tag, attrs = {}, ...kids) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") n.className = v;
+    else if (k === "style") n.setAttribute("style", v);
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2), v);
+    else if (v !== false && v != null) n.setAttribute(k, v === true ? "" : v);
+  }
+  for (const k of kids.flat()) if (k != null) n.append(k.nodeType ? k : document.createTextNode(k));
+  return n;
+}
+function html(tag, attrs, markup) { const n = el(tag, attrs); n.innerHTML = markup; return n; }
+
+// ---------------------------------------------------------------------------
+// Shared pieces: prediction gate, step-through controls, Ask box.
+// ---------------------------------------------------------------------------
+function predictionGate({ scene, question, options, correct, why, onAnswer, kind = "prediction" }) {
+  const box = el("div", { class: "gate" });
+  box.append(el("p", { class: "q" }, question));
+  const opts = el("div", { class: "opts", role: "group", "aria-label": question });
+  const fb = el("div");
+  const unsure = el("button", { class: "btn unsure", type: "button", id: `${scene}-unsure` }, "I don't know yet, show me");
+  let answered = null;
+  // A fresh answer is recorded; a restored one (after a reload) is only shown.
+  async function show(id, fresh) {
+    if (answered) return;
+    answered = id;
+    const isUnsure = id === "(unsure)";
+    const ok = id === correct;
+    opts.querySelectorAll("button").forEach(x => x.disabled = true);
+    unsure.disabled = true;
+    const picked = opts.querySelector(`[data-opt="${id}"]`);
+    if (picked) picked.classList.add(ok ? "right" : "wrong");
+    opts.querySelector(`[data-opt="${correct}"]`).classList.add("right");
+    const lead = isUnsure ? "<b>Here it is.</b>" : `<b class="${ok ? "right" : "wrong"}">${ok ? "Right." : "Not quite."}</b>`;
+    fb.replaceChildren(html("p", { class: "feedback" }, `${lead} ${why}`));
+    if (fresh) announce(lead.replace(/<[^>]+>/g, "") + " " + why.replace(/<[^>]+>/g, ""));
+    onAnswer(id, ok);
+    queueSave();
+    if (!fresh) return;
+    const saved = await record("attempts", {
+      scene, kind, gate: true, answer: isUnsure ? "(unsure)" : options.find(x => x.id === id).label,
+      answer_id: id, expected: options.find(x => x.id === correct).label,
+      correct: ok, unsure: isUnsure, at: new Date().toISOString()
+    });
+    if (!saved && window.claude) fb.append(el("div", { class: "rec" }, "Not recorded."));
+  }
+  options.forEach((o, i) => {
+    opts.append(el("button", { class: "opt", type: "button", id: `${scene}-opt-${o.id}`, "data-opt": o.id, onclick: () => show(o.id, true) },
+      el("span", { class: "mark" }, String.fromCharCode(65 + i)), el("span", {}, o.label)));
+  });
+  unsure.addEventListener("click", () => show("(unsure)", true));
+  box.append(opts, el("div", {}, unsure), fb);
+  box.restore = id => { if (id === "(unsure)" || options.some(o => o.id === id)) show(id, false); };
+  box.answer = () => answered;
+  box.byId = answerId => answerId;
+  return box;
+}
+
+function stepper({ count, render }) {
+  let i = 0, timer = null;
+  const counter = el("span", { class: "count" });
+  const back = el("button", { class: "btn", type: "button" }, "← Step");
+  const fwd = el("button", { class: "btn primary", type: "button" }, "Step →");
+  const play = el("button", { class: "btn", type: "button" }, "Play");
+  const replay = el("button", { class: "btn", type: "button" }, "Replay");
+  function stop() { clearInterval(timer); timer = null; play.textContent = "Play"; }
+  function go(n) {
+    i = Math.max(0, Math.min(count() - 1, n));
+    back.disabled = i === 0; fwd.disabled = i >= count() - 1;
+    counter.textContent = `Step ${i + 1} of ${count()}`;
+    render(i);
+    if (i >= count() - 1) stop();
+    queueSave();
+  }
+  back.addEventListener("click", () => { stop(); go(i - 1); });
+  fwd.addEventListener("click", () => { stop(); go(i + 1); });
+  replay.addEventListener("click", () => { stop(); go(0); });
+  play.addEventListener("click", () => {
+    if (timer) return stop();
+    if (i >= count() - 1) go(0);
+    play.textContent = "Pause";
+    timer = setInterval(() => go(i + 1), 1800);
+  });
+  return { el: el("div", { class: "ctrls" }, back, fwd, play, replay, counter),
+    go, at: () => i, next() { stop(); go(i + 1); }, prev() { stop(); go(i - 1); },
+    toggle() { play.click(); }, replay() { stop(); go(0); } };
+}
+
+// The page never answers: a question is copied to the clipboard with the scene's state,
+// and the learner pastes it into the Claude Code chat.
+function askBox(sceneId, sceneIndex, sceneTitle, getState, sectionEl) {
+  const id = `${sceneId}-ask`;
+  const ta = el("textarea", { id, maxlength: 3000, placeholder: "A question about this scene. It is copied with what you see here; paste it into your Claude Code chat." });
+  const out = el("p", { class: "ask-out", "aria-live": "polite" });
+  const send = el("button", { class: "btn primary", type: "button" }, "Copy for Claude Code");
+  send.addEventListener("click", async () => {
+    const q = ta.value.trim();
+    if (!q) return;
+    const state = getState();
+    const text = `[Scene ${sceneIndex + 1}/${SCENES.length}: ${sceneTitle}] ${q}\n\nState: ${state}`;
+    send.disabled = true;
+    // Clipboard only: a posted comment thread got answered inside the page instead of in the chat.
+    const sent = "clipboard";
+    try { await navigator.clipboard.writeText(text); out.textContent = "Copied. Paste it into your Claude Code chat."; ta.value = ""; }
+    catch (e) { ta.value = text; ta.select(); out.textContent = "Select-all is on: copy this text into your Claude Code chat."; }
+    send.disabled = false;
+    record("questions", { scene: sceneId, question: q, state, sent, at: new Date().toISOString() });
+  });
+  return el("details", { class: "ask" },
+    el("summary", {}, "Ask Claude Code about this scene"),
+    el("div", { class: "ask-body" }, el("label", { for: id, class: "sr" }, "Your question"), ta,
+      el("div", { class: "ctrls" }, send), out));
+}
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Scenes
+// ---------------------------------------------------------------------------
+const SCENES = [
+  { id: "s1-arb", title: "Who trades against your pool when the price moves?", build: buildArb },
+  { id: "s2-fees-vs-lvr", title: "Do your fees beat the arbitrage loss?", build: buildFeesVsLvr },
+  { id: "s3-range", title: "What does a narrow range really do?", build: buildRange },
+  { id: "s4-apr", title: "What does an 85% fee APR actually tell you?", build: buildApr },
+  { id: "s5-toolkit", title: "Which tool answers which question?", build: buildToolkit }
+];
+
+const usd = n => "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const pct = (n, d = 1) => (n > 0 ? "+" : "") + n.toFixed(d) + "%";
+
+// A fill-in for a Learn scene: right answer plays the step; a wrong one gets a hint, then a second try.
+function chipAsk({ scene, step, q, choices, correct, hint, saved, onDone }) {
+  const box = el("div", { class: "learn" });
+  const chips = el("div", { class: "chips", role: "group", "aria-label": q });
+  const fb = el("p", { class: "hint", "aria-live": "polite" });
+  let tries = saved && saved.tries || 0, done = !!(saved && saved.done), first = saved ? saved.first : null;
+  function finish(fresh) {
+    done = true;
+    chips.querySelectorAll("button").forEach(b => { b.disabled = true; if (b.dataset.c === correct) b.classList.add("right"); });
+    fb.textContent = "";
+    if (fresh) {
+      record("attempts", { scene, kind: "check", step, answer: choices.find(c => c.id === first).label, answer_id: first,
+        expected: choices.find(c => c.id === correct).label, correct: first === correct, unsure: false, at: new Date().toISOString() });
+    }
+    onDone(fresh);
+    queueSave();
+  }
+  choices.forEach(c => chips.append(el("button", { class: "chip", type: "button", id: `${scene}-${step}-${c.id}`, "data-c": c.id, onclick: e => {
+    if (done) return;
+    if (first == null) first = c.id;
+    tries++;
+    if (c.id === correct || tries >= 2) return finish(true);
+    e.currentTarget.classList.add("wrong"); e.currentTarget.disabled = true;
+    fb.textContent = "Hint: " + hint;
+    announce("Not quite. " + hint);
+    queueSave();
+  } }, c.label)));
+  box.append(el("div", { class: "tagline" }, "Your turn"), el("p", { class: "q" }, q), chips, fb);
+  if (done) finish(false);
+  box.state = () => ({ tries, done, first });
+  box.isDone = () => done;
+  return box;
+}
+
+// ---------------------------------------------------------------------------
+// Scene 1: one price move, step by step (Learn)
+// ---------------------------------------------------------------------------
+function buildArb(root, saved = {}) {
+  const K = 100 * 200000, P1 = 2050;
+  const x1 = Math.sqrt(K / P1), y1 = K / x1;
+  const dx = 100 - x1, dy = y1 - 200000, fee = dy * 0.003, worth = dx * P1, profit = worth - dy - fee, gap = worth - dy;
+  const avg = dy / dx;
+  const S = [
+    { cex: 2000, pool: 2000, eth: 100, usdc: 200000, bot: "Watching both prices", tag: null, changed: [],
+      text: "Both venues agree that ETH costs $2,000. Your pool holds 100 ETH and 200,000 USDC. Its price is just the ratio of the two." },
+    { cex: 2050, pool: 2000, eth: 100, usdc: 200000, bot: "Watching both prices", tag: null, changed: ["cex"],
+      text: "News hits. Binance now trades ETH at $2,050. Your pool still quotes $2,000, because a pool only re-prices when someone swaps against it." },
+    { cex: 2050, pool: 2000, eth: 100, usdc: 200000, bot: "Spots a $50 gap", tag: null, changed: ["bot"],
+      ask: { q: "Binance says $2,050, your pool says $2,000. Who trades first?", correct: "bot",
+        hint: "Who earns money from a gap between two venues, whichever way ETH goes next?",
+        choices: [{ id: "lp", label: "Another LP" }, { id: "retail", label: "A retail trader" }, { id: "bot", label: "An arbitrage bot" }, { id: "self", label: "The pool updates itself" }] },
+      text: "An arbitrage bot. It can buy ETH from your pool below the market price and sell it on Binance. Bots check every block for gaps like this." },
+    { cex: 2050, pool: 2050, eth: x1, usdc: y1, bot: `Bought ${dx.toFixed(3)} ETH from your pool for ${usd(dy)}, plus a ${usd(fee)} fee to you`, tag: null, changed: ["bot", "pool"],
+      ask: { q: "Which way does the bot trade with your pool?", correct: "buy",
+        hint: "Where is ETH cheaper right now?",
+        choices: [{ id: "buy", label: "Buys ETH from the pool" }, { id: "sell", label: "Sells ETH into the pool" }] },
+      text: `It buys ETH until your pool's price reaches $2,050. Your pool now holds less ETH and more USDC. That is the rebalancing you already knew, and it happened at an average of ${usd(avg)} per ETH.` },
+    { cex: 2050, pool: 2050, eth: x1, usdc: y1, bot: `Sold ${dx.toFixed(3)} ETH on Binance for ${usd(worth)}`, tag: { cls: "gain", t: `bot profit ${usd(profit)}` }, poolTag: { cls: "loss", t: `you: −${usd(profit)} vs market` }, changed: ["bot", "cex", "pool"],
+      ask: { q: `The bot sells the ${dx.toFixed(3)} ETH on Binance for ${usd(worth)}. Who ended up ${usd(profit)} worse off than a trade at the market price?`, correct: "lp",
+        hint: "Your pool sold ETH. At what price, compared with the market?",
+        choices: [{ id: "binance", label: "Binance" }, { id: "botx", label: "The bot" }, { id: "lp", label: "You, the LP" }, { id: "none", label: "Nobody, it was a fair swap" }] },
+      text: `You. You sold ETH at ${usd(avg)} while the market paid $2,050. That cost you ${usd(gap)}, and the fee gave back ${usd(fee)}, so you are down ${usd(profit)} net. That is exactly the bot's profit. This loss has a name: loss-versus-rebalancing (LVR). It repeats on every move, up or down.` }
+  ];
+  const fills = saved.fills || {};
+  const asks = {};
+
+  const venues = el("div", { class: "venues" });
+  const vCex = el("div", { class: "venue" }), vBot = el("div", { class: "venue bot" }), vPool = el("div", { class: "venue" });
+  venues.append(vCex, vBot, vPool);
+  const text = el("p", { class: "steptext", "aria-live": "polite" });
+  const askSlot = el("div");
+  const sim = el("p", { class: "note" }, "Simplified: a full-range pool with a 0.30% fee, no gas, and the bot buys until the prices match.");
+
+  const tour = stepper({ count: () => S.length, render: paint });
+  const fwdBtn = tour.el.children[1];
+  const gate = predictionGate({
+    scene: "s1-arb", kind: "check",
+    question: "Transfer: Binance moves only 0.2% away from your pool, and your pool charges a 0.30% fee. Does a bot trade?",
+    options: [{ id: "yes", label: "Yes, any gap is profit for a bot" }, { id: "no", label: "No, the gap doesn't cover the fee it pays" }, { id: "big", label: "Only if the pool is large" }, { id: "lp", label: "Only if LPs allow it" }],
+    correct: "no",
+    why: "The bot pays your fee on its trade, so it only acts once the gap beats the fee (and gas). The fee tier is your buffer: your pool lags the market by up to about one fee, and every move beyond that gets arbitraged.",
+    onAnswer: () => {}
+  });
+  gate.hidden = true;
+
+  const askDone = i => !!((fills[i] && fills[i].done) || (asks[i] && asks[i].isDone()));
+  function paint(i) {
+    const s = S[i];
+    // Keys and Play never skip a fill-in: a step with an open question falls back to the one before.
+    if (s.ask && !askDone(i)) return tour.go(i - 1);
+    vCex.className = "venue" + (s.changed.includes("cex") ? " changed" : "");
+    vBot.className = "venue bot" + (s.changed.includes("bot") ? " changed" : "");
+    vPool.className = "venue" + (s.changed.includes("pool") ? " changed" : "");
+    vCex.replaceChildren(el("h4", {}, "Binance (market)"), el("div", { class: "price" }, usd(s.cex).replace(".00", "")), el("div", { class: "sub" }, "Where most price discovery happens"));
+    vBot.replaceChildren(...[el("h4", {}, "Arbitrage bot"), el("div", { class: "act" }, s.bot), s.tag ? el("span", { class: "tag " + s.tag.cls }, s.tag.t) : null].filter(Boolean));
+    vPool.replaceChildren(...[el("h4", {}, "Your pool (ETH/USDC)"), el("div", { class: "price" }, usd(s.pool).replace(".00", "")),
+      html("div", { class: "sub" }, `<b>${s.eth.toFixed(3)}</b> ETH · <b>${Math.round(s.usdc).toLocaleString("en-US")}</b> USDC`),
+      s.poolTag ? el("span", { class: "tag " + s.poolTag.cls }, s.poolTag.t) : null].filter(Boolean));
+    text.textContent = s.text;
+    // The question about the next step sits under this one; Step → waits for it.
+    const nx = S[i + 1];
+    askSlot.replaceChildren();
+    if (nx && nx.ask) {
+      if (!asks[i + 1]) asks[i + 1] = chipAsk({ scene: "s1-arb", step: `step-${i + 2}`, ...nx.ask, saved: fills[i + 1],
+        onDone: fresh => { if (asks[i + 1]) fills[i + 1] = asks[i + 1].state(); fwdBtn.disabled = tour.at() >= S.length - 1; if (fresh) setTimeout(() => tour.next(), 350); } });
+      askSlot.append(asks[i + 1]);
+      if (!asks[i + 1].isDone()) fwdBtn.disabled = true;
+      text.textContent = s.text;
+    }
+    gate.hidden = i < S.length - 1;
+  }
+
+  tour.el.children[2].hidden = true; // no Play here: each step may wait for your answer
+  root.append(el("p", { class: "prose" }, "Step through one price move. When it's your turn, answer before the step plays."), venues, text, askSlot, tour.el, sim, gate);
+  tour.go(Math.min(saved.step || 0, S.length - 1));
+  if (saved.answer) gate.restore(saved.answer);
+
+  return {
+    getState: () => { for (const k in asks) fills[k] = asks[k].state(); return { answer: gate.answer(), step: tour.at(), fills: { ...fills } }; },
+    restoreRecord: r => { tour.go(S.length - 1); gate.restore(r.answer_id); },
+    stateLine: () => `step ${tour.at() + 1}/${S.length}; transfer answer: ${gate.answer() || "not yet"}`,
+    stepper: () => ({ ...tour, toggle() {} })
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Scene 2: fees vs arbitrage loss (Predict)
+// ---------------------------------------------------------------------------
+function buildFeesVsLvr(root, saved = {}) {
+  const lv = { vol: 4, turn: 0.25, fee: 0.30, ...(saved.lv || {}) };
+  const TURNS = [0.1, 0.25, 0.5, 1, 2], FEES = [0.05, 0.30, 1.00];
+  let answer = null;
+
+  const vol = el("input", { type: "range", id: "s2-vol", min: 1, max: 12, step: 0.5, value: lv.vol, "aria-describedby": "s2-vol-out" });
+  const volOut = el("output", { id: "s2-vol-out", for: "s2-vol" });
+  const turnBtns = TURNS.map(t => el("button", { class: "seg", type: "button", id: `s2-turn-${t}`, onclick: () => set("turn", t) }, `${t}×`));
+  const feeBtns = FEES.map(f => el("button", { class: "seg", type: "button", id: `s2-fee-${f}`, onclick: () => set("fee", f) }, `${f.toFixed(2)}%`));
+  vol.addEventListener("input", () => set("vol", +vol.value));
+  const levers = el("div", { class: "levers" },
+    el("div", { class: "lever" }, html("label", { for: "s2-vol" }, "Volatility<small>typical daily price move of the pair (σ)</small>"), vol, volOut),
+    el("div", { class: "lever" }, html("span", { class: "lname" }, "Daily volume ÷ TVL<small>how often the pool's money turns over per day</small>"), el("div", { class: "seggroup" }, turnBtns)),
+    el("div", { class: "lever" }, html("span", { class: "lname" }, "Fee tier<small>what each swap pays LPs</small>"), el("div", { class: "seggroup" }, feeBtns)));
+  const lockNote = el("p", { class: "locked" }, "The levers unlock after your prediction.");
+
+  const fFill = el("div", { class: "fill gain" }), lFill = el("div", { class: "fill loss" });
+  const fVal = el("span", { class: "val" }), lVal = el("span", { class: "val" });
+  const net = el("div", { class: "netline", "aria-live": "polite" });
+  const bars = el("div", { class: "bars" },
+    el("div", { class: "barrow" }, el("span", {}, "Fees earned"), el("div", { class: "track" }, fFill), fVal),
+    el("div", { class: "barrow" }, el("span", {}, "Arbitrage loss"), el("div", { class: "track" }, lFill), lVal), net);
+
+  const gate = predictionGate({
+    scene: "s2-fees-vs-lvr",
+    question: "Volatility doubles from 4% to 8% a day. Nothing else changes. What happens to the yearly arbitrage loss?",
+    options: [{ id: "same", label: "Stays the same: arbitrage depends on volume" }, { id: "x2", label: "Doubles" }, { id: "x4", label: "Roughly quadruples" }, { id: "down", label: "Falls: more swaps bring more fees" }],
+    correct: "x4",
+    why: "For a full-range pool the arbitrage loss is about σ²/8 of the pool's value per day, so it grows with the square of volatility. Twice the volatility means four times the loss: 7.3% a year becomes 29.2%. The levers are open now, and the volatility is set to 8%.",
+    onAnswer: id => { answer = id; if (!restoring) { lv.vol = 8; vol.value = 8; } paint(); }
+  });
+  // A fresh answer jumps volatility to 8%; a restored one keeps the saved levers.
+  let restoring = false;
+  const origRestore = gate.restore;
+  gate.restore = id => { restoring = true; origRestore(id); restoring = false; };
+
+  function set(k, v) { if (!answer) return; lv[k] = v; paint(); queueSave(); }
+  function paint() {
+    const feeY = lv.fee / 100 * lv.turn * 365 * 100;
+    const lvrY = Math.pow(lv.vol / 100, 2) / 8 * 365 * 100;
+    const max = Math.max(feeY, lvrY, 30);
+    fFill.style.width = (feeY / max * 100) + "%"; lFill.style.width = (lvrY / max * 100) + "%";
+    fVal.textContent = feeY.toFixed(1) + "%"; lVal.textContent = lvrY.toFixed(1) + "%";
+    const n = feeY - lvrY;
+    net.replaceChildren(el("span", {}, "Net per year, before price exposure"), el("span", { class: "num " + (n >= 0 ? "pos" : "neg") }, pct(n)));
+    volOut.textContent = lv.vol.toFixed(1) + "%";
+    turnBtns.forEach((b, i) => { b.setAttribute("aria-pressed", String(TURNS[i] === lv.turn)); b.disabled = !answer; });
+    feeBtns.forEach((b, i) => { b.setAttribute("aria-pressed", String(FEES[i] === lv.fee)); b.disabled = !answer; });
+    vol.disabled = !answer; lockNote.hidden = !!answer;
+  }
+
+  root.append(
+    el("p", { class: "prose" }, "Scene 1's loss, added up over a year. Fees earned per day are fee tier × volume ÷ TVL. The arbitrage loss depends on how much the price moves. Your LP result is the gap between the two bars, on top of whatever ETH itself does."),
+    bars, levers, lockNote, gate,
+    el("p", { class: "note" }, "Simplified: a full-range pool, a flat year (365 × one day), and the three levers treated as independent. In real markets volume falls when the fee rises, and volatile days bring extra volume. Formula from Milionis et al., \"Automated Market Making and Loss-Versus-Rebalancing\" (2022)."));
+  paint();
+  if (saved.answer) { gate.restore(saved.answer); Object.assign(lv, saved.lv || {}); vol.value = lv.vol; paint(); }
+
+  return {
+    getState: () => ({ answer: gate.answer(), lv: { ...lv } }),
+    restoreRecord: r => gate.restore(r.answer_id),
+    stateLine: () => `volatility ${lv.vol}%/day, volume/TVL ${lv.turn}x, fee ${lv.fee}%; prediction: ${gate.answer() || "not yet"}`,
+    stepper: () => null
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Scene 3: range width, calm vs trending month (Predict)
+// ---------------------------------------------------------------------------
+function buildRange(root, saved = {}) {
+  const WIDTHS = [{ id: "5", w: 0.05, label: "±5%" }, { id: "15", w: 0.15, label: "±15%" }, { id: "50", w: 0.5, label: "±50%" }, { id: "full", w: null, label: "full range" }];
+  const REG = {
+    calm: { label: "calm month", fee: 2.5, sigma: 3, path: [0, 1.5, -0.8, 2.4, 3.1, 1.2, -1.9, -3.4, -2.2, 0.5, 2.8, 4.6, 3.9, 1.1, -0.7, -2.5, -4.1, -3, -1.2, 0.9, 2.2, 3.5, 5.6, 4.4, 2.1, 0.3, -1.6, -2.9, -1.4, 0.6] },
+    trend: { label: "trending month", fee: 3.5, sigma: 6, path: [0, 3, -2, 4.5, 9, 7, 12, 16, 13, 19, 24, 21, 27, 33, 29, 36, 41, 38, 44, 40, 47, 52, 49, 55, 61, 58, 54, 60, 66, 63] }
+  };
+  const lv = { width: "50", reg: "calm", ...(saved.lv || {}) };
+  let answer = null;
+  // Capital efficiency of a range centred on the price vs full range: 1 / (1 - (Pa/Pb)^(1/4)).
+  const eff = w => w == null ? 1 : 1 / (1 - Math.pow((1 - w) / (1 + w), 0.25));
+  const lvrDay = s => Math.pow(s / 100, 2) / 8 * 1e4; // basis points per day
+
+  const wBtns = WIDTHS.map(W => el("button", { class: "seg", type: "button", id: `s3-w-${W.id}`, onclick: () => set("width", W.id) }, W.label));
+  const rBtns = Object.entries(REG).map(([k, R]) => el("button", { class: "seg", type: "button", id: `s3-r-${k}`, onclick: () => set("reg", k) }, R.label));
+  const levers = el("div", { class: "levers" },
+    el("div", { class: "lever" }, html("span", { class: "lname" }, "Your range<small>around today's price</small>"), el("div", { class: "seggroup" }, wBtns)),
+    el("div", { class: "lever" }, html("span", { class: "lname" }, "The month ahead<small>same pool, two price paths</small>"), el("div", { class: "seggroup" }, rBtns)));
+  const lockNote = el("p", { class: "locked" }, "The levers unlock after your prediction.");
+  const chart = el("div", { class: "chartbox" });
+  const ro = el("div", { class: "readouts", "aria-live": "polite" });
+  const outcome = el("p", { class: "outcome" });
+
+  const gate = predictionGate({
+    scene: "s3-range",
+    question: "You narrow your range from ±50% to ±5%, about 10× more concentrated. While the price stays inside, your fees rise about 10×. What happens to your arbitrage loss while it's inside?",
+    options: [{ id: "same", label: "Stays the same" }, { id: "x10", label: "Rises about 10× too" }, { id: "less", label: "Falls: a tight range rebalances less" }, { id: "zero", label: "Disappears: you sell near the top" }],
+    correct: "x10",
+    why: "Concentrating puts more liquidity at the current price, and every arbitrage trade then moves more of your tokens at the stale price. Fees and arbitrage loss scale by the same factor, so concentration amplifies whatever the pool already does, good or bad. It adds one new risk: leaving the range.",
+    onAnswer: () => { answer = gate.answer(); if (answer && lv.width === "50" && !saved.answer) lv.width = "5"; paint(); }
+  });
+
+  function set(k, v) { if (!answer) return; lv[k] = v; paint(); queueSave(); }
+
+  function drawChart(R, W) {
+    const P = R.path, w = 600, h = 200, pad = { l: 44, r: 12, t: 12, b: 26 };
+    const lo = -20, hi = 70;
+    const x = i => pad.l + i * (w - pad.l - pad.r) / (P.length - 1);
+    const y = v => pad.t + (hi - v) * (h - pad.t - pad.b) / (hi - lo);
+    const upper = W.w == null ? hi : Math.min(hi, ((1 + W.w) - 1) * 100), lower = W.w == null ? lo : Math.max(lo, ((1 - W.w) - 1) * 100);
+    let svg = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Price path over 30 days with your range shaded">`;
+    svg += `<rect x="${pad.l}" y="${y(upper)}" width="${w - pad.l - pad.r}" height="${y(lower) - y(upper)}" fill="var(--accent)" fill-opacity="0.13"/>`;
+    [-20, 0, 20, 40, 60].forEach(t => {
+      svg += `<line x1="${pad.l}" x2="${w - pad.r}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)" stroke-width="1"/>`;
+      svg += `<text x="${pad.l - 6}" y="${y(t) + 4}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${t > 0 ? "+" : ""}${t}%</text>`;
+    });
+    [0, 10, 20, 29].forEach(i => svg += `<text x="${x(i)}" y="${h - 8}" text-anchor="${i === 0 ? "start" : i === 29 ? "end" : "middle"}" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">day ${i + 1}</text>`);
+    const inR = v => W.w == null || (1 + v / 100 <= 1 + W.w + 1e-9 && 1 + v / 100 >= 1 - W.w - 1e-9);
+    for (let i = 1; i < P.length; i++) {
+      const ok = inR(P[i]) && inR(P[i - 1]);
+      svg += `<line x1="${x(i - 1)}" y1="${y(P[i - 1])}" x2="${x(i)}" y2="${y(P[i])}" stroke="${ok ? "var(--ink)" : "var(--out)"}" stroke-width="2.5" stroke-linecap="round"${ok ? "" : ' stroke-dasharray="5 4"'}/>`;
+    }
+    P.forEach((v, i) => svg += `<circle cx="${x(i)}" cy="${y(v)}" r="3" fill="${inR(v) ? "var(--ink)" : "var(--out)"}"/>`);
+    if (W.w != null) svg += `<text x="${pad.l + 6}" y="${y(upper) + 14}" text-anchor="start" font-size="11" fill="var(--accent)" font-family="var(--f-mono)">your range ${W.label}</text>`;
+    svg += `</svg>`;
+    chart.innerHTML = svg;
+    return P.filter(inR).length;
+  }
+
+  function paint() {
+    const R = REG[lv.reg], W = WIDTHS.find(x => x.id === lv.width);
+    const e = eff(W.w), l = lvrDay(R.sigma);
+    const daysIn = drawChart(R, W);
+    const netBp = daysIn * e * (R.fee - l);
+    const last = R.path[R.path.length - 1];
+    const outAbove = W.w != null && 1 + last / 100 > 1 + W.w, outBelow = W.w != null && 1 + last / 100 < 1 - W.w;
+    ro.replaceChildren(
+      html("div", { class: "ro" }, `<small>Concentration vs full range</small><b>${e.toFixed(1)}×</b>`),
+      html("div", { class: "ro" }, `<small>Fees per day, while in range</small><b class="pos">${(R.fee * e).toFixed(1)} bp</b>`),
+      html("div", { class: "ro" }, `<small>Arbitrage loss per day, while in range</small><b class="neg">${(l * e).toFixed(1)} bp</b>`),
+      html("div", { class: "ro" }, `<small>Days in range</small><b>${daysIn} / 30</b>`),
+      html("div", { class: "ro" }, `<small>Fees minus arbitrage, the month</small><b class="${netBp >= 0 ? "pos" : "neg"}">${pct(netBp / 100, 2)}</b>`));
+    outcome.textContent = outAbove
+      ? `Out of range above: your position is now 100% USDC. Arbitrage sold all your ETH on the way up, so you earn nothing and miss the rest of the rally (ETH ended ${pct(last, 0)}).`
+      : outBelow ? "Out of range below: your position is now 100% ETH and earns nothing until the price comes back."
+      : W.w == null ? "Full range never leaves the market, but each dollar earns and loses the least."
+      : `Still in range at month end. In a ${R.label}, a ${W.label} range ${R.fee - l >= 0 ? "multiplies a positive edge" : "multiplies a negative edge"}.`;
+    wBtns.forEach((b, i) => { b.setAttribute("aria-pressed", String(WIDTHS[i].id === lv.width)); b.disabled = !answer; });
+    rBtns.forEach((b, i) => { b.setAttribute("aria-pressed", String(Object.keys(REG)[i] === lv.reg)); b.disabled = !answer; });
+    lockNote.hidden = !!answer; outcome.hidden = !answer; ro.hidden = !answer;
+  }
+
+  root.append(
+    el("p", { class: "prose" }, "Concentrated liquidity lets you place your money in a price range. Your share of each swap's fee is your liquidity ÷ all liquidity at the current price, so a tighter range wins a bigger share per dollar. Outside the range you earn nothing."),
+    chart, gate, levers, lockNote, ro, outcome,
+    el("p", { class: "note" }, "Illustrative: fees per unit of liquidity are held fixed, but in practice other LPs crowd the same prices and split them. Calm month σ = 3%/day, trending σ = 6%/day."));
+  paint();
+  if (saved.answer) { gate.restore(saved.answer); Object.assign(lv, saved.lv || {}); paint(); }
+
+  return {
+    getState: () => ({ answer: gate.answer(), lv: { ...lv } }),
+    restoreRecord: r => gate.restore(r.answer_id),
+    stateLine: () => `range ${lv.width}, ${REG[lv.reg].label}; prediction: ${gate.answer() || "not yet"}`,
+    stepper: () => null
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Scene 4: behind the dashboard APR (Predict, compare)
+// ---------------------------------------------------------------------------
+function buildApr(root, saved = {}) {
+  const ROWS = [
+    { id: "apr24", name: "Fee APR", sub: "what the dashboard shows: last 24 h", a: "85%", b: "18%", shown: true },
+    { id: "apr30", name: "Fee APR, 30 days", sub: "the same metric over a month", a: "41%", b: "16%" },
+    { id: "vol", name: "Realized volatility", sub: "typical daily move, 30 days", a: "11%", b: "3.2%" },
+    { id: "lvr", name: "Arbitrage loss per year", sub: "σ²/8 per day, full range", a: "55%", b: "4.7%" },
+    { id: "flow", name: "Volume from arbitrage bots", sub: "from markouts: price moves against LPs after the swap", a: "~70%", b: "~35%" },
+    { id: "net", name: "Fees minus arbitrage", sub: "30-day fee APR − arbitrage loss", a: "−14%", b: "+11%", cls: true }
+  ];
+  const revealed = new Set(saved.revealed || []);
+  let answer = null;
+  const tbody = el("tbody");
+  const table = el("table", { class: "dash" },
+    html("thead", {}, `<tr><th scope="col">Metric</th><th scope="col">Pool A<br>SMALLCAP/ETH · 1%</th><th scope="col">Pool B<br>ETH/USDC · 0.30%</th><th scope="col"><span class="sr">Reveal</span></th></tr>`), tbody);
+  const outcome = el("p", { class: "outcome" });
+
+  const gate = predictionGate({
+    scene: "s4-apr",
+    question: "Pool A's fee APR is almost 5× Pool B's. What is the most likely reason?",
+    options: [{ id: "users", label: "More people use Pool A" }, { id: "vol", label: "Pool A is far more volatile, so it gets more swaps and more arbitrage" }, { id: "comp", label: "Fewer LPs compete in Pool A" }, { id: "rewards", label: "Pool A's APR includes token rewards" }],
+    correct: "vol",
+    why: "High fee APR mostly comes from big price moves: every move brings arbitrage swaps, and each pays the fee. The same moves cause the arbitrage loss, which no APR column subtracts. Reveal the rows a dashboard leaves out.",
+    onAnswer: () => { answer = gate.answer(); paint(); }
+  });
+
+  function reveal(id) { revealed.add(id); paint(id); queueSave(); }
+  function paint(fresh) {
+    tbody.replaceChildren(...ROWS.map(r => {
+      const open = r.shown || revealed.has(r.id);
+      const cell = v => el("td", { class: "v" + (r.cls && open ? (v.startsWith("−") ? " neg" : " pos") : "") }, open ? v : el("span", { class: "hiddenval", "aria-label": "hidden" }, "•••"));
+      const btn = !open && answer ? el("button", { class: "btn", type: "button", id: `s4-rev-${r.id}`, onclick: () => reveal(r.id) }, "Reveal") : null;
+      return el("tr", { class: (r.cls ? "hl" : "") + (fresh === r.id ? " fresh" : "") },
+        html("th", { scope: "row" }, `${r.name}<small>${r.sub}</small>`), cell(r.a), cell(r.b), el("td", {}, btn));
+    }));
+    const all = ROWS.every(r => r.shown || revealed.has(r.id));
+    outcome.hidden = !all;
+    outcome.textContent = "The 85% was one volatile day. Over a month, Pool A's fees did not cover what arbitrage took, while Pool B's did. Professional LPs read fee APR next to volatility and flow quality (markouts: how far the price moves against LPs in the minutes after each swap), never alone.";
+  }
+
+  root.append(el("p", { class: "prose" }, "A pool screener lists two pools. Same idea as scene 2, but now with the numbers a dashboard shows you, and the ones it hides."),
+    el("div", { class: "dash-wrap" }, table), gate, outcome,
+    el("p", { class: "note" }, "Illustrative pools and numbers. Dashboard fee APR is trailing fees ÷ TVL, often over a 24 h window (DefiLlama's yield schema), so it is a rear-view mirror and ignores arbitrage loss."));
+  paint();
+  if (saved.answer) gate.restore(saved.answer);
+
+  return {
+    getState: () => ({ answer: gate.answer(), revealed: [...revealed] }),
+    restoreRecord: r => gate.restore(r.answer_id),
+    stateLine: () => `revealed: ${[...revealed].join(", ") || "none"}; prediction: ${gate.answer() || "not yet"}`,
+    stepper: () => null
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Scene 5: the toolkit, sorted by question (Learn, sort it)
+// ---------------------------------------------------------------------------
+function buildToolkit(root, saved = {}) {
+  const BINS = [
+    { id: "screener", label: "Pool screener", desc: "TVL, volume and fee APR across many pools" },
+    { id: "liqmap", label: "Liquidity map", desc: "how much liquidity sits at each price in one pool" },
+    { id: "backtest", label: "Backtester", desc: "replays a range over past prices and fees" },
+    { id: "flow", label: "Flow analytics", desc: "who swaps in the pool: bots or users, markouts per swap" },
+    { id: "wallets", label: "Wallet labels", desc: "which funds, whales and known traders move money" },
+    { id: "derivs", label: "Derivatives data", desc: "funding, open interest, liquidations, implied volatility" }
+  ];
+  const ITEMS = [
+    { id: "share", q: "If I add $10k at ±5%, what share of the active liquidity would I own?", bin: "liqmap",
+      tools: "The Uniswap app's pool page (liquidity by price), Revert, Metrix (formerly Poolfish/uniswap.fish). It can't tell you how fast other LPs will crowd in." },
+    { id: "range30", q: "Would this exact range have made money over the last 30 days?", bin: "backtest",
+      tools: "Revert's Initiator backtester (hourly pool snapshots, so less accurate when the price leaves the range often), Metrix. Past paths only: it says nothing about next month's volatility." },
+    { id: "toxic", q: "Is this pool's volume mostly bots arbitraging, or real users?", bin: "flow",
+      tools: "Dune dashboards or your own SQL over swap data, computing markouts per swap. Professional LPs and market makers mostly build this themselves." },
+    { id: "best", q: "Which pools on Base pay the most fees per dollar right now?", bin: "screener",
+      tools: "DefiLlama Yields, GeckoTerminal, DexScreener. Trailing numbers: a starting list, never a verdict (scene 4)." },
+    { id: "fund", q: "Is a fund quietly selling this token into the pool?", bin: "wallets",
+      tools: "Arkham (labels wallets by entity), Nansen (\"Smart Money\" labels wallets by past profits). Labels can be wrong or stale." },
+    { id: "lev", q: "Is leverage piling up on ETH, so a violent move is likely?", bin: "derivs",
+      tools: "CoinGlass (funding, open interest, liquidations; its liquidation heatmaps are model estimates). Feeds your volatility view and the cost of a hedge." }
+  ];
+  const picks = { ...(saved.picks || {}) };
+  let checked = !!saved.checked, unsure = !!saved.unsure;
+
+  const bins = el("div", { class: "bins" }, BINS.map(b => html("div", { class: "bin" }, `<b>${b.label}</b><span>${b.desc}</span>`)));
+  const rows = ITEMS.map(it => {
+    const sel = el("select", { id: `s5-${it.id}`, "aria-label": it.q, onchange: e => { picks[it.id] = e.target.value; paint(); } },
+      el("option", { value: "" }, "Choose a tool…"), BINS.map(b => el("option", { value: b.id }, b.label)));
+    const why = el("p", { class: "why" });
+    const row = el("div", { class: "sort-row" }, el("div", { class: "qtext" }, it.q), sel, why);
+    return { it, sel, why, row };
+  });
+  const fb = el("div", { "aria-live": "polite" });
+  const checkBtn = el("button", { class: "btn primary", type: "button", id: "s5-check", onclick: () => finish(false, true) }, "Check");
+  const unsureBtn = el("button", { class: "btn unsure", type: "button", id: "s5-unsure", onclick: () => finish(true, true) }, "I don't know yet, show me");
+  const outcome = el("p", { class: "outcome" }, "Practitioner view: retail dashboards are the screen, not the decision. Professional LPs start from the same question as scene 2, fees against arbitrage loss, and get there with raw swap data, markouts and a volatility view, mostly in their own tooling. Each tool above answers one question and is blind to the others.");
+
+  async function finish(isUnsure, fresh) {
+    if (checked) return;
+    checked = true; unsure = isUnsure; paint();
+    if (!fresh) return;
+    const right = ITEMS.filter(it => picks[it.id] === it.bin).length;
+    queueSave();
+    record("attempts", { scene: "s5-toolkit", kind: "check", gate: true, answer: isUnsure ? "(unsure)" : `${right}/${ITEMS.length} sorted right`,
+      answer_id: isUnsure ? "(unsure)" : JSON.stringify(picks), expected: ITEMS.map(it => `${it.id}=${it.bin}`).join(", "),
+      correct: !isUnsure && right === ITEMS.length, unsure: isUnsure, at: new Date().toISOString() });
+  }
+
+  function paint() {
+    rows.forEach(({ it, sel, why }) => {
+      sel.value = picks[it.id] || ""; sel.disabled = checked;
+      const ok = picks[it.id] === it.bin, binL = BINS.find(b => b.id === it.bin).label;
+      why.hidden = !checked;
+      why.innerHTML = checked ? `<b class="${ok ? "right" : "wrong"}">${ok ? "✓" : "✕"} ${binL}.</b> ` : "";
+      if (checked) why.append(it.tools);
+    });
+    const all = ITEMS.every(it => picks[it.id]);
+    checkBtn.disabled = checked || !all; unsureBtn.disabled = checked;
+    if (checked) {
+      const right = ITEMS.filter(it => picks[it.id] === it.bin).length;
+      fb.replaceChildren(html("p", { class: "feedback" }, unsure ? "<b>Here it is.</b> Each row names the tools and what they miss." : `<b class="${right === ITEMS.length ? "right" : "wrong"}">${right} of ${ITEMS.length}.</b> Each row names the tools and what they miss.`));
+    } else fb.replaceChildren();
+    outcome.hidden = !checked;
+  }
+
+  root.append(el("p", { class: "prose" }, "Six kinds of tool, six questions a professional LP asks before and during a position. Match each question to the tool that answers it."),
+    bins, el("div", { class: "sort" }, rows.map(r => r.row)), el("div", { class: "ctrls" }, checkBtn, unsureBtn), fb, outcome);
+  paint();
+
+  return {
+    getState: () => ({ answer: checked ? (unsure ? "(unsure)" : "checked") : null, picks: { ...picks }, checked, unsure }),
+    restoreRecord: r => {
+      if (checked) return;
+      if (r.answer_id === "(unsure)") unsure = true; else { try { Object.assign(picks, JSON.parse(r.answer_id)); } catch (e) { return; } }
+      checked = true; paint();
+    },
+    stateLine: () => checked ? `sorted: ${ITEMS.map(it => `${it.id}=${picks[it.id] || "?"}`).join(", ")}` : `sorting, picked ${Object.keys(picks).length} of ${ITEMS.length}`,
+    stepper: () => null
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Stage: one scene at a time.
+// ---------------------------------------------------------------------------
+const stage = document.getElementById("stage");
+const dots = document.getElementById("dots");
+const built = {};
+let current = 0;
+
+// State survives republishes and reloads: where you are (localStorage plus the viewer's
+// hot-update hook) and which predictions you answered (db).
+const STORE_KEY = "lp-market-structure-explorable-v1";
+let BOOT = { scenes: {} }, dbAnswers = {}, saveTimer = null;
+// Scene gates: Next to scene k+1 opens once Claude writes unlocks/<scene k id>. Without db, all open.
+let gatesActive = false, unlocked = new Set();
+function isOpen(i) { return i === 0 || !gatesActive || unlocked.has(SCENES[i - 1].id); }
+function collectState() {
+  const scenes = { ...(BOOT.scenes || {}) };
+  for (const [id, b] of Object.entries(built)) if (b.api.getState) scenes[id] = b.api.getState();
+  return { current, scenes };
+}
+function queueSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(collectState())); } catch (e) { /* storage unavailable */ }
+  }, 50);
+}
+function restoreFromDb(id) {
+  const b = built[id], r = dbAnswers[id];
+  if (b && r && b.api.getState && !b.api.getState().answer) b.api.restoreRecord(r);
+}
+
+function showScene(i) {
+  current = i;
+  const sc = SCENES[i];
+  if (!built[sc.id]) {
+    const sec = el("section", { class: "scene", "aria-labelledby": `${sc.id}-h` });
+    sec.append(el("h2", { id: `${sc.id}-h` }, sc.title));
+    if (sc.build) {
+      const body = el("div", { style: "display:grid;gap:18px" });
+      sec.append(body);
+      const api = sc.build(body, (BOOT.scenes || {})[sc.id] || {});
+      sec.append(askBox(sc.id, i, sc.title, () => api.stateLine(), sec));
+      built[sc.id] = { sec, api };
+    } else {
+      sec.append(el("p", { class: "upcoming" }, "This scene is being built. It arrives in the next turn of the session."));
+      built[sc.id] = { sec, api: { stepper: () => null } };
+    }
+  }
+  stage.replaceChildren(built[sc.id].sec);
+  restoreFromDb(sc.id);
+  queueSave();
+  refreshNav();
+}
+function refreshNav() {
+  const i = current;
+  [...dots.children].forEach((d, j) => {
+    j === i ? d.setAttribute("aria-current", "step") : d.removeAttribute("aria-current");
+    d.disabled = !SCENES[j].build || !isOpen(j);
+  });
+  document.getElementById("count").textContent = `Scene ${i + 1} of ${SCENES.length}`;
+  document.getElementById("prev").disabled = i === 0;
+  const nextB = document.getElementById("next");
+  const last = i === SCENES.length - 1;
+  const locked = !last && !isOpen(i + 1);
+  nextB.disabled = last || locked;
+  nextB.textContent = locked ? `Answer the check in Claude Code to unlock scene ${i + 2}` : "Next →";
+}
+
+SCENES.forEach((sc, i) => dots.append(el("button", {
+  class: "dot", type: "button", disabled: !sc.build, "aria-label": `Scene ${i + 1}: ${sc.title}`,
+  onclick: () => { if (isOpen(i)) showScene(i); }
+})));
+document.getElementById("prev").addEventListener("click", () => showScene(Math.max(0, current - 1)));
+document.getElementById("next").addEventListener("click", () => { if (isOpen(current + 1)) showScene(Math.min(SCENES.length - 1, current + 1)); });
+
+document.addEventListener("keydown", e => {
+  const t = e.target;
+  if (t && (t.tagName === "TEXTAREA" || t.tagName === "INPUT" || t.isContentEditable)) return;
+  const s = built[SCENES[current].id] && built[SCENES[current].id].api.stepper();
+  if (!s) return;
+  if (e.key === "ArrowRight") { s.next(); e.preventDefault(); }
+  else if (e.key === "ArrowLeft") { s.prev(); e.preventDefault(); }
+  else if (e.key === "r" || e.key === "R") { s.replay(); }
+  else if (e.key === " " && (!t || t.tagName !== "BUTTON")) { s.toggle(); e.preventDefault(); }
+});
+
+["click", "input", "change", "keydown"].forEach(t => document.addEventListener(t, queueSave));
+
+function start(data) {
+  let local = {};
+  try { local = JSON.parse(localStorage.getItem(STORE_KEY) || "{}") || {}; } catch (e) { local = {}; }
+  BOOT = data && data.scenes ? data : (local.scenes ? local : { scenes: {} });
+  const want = Math.max(0, Math.min(SCENES.length - 1, BOOT.current || 0));
+  showScene(SCENES[want].build ? want : 0);
+}
+try { window.claude?.hot?.snapshot?.(() => collectState()); } catch (e) { /* no hot updates here */ }
+const hot = window.claude && window.claude.hot;
+if (hot && hot.ready) hot.ready(start); else start((hot && hot.data) || {});
+
+capsReady.then(() => {
+  if (!db) return;
+  gatesActive = true;
+  refreshNav();
+  let answeredOnce = false;
+  const timer = setTimeout(() => { if (!answeredOnce) { gatesActive = false; refreshNav(); } }, 10000);
+  try {
+    db.collection("unlocks").onSnapshot(snap => {
+      answeredOnce = true; clearTimeout(timer);
+      unlocked = new Set(snap.docs.filter(d => d.exists).map(d => d.id));
+      // A scene restored from an earlier visit stays reachable only if it is open.
+      let back = current; while (back > 0 && !isOpen(back)) back--;
+      if (back !== current) showScene(back); else refreshNav();
+    }, () => { clearTimeout(timer); gatesActive = false; refreshNav(); });
+  } catch (e) { gatesActive = false; refreshNav(); }
+});
+
+capsReady.then(async () => {
+  if (!db) return;
+  try {
+    const snap = await db.collection("attempts").get();
+    snap.docs.forEach(d => {
+      const r = d.data();
+      if (r.kind !== "prediction" && !r.gate) return;
+      if (!dbAnswers[r.scene] || r.at > dbAnswers[r.scene].at) dbAnswers[r.scene] = r;
+    });
+    Object.keys(built).forEach(restoreFromDb);
+  } catch (e) { /* records unavailable: the page still works */ }
+});
+</script>

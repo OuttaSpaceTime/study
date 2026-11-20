@@ -13,7 +13,7 @@ tags:
 - schema-design
 - data-modeling
 created: '2026-11-11'
-updated: '2026-11-11'
+updated: '2026-11-20'
 source_skill: study-walkthrough
 flashcard_ids:
 - cmwbt5fbd0000s71a7jyinisa
@@ -31,6 +31,11 @@ flashcard_ids:
 - cmwbt6spw0006s71acdh1hcu4
 - cmwiyboih00004q1ajmf134so
 - cmwiyc0pp00014q1aney5ms4x
+- cmwombtpm0000jj1abjl1sx4q
+- cmwomc0b30001jj1agk3dqzex
+- cmwomcar60002jj1axtmg7f7s
+- cmwomnrl20003jj1ah7010tnw
+- cmwomxi8q0004jj1azac4euuu
 explorables:
 - https://claude.ai/artifact/SpWnxwZAjPCj3XMH3nbE82
 ---
