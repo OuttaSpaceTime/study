@@ -6,8 +6,10 @@ from scripts.ankisync.convert import (
     anki_due_to_dt,
     dt_to_anki_due,
     parse_master_dt,
+    revlog_type_to_state,
     split_tags,
     state_to_anki,
+    state_to_revlog_type,
 )
 
 
@@ -85,3 +87,12 @@ class TestDueConversion:
         due = _dt("2026-06-08T10:00:00")
         anki_due = dt_to_anki_due(due, state=1, col_crt=self.COL_CRT)
         assert anki_due_to_dt(anki_due, state=1, col_crt=self.COL_CRT) == due
+
+
+class TestRevlogType:
+    def test_reads_what_the_card_was(self):
+        # learn, review, relearn, filtered; manual and rescheduled are no review state
+        assert [revlog_type_to_state(t) for t in (0, 1, 2, 3, 4, 5)] == [1, 2, 3, 2, None, None]
+
+    def test_writes_it_back_and_review_when_unknown(self):
+        assert [state_to_revlog_type(s) for s in (0, 1, 2, 3, None)] == [0, 0, 1, 2, 1]

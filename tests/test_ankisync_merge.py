@@ -182,6 +182,21 @@ class TestPlanScheduling:
         assert plan.push_sched == [(card, 200)]
         assert not plan.pull_sched
 
+    def test_a_review_ahead_on_a_rest_day_pushes_and_is_never_pulled_back(self):
+        # Omvida's study ahead: reviewed on Saturday, two days before its Monday due.
+        # Anki still holds the Monday due; master's newer review wins, so Monday's
+        # sync carries the new schedule to Anki instead of bringing the card back.
+        card = _master(sched=_sched(last_review="2026-11-21T09:00", reps=6, state=2,
+                                    due="2026-12-18T09:00", interval=27.0))
+        anki = _anki(sched=_sched(last_review="2026-10-24T09:00", reps=5, state=2,
+                                  due="2026-11-23T04:00", interval=30.0))
+        plan = plan_sync([card], [anki])
+        assert plan.push_sched == [(card, 200)]
+        assert not plan.pull_sched
+        # The review itself goes to Anki's revlog too.
+        ours = [Review(CUID, _dt("2026-11-21T09:00"), 3, 4000)]
+        assert plan_history(ours, []).push_reviews == ours
+
     def test_their_newer_review_pulls_sched(self):
         card = _master(sched=_sched(last_review="2026-06-01T09:00", reps=2, state=2))
         anki = _anki(sched=_sched(last_review="2026-06-07T09:00", reps=3, state=2))

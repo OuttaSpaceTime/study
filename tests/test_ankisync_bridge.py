@@ -8,11 +8,12 @@ write_sched rewrites last_review_time on every push.
 
 import dataclasses
 import re
+from datetime import UTC, datetime
 
 from anki.collection import Collection
 
 from scripts.ankisync import bridge
-from scripts.ankisync.merge import MasterCard, Sched
+from scripts.ankisync.merge import MasterCard, Review, Sched
 
 CUID = "cmne7xoxj002z0msoiuekt37c"
 REVIEWED_MS = 1_757_000_000_000
@@ -199,5 +200,23 @@ class TestAnkiLastReview:
             _add_revlog(col, cid, ms=REVIEWED_MS + 86_400_000, ease=0)  # set-due-date
             (card,) = bridge.read_anki_cards(col)
             assert int(card.sched.last_review.timestamp()) == REVIEWED_MS // 1000
+        finally:
+            col.close()
+
+
+class TestReviewState:
+    """A review's state crosses as revlog `type`: a rest day's share counts reviews, not steps."""
+
+    def test_a_pushed_review_keeps_its_state_and_reads_back(self, tmp_path):
+        col = _collection(tmp_path)
+        try:
+            cid = _add_card(col)
+            at = datetime.fromtimestamp(REVIEWED_MS // 1000, tz=UTC)
+            reviews = [Review(CUID, at, 3, 1000, state=3), Review(CUID, at.replace(second=at.second + 1), 3, 1000)]
+            assert bridge.append_revlog(col, reviews, {CUID: cid}) == 2
+            types = col.db.list("select type from revlog where cid = ? order by id", cid)
+            assert types == [2, 1]  # relearn; review when unknown
+            states = [r.state for r in bridge.read_anki_reviews(col, {cid: CUID})]
+            assert sorted(states) == [2, 3]
         finally:
             col.close()

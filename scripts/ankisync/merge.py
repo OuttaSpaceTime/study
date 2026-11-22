@@ -92,6 +92,7 @@ class Review:
     reviewed_at: datetime
     rating: int  # 1-4 on both sides (ts-fsrs Grade == Anki ease)
     response_ms: int | None
+    state: int | None = None  # the card's state before it (ts-fsrs), as revlog type records it; None unknown
 
 
 @dataclass

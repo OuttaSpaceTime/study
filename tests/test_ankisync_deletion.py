@@ -39,7 +39,7 @@ CREATE TABLE Card (
 CREATE TABLE Review (
     id TEXT PRIMARY KEY, cardId TEXT NOT NULL REFERENCES Card(id) ON DELETE CASCADE,
     rating INTEGER NOT NULL, responseMs INTEGER, stability REAL NOT NULL,
-    difficulty REAL NOT NULL, elapsedDays REAL NOT NULL, reviewedAt DATETIME NOT NULL);
+    difficulty REAL NOT NULL, elapsedDays REAL NOT NULL, reviewedAt DATETIME NOT NULL, state INTEGER);
 CREATE TABLE DeletedCard (cardId TEXT PRIMARY KEY, deletedAt DATETIME NOT NULL);
 """
 

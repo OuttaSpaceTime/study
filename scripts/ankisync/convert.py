@@ -8,6 +8,32 @@ STATE_NEW, STATE_LEARNING, STATE_REVIEW, STATE_RELEARNING = 0, 1, 2, 3
 QUEUE_SUSPENDED = -1
 QUEUE_NEW, QUEUE_LEARNING, QUEUE_REVIEW = 0, 1, 2
 
+# Anki's revlog `type`: what the card was when reviewed. Learn covers new and
+# learning cards alike, so it reads back as learning; Filtered (a review in a
+# filtered deck, often early) as review. Master's Review.state carries it, and a
+# rest day's share counts only reviews of Review cards (flashcard-mcp's
+# study-ahead.ts), not steps.
+REVLOG_LEARN, REVLOG_REVIEW, REVLOG_RELEARN, REVLOG_FILTERED = 0, 1, 2, 3
+
+
+def revlog_type_to_state(rtype: int) -> int | None:
+    """Master's Review.state for a revlog row's type; None for any other (Manual, Rescheduled)."""
+    return {
+        REVLOG_LEARN: STATE_LEARNING,
+        REVLOG_REVIEW: STATE_REVIEW,
+        REVLOG_RELEARN: STATE_RELEARNING,
+        REVLOG_FILTERED: STATE_REVIEW,
+    }.get(rtype)
+
+
+def state_to_revlog_type(state: int | None) -> int:
+    """A revlog type for a master review; Review when the state is unknown, as every push once was."""
+    if state in (STATE_NEW, STATE_LEARNING):
+        return REVLOG_LEARN
+    if state == STATE_RELEARNING:
+        return REVLOG_RELEARN
+    return REVLOG_REVIEW
+
 
 def split_tags(tags: str) -> list[str]:
     """Master comma-separated tags -> Anki tag list (no spaces allowed in a tag)."""

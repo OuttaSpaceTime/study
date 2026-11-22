@@ -125,9 +125,9 @@ def read_cards(con: sqlite3.Connection) -> list[MasterCard]:
 
 
 def read_reviews(con: sqlite3.Connection) -> list[Review]:
-    rows = con.execute("SELECT cardId, reviewedAt, rating, responseMs FROM Review").fetchall()
+    rows = con.execute("SELECT cardId, reviewedAt, rating, responseMs, state FROM Review").fetchall()
     return [
-        Review(card_id=r[0], reviewed_at=parse_master_dt(r[1]), rating=r[2], response_ms=r[3])
+        Review(card_id=r[0], reviewed_at=parse_master_dt(r[1]), rating=r[2], response_ms=r[3], state=r[4])
         for r in rows
     ]
 
@@ -199,8 +199,8 @@ def append_reviews(
         sched = sched_by_card.get(rev.card_id)
         con.execute(
             """INSERT INTO Review (id, cardId, rating, responseMs, stability,
-                                   difficulty, elapsedDays, reviewedAt)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                                   difficulty, elapsedDays, reviewedAt, state)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
                 _cuid_like(),
                 rev.card_id,
@@ -210,6 +210,7 @@ def append_reviews(
                 (sched.difficulty if sched and sched.difficulty is not None else 0.0),
                 round(elapsed, 6),
                 format_master_dt(rev.reviewed_at),
+                rev.state,
             ),
         )
         last_seen[rev.card_id] = rev.reviewed_at

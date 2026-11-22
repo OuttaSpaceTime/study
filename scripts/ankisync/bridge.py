@@ -17,7 +17,9 @@ from scripts.ankisync.convert import (
     STATE_NEW,
     anki_due_to_dt,
     dt_to_anki_due,
+    revlog_type_to_state,
     state_to_anki,
+    state_to_revlog_type,
 )
 from scripts.ankisync.merge import DELETED_TAG, AnkiCard, MasterCard, Review, Sched
 
@@ -245,9 +247,9 @@ def tag_deleted(col: Collection, note_ids: list[int]) -> None:
 
 
 def read_anki_reviews(col: Collection, guid_by_cid: dict[int, str]) -> list[Review]:
-    rows = col.db.all("select id, cid, ease, time from revlog where ease between 1 and 4")
+    rows = col.db.all("select id, cid, ease, time, type from revlog where ease between 1 and 4")
     out = []
-    for rid, cid, ease, time_ms in rows:
+    for rid, cid, ease, time_ms, rtype in rows:
         guid = guid_by_cid.get(cid)
         if guid is None:
             continue
@@ -257,6 +259,7 @@ def read_anki_reviews(col: Collection, guid_by_cid: dict[int, str]) -> list[Revi
                 reviewed_at=datetime.fromtimestamp(rid / 1000, tz=UTC),
                 rating=ease,
                 response_ms=time_ms or None,
+                state=revlog_type_to_state(rtype),
             )
         )
     return out
@@ -274,11 +277,12 @@ def append_revlog(col: Collection, reviews: list[Review], cid_by_guid: dict[str,
             rid += 1  # revlog PK is a global ms timestamp; bump on collision
         col.db.execute(
             """insert into revlog (id, cid, usn, ease, ivl, lastIvl, factor, time, type)
-               values (?, ?, -1, ?, 0, 0, 0, ?, 1)""",
+               values (?, ?, -1, ?, 0, 0, 0, ?, ?)""",
             rid,
             cid,
             rev.rating,
             rev.response_ms or 0,
+            state_to_revlog_type(rev.state),
         )
         added += 1
     return added
