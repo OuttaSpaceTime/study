@@ -44,13 +44,13 @@ const ROW_CLASS =
   "flex items-center gap-3 rounded-md px-2 py-1 text-muted transition-colors hover:bg-panel-2 hover:text-fg";
 
 export default async function Home() {
-  // Start the wiki read before the synchronous deck queries so the fs work and
-  // the sqlite work overlap on a cold index.
-  const indexPromise = getWikiIndex();
-  const overview = getDeckOverview();
-  const recentCards = getRecentlyStudied();
-
-  const index = await indexPromise;
+  // Start every read before awaiting any, so the fs work and the deck calls
+  // overlap on a cold start.
+  const [index, overview, recentCards] = await Promise.all([
+    getWikiIndex(),
+    getDeckOverview(),
+    getRecentlyStudied(),
+  ]);
   const studied = recentlyStudiedPages(index.pages, recentCards);
 
   const recent = [...index.pages]

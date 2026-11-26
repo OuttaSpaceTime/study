@@ -2,17 +2,10 @@
 // flashcard-mcp next to the deck it reads — the same code `/study` calls
 // through `check_calibration`. Re-deriving retention here drifted within a day
 // of being written (wrong min-review floor, no rating-discrimination guard, UTC
-// instead of local days), so the viewer shells out to that repo's CLI rather
-// than keep a second copy honest. Going through the MCP protocol instead would
-// mean spawning a stdio client per request.
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
-import { flashcardMcpDir } from "./flashcard-path";
+// instead of local days), so the viewer asks that repo's app server for the
+// verdict (`calibration`) instead of keeping a second copy honest.
+import { deckCall } from "./deck-client";
 import type { Calibration } from "./types";
-
-const run = promisify(execFile);
-
-const MCP_DIR = flashcardMcpDir();
 
 interface CalibrationJson {
   verdict: Calibration["verdict"];
@@ -24,16 +17,10 @@ interface CalibrationJson {
   reasons: string[];
 }
 
-/** Null when the script is unavailable — the panel degrades instead of 500ing. */
+/** Null when the deck is unavailable — the panel degrades instead of 500ing. */
 export async function getCalibration(): Promise<Calibration | null> {
-  if (!MCP_DIR) return null;
   try {
-    const { stdout } = await run(
-      "npm",
-      ["run", "dev:cli", "--silent", "--", "calibration"],
-      { cwd: MCP_DIR },
-    );
-    const data = JSON.parse(stdout) as CalibrationJson;
+    const data = await deckCall<CalibrationJson>("calibration");
     return {
       verdict: data.verdict,
       marginal: data.marginal,

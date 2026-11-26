@@ -10,10 +10,10 @@ export async function GET(request: Request) {
 
   const ids = split("ids");
   if (ids.length > 0) {
-    return NextResponse.json({ cards: getCardsByIds(ids), matchedBy: "ids" });
+    return NextResponse.json({ cards: await getCardsByIds(ids), matchedBy: "ids" });
   }
   return NextResponse.json({
-    cards: getCardsByTags(split("tags")),
+    cards: await getCardsByTags(split("tags")),
     matchedBy: "tags",
   });
 }
