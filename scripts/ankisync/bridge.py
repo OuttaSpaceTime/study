@@ -26,7 +26,7 @@ from scripts.ankisync.merge import DELETED_TAG, AnkiCard, MasterCard, Review, Sc
 PROFILE = "StudySync"
 NOTETYPE = "Basic"
 # Two note types of our own, for code cards, the only cards with clozes
-# (flashcard-mcp refuses one on any other). A cloze needs a cloze note type, or
+# (agentic-spaced-repetition refuses one on any other). A cloze needs a cloze note type, or
 # Anki shows the braces. Both carry a third field no template shows, the exercise as
 # JSON: front and back are all another machine would otherwise get of a card
 # (merge.py imports what it finds on Anki), and it could not run. Anki can't run
@@ -152,7 +152,7 @@ def _study_notetype(col: Collection, name: str) -> dict:
     Looked up by name, so a machine syncing later finds the one that came down
     from AnkiWeb rather than adding its own. Adding a note type does not force a
     full sync; changing one a note uses would, which is why a card never changes
-    note type (flashcard-mcp's assertSameAnkiShape).
+    note type (agentic-spaced-repetition's assertSameAnkiShape).
     """
     existing = col.models.by_name(name)
     if existing is not None:

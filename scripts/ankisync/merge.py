@@ -21,7 +21,7 @@ master keeps a tombstone row; absence then means exactly one thing on each side.
 
 No sync bookkeeping exists: every decision derives from the current state of both
 sides. Identity is carried by the Anki note guid, which we set to the master card's
-CUID at creation time (the same convention flashcard-mcp's .apkg export uses).
+CUID at creation time (the same convention agentic-spaced-repetition's .apkg export uses).
 """
 
 import re
@@ -67,7 +67,7 @@ class MasterCard:
     suspended: bool
     sched: Sched
     inherited: bool = False  # split off an existing card, so reps came with it
-    exercise: str = ""  # a code card's JSON (flashcard-mcp's exercises.ts), else ""
+    exercise: str = ""  # a code card's JSON (agentic-spaced-repetition's exercises.ts), else ""
 
 
 @dataclass(frozen=True)
@@ -178,7 +178,7 @@ def _plan_sched(plan: SyncPlan, card: MasterCard, anki: AnkiCard) -> None:
         plan.pull_sched.append((card.id, anki.sched))
     elif _anki_due(card.sched) != _anki_due(anki.sched):
         # Same last review, different due date: a due moved without a review,
-        # i.e. flashcard-mcp's `easy-days` pass. Master owns the schedule until
+        # i.e. agentic-spaced-repetition's `easy-days` pass. Master owns the schedule until
         # the next review, so this also undoes a reschedule made in Anki, whose
         # ease-0 revlog row is not a review here (bridge._newest_reviews).
         plan.push_sched.append((card, anki.card_id))

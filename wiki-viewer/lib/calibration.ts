@@ -1,5 +1,5 @@
 // Server-only. The calibration verdict has one implementation, and it lives in
-// flashcard-mcp next to the deck it reads — the same code `/study` calls
+// agentic-spaced-repetition next to the deck it reads — the same code `/study` calls
 // through `check_calibration`. Re-deriving retention here drifted within a day
 // of being written (wrong min-review floor, no rating-discrimination guard, UTC
 // instead of local days), so the viewer asks that repo's app server for the

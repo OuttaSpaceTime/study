@@ -23,7 +23,7 @@ See `~/.claude/skills/references/interactive-principles.md` for the shared princ
 
 ## MCP Server Dependency
 
-Requires `flashcard-mcp`. Tools: `check_pressure`, `list_decks`, `find_similar_cards`, `create_card`, `create_code_card`, `check_code_card`, `get_card`, `update_card`, `update_code_card`. Use `find_similar_cards` for duplicate checks: it is semantic. `search_cards` is substring only.
+Requires `srs`. Tools: `check_pressure`, `list_decks`, `find_similar_cards`, `create_card`, `create_code_card`, `check_code_card`, `get_card`, `update_card`, `update_code_card`. Use `find_similar_cards` for duplicate checks: it is semantic. `search_cards` is substring only.
 
 Reading an explorable's recorded answers uses the `ArtifactData` tool (deferred: load it via ToolSearch the first time).
 

@@ -4,8 +4,8 @@
       "command": "qmd",
       "args": ["mcp"]
     },
-    "flashcard-mcp": {
-      "command": "scripts/flashcard-mcp-server"
+    "srs": {
+      "command": "scripts/srs-mcp-server"
     }
   }
 }

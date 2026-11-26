@@ -1,10 +1,10 @@
-"""The only way Python reaches the flashcard deck: flashcard-mcp's app server over stdio.
+"""The only way Python reaches the flashcard deck: agentic-spaced-repetition's app server over stdio.
 
-master.db belongs to flashcard-mcp, which alone knows what its columns mean (the
+master.db belongs to agentic-spaced-repetition, which alone knows what its columns mean (the
 tombstone and cascade on a delete, which stability a non-New card may hold, the
 content rules). anki-sync, the card-quality gate and the sweep used to open the file
 and run SQL of their own, and each had to re-derive those rules; now they ask the deck
-SDK (`flashcard-mcp/src/sdk/`) through the app server's NDJSON protocol:
+SDK (`agentic-spaced-repetition/src/sdk/`) through the app server's NDJSON protocol:
 
     -> {"id": 1, "method": "cardRecords", "params": {...}}
     <- {"id": 1, "result": ...}  or  {"id": 1, "error": {"message": ...}}
@@ -32,7 +32,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from scripts.config import ENV_FILE, flashcard_mcp_dir, master_db
+from scripts.config import ENV_FILE, master_db, srs_dir
 
 READY_TIMEOUT = 20  # seconds for the server to open the database and say it is ready
 CALL_TIMEOUT = 120  # seconds a call may take before the server is taken for wedged
@@ -53,7 +53,7 @@ def iso(value: datetime) -> str:
 
 @dataclass(frozen=True)
 class CardRecord:
-    """A card as `cardRecords` returns it (flashcard-mcp's src/core/card-records.ts)."""
+    """A card as `cardRecords` returns it (agentic-spaced-repetition's src/core/card-records.ts)."""
 
     id: str
     deck_id: str
@@ -126,7 +126,7 @@ class DeckClient:
 
     def __init__(self, command: list[str] | None = None, cwd: Path | None = None,
                  call_timeout: float = CALL_TIMEOUT) -> None:
-        """`command` and `cwd` replace the flashcard-mcp app server; for tests of the protocol itself."""
+        """`command` and `cwd` replace the agentic-spaced-repetition app server; for tests of the protocol itself."""
         self._command = command
         self._cwd = cwd
         self._call_timeout = call_timeout
@@ -151,20 +151,20 @@ class DeckClient:
             argv, directory = self._command, self._cwd
         else:
             try:
-                directory = flashcard_mcp_dir()
+                directory = srs_dir()
                 db = master_db().resolve()  # against this process's cwd, not the server's
-            except RuntimeError as e:  # FLASHCARD_MCP_DIR unset: the message already names .env.local
+            except RuntimeError as e:  # SRS_DIR unset: the message already names .env.local
                 raise DeckError(str(e)) from None
             argv = server_command(directory)
             if not Path(argv[0]).exists() or not Path(argv[1]).exists():
                 raise DeckError(
-                    f"no flashcard-mcp app server at {directory} (is FLASHCARD_MCP_DIR in {ENV_FILE} right, "
+                    f"no agentic-spaced-repetition app server at {directory} (is SRS_DIR in {ENV_FILE} right, "
                     "and `npm install` run there?)"
                 )
             if not db.is_file():
                 # The server would create an empty deck at a wrong path and report an empty collection.
                 raise DeckError(
-                    f"no deck database at {db} (check FLASHCARD_MCP_DIR in {ENV_FILE}, "
+                    f"no deck database at {db} (check SRS_DIR in {ENV_FILE}, "
                     "or FLASHCARD_MASTER_DB if it is set)"
                 )
             env["DATABASE_URL"] = f"file:{db}"

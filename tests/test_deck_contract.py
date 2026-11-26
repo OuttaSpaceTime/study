@@ -2,7 +2,7 @@
 
 Nothing is copied from the real deck: the app server creates the schema in an empty file
 (its `prepareDatabase`), so this fails the day a Prisma migration or a change in
-flashcard-mcp's SDK stops accepting what anki-sync sends or returning what it reads. It
+agentic-spaced-repetition's SDK stops accepting what anki-sync sends or returning what it reads. It
 replaces the hand-written CREATE TABLE fixtures this repo's tests used to keep in step by hand.
 """
 
@@ -10,14 +10,14 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from scripts.config import flashcard_mcp_dir
+from scripts.config import srs_dir
 from scripts.deck.client import DeckClient, DeckError, iso
 
 try:
-    _DIR = flashcard_mcp_dir()
-    _SKIP = None if (_DIR / "src" / "app" / "server.ts").exists() else f"no flashcard-mcp app server at {_DIR}"
+    _DIR = srs_dir()
+    _SKIP = None if (_DIR / "src" / "app" / "server.ts").exists() else f"no agentic-spaced-repetition app server at {_DIR}"
 except RuntimeError as e:
-    _SKIP = f"FLASHCARD_MCP_DIR is not configured ({e})"
+    _SKIP = f"SRS_DIR is not configured ({e})"
 
 pytestmark = pytest.mark.skipif(_SKIP is not None, reason=_SKIP or "")
 
@@ -93,7 +93,7 @@ def test_a_pulled_schedule_for_a_new_card_in_the_deck_gets_a_usable_memory_state
                                       lastReview=None)])
     deck.sync_apply(schedules=[{"cardId": A, **schedule(stability=None, difficulty=None, interval=7.0)}])
     (a,) = deck.card_records()
-    assert a.stability > 0, "a non-New card at stability 0 is what flashcard-mcp resets to New"
+    assert a.stability > 0, "a non-New card at stability 0 is what agentic-spaced-repetition resets to New"
 
 
 def test_a_malformed_call_is_a_deck_error_not_a_hang(deck):

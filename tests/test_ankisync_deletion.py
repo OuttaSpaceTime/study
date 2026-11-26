@@ -50,7 +50,7 @@ def env(tmp_path, monkeypatch):
 
 def forget(deck, card_id):
     """The deck's state after a deletion: no card, no reviews, a tombstone. Set up by hand, since the
-    fake does not simulate it; the cascade itself is tested in flashcard-mcp's sync-apply.test.ts."""
+    fake does not simulate it; the cascade itself is tested in agentic-spaced-repetition's sync-apply.test.ts."""
     deck.cards = [c for c in deck.cards if c.id != card_id]
     deck.reviews = [r for r in deck.reviews if r.card_id != card_id]
     deck._tombstones.add(card_id)
@@ -90,7 +90,7 @@ def test_fixture_starts_converged(env, capsys):
 
 
 class TestDeletedHere:
-    """What flashcard-mcp's deleteCard leaves behind: a tombstone, no Card, no Review."""
+    """What agentic-spaced-repetition's deleteCard leaves behind: a tombstone, no Card, no Review."""
 
     @pytest.fixture(autouse=True)
     def delete_here(self, env):

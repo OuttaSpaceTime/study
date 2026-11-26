@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""PreToolUse hook on every flashcard-mcp card write, and `--judge <card id>`: see scripts/card_quality.py."""
+"""PreToolUse hook on every agentic-spaced-repetition card write, and `--judge <card id>`: see scripts/card_quality.py."""
 import sys
 from pathlib import Path
 

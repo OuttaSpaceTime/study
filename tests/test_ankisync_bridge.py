@@ -68,7 +68,7 @@ class TestStudyNoteTypes:
             col.close()
 
     def test_a_card_with_no_exercise_never_gets_a_cloze_note_type(self, tmp_path):
-        # flashcard-mcp refuses such a card. Were one ever to arrive, Anki shows its braces as text
+        # agentic-spaced-repetition refuses such a card. Were one ever to arrive, Anki shows its braces as text
         # rather than making cards the sync keeps no schedule for.
         col = _collection(tmp_path)
         try:

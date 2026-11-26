@@ -1,10 +1,10 @@
-// Server-only data layer for the SRS deck. It reads through flashcard-mcp's app
+// Server-only data layer for the SRS deck. It reads through agentic-spaced-repetition's app
 // server (lib/deck-client.ts), which owns master.db and its schema; this file
 // only reshapes the records into the viewer's Card type.
 import { deckCall } from "./deck-client";
 import type { Card, CardState, DeckOverview } from "./types";
 
-// ts-fsrs State enum, mirrored from flashcard-mcp's schema (Card.state).
+// ts-fsrs State enum, mirrored from agentic-spaced-repetition's schema (Card.state).
 const STATE_NAMES: CardState[] = ["new", "learning", "review", "relearning"];
 
 /** The fields of the app server's `cardRecords` rows the viewer reads. */

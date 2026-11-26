@@ -1,8 +1,8 @@
 """The adapter between merge.py's dataclasses and the deck client.
 
-master.db belongs to flashcard-mcp, so nothing here opens it: cards, reviews and
+master.db belongs to agentic-spaced-repetition, so nothing here opens it: cards, reviews and
 tombstones are read through `DeckClient`, and everything a sync decided to write goes
-out as one `syncApply` call, which flashcard-mcp applies in one transaction under its
+out as one `syncApply` call, which agentic-spaced-repetition applies in one transaction under its
 own rules (the cascade and tombstone on a delete, the fallback memory state for a card
 Anki never computed FSRS for, the content rules on an import, whole-second review
 dedupe). The sync decides what to write; this only translates it.

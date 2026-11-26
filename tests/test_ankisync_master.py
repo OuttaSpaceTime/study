@@ -1,7 +1,7 @@
 """scripts.ankisync.master: the adapter between merge.py's dataclasses and the deck client.
 
 What the deck does with a syncApply (the fallback memory state, the cascade, the content
-rules, the review dedupe) is flashcard-mcp's to test; here is only what is sent, and read.
+rules, the review dedupe) is agentic-spaced-repetition's to test; here is only what is sent, and read.
 """
 
 from datetime import UTC, datetime

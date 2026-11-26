@@ -27,7 +27,7 @@ See `~/.claude/skills/references/interactive-principles.md` for shared interacti
 
 ## Output Discipline
 
-**Run all lookups silently.** `mcp__flashcard-mcp__check_pressure`, `mcp__flashcard-mcp__check_calibration`, `Read` of wiki pages or the index, `mcp__flashcard-mcp__*` calls — these execute without preamble narration ("Starting Phase 1…", "Let me check…") and without any echoing of their stdout, JSON, or file contents into chat. The chat shows only synthesized output: the pressure verdict line, the question, the rating, the next prompt. If a script exits non-zero or errors, surface a one-line summary, not the stderr blob.
+**Run all lookups silently.** `mcp__srs__check_pressure`, `mcp__srs__check_calibration`, `Read` of wiki pages or the index, `mcp__srs__*` calls — these execute without preamble narration ("Starting Phase 1…", "Let me check…") and without any echoing of their stdout, JSON, or file contents into chat. The chat shows only synthesized output: the pressure verdict line, the question, the rating, the next prompt. If a script exits non-zero or errors, surface a one-line summary, not the stderr blob.
 
 ## Anti-Overload Principle
 
@@ -74,9 +74,9 @@ Once the developer has asked to explore, never-reveal holds — the value of the
 
 ## MCP Server Dependency
 
-This skill requires the `flashcard-mcp` MCP server running from `~/Code/flashcard-mcp`. If tools are not available, tell the user:
+This skill requires the `srs` MCP server running from `~/Code/agentic-spaced-repetition`. If tools are not available, tell the user:
 
-> The flashcard-mcp SRS server isn't running. Check `.mcp.json` or run `npm install` in `~/Code/flashcard-mcp`.
+> The agentic-spaced-repetition SRS server isn't running. Check `.mcp.json` or run `npm install` in `~/Code/agentic-spaced-repetition`.
 
 ## Modes of Invocation
 
@@ -95,17 +95,17 @@ This skill requires the `flashcard-mcp` MCP server running from `~/Code/flashcar
 
 ### Phase 1: Pressure Check & Status (1 message)
 
-**Three calls, nothing else.** Run `scripts/anki-sync sync` first, then `mcp__flashcard-mcp__check_pressure` and `mcp__flashcard-mcp__check_calibration`. No `get_stats` call, no log reads, no index reads, no extra Bash calls.
+**Three calls, nothing else.** Run `scripts/anki-sync sync` first, then `mcp__srs__check_pressure` and `mcp__srs__check_calibration`. No `get_stats` call, no log reads, no index reads, no extra Bash calls.
 
 `scripts/anki-sync sync` runs **before** the pressure check so reviews done on the phone (via AnkiWeb) land in master.db before due counts are computed. It runs silently; mention it only when it pulled or pushed something (one line, e.g. `Anki sync: pulled 6 phone reviews.`) or when it failed — a failure (offline, not logged in) is a one-line note and the session continues; sync never blocks studying.
 
-`mcp__flashcard-mcp__check_pressure` is the **single source of truth** for due counts and the pressure verdict. Do **not** call `mcp__flashcard-mcp__get_due_cards` for pressure counts — it caps at 30 and underreports. See `references/srs-pressure-check.md` for the full contract.
+`mcp__srs__check_pressure` is the **single source of truth** for due counts and the pressure verdict. Do **not** call `mcp__srs__get_due_cards` for pressure counts — it caps at 30 and underreports. See `references/srs-pressure-check.md` for the full contract.
 
 **Report the `verdict` field verbatim** — `ok`, `warn`, or `pause` — and use exactly that word in your opening line. It is also what sets `maxNewCards` in Phase 2, with no axis-level reinterpretation. Pressure has two axes: `flashcardsDue` (review backlog, excluding the new-card pool) and `newToday` (intake). The pool itself is reported as `newAvailable` and is never pressure.
 
 **Always surface the clearance numbers.** When the verdict is `warn` or `pause`, the `clearance` object states how many reviews drop the backlog below the warn line (`toExitWarn`) and, in `pause`, below the pause line first (`toExitPause`). Carry these into your opening message so the developer always knows the exact count to clear — e.g. "review 12 to exit warn". Clearance is backlog-only: reviewing never lowers `newToday`, which resets at the start of the next day, so say that instead of quoting a number when `newToday` raised the verdict.
 
-**Calibration.** `mcp__flashcard-mcp__check_calibration` reports true retention over the trailing window and a `verdict`: `over-difficult`, `calibrated`, `under-difficult`, or `low-signal`, plus a `marginal` flag. Report the verdict verbatim — never infer it from the retention number, and never recompute retention yourself. It drives the difficulty levers in Phase 2. Surface it as one line in the opening message; if the tool errors, treat the session as `low-signal` (levers stay at their `calibrated` defaults) and note it in one line.
+**Calibration.** `mcp__srs__check_calibration` reports true retention over the trailing window and a `verdict`: `over-difficult`, `calibrated`, `under-difficult`, or `low-signal`, plus a `marginal` flag. Report the verdict verbatim — never infer it from the retention number, and never recompute retention yourself. It drives the difficulty levers in Phase 2. Surface it as one line in the opening message; if the tool errors, treat the session as `low-signal` (levers stay at their `calibrated` defaults) and note it in one line.
 
 **No leech list is fetched.** The server flags a leech the moment it serves it and blocks the queue until it is dealt with. See the leech rule in Phase 2.
 
@@ -134,7 +134,7 @@ Example when nothing is due:
 | `warn` (review backlog) | **3** | omit (30) |
 | `pause` (review backlog) | **0** | omit (30) |
 
-**How the server fills a session.** `maxReviewCards` is the session size: due reviews up to it, then new cards up to the same size, never fewer than 3 (8 due make 8 + 22; 30 due make 30 + 3). `maxNewCards` only caps that. Both stay under the day's new-card limit from the Anki deck options, floor included, and a rest day brings no new cards. `flashcard-mcp`'s `backlogNewCap` (pressure.ts) is the same table in code, which Omvida uses.
+**How the server fills a session.** `maxReviewCards` is the session size: due reviews up to it, then new cards up to the same size, never fewer than 3 (8 due make 8 + 22; 30 due make 30 + 3). `maxNewCards` only caps that. Both stay under the day's new-card limit from the Anki deck options, floor included, and a rest day brings no new cards. `agentic-spaced-repetition`'s `backlogNewCap` (pressure.ts) is the same table in code, which Omvida uses.
 
 **The trigger is the review backlog axis (`flashcardsDue`) only, never `newToday`.** `warn` raised by the review backlog means `maxNewCards: 3`, so a backlog still lets a few new cards in (2026-11-26). `pause` means `maxNewCards: 0`. A `warn` raised only by `newToday` (cards added today) is about creating cards, not studying them: studying cards already made adds no load, and holding them back locked the developer out of their own fresh cards (2026-11-11), so omit `maxNewCards` (the default fill). Omvida applies the same rule. The developer can override explicitly ("include new cards anyway") — pass their requested number and note the override in the session log. At `pause` the server refuses fresh `create_card` calls outright, so an override there can only widen the *study* queue, never create material.
 
@@ -142,7 +142,7 @@ Example when nothing is due:
 
 > Starting session — 30 due + 3 new, 15 new held back (pressure: warn). `maxNewCards: 3`.
 
-**Difficulty levers — derive from the Phase 1 calibration verdict.** The band percentages below and the 2-point margin restate the constants in flashcard-mcp's `src/core/calibration.ts` — retune them there, then update this table to match.
+**Difficulty levers — derive from the Phase 1 calibration verdict.** The band percentages below and the 2-point margin restate the constants in agentic-spaced-repetition's `src/core/calibration.ts` — retune them there, then update this table to match.
 
 | Verdict | Staging (`2a`) | Missing-half follow-up † | Generation prompt † |
 |---|---|---|---|

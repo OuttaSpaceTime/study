@@ -1,4 +1,4 @@
-// A stand-in for flashcard-mcp's app server (NDJSON over stdio), for the deck
+// A stand-in for agentic-spaced-repetition's app server (NDJSON over stdio), for the deck
 // client's tests. Methods: echo (returns params), fail (error reply), delay
 // ({ms, value}: replies after ms), hang (never replies), exit (quits), pid,
 // split (reply sent in two chunks), big ({bytes}: one very long reply line).

@@ -52,7 +52,7 @@ def sample_page(wiki_dir: Path) -> Path:
 # ---- the deck, without a deck server ---------------------------------------------------
 # Everything that reaches the flashcard deck goes through scripts.deck.client.DeckClient, so
 # tests stand a FakeDeck in for it: it records the calls and answers from canned records.
-# What the real server does with a call is flashcard-mcp's test suite's business, and
+# What the real server does with a call is agentic-spaced-repetition's test suite's business, and
 # tests/test_deck_contract.py checks that the two still agree.
 EPOCH = datetime(2026, 1, 1, tzinfo=UTC)
 
@@ -77,7 +77,7 @@ class FakeDeck:
 
     `sync_apply` only records its call and returns a canned result: what the real deck does with
     a plan (the cascade of a deletion, the tombstone, the fallback memory state) is tested in
-    flashcard-mcp's sync-apply.test.ts, not simulated here.
+    agentic-spaced-repetition's sync-apply.test.ts, not simulated here.
     """
 
     def __init__(self, cards=(), reviews=(), tombstones=(), apply_result=None):

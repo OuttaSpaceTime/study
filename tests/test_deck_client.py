@@ -1,4 +1,4 @@
-"""scripts.deck.client's protocol, against a stand-in server that speaks NDJSON as flashcard-mcp's does.
+"""scripts.deck.client's protocol, against a stand-in server that speaks NDJSON as agentic-spaced-repetition's does.
 
 tests/test_deck_contract.py runs the real server; this covers what only a misbehaving one shows.
 """
@@ -89,7 +89,7 @@ def test_a_server_that_never_says_ready_times_out(monkeypatch):
 
 
 def test_a_wrong_checkout_is_told_to_fix_env_local(monkeypatch, tmp_path):
-    monkeypatch.setenv("FLASHCARD_MCP_DIR", str(tmp_path))
+    monkeypatch.setenv("SRS_DIR", str(tmp_path))
     with pytest.raises(DeckError, match=r"\.env\.local"):
         DeckClient().start()
 
@@ -176,7 +176,7 @@ def _checkout(tmp_path, monkeypatch):
     (fc / "src" / "app").mkdir(parents=True)
     (fc / "node_modules" / ".bin" / "tsx").write_text("")
     (fc / "src" / "app" / "server.ts").write_text("")
-    monkeypatch.setenv("FLASHCARD_MCP_DIR", str(fc))
+    monkeypatch.setenv("SRS_DIR", str(fc))
     return fc
 
 

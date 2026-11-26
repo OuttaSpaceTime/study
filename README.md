@@ -23,7 +23,7 @@ never bulk ingestion.** Nothing is written to the wiki that wasn't worked throug
 Flashcards are the only thing reviewed on a schedule; wiki pages never become "due". A study
 session runs the card loop first, then offers the pages connected to the cards actually
 studied — matched on `flashcard_ids`, falling back to tag overlap. Cards are held in
-[flashcard-mcp](https://github.com/OuttaSpaceTime/flashcard-mcp) and reached over MCP.
+[agentic-spaced-repetition](https://github.com/OuttaSpaceTime/agentic-spaced-repetition) and reached over MCP.
 
 Every wiki page carries YAML frontmatter with a closed schema (`title`, `aliases`, `tags`,
 `created`, `updated`, `source_skill`, `flashcard_ids`). `scripts/lint` rejects any key outside
@@ -46,12 +46,12 @@ cp .env.local.example .env.local   # then edit, see below
 
 ### Machine-local configuration
 
-The [flashcard-mcp](https://github.com/OuttaSpaceTime/flashcard-mcp) checkout lives at a
+The [agentic-spaced-repetition](https://github.com/OuttaSpaceTime/agentic-spaced-repetition) checkout lives at a
 different path on each machine, so that path is **never committed**. It is set once, in
 `.env.local` at the repo root (gitignored):
 
 ```sh
-FLASHCARD_MCP_DIR=/home/felix/Code/Misc/flashcard-mcp
+SRS_DIR=/home/felix/Code/Misc/agentic-spaced-repetition
 ```
 
 That single line is the only thing to change when setting this repo up on another machine.
@@ -60,12 +60,12 @@ from it:
 
 | Consumer | Uses |
 |---|---|
-| `.mcp.json` → `scripts/flashcard-mcp-server` | `$FLASHCARD_MCP_DIR/src/mcp/server.ts`, and `DATABASE_URL` |
-| `scripts/ankisync`, `scripts/deck` | `scripts/config.py` → the deck database, handed to flashcard-mcp's app server as `DATABASE_URL` |
+| `.mcp.json` → `scripts/srs-mcp-server` | `$SRS_DIR/src/mcp/server.ts`, and `DATABASE_URL` |
+| `scripts/ankisync`, `scripts/deck` | `scripts/config.py` → the deck database, handed to agentic-spaced-repetition's app server as `DATABASE_URL` |
 | `wiki-viewer` | `lib/flashcard-path.ts` → the same, for `lib/deck-client.ts` (the app server, over stdio) |
 
 Environment variables still win over the file, for one-off overrides:
-`FLASHCARD_MCP_DIR` (the checkout), `FLASHCARD_MASTER_DB` / `FLASHCARD_DB` (the SQLite file
+`SRS_DIR` (the checkout; the old name `FLASHCARD_MCP_DIR` is still read when it is absent), `FLASHCARD_MASTER_DB` / `FLASHCARD_DB` (the SQLite file
 directly), `WIKI_ROOT` (defaults to `wiki/` next to `AGENTS.md`).
 
 If the config is missing, every entry point fails with a message naming `.env.local` rather

@@ -18,7 +18,7 @@ Untitled*.canvas
 daily/
 todo.md
 
-# Machine-local paths (flashcard-mcp location) — see .env.local.example
+# Machine-local paths (agentic-spaced-repetition location) — see .env.local.example
 .env.local
 
 # Legacy wiki search index (superseded by qmd), local only

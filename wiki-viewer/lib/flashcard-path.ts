@@ -38,13 +38,16 @@ function expandHome(value: string): string {
 }
 
 /** Null rather than throwing: both callers degrade to an empty panel instead of a 500. */
-export function flashcardMcpDir(): string | null {
-  const value = process.env.FLASHCARD_MCP_DIR ?? readEnvLocal().FLASHCARD_MCP_DIR;
+export function srsDir(): string | null {
+  // SRS_DIR is the name; FLASHCARD_MCP_DIR is what it was called before the rename, and still
+  // read so a machine whose .env.local predates it keeps working. The environment beats the file.
+  const file = readEnvLocal();
+  const value = process.env.SRS_DIR || process.env.FLASHCARD_MCP_DIR || file.SRS_DIR || file.FLASHCARD_MCP_DIR;
   return value ? expandHome(value) : null;
 }
 
 export function masterDbPath(): string | null {
   if (process.env.FLASHCARD_DB) return process.env.FLASHCARD_DB;
-  const dir = flashcardMcpDir();
+  const dir = srsDir();
   return dir ? path.join(dir, "prisma", "master.db") : null;
 }

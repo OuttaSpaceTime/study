@@ -23,7 +23,7 @@ For additional shared interactive principles (scope, handling disagreement, non-
 - **Build once, gate every Next.** The calibration probes go one per turn. After the last answer, the storyboard and the whole page are built in one turn, with a line in chat per scene written (the explorable skill's Build). From then on, each Next is locked until the developer passes an assessment question on the scene in the chat: a good answer unlocks at once, anything less goes Socratic until they state it fully (the explorable skill's Explore loop). The developer explores without waiting between scenes, and the gate keeps the tight feedback (AGENTS.md, anti-slot-machine).
 - Start each phase with `Phase X/5: <title>`. Pause after each phase; never auto-advance.
 - If the developer says "skip" or "I know this", fast-forward immediately.
-- **Read silently, never cat.** `mcp__qmd__query`, `Read` of wiki/index/log files, `mcp__flashcard-mcp__*`, `ArtifactData` reads and the smoke test run without narration and without echoing output. The chat shows only synthesized output: the storyboard, the scene link, the misses, the next question.
+- **Read silently, never cat.** `mcp__qmd__query`, `Read` of wiki/index/log files, `mcp__srs__*`, `ArtifactData` reads and the smoke test run without narration and without echoing output. The chat shows only synthesized output: the storyboard, the scene link, the misses, the next question.
 
 ## Answering vs. Socratic: by phase
 
@@ -55,7 +55,7 @@ Omit it only when the developer opted out of the interactive flow (non-interacti
 
 ## MCP and Tool Dependencies
 
-- `flashcard-mcp`: `check_pressure`, `find_similar_cards`, `search_cards`, `get_card`. Cards are `/study-flashcard`'s, which offers code cards where running the code is the test (`references/code-cards.md`).
+- `srs`: `check_pressure`, `find_similar_cards`, `search_cards`, `get_card`. Cards are `/study-flashcard`'s, which offers code cards where running the code is the test (`references/code-cards.md`).
 - The global **`explorable`** skill: builds, smoke-tests and publishes the page, reads its `attempts`, and answers the questions the page sends to the chat (Artifact, ArtifactData and ArtifactComments tools).
 
 ## Research Grounding
@@ -141,7 +141,7 @@ When the developer corrects something (a scene's behaviour, a fact, an earlier a
 
 Run it before Phase 1 and before any other tool call, regardless of mode or flags. Follow `references/srs-pressure-check.md` exactly. **Only `warn` / `pause` stop the turn; `ok` never does.**
 
-1. Call `mcp__flashcard-mcp__check_pressure` (not `get_due_cards` or `list_decks`).
+1. Call `mcp__srs__check_pressure` (not `get_due_cards` or `list_decks`).
 2. `ok` → write the one line `SRS pressure: ok — proceeding.` and **go straight on to Phase 1 Step 1 in the same turn** (index read, qmd, card lookup, research start), ending the turn only at Step 2's calibration question. No footer, no "go" gate. `warn` / `pause` → counts, reasons and clearance numbers, then the gate question with footer `Preflight — SRS Pressure Check`; wait for an explicit answer.
 
 ## Phase Flow

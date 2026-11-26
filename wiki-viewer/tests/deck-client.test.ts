@@ -3,6 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { createDeckClient, deckCall, type DeckClient } from "@/lib/deck-client";
+import { srsDir } from "@/lib/flashcard-path";
 
 const FAKE = path.join(import.meta.dirname, "fixtures", "fake-deck-server.mjs");
 
@@ -115,14 +116,32 @@ describe("deckCall with a missing deck database", () => {
   it("fails loudly and creates nothing, before any server is started", async () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), "deck-missing-"));
     const missing = path.join(dir, "typo.db");
-    const saved = { dir: process.env.FLASHCARD_MCP_DIR, db: process.env.FLASHCARD_DB };
-    process.env.FLASHCARD_MCP_DIR = dir;
+    const saved = { dir: process.env.SRS_DIR, db: process.env.FLASHCARD_DB };
+    process.env.SRS_DIR = dir;
     process.env.FLASHCARD_DB = missing;
     try {
       await expect(deckCall("cardRecords")).rejects.toThrow(/No deck database at .*typo\.db.*\.env\.local/);
       expect(fs.existsSync(missing)).toBe(false);
     } finally {
-      for (const [key, value] of [["FLASHCARD_MCP_DIR", saved.dir], ["FLASHCARD_DB", saved.db]] as const) {
+      for (const [key, value] of [["SRS_DIR", saved.dir], ["FLASHCARD_DB", saved.db]] as const) {
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
+    }
+  });
+});
+
+describe("srsDir", () => {
+  it("reads SRS_DIR, and the name it had before the rename as a fallback", () => {
+    const saved = { new: process.env.SRS_DIR, old: process.env.FLASHCARD_MCP_DIR };
+    try {
+      delete process.env.SRS_DIR;
+      process.env.FLASHCARD_MCP_DIR = "/opt/old";
+      expect(srsDir()).toBe("/opt/old");
+      process.env.SRS_DIR = "/opt/new";
+      expect(srsDir()).toBe("/opt/new");
+    } finally {
+      for (const [key, value] of [["SRS_DIR", saved.new], ["FLASHCARD_MCP_DIR", saved.old]] as const) {
         if (value === undefined) delete process.env[key];
         else process.env[key] = value;
       }

@@ -15,9 +15,9 @@ If you notice mid-flow that the preflight was skipped, run the check and surface
 
 ## Protocol
 
-1. **Call `mcp__flashcard-mcp__check_pressure` — it is the single source of truth.**
+1. **Call `mcp__srs__check_pressure` — it is the single source of truth.**
 
-   The tool computes everything server-side from the deck database and returns a structured report. **Do not** call `mcp__flashcard-mcp__get_due_cards` or `mcp__flashcard-mcp__list_decks` for pressure signals — `get_due_cards` caps at 30 and will underreport. The report already includes the per-deck breakdown; reuse that in your status summary instead of a separate `list_decks` call.
+   The tool computes everything server-side from the deck database and returns a structured report. **Do not** call `mcp__srs__get_due_cards` or `mcp__srs__list_decks` for pressure signals — `get_due_cards` caps at 30 and will underreport. The report already includes the per-deck breakdown; reuse that in your status summary instead of a separate `list_decks` call.
 
    Pressure has **two axes**, both global across all decks:
 
@@ -37,7 +37,7 @@ If you notice mid-flow that the preflight was skipped, run the check and surface
    - `warn` — report the counts, the reasons, and the clearance numbers, then ask: "Continue adding new content, or pause and review first?" Wait for an explicit answer before proceeding.
    - `pause` — report the same, then: "I'd recommend pausing here. Want to run `/study` to clear some review load, or continue anyway?" The developer can override with explicit consent ("continue anyway", "I know, keep going") for everything **except** creating new cards — see below.
 
-   **New, unseen cards are hard-blocked at `pause` — not overridable, and not by you.** The flashcard-mcp enforces this itself: `create_card` and `create_code_card` throw when the verdict is `pause` unless `inheritFrom` is set. The "continue anyway" override never covers a fresh `create_card`, and there is no point attempting one — the server refuses. Still allowed at `pause`, by design: **editing** an existing card (`update_card`) and **splitting** one (`inheritFrom`). Both improve the health of the deck the developer is already carrying, which is exactly what should happen under load. When the verdict is `pause`, redirect to `/study`, an edit, or a split.
+   **New, unseen cards are hard-blocked at `pause` — not overridable, and not by you.** The agentic-spaced-repetition enforces this itself: `create_card` and `create_code_card` throw when the verdict is `pause` unless `inheritFrom` is set. The "continue anyway" override never covers a fresh `create_card`, and there is no point attempting one — the server refuses. Still allowed at `pause`, by design: **editing** an existing card (`update_card`) and **splitting** one (`inheritFrom`). Both improve the health of the deck the developer is already carrying, which is exactly what should happen under load. When the verdict is `pause`, redirect to `/study`, an edit, or a split.
 
 3. **Progress footer:** only on a `warn`/`pause` message, which ends the turn: `Preflight — SRS Pressure Check`. On `ok` there is no footer, because the turn does not end there; the message that eventually ends the turn carries the skill's own footer. (Skills that already have a footer contract follow their own format.)
 
@@ -53,5 +53,5 @@ If you notice mid-flow that the preflight was skipped, run the check and surface
 
 - Do not skip the check on the argument that "this is just one card/page". The warning exists because the developer explicitly asked for this guard.
 - Do not re-implement the thresholds inline, and do not recompute due counts yourself. Always call `check_pressure`.
-- Do not call `mcp__flashcard-mcp__get_due_cards` for the pressure count — it caps at 30.
+- Do not call `mcp__srs__get_due_cards` for the pressure count — it caps at 30.
 - Do not query the flashcard SQLite DB directly from a skill. (The wiki-viewer reads it directly to *render* cards; that is a read-only display path, not the pressure path.)

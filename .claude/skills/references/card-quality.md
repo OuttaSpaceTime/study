@@ -59,9 +59,9 @@ give the card away.
 A card is not flawed for being short when its back is precise, for asking for a definition (the deck
 prefers judgement cards, but that is a drafting preference, not a flaw), or for wording you would have
 chosen differently: only clear flaws here, and a simplification is not `incorrect`. A code card is fine for
-having `{{c1::...}}` blanks, the only cards allowed them, and its goals flashcard-mcp has already run. A
+having `{{c1::...}}` blanks, the only cards allowed them, and its goals agentic-spaced-repetition has already run. A
 cloze on any other card is refused before it gets here. Format
-and size (HTML, the back's size, one question mark) are enforced by flashcard-mcp itself and are
+and size (HTML, the back's size, one question mark) are enforced by agentic-spaced-repetition itself and are
 not judged here.
 
 | Issue | The card is flawed when |
@@ -80,7 +80,7 @@ not judged here.
 A code card comes to the judge as its exercise: its kind, what to solve, the code with each solution
 in `{{c1::...}}`, and each case's expression and goal (`.claude/skills/references/code-cards.md`). A `predict` card's
 goals come in `{{c1::...}}` as well, being hidden from the developer until they answer.
-flashcard-mcp has already run it, so its goals are true: `incorrect` is about what its `explain`
+agentic-spaced-repetition has already run it, so its goals are true: `incorrect` is about what its `explain`
 says. The count above and the flaws above apply too (`not_atomic`, for a card that needs two ideas), and these:
 
 | Issue | The card is flawed when |

@@ -11,7 +11,7 @@ QUEUE_NEW, QUEUE_LEARNING, QUEUE_REVIEW = 0, 1, 2
 # Anki's revlog `type`: what the card was when reviewed. Learn covers new and
 # learning cards alike, so it reads back as learning; Filtered (a review in a
 # filtered deck, often early) as review. Master's Review.state carries it, and a
-# rest day's share counts only reviews of Review cards (flashcard-mcp's
+# rest day's share counts only reviews of Review cards (agentic-spaced-repetition's
 # study-ahead.ts), not steps.
 REVLOG_LEARN, REVLOG_REVIEW, REVLOG_RELEARN, REVLOG_FILTERED = 0, 1, 2, 3
 

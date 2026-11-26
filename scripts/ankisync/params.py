@@ -1,4 +1,4 @@
-"""Mirror Anki's scheduling options into flashcard-mcp's Config row.
+"""Mirror Anki's scheduling options into agentic-spaced-repetition's Config row.
 
 The deck server schedules with ts-fsrs and shows the rating keys' intervals,
 so it must use the options Anki uses or the two disagree ("Good" 10m here, 6d

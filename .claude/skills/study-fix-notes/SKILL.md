@@ -6,7 +6,7 @@ user_invocable: true
 
 # Fix noted cards
 
-While studying in the Omvida app (`~/Code/omvida`) the developer notes a card instead of stopping to fix it (Ctrl+N): what should change about it, or what they want to understand better, in their own markdown. The notes live in the deck (flashcard-mcp's `CardNote`, one per card) until this skill handles them. Noting is for dealing with them together, later: this is that session.
+While studying in the Omvida app (`~/Code/omvida`) the developer notes a card instead of stopping to fix it (Ctrl+N): what should change about it, or what they want to understand better, in their own markdown. The notes live in the deck (agentic-spaced-repetition's `CardNote`, one per card) until this skill handles them. Noting is for dealing with them together, later: this is that session.
 
 **Core guarantee:** no card is written without the developer seeing the draft, and no note is resolved until the developer agrees it is dealt with. A note skipped stays open for next time.
 
@@ -18,7 +18,7 @@ While studying in the Omvida app (`~/Code/omvida`) the developer notes a card in
 
 ## MCP Server Dependency
 
-Requires `flashcard-mcp`. Tools: `list_card_notes`, `resolve_card_note`, `get_card`, `update_card`, `create_card`, `delete_card`, `find_similar_cards`; on a code card `check_code_card`, `update_code_card` and `create_code_card`.
+Requires `srs`. Tools: `list_card_notes`, `resolve_card_note`, `get_card`, `update_card`, `create_card`, `delete_card`, `find_similar_cards`; on a code card `check_code_card`, `update_code_card` and `create_code_card`.
 
 ## Invocation
 

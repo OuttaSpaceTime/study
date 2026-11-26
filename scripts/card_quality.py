@@ -1,6 +1,6 @@
 """The card-quality gate: no flawed card is written to the deck. `scripts/card-quality-gate` is the hook.
 
-On every flashcard-mcp `create_card` and `update_card` in this repo (`.claude/settings.json`), the
+On every agentic-spaced-repetition `create_card` and `update_card` in this repo (`.claude/settings.json`), the
 card as it would be saved is judged against `.claude/skills/references/card-quality.md` by
 `claude -p` (Opus, on the Claude subscription: no API key is passed on). A flawed card is
 denied, with the issues as the reason, so the session revises it and writes again. A card is only
@@ -11,7 +11,7 @@ the deck.
 It replaced the Omvida grader's per-review card check (2026-10-31): a flaw caught at write time
 never reaches a review. A gate in the skills (a reviewer subagent each skill must call) was the
 alternative, and rejected: a skill that forgot it would let the card through, while a hook holds
-for every session in the repo, the headless /study-card-check included. One inside flashcard-mcp
+for every session in the repo, the headless /study-card-check included. One inside agentic-spaced-repetition
 was rejected too: an LLM call in the deck server would slow every write, the app's included.
 
 The judge counts before it judges (2026-11-03): what the front asks, and each claim of the back, with
@@ -45,8 +45,8 @@ ROOT = Path(__file__).resolve().parent.parent
 
 RUBRIC = ROOT / ".claude" / "skills" / "references" / "card-quality.md"
 CLOZE = re.compile(r"\{\{c\d+::")
-TOOLS = {"mcp__flashcard-mcp__create_card", "mcp__flashcard-mcp__update_card",
-         "mcp__flashcard-mcp__create_code_card", "mcp__flashcard-mcp__update_code_card"}
+TOOLS = {"mcp__srs__create_card", "mcp__srs__update_card",
+         "mcp__srs__create_code_card", "mcp__srs__update_code_card"}
 # What the judge names itself. `not_atomic` and `extra_info` it does not: they are computed from its counts.
 ISSUES = ["incorrect", "too_vague", "ambiguous_front", "opinion_bait", "yes_no", "mismatched", "outdated",
           "gives_away", "tests_spelling", "padded_code", "fragile"]
@@ -138,7 +138,7 @@ def judge_stored(card_id):
 
 
 def code_card_to_judge(exercise):
-    """A code card, as what it asks and what it teaches. flashcard-mcp has already run it, so whether
+    """A code card, as what it asks and what it teaches. agentic-spaced-repetition has already run it, so whether
     its goals are true is not in question here; whether it is a good question is."""
     # A prediction's goals are what it asks, so they reach the judge as hidden as they reach the
     # developer, or every one of them would read as giving its answer away.
@@ -253,7 +253,7 @@ def deny(reason):
 
 
 def plain_cloze(tool, tin):
-    """A cloze on a card that isn't a code card, which needs no judge to refuse: flashcard-mcp would
+    """A cloze on a card that isn't a code card, which needs no judge to refuse: agentic-spaced-repetition would
     too. A cloze hands over the sentence frame, so it tests recognition rather than retrieval."""
     if tool.endswith("code_card"):
         return False

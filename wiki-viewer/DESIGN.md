@@ -15,10 +15,10 @@ Read this whole file before writing any code.
 
 ## The flashcard deck
 
-- The viewer never opens master.db. `lib/deck-client.ts` keeps one long-lived child per Next server, flashcard-mcp's app server (`src/app/server.ts`, NDJSON over stdio), and `lib/flashcards.ts` calls its plain-data methods (`cardRecords`, `deckOverview`, `recentlyStudied`) and maps the records to the viewer's `Card` type. The viewer is read-only by construction: it calls no write method. The child is started on the first call and restarted on the next call after it dies; its `DATABASE_URL` comes from `lib/flashcard-path.ts`: `FLASHCARD_DB`, else `FLASHCARD_MCP_DIR/prisma/master.db` from the environment or the repo-root `.env.local`.
+- The viewer never opens master.db. `lib/deck-client.ts` keeps one long-lived child per Next server, agentic-spaced-repetition's app server (`src/app/server.ts`, NDJSON over stdio), and `lib/flashcards.ts` calls its plain-data methods (`cardRecords`, `deckOverview`, `recentlyStudied`) and maps the records to the viewer's `Card` type. The viewer is read-only by construction: it calls no write method. The child is started on the first call and restarted on the next call after it dies; its `DATABASE_URL` comes from `lib/flashcard-path.ts`: `FLASHCARD_DB`, else `SRS_DIR/prisma/master.db` from the environment or the repo-root `.env.local`.
 - A page links to cards through its `flashcard_ids`; pages without any fall back to tag overlap.
 - Surfaces: a per-page modal from the article header, and `/flashcards` for the whole deck (retention, state filters, tag/deck/text filters, flip-through).
-- The calibration verdict is **not** computed here. `lib/calibration.ts` calls the app server's `calibration` method and renders its JSON, so the viewer and `/study` always agree. The repo path comes from the same `lib/flashcard-path.ts` resolver (`FLASHCARD_MCP_DIR`, env or `.env.local`).
+- The calibration verdict is **not** computed here. `lib/calibration.ts` calls the app server's `calibration` method and renders its JSON, so the viewer and `/study` always agree. The repo path comes from the same `lib/flashcard-path.ts` resolver (`SRS_DIR`, env or `.env.local`).
 - The app server returns datetimes as ISO UTC strings; `lib/flashcards.ts` turns them into the local calendar day (`YYYY-MM-DD`) for `due` and `lastReview`. `recentlyStudied` already returns local days.
 
 ## Stack (already installed — do not add dependencies)

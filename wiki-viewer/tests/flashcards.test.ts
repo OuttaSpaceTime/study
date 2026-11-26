@@ -1,5 +1,5 @@
 // The mapping layer over the deck client. The deck itself is mocked with
-// records shaped like flashcard-mcp's app-server `cardRecords` rows (ISO UTC
+// records shaped like agentic-spaced-repetition's app-server `cardRecords` rows (ISO UTC
 // datetimes, tags as a list, state as a number), so what is tested is the
 // viewer's own behaviour: state names, local calendar days, tag filtering.
 import { beforeEach, describe, expect, it, vi } from "vitest";

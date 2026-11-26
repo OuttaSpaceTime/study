@@ -1,6 +1,6 @@
 // Server-only: never import this (or lib/flashcards, lib/calibration) from a
 // client component; it spawns a child process. tests/server-only.test.ts checks it.
-// The viewer's one connection to the deck. flashcard-mcp owns
+// The viewer's one connection to the deck. agentic-spaced-repetition owns
 // master.db and its schema; this file speaks to its app server (NDJSON over
 // stdio, src/app/server.ts) instead of opening the SQLite file, so the viewer
 // holds no second reader of the schema and no copy of the calibration rule.
@@ -12,7 +12,7 @@ import { spawn, type ChildProcess } from "node:child_process";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { createInterface } from "node:readline";
-import { flashcardMcpDir, masterDbPath } from "./flashcard-path";
+import { srsDir, masterDbPath } from "./flashcard-path";
 
 export interface DeckClientOptions {
   command: string;
@@ -178,10 +178,10 @@ const globalStore = globalThis as { __deckClient?: DeckClient };
 
 function appClient(): DeckClient {
   if (globalStore.__deckClient) return globalStore.__deckClient;
-  const dir = flashcardMcpDir();
+  const dir = srsDir();
   const db = masterDbPath();
   if (!dir || !db) {
-    throw new Error("FLASHCARD_MCP_DIR is not set — add it to .env.local at the repo root.");
+    throw new Error("SRS_DIR is not set — add it to .env.local at the repo root.");
   }
   // The server creates an empty deck at a path that does not exist and reports
   // an empty collection; a wrong path must fail loudly instead. Resolved here:
@@ -189,7 +189,7 @@ function appClient(): DeckClient {
   const dbFile = path.resolve(db);
   if (!existsSync(dbFile)) {
     throw new Error(
-      `No deck database at ${dbFile} — check FLASHCARD_MCP_DIR in .env.local at the repo root (or FLASHCARD_DB).`,
+      `No deck database at ${dbFile} — check SRS_DIR in .env.local at the repo root (or FLASHCARD_DB).`,
     );
   }
   globalStore.__deckClient = createDeckClient({

@@ -1,4 +1,4 @@
-"""Anki's scheduling options are mirrored into flashcard-mcp's Config row."""
+"""Anki's scheduling options are mirrored into agentic-spaced-repetition's Config row."""
 
 import pytest
 from anki.collection import Collection

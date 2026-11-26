@@ -58,7 +58,7 @@ export interface WikiPage {
   markdown: string;
 }
 
-/** FSRS scheduling state, mirroring flashcard-mcp's numeric Card.state. */
+/** FSRS scheduling state, mirroring agentic-spaced-repetition's numeric Card.state. */
 export type CardState = "new" | "learning" | "review" | "relearning";
 
 export interface Card {
@@ -87,7 +87,7 @@ export interface DeckOverview {
   states: { label: CardState; count: number }[];
 }
 
-/** Verdict from flashcard-mcp's calibration core — never recomputed here. */
+/** Verdict from agentic-spaced-repetition's calibration core — never recomputed here. */
 export interface Calibration {
   verdict: "over-difficult" | "calibrated" | "under-difficult" | "low-signal";
   /** Within 2 points of a band edge, so one review could flip the verdict. */

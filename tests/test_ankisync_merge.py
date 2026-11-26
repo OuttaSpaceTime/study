@@ -219,7 +219,7 @@ class TestPlanScheduling:
         assert not plan.push_sched and not plan.pull_sched
 
     def test_a_due_moved_without_a_review_pushes(self):
-        # flashcard-mcp's easy-days pass: same last review, the due day moved
+        # agentic-spaced-repetition's easy-days pass: same last review, the due day moved
         card = _master(sched=_sched(last_review="2026-11-11T09:00", reps=3, state=2,
                                     due="2026-11-20T04:00"))
         anki = _anki(sched=_sched(last_review="2026-11-11T09:00", reps=3, state=2,

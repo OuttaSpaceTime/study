@@ -108,4 +108,4 @@ In a `/study` chat, check an answer with `run_code_card` (one answer per blank, 
 - **Clozes exist only on code cards.** `create_card` and `update_card` refuse `{{c1::...}}` anywhere in a
   front or back, inside `<pre>` too: a plain cloze hands over the sentence frame, and tests recognition
   rather than retrieval. Don't write one by hand here either: the blanks in `source` are the format, and
-  flashcard-mcp writes the cloze from them.
+  agentic-spaced-repetition writes the cloze from them.

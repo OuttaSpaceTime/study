@@ -44,10 +44,10 @@ STATE = Path.home() / ".cache" / "study-card-quality"
 RESULTS = STATE / "sweep-results.jsonl"
 # Omvida's list (Launch.CARD_CHECK_TOOLS), repeated: this repo does not depend on the app.
 TOOLS = ",".join(["Read", "Glob", "Grep", "Bash(scripts/card-quality-gate --judge *)", "Bash(scripts/card-links-sync)",
-                  "mcp__flashcard-mcp__get_card", "mcp__flashcard-mcp__find_similar_cards",
-                  "mcp__flashcard-mcp__update_card", "mcp__flashcard-mcp__create_card", "mcp__flashcard-mcp__delete_card",
-                  "mcp__flashcard-mcp__update_code_card", "mcp__flashcard-mcp__create_code_card",
-                  "mcp__flashcard-mcp__check_code_card", "mcp__qmd__query", "mcp__qmd__search", "mcp__qmd__get",
+                  "mcp__srs__get_card", "mcp__srs__find_similar_cards",
+                  "mcp__srs__update_card", "mcp__srs__create_card", "mcp__srs__delete_card",
+                  "mcp__srs__update_code_card", "mcp__srs__create_code_card",
+                  "mcp__srs__check_code_card", "mcp__qmd__query", "mcp__qmd__search", "mcp__qmd__get",
                   "WebSearch", "WebFetch"])
 # What the skill's report is used for here: what became of the card, and a line to log.
 SCHEMA = {"type": "object", "properties": {

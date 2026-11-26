@@ -1,7 +1,9 @@
-"""Per-machine location of the flashcard-mcp checkout.
+"""Per-machine location of the agentic-spaced-repetition checkout.
 
 The path differs between machines, so it is never committed: set
-FLASHCARD_MCP_DIR in .env.local at the repo root (gitignored).
+SRS_DIR in .env.local at the repo root (gitignored). FLASHCARD_MCP_DIR, the
+name from before the rename, is still read when SRS_DIR is absent, so a machine
+whose .env.local predates it keeps working after a pull.
 """
 
 import os
@@ -25,14 +27,19 @@ def load_env_file(path: Path = ENV_FILE) -> dict[str, str]:
     return values
 
 
-def flashcard_mcp_dir(env_file: Path = ENV_FILE) -> Path:
-    value = os.environ.get("FLASHCARD_MCP_DIR") or load_env_file(env_file).get(
-        "FLASHCARD_MCP_DIR"
+DIR_KEYS = ("SRS_DIR", "FLASHCARD_MCP_DIR")  # preferred name first, old name as fallback
+
+
+def srs_dir(env_file: Path = ENV_FILE) -> Path:
+    file_values = load_env_file(env_file)
+    # The environment wins over the file; within each, the new name wins over the old.
+    value = next((v for key in DIR_KEYS if (v := os.environ.get(key))), None) or next(
+        (v for key in DIR_KEYS if (v := file_values.get(key))), None
     )
     if not value:
         raise RuntimeError(
-            f"FLASHCARD_MCP_DIR is not set. Write it to {env_file}, e.g.\n"
-            f"    FLASHCARD_MCP_DIR=$HOME/Code/flashcard-mcp\n"
+            f"SRS_DIR (or the old FLASHCARD_MCP_DIR) is not set. Write it to {env_file}, e.g.\n"
+            f"    SRS_DIR=$HOME/Code/agentic-spaced-repetition\n"
             "See 'Machine-local configuration' in README.md."
         )
     if value.startswith("$HOME/"):
@@ -44,4 +51,4 @@ def master_db(env_file: Path = ENV_FILE) -> Path:
     override = os.environ.get("FLASHCARD_MASTER_DB")
     if override:
         return Path(override).expanduser()
-    return flashcard_mcp_dir(env_file) / "prisma" / "master.db"
+    return srs_dir(env_file) / "prisma" / "master.db"

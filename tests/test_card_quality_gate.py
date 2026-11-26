@@ -13,8 +13,8 @@ from scripts import card_quality as gate
 
 ROOT = Path(__file__).resolve().parent.parent
 
-CREATE = "mcp__flashcard-mcp__create_card"
-UPDATE = "mcp__flashcard-mcp__update_card"
+CREATE = "mcp__srs__create_card"
+UPDATE = "mcp__srs__update_card"
 
 # Counts two things asked when the front has " and how ", an extra claim when the back says "RFC",
 # flags "incorrect" when the back says 200 OK, fails when the front says "crash"; records each prompt it was given.
@@ -134,7 +134,7 @@ def test_an_unknown_card_denies(env):
 
 
 def test_other_tools_pass(env):
-    assert gate.decide({"tool_name": "mcp__flashcard-mcp__delete_card", "tool_input": {"cardId": "c1"}}) is None
+    assert gate.decide({"tool_name": "mcp__srs__delete_card", "tool_input": {"cardId": "c1"}}) is None
     assert gate.decide({}) is None
     assert calls(env) == []
 
@@ -142,7 +142,7 @@ def test_other_tools_pass(env):
 def test_a_code_card_is_judged_on_what_it_asks_and_explains(env):
     exercise = {"kind": "predict", "brief": "What comes back?", "source": "r = [1].each {}", "explain": "Its receiver.",
                 "cases": [{"expr": "r", "goal": "[1]"}]}
-    out = gate.decide({"tool_name": "mcp__flashcard-mcp__create_code_card", "tool_input": {"exercise": exercise}})
+    out = gate.decide({"tool_name": "mcp__srs__create_code_card", "tool_input": {"exercise": exercise}})
     assert out is None
     prompt = calls(env)[-1]["prompt"]
     assert "What comes back?" in prompt and "r  # => {{c1::[1]}}" in prompt and "Its receiver." in prompt
@@ -152,13 +152,13 @@ def test_a_code_card_is_judged_on_what_it_asks_and_explains(env):
 def test_a_fill_cards_goals_are_in_plain_sight_as_the_developer_sees_them(env):
     exercise = {"kind": "fill", "brief": "Double it.", "source": "x = {{c1::2}}", "explain": "Why.",
                 "cases": [{"expr": "x", "goal": "2"}]}
-    gate.decide({"tool_name": "mcp__flashcard-mcp__create_code_card", "tool_input": {"exercise": exercise}})
+    gate.decide({"tool_name": "mcp__srs__create_code_card", "tool_input": {"exercise": exercise}})
     assert "x  # => 2" in calls(env)[-1]["prompt"]
 
 
 def test_a_flawed_code_card_is_denied(env):
     exercise = {"brief": "What is it and how does it work?", "source": "", "explain": "x", "cases": []}
-    out = gate.decide({"tool_name": "mcp__flashcard-mcp__update_code_card", "tool_input": {"exercise": exercise}})
+    out = gate.decide({"tool_name": "mcp__srs__update_code_card", "tool_input": {"exercise": exercise}})
     assert "not_atomic" in out["hookSpecificOutput"]["permissionDecisionReason"]
 
 
@@ -183,7 +183,7 @@ def test_a_cloze_in_an_update_is_denied_too(env):
 def test_a_code_cards_own_blanks_are_not_a_flaw(env):
     exercise = {"kind": "fill", "brief": "Do it.", "source": "x = {{c1::2}}", "explain": "Why.",
                 "cases": [{"expr": "x", "goal": "2"}]}
-    assert gate.decide({"tool_name": "mcp__flashcard-mcp__create_code_card", "tool_input": {"exercise": exercise}}) is None
+    assert gate.decide({"tool_name": "mcp__srs__create_code_card", "tool_input": {"exercise": exercise}}) is None
 
 
 def test_the_rubric_names_every_issue_the_schema_allows():
@@ -220,7 +220,7 @@ def test_a_code_card_still_fails_for_asking_two_things_or_a_wrong_explain():
 def test_a_code_card_written_through_the_gate_is_not_refused_for_its_explain(env):
     exercise = {"kind": "predict", "brief": "What is it?", "source": "x = 1", "explain": "An RFC says so.",
                 "cases": [{"expr": "x", "goal": "1"}]}
-    assert gate.decide({"tool_name": "mcp__flashcard-mcp__create_code_card", "tool_input": {"exercise": exercise}}) is None
+    assert gate.decide({"tool_name": "mcp__srs__create_code_card", "tool_input": {"exercise": exercise}}) is None
 
 
 # ---- a judge with nothing to say is no pass -------------------------------------------
