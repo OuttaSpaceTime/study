@@ -200,7 +200,7 @@ Cards sync to AnkiWeb, and Anki fields are **HTML**: markdown renders literally,
 - **No cloze deletions (`{{c1::…}}`) on these cards.** Question and answer only: a cloze hands over the sentence frame and tests recognition, not retrieval. `create_card` refuses them. Only code cards have clozes, written from their blanks (`create_code_card`). A card can't change kind later (plain or code): that takes a new card with `inheritFrom`.
 - **No em dashes (`—`, `&mdash;`, `&#8212;`, `&#x2014;`), ever.** Write two sentences, or use a colon after a bold label. En dashes in ranges (`1–4`) are fine.
 
-Show drafts rendered in chat, never as raw HTML. These rules are enforced by `create_card`/`update_card` with a per-field error; fix the draft per the error and retry. `scripts/card-htmlize` converts markdown stragglers, but new cards should be born clean.
+Show drafts rendered in chat, never as raw HTML. These rules are enforced by `create_card`/`update_card` with a per-field error; fix the draft per the error and retry. New cards should be born clean.
 
 ## Chaining
 

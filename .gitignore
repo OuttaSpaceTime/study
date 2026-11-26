@@ -22,5 +22,4 @@ todo.md
 .env.local
 
 # Legacy wiki search index (superseded by qmd), local only
-wiki/.embeddings.json
 wiki/indexes/index.db

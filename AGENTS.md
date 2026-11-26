@@ -82,7 +82,7 @@ All skills follow the shared protocol in `.claude/skills/references/wiki-write-p
 
 ### Linting
 
-`scripts/lint` checks: broken wikilinks, absolute path enforcement, frontmatter completeness, unknown/retired frontmatter fields, alias collisions, slug/filename consistency, and flashcard ID drift between frontmatter and index. Runs automatically after every wiki write.
+`scripts/lint` checks: broken wikilinks, absolute path enforcement, frontmatter completeness, unknown/retired frontmatter fields, alias collisions, slug/filename consistency, and flashcard ID drift between frontmatter and index. Runs automatically after every wiki write. The rules the wiki-viewer mirrors are pinned by `tests/fixtures/wiki-rules.json`, run by both the Python and the viewer tests.
 
 Results are split into **errors** (block clean status, exit 1) and **warnings** (informational, exit 0). There is no orphan check: a page nothing links to is still reached through its folder and its tags. Wikilink parsing ignores fenced code blocks, inline code, and image embeds (`![[...]]`), and strips `#heading` anchors and `|display` pipes before resolving targets.
 
@@ -127,16 +127,16 @@ Open the dashboard itself (`xdg-open "http://localhost:4777/"`) when you want th
 
 ### Omvida (desktop app)
 
-`~/Code/omvida` is a Quickshell app over the same wiki and deck: the wiki reader (tree, context panel, links, local graph), the deck explorer, the full graph, search with an "Ask Claude" that runs the [Query Protocol](#query-protocol) headless, and a **study loop** for typing answers. Each answer is graded on the reveal by the Claude API (Haiku, flashcard-mcp `src/core/grading.ts`, fixed rubric; the key in the login keyring) and the developer accepts or overrides the suggested rating with keys (Shift+Enter reveal, Alt+Enter accept, Shift+1-4 rate). The grade only rates: Ctrl+Q runs `/study-card-check` headless on the card instead, and fixes it if it is flawed. It keeps `/study`'s session around the loop: Anki sync before and after, the pressure and calibration verdicts, leech blocking, the related-pages offer, and a `## Session N — Study` entry in today's log with `**Surface:** Omvida app`. Its Discuss, Add → Flashcards and Add → Wiki entry open Claude Code in kitty in this repo with the matching skill. A page with `explorables` gets an **Explore** button that opens each one as a web app window (`omarchy-launch-webapp`). Launch it with `~/Code/omvida/bin/omvida`, or `omvida open <wiki-key>` for a page ("show in Omvida", see the wiki-write protocol). The wiki-viewer stays; Omvida is a second surface over the same files.
+`~/Code/omvida` is a Quickshell app over the same wiki and deck: the wiki reader (tree, context panel, links, local graph), the deck explorer, the full graph, search with an "Ask Claude" that runs the [Query Protocol](#query-protocol) headless, and a **study loop** for typing answers. Each answer is graded on the reveal by the Claude API (Haiku, flashcard-mcp `src/core/grading.ts`, fixed rubric; the key in the login keyring) and the developer accepts or overrides the suggested rating (keys in Omvida's README). The grade only rates: Ctrl+Q runs `/study-card-check` headless on the card instead, and fixes it if it is flawed. It keeps `/study`'s session around the loop: Anki sync before and after, the pressure and calibration verdicts, leech blocking, the related-pages offer, and a `## Session N — Study` entry in today's log with `**Surface:** Omvida app`. Its Discuss, Add → Flashcards and Add → Wiki entry open Claude Code in kitty in this repo with the matching skill. A page with `explorables` gets an **Explore** button that opens each one as a web app window (`omarchy-launch-webapp`). Launch it with `~/Code/omvida/bin/omvida`, or `omvida open <wiki-key>` for a page ("show in Omvida", see the wiki-write protocol). The wiki-viewer stays; Omvida is a second surface over the same files.
 
 ### Flashcards in the viewer
 
-The viewer reads flashcards **straight from flashcard-mcp's SQLite file** (`$FLASHCARD_MCP_DIR/prisma/master.db`, see [Machine-local configuration](#machine-local-configuration)) via `node:sqlite`, opened **read-only** — the MCP server owns all writes, and an accidental write here would corrupt review history that Anki sync treats as append-only. Override the file directly with `FLASHCARD_DB`. Two surfaces:
+The viewer reads flashcards through flashcard-mcp's app server (`wiki-viewer/lib/deck-client.ts`, newline-delimited JSON over stdio; see [Deck access](#deck-access)) and never opens the database, so a bug here cannot corrupt the review history Anki sync treats as append-only. The deck file it points the server at comes from `lib/flashcard-path.ts`, see [Machine-local configuration](#machine-local-configuration); `FLASHCARD_DB` overrides it. Two surfaces:
 
 - **Per page** — a button in the article header opens a large modal with the page's cards, in two modes: an **overview** grid (fronts, answers revealed individually) and **flip-through** (one card at a time, 3D flip on click/space, arrow keys, progress bar). Cards come from the page's `flashcard_ids`; a page without any falls back to tag overlap.
 - **Whole deck** — `/flashcards` (sidebar card icon) browses everything: true retention over a trailing 30 days with the calibration verdict, a clickable state bar (new / learning / review / relearning / suspended) that filters the list, plus deck, tag, and text filters, and the same flip-through over whatever the filters leave.
 
-Retention is **not** recomputed in the viewer — `/flashcards` shells out to flashcard-mcp's CLI (`npm run dev:cli -- calibration`, ~0.5s) and renders the verdict it returns, so the browser and `/study` can never disagree. An earlier reimplementation drifted within a day (wrong min-review floor, no rating-discrimination guard, UTC instead of local days), which is why the rule has exactly one home. Retune bands in `src/core/calibration.ts` alone.
+Retention is **not** recomputed in the viewer — `/flashcards` asks the app server's `calibration` method and renders the verdict it returns, so the browser and `/study` can never disagree. An earlier reimplementation drifted within a day, which is why the rule has exactly one home: retune bands in `src/core/calibration.ts` alone.
 
 ### Hiding non-wiki content
 
@@ -168,7 +168,7 @@ When the developer asks a substantive knowledge question — any "what is X / ho
    - Call `mcp__flashcard-mcp__search_cards` with the same query.
    - Optionally glance at `wiki/.wiki-index.json` sections/aliases if phrasing is unlikely to embed well.
    - **Always verify the memory answer against the web** via `WebSearch` (and `WebFetch` on the most authoritative result — official docs, source code, RFC, upstream repo — when the question has a specific factual claim to check). This runs regardless of whether wiki/cards hit, so memory answers are never trusted on their own.
-   - Append a `## Query N (HH:MM)` entry to today's `logs/<MM>/<YYYY-MM-DD>.md` (zero-padded month folder; creating the file if missing) with: **Question**, **Wiki hits** (wikilinks or `none`), **Card hits** (ids + one-line fronts or `none`), **Web check** (one-line verdict: `confirms` | `contradicts: <what>` | `refines: <what>` | `inconclusive`, plus the authoritative URL used), **Source** (`wiki` | `cards` | `research` | `mixed` | `memory`), **Answer** (one-line summary of what you told the developer).
+   - Append a `## Query N (HH:MM)` entry to today's log with `scripts/log-append --query`, the fields on stdin through a quoted heredoc (`<<'EOF'`) as `Name: value` lines: **Question**, **Wiki hits** (wikilinks or `none`), **Card hits** (ids + one-line fronts or `none`), **Web check** (one-line verdict: `confirms` | `contradicts: <what>` | `refines: <what>` | `inconclusive`, plus the authoritative URL used), **Source** (`wiki` | `cards` | `research` | `mixed` | `memory`), **Answer** (one-line summary of what you told the developer).
    - Report back the wiki/card hits **and the web-check verdict** so the main thread can reconcile.
 
    The main thread must not `Read` or `Write` the log file itself, and must not call `mcp__qmd__query` / `search_cards` directly. Same rule for the wiki-write follow-up when the developer accepts a `/study-walkthrough --write` offer: spawn it in the background.
@@ -189,11 +189,13 @@ Scope: this applies to knowledge/explanation questions. It does *not* apply to o
 
 Daily append-only logs live at **`logs/MM/YYYY-MM-DD.md`** — the parent folder is the zero-padded month (`logs/04/2026-04-30.md`, `logs/05/2026-05-30.md`). Each session records: skill used, topic, cards reviewed/created, accuracy, lapses, wiki updates, duration.
 
+**One writer.** `scripts/session_log.py` owns the path, the `# <YYYY-MM-DD>` day header, the numbering and the entry shape; skills use its CLI, `scripts/log-append <Kind>` (or `--query`), and Omvida imports it. Fields go on stdin through a quoted heredoc, one `Name: value` line each (`scripts/log-append Change <<'EOF'` then `Files: ...`, `Change: ...`, `Why: ...`, `EOF`). Never write a log by hand: a second writer would drift on numbering and shape.
+
 **Path convention (writing & reading):**
 - **Today's log:** `logs/<MM>/<YYYY-MM-DD>.md`, where `<MM>` is the current month zero-padded. Create the month folder if missing.
 - **A specific day** (e.g. yesterday, for a re-entry hint): derive `<MM>` from that day's date — it may differ from today's at a month boundary.
 - **A window of days** (e.g. `/progress`): glob `logs/*/*.md` and filter by the `YYYY-MM-DD` date in the filename; do not assume a single month folder.
-- A new daily log starts with a `# <YYYY-MM-DD>` header; session entries append below it.
+- A new daily log starts with a `# <YYYY-MM-DD>` header (`log-append` adds it); session entries append below it.
 
 **Section legend** (entries append at H2; `N` increments across ALL session types within a day; queries use their own sequence):
 - `## Session N — Kickoff (HH:MM)`
@@ -202,7 +204,7 @@ Daily append-only logs live at **`logs/MM/YYYY-MM-DD.md`** — the parent folder
 - `## Session N — End (HH:MM)`
 - `## Query N (HH:MM)` → Question / Wiki hits / Card hits / Web check / Source / Answer
 
-**Always log repo changes.** Any change you make to this repo — skills, scripts, wiki, todo, config, AGENTS.md itself — must be recorded in today's `logs/<MM>/<YYYY-MM-DD>.md` as a `## Session N — Change (HH:MM)` entry with **Files:**, **Change:**, and **Why:** fields. Do this even outside a kickoff/end ritual. If today's log doesn't exist yet, create it with a `# <YYYY-MM-DD>` header.
+**Always log repo changes.** Any change you make to this repo — skills, scripts, wiki, todo, config, AGENTS.md itself — must be recorded in today's `logs/<MM>/<YYYY-MM-DD>.md` as a `## Session N — Change (HH:MM)` entry with **Files:**, **Change:**, and **Why:** fields, via `scripts/log-append Change` as above. Do this even outside a kickoff/end ritual.
 
 ## Anki Sync
 
@@ -220,15 +222,16 @@ Daily append-only logs live at **`logs/MM/YYYY-MM-DD.md`** — the parent folder
   | **NONE** | import | tombstone here | nothing |
 
   Two consequences: deleting a card **on the phone still does not delete it** (LIVE × NONE means "new here"), so the next sync recreates it and says so — `create N (M deleted on Anki, reinstated)`; and deleting it in master propagates everywhere and stays deleted. Tombstones and tagged notes are kept forever, and there is deliberately no command to purge them: a row is ~40 bytes, a suspended note never enters review, and no stateless run can know that every machine has processed the deletion. Clearing one early resurrects the card.
-- **Scheduling:** flows both ways — the side with the newer last review wins its whole FSRS block (`stability`/`difficulty` map natively to Anki's `memory_state`; no SM-2 conversion). On a tie with different due days, master's schedule is pushed: a due moved without a review (flashcard-mcp's `master easy-days --apply`) reaches Anki, and a reschedule made in Anki (an ease-0 revlog row, never a review here) is undone. Anki-side recency comes from the newest **revlog** entry, never from `card.last_review_time`: a sync-down delivers a remote review as a revlog row without setting that field, and a push overwrites it from master, so it reads null or stale on exactly the cards Anki reviewed most recently. That field is a fallback only for cards with no revlog at all (an `inheritFrom` split carries a schedule but no reviews of its own), which is what stops those re-pushing on every run. Reviewing the **same card on both sides** between syncs is lossy by design: the newer side wins wholesale, and the loser's review survives in the history union but not in the block.
+- **Scheduling:** flows both ways — the side with the newer last review wins its whole FSRS block (`stability`/`difficulty` map natively to Anki's `memory_state`; no SM-2 conversion). On a tie with different due days, master's schedule is pushed: a due moved without a review (flashcard-mcp's `easy-days --apply`) reaches Anki, and a reschedule made in Anki (an ease-0 revlog row, never a review here) is undone. Anki-side recency comes from the newest **revlog** entry, never from `card.last_review_time`: a sync-down delivers a remote review as a revlog row without setting that field, and a push overwrites it from master, so it reads null or stale on exactly the cards Anki reviewed most recently. That field is a fallback only for cards with no revlog at all (an `inheritFrom` split carries a schedule but no reviews of its own), which is what stops those re-pushing on every run. Reviewing the **same card on both sides** between syncs is lossy by design: the newer side wins wholesale, and the loser's review survives in the history union but not in the block.
 - **Review history:** append-only union by (card, timestamp) — phone reviews land in the `Review` table, local reviews land in Anki's revlog. Nothing is overwritten. A review's state crosses with it: Anki's revlog `type` (learn, review, relearn, filtered) is master's `Review.state` and back (`convert.revlog_type_to_state`), since flashcard-mcp's rest-day share counts only reviews of Review cards, not steps.
 - **Bridge collection:** a dedicated headless Anki profile `StudySync` (`~/.local/share/Anki2/StudySync/`) — never the desktop profile. It is disposable: deleting the folder and re-running `sync` rebuilds it.
 - **Credentials:** AnkiWeb email in `StudySync/sync-config.json` (via `anki-sync login <email>`); password in the GNOME keyring (`secret-tool store --label="AnkiWeb study sync" service ankiweb` — run by the developer, never via a skill). After first login the session token persists in the profile; the keyring is only read for re-auth.
-- **Scheduling options:** each `sync` also copies the Anki deck options of the preset most decks use (learning and relearning steps, desired retention, FSRS weights) into flashcard-mcp's `Config` row (`scripts/ankisync/params.py`; only changed columns are written, a failure is a one-line `options: skipped` and never fails the sync). The deck server schedules with them, so Omvida's rating keys show the intervals Anki shows; a change in Anki reaches Omvida at the next sync.
-- **Skill hooks:** `/study` runs `sync` before the pressure check (pull phone reviews first) and after the session log (push); `/study-flashcard` runs it after card creation. Always silent, one-line summary only when something moved; failures are a one-line note and never block the session.
-- **Card content format:** Anki renders note fields as HTML, so card fronts/backs are authored in simple HTML (`<br>`, `<code>`, `<pre>`, `<b>`, `<i>`, `<ul>/<ol>/<li>`, entities for literal `<`/`>`) — never markdown, bare newlines, `[[wikilinks]]`, or em dashes (write two sentences instead). Enforced at write time: flashcard-mcp's `create_card`/`update_card` reject violations with a per-field error (`src/core/content-rules.ts`). See "Card Content Format" in `.claude/skills/study-flashcard/SKILL.md`; `scripts/card-htmlize` converts stragglers.
+- **Scheduling options:** each `sync` also copies the Anki deck options of the preset most decks use (learning and relearning steps, desired retention, FSRS weights) into flashcard-mcp's `Config` row (through `syncApply`'s `schedulerOptions`; only changed columns are written, a failure is a one-line `options: skipped` and never fails the sync). The deck server schedules with them, so Omvida's rating keys show the intervals Anki shows; a change in Anki reaches Omvida at the next sync.
+- **Deck side:** the sync reads cards, reviews and tombstones from flashcard-mcp's app server and writes its plan back in one `syncApply` call (one transaction, see [Deck access](#deck-access)). The server applies the deck's own rules to what Anki sends, so an Anki-only card that breaks the content rules is rejected, and the sync prints every rejected import (id and error) on each run until it is fixed, plus any reviews it skipped.
+- **Skill hooks:** `/study` runs `sync` before the pressure check (pull phone reviews first) and after the session log (push); `/study-flashcard` runs it after card creation. Silent except a one-line summary when something moved; failures never block the session.
+- **Card content format:** Anki renders note fields as HTML, so card fronts/backs are authored in simple HTML (`<br>`, `<code>`, `<pre>`, `<b>`, `<i>`, `<ul>/<ol>/<li>`, entities for literal `<`/`>`) — never markdown, bare newlines, `[[wikilinks]]`, or em dashes (write two sentences instead). Enforced at write time: flashcard-mcp's `create_card`/`update_card` reject violations with a per-field error (`src/core/content-rules.ts`). See "Card Content Format" in `.claude/skills/study-flashcard/SKILL.md`.
 
-**Card size and scope are enforced too.** The same `content-rules.ts` caps the **answer at 150 visible characters and 3 sentences**, and requires the **front to ask one question**. Both limits measure rendered text, so markup and entities are free and formatting a card well never costs it budget; fronts carry no length cap, because grounded scenario fronts are the preferred style. The rejection message names the field and states both remedies (split the card, or reduce the text). The one-question check is a heuristic — 2+ question marks, or `and`/`or` followed by a question word, with `<code>` spans neutralised so a Ruby `nil?` is not miscounted — so it flags and the calling skill judges. On a size rejection, **reduce first**: most are padding. What reducing would lose moves to its own card. See "Card Size & Scope" in `.claude/skills/study-flashcard/SKILL.md`.
+**Card size and scope are enforced too.** The same `content-rules.ts` caps the **answer's visible length and sentence count** (the numbers live there, not here), and requires the **front to ask one question**. Both measure rendered text, so markup is free; fronts have no length cap, because grounded scenario fronts are preferred. The one-question check is a heuristic, so it flags and the calling skill judges. On a size rejection, **reduce first**: most are padding. What reducing would lose moves to its own card. See "Card Size & Scope" in `.claude/skills/study-flashcard/SKILL.md`.
 
 **Code cards are answered by running them**, after Execute Program: `predict`, `fill` and `compose`, in a sandbox, compared by value. Wrong tries cost nothing, a pass is Good and giving up is Again, with no rating asked for. `.claude/skills/references/code-cards.md` is how to choose, write and check one, and every skill that writes cards points there. `check_code_card` dry-runs a draft and shows real values; `create_code_card` and `update_code_card` refuse a card whose solution fails, that passes with its blanks `nil`, or whose runs differ; `run_code_card` and `reveal_code_card` check answers in a `/study` chat. Omvida runs them as you type. On Anki they are ordinary cards, rated by hand. **Clozes exist only on code cards:** flashcard-mcp and the gate refuse `{{c1::...}}` on any other card, on every write and import, as a plain cloze tests recognition rather than retrieval. On a code card every deletion is `c1`, as one note is one schedule ("Note types" above). A card keeps its kind for life.
 
@@ -247,12 +250,22 @@ Changing that one line is the whole setup step on a new machine. `$HOME/...` and
 | Reader | Resolves |
 |---|---|
 | `scripts/flashcard-mcp-server` (POSIX sh) | the `.mcp.json` command — execs `npx tsx $FLASHCARD_MCP_DIR/src/mcp/server.ts` with `DATABASE_URL` set. Writes only to stderr, since stdout is the MCP stdio stream |
-| `scripts/config.py` | `flashcard_mcp_dir()` / `master_db()` for `scripts/ankisync` and `scripts/card-htmlize` |
-| `wiki-viewer/lib/flashcard-path.ts` | `REPO_ROOT` (walks up to `AGENTS.md`), `flashcardMcpDir()`, `masterDbPath()` |
+| `scripts/config.py` | `flashcard_mcp_dir()` / `master_db()`, which `scripts/deck/client.py` turns into the app server's `DATABASE_URL` (it needs `npm install` there, for `node_modules/.bin/tsx`) |
+| `wiki-viewer/lib/flashcard-path.ts` | `REPO_ROOT` (walks up to `AGENTS.md`), `flashcardMcpDir()`, `masterDbPath()`, which feed `lib/deck-client.ts` |
 
 Environment variables take precedence over the file: `FLASHCARD_MCP_DIR`, `FLASHCARD_MASTER_DB` / `FLASHCARD_DB` (point at the SQLite file directly), `WIKI_ROOT`.
 
 **Never hardcode an absolute home path** in `.mcp.json`, `scripts/`, or `wiki-viewer/lib/` — it breaks the other machine on the next pull, which has already happened twice. `tests/test_config.py::test_no_machine_specific_path_is_committed` fails on any `/home/<user>/…flashcard-mcp` literal in those files. When the config is absent, every entry point exits with a message naming `.env.local` instead of silently reading a nonexistent path.
+
+## Deck access
+
+flashcard-mcp owns master.db: every rule about a card (content rules, tombstones, pressure, calibration) lives in its core, behind its **deck SDK** (`src/sdk/`). Nothing else opens the file or runs SQL on it:
+
+- Claude Code: the MCP tools (below).
+- Omvida, `scripts/deck/client.py` (anki-sync, card-quality gate and sweep, `card-links-sync`) and `wiki-viewer/lib/deck-client.ts`: the **app server**, JSON lines over stdio (`{id, method, params}` in, `{id, result|error}` out, `{"ready": true}` first). One client per run: a spawn costs about a second. Its CLAUDE.md has the method table.
+- Its CLI is admin only: `overview`, `easy-days`, `db:dump`, `db:restore`.
+
+Session logs have one writer, `scripts/session_log.py` ([Session Logs](#session-logs)). Wiki rules that exist in Python and TypeScript: Python owns them, the viewer mirrors them, and `tests/fixtures/wiki-rules.json` is run by both test suites.
 
 ## MCP Server
 
@@ -260,9 +273,9 @@ The `flashcard-mcp` MCP server must be running. It starts automatically via `.mc
 
 If tools aren't available: check `.env.local` points at a real checkout, and that it has dependencies installed (`npm install` in that directory). Running `scripts/flashcard-mcp-server </dev/null` surfaces the path error directly.
 
-**Calibration and leeches live in the MCP too.** `check_calibration` returns true retention over a trailing 30 days plus a verdict (`over-difficult` / `calibrated` / `under-difficult` / `low-signal`, with a `marginal` flag near a band edge), and drives `/study`'s difficulty levers — never the rating rubric. Leeches are not surveyed up front: `get_next_card` stamps any card it serves at 5+ lapses and the next `get_next_card` **throws** until that card is rewritten (`update_card`, which also resets `lapses`), split, deleted, or explicitly kept via `resolve_leech(id, "defer")` — which stops blocking until the card lapses again. Suspend is deliberately not offered: it hides the card instead of fixing it.
+**Calibration and leeches live in the MCP too.** `check_calibration` returns true retention over a trailing 30 days plus a verdict (`over-difficult` / `calibrated` / `under-difficult` / `low-signal`, with a `marginal` flag near a band edge), and drives `/study`'s difficulty levers — never the rating rubric. Leeches are not surveyed up front: `get_next_card` stamps a served card past the lapse limit (`src/core/leeches.ts`) and the next `get_next_card` **throws** until that card is rewritten (`update_card`, which also resets `lapses`), split, deleted, or explicitly kept via `resolve_leech(id, "defer")` — which stops blocking until the card lapses again. Suspend is deliberately not offered: it hides the card instead of fixing it.
 
-**`check_pressure` is the SRS pressure source of truth**, and it lives in the MCP server rather than this repo — the verdict and the enforcement have to agree, so they share one implementation. Two axes: `flashcardsDue` (review backlog, excluding the new-card pool) warns at 20 / pauses at 50, and `newToday` (intake) warns at 5 / pauses at 15. The server **enforces** the pause itself: `create_card` throws for a fresh card while the verdict is `pause`. `update_card` and splits (`create_card` with `inheritFrom`) are always allowed, and a split off a studied card does not count as intake — under a backlog, fixing the deck you already carry is exactly the right move. (A split off a never-reviewed parent inherits no maturity, so it does count.) Skills read the verdict via `references/srs-pressure-check.md`; nothing recomputes it locally.
+**`check_pressure` is the SRS pressure source of truth**, and it lives in the MCP server rather than this repo — the verdict and the enforcement have to agree, so they share one implementation. Two axes: `flashcardsDue` (review backlog, excluding the new-card pool) and `newToday` (intake), each with a warn and a pause threshold (in flashcard-mcp `src/core/pressure.ts`, not copied here). The server **enforces** the pause itself: `create_card` throws for a fresh card while the verdict is `pause`. `update_card` and splits (`create_card` with `inheritFrom`) are always allowed, and a split off a studied card does not count as intake — under a backlog, fixing the deck you already carry is exactly the right move. (A split off a never-reviewed parent inherits no maturity, so it does count.) Skills read the verdict via `references/srs-pressure-check.md`; nothing recomputes it locally.
 
 ## Development
 
@@ -283,20 +296,19 @@ python3 scripts/wiki-write wiki/security/hsts.md  # explicit
 ```
 
 Available scripts:
-- `scripts/wiki-write <page>` — Update index, refresh qmd search index, run lint
-- `scripts/wiki-reindex [--wiki-dir DIR]` — Rebuild `.wiki-index.json` from every page: drops fields the current schema no longer writes, prunes entries for deleted pages, and carries each page's `updated` stamp over (a reindex is a derive, not a write). Use after any index schema change
-- `scripts/lint` — Check broken wikilinks, frontmatter, alias collisions
+- `scripts/wiki-write <page> | --all [--wiki-dir DIR]` — Update index, refresh qmd search index, run lint. `--all` rebuilds `.wiki-index.json` from every page instead: drops fields the current schema no longer writes, prunes entries for deleted pages, and carries each page's `updated` stamp over (a derive, not a write). Use after any index schema change
+- `scripts/lint` — Check broken wikilinks, frontmatter, alias collisions (package `scripts/wiki/lint/`)
+- `scripts/log-append <Kind> | --query` — The one session-log writer, fields on stdin (see [Session Logs](#session-logs)); logic in `scripts/session_log.py`
 - `scripts/anki-sync <login|sync|status>` — Sync flashcards to AnkiWeb (see [Anki Sync](#anki-sync)). `sync --dry-run` previews, `--local` skips AnkiWeb
 - `scripts/card-quality-gate` — The PreToolUse hook on every card write, and `--judge <card id>`; the logic is `scripts/card_quality.py`
 - `scripts/card-check-sweep` — Judge the deck and fix what fails, resumably (`--dry-run`, `--one-session`, `--retry`); see its docstring
 - `scripts/card-quality-eval` — Hold the judge to its benchmark in `tests/card-quality/`, on real calls; after any change to the rubric, prompt or model
 - `scripts/card-links-sync` — Keep pages' `flashcard_ids` true after a split, and rebuild the index if a page changed (`--check`, `--prune`)
-- `scripts/card-htmlize` — Convert markdown/plain card text in master.db to simple Anki HTML (dry-run by default, `--apply` writes after backing up master.db)
 - `scripts/flashcard-mcp-server` — stdio launcher used by `.mcp.json`; not run by hand except to debug a path problem (see [Machine-local configuration](#machine-local-configuration))
 
 Search is not a `scripts/` entry point — it's the `qmd` CLI / `mcp__qmd__query` MCP tool, see [Search](#search).
 
-Python modules live in `scripts/wiki/`. The top-level scripts are thin entry points.
+Python modules live in `scripts/wiki/` (wiki), `scripts/ankisync/` (Anki), `scripts/deck/` (the deck client) and `scripts/session_log.py`. The top-level scripts are thin entry points.
 
 ## Dependencies
 

@@ -61,8 +61,8 @@ from it:
 | Consumer | Uses |
 |---|---|
 | `.mcp.json` → `scripts/flashcard-mcp-server` | `$FLASHCARD_MCP_DIR/src/mcp/server.ts`, and `DATABASE_URL` |
-| `scripts/ankisync`, `scripts/card-htmlize` | `scripts/config.py` → `$FLASHCARD_MCP_DIR/prisma/master.db` |
-| `wiki-viewer` | `lib/flashcard-path.ts` → the same DB, plus the `dev:cli calibration` shell-out |
+| `scripts/ankisync`, `scripts/deck` | `scripts/config.py` → the deck database, handed to flashcard-mcp's app server as `DATABASE_URL` |
+| `wiki-viewer` | `lib/flashcard-path.ts` → the same, for `lib/deck-client.ts` (the app server, over stdio) |
 
 Environment variables still win over the file, for one-off overrides:
 `FLASHCARD_MCP_DIR` (the checkout), `FLASHCARD_MASTER_DB` / `FLASHCARD_DB` (the SQLite file
