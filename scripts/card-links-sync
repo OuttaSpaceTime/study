@@ -15,7 +15,6 @@ changed. /study-card-check and every other split run it after a write; `--check`
 """
 import argparse
 import re
-import sqlite3
 import subprocess
 import sys
 from pathlib import Path
@@ -23,7 +22,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.config import master_db  # noqa: E402 (after the path is set)
+from scripts.deck.client import DeckClient, DeckError  # noqa: E402 (after the path is set)
 
 # Both ways YAML writes a list, within the frontmatter only: `scripts/wiki-write` leaves the block form.
 INLINE = re.compile(r"^flashcard_ids:[ \t]*\[(.*?)\][ \t]*$", re.M)
@@ -31,17 +30,16 @@ BLOCK = re.compile(r"^flashcard_ids:[ \t]*\n((?:[ \t]*-[ \t]+.*\n)+)", re.M)
 
 
 def deck():
-    db = sqlite3.connect(f"file:{master_db()}?mode=ro", uri=True)
-    try:
-        rows = db.execute("SELECT id, inheritedFrom FROM Card").fetchall()
-        deleted = {r[0] for r in db.execute("SELECT cardId FROM DeletedCard")}
-    finally:
-        db.close()
-    alive = {r[0] for r in rows}
+    with DeckClient() as client:
+        cards = client.card_records()
+        deleted = client.tombstones()
+    alive = {c.id for c in cards}
     children = {}
-    for card, parent in rows:
-        if parent:
-            children.setdefault(parent, []).append(card)
+    # Oldest first, ties by id: a page lists the parts of a split in the order they were made, and
+    # the deck hands cards over newest first.
+    for c in sorted(cards, key=lambda c: (c.created_at, c.id)):
+        if c.inherited_from:
+            children.setdefault(c.inherited_from, []).append(c.id)
     return alive, children, deleted
 
 
@@ -93,7 +91,10 @@ def main():
     ap.add_argument("--check", action="store_true", help="report, write nothing")
     ap.add_argument("--prune", action="store_true", help="remove ids of cards deleted with no parts")
     args = ap.parse_args()
-    alive, children, deleted = deck()
+    try:
+        alive, children, deleted = deck()
+    except DeckError as e:
+        sys.exit(f"card-links-sync: the deck is unreachable ({e})")
     prunable = deleted if args.prune else frozenset()
     wiki = ROOT / "wiki"
     wrote = False

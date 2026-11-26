@@ -27,7 +27,6 @@ import datetime
 import fcntl
 import json
 import re
-import sqlite3
 import subprocess
 import sys
 import threading
@@ -38,6 +37,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from scripts import card_quality as gate  # noqa: E402 (after the path is set)
+from scripts.deck.client import DeckError  # noqa: E402
 
 
 STATE = Path.home() / ".cache" / "study-card-quality"
@@ -107,12 +107,10 @@ def gave_up_on(cards):
 
 
 def deck():
-    db = sqlite3.connect(f"file:{gate.master_db()}?mode=ro", uri=True)
-    db.row_factory = sqlite3.Row
-    try:
-        return [dict(r) for r in db.execute("SELECT id, deckId, front, back, tags, type, exercise, lapses FROM Card WHERE suspended = 0")]
-    finally:
-        db.close()
+    """The unsuspended cards, as the dicts the rest of the sweep reads (tags as the comma-joined string)."""
+    return [{"id": c.id, "deckId": c.deck_id, "front": c.front, "back": c.back, "tags": ",".join(c.tags),
+             "type": c.type, "exercise": c.exercise, "lapses": c.lapses}
+            for c in gate.deck().card_records(include_suspended=False)]
 
 
 def judge_all(cards, workers, wait):
@@ -319,7 +317,10 @@ def main():
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except OSError:
             sys.exit("a sweep is already running")
-        sys.exit(sweep(args))
+        try:
+            sys.exit(sweep(args))
+        except DeckError as e:
+            sys.exit(f"card-check-sweep: the deck is unreachable ({e})")
 
 
 if __name__ == "__main__":

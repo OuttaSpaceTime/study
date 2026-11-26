@@ -29,17 +29,17 @@ Fails closed: a judge that cannot run denies the write with the reason, since le
 is what the gate exists to stop. Malformed hook input passes (there is no card to judge).
 `CARD_QUALITY_CLAUDE` names the claude to run (the tests' fake).
 """
+import atexit
 import hashlib
 import json
 import os
 import re
-import sqlite3
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
-from scripts.config import master_db
+from scripts.deck.client import DeckClient
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -96,24 +96,31 @@ EFFORT = "high"
 TIMEOUT = 120
 
 
-def query_deck(sql, *args):
-    db = sqlite3.connect(f"file:{master_db()}?mode=ro", uri=True)
-    try:
-        return db.execute(sql, args).fetchall()
-    finally:
-        db.close()
+_deck = None
+
+
+def deck():
+    """The deck client, started on first use and shared by the process: a verdict that never reads the deck
+    (a new card, a cloze) never pays the second it takes to start one, and a stored card's two lookups share it."""
+    global _deck
+    if _deck is None:
+        client = DeckClient()
+        client.start()  # a failed start leaves nothing cached, so the next call tries again
+        atexit.register(client.close)
+        _deck = client
+    return _deck
 
 
 def stored_card(card_id):
-    rows = query_deck("SELECT front, back, exercise FROM Card WHERE id = ?", card_id)
+    rows = deck().card_records(ids=[card_id])
     if not rows:
         raise LookupError(f"no card {card_id} in the deck")
-    return {"front": rows[0][0], "back": rows[0][1], "exercise": rows[0][2]}
+    return {"front": rows[0].front, "back": rows[0].back, "exercise": rows[0].exercise}
 
 
 def stored_parts(card_id):
     """The fronts of the cards made from this one: a split cut short leaves them beside the original."""
-    return [row[0] for row in query_deck("SELECT front FROM Card WHERE inheritedFrom = ?", card_id)]
+    return [c.front for c in deck().card_records(inherited_from=card_id)]
 
 
 def subject(card):

@@ -1,284 +1,133 @@
-"""Read/write access to flashcard-mcp's master.db (SQLite, Prisma-managed).
+"""The adapter between merge.py's dataclasses and the deck client.
 
-Reads are read-only connections; writes use short transactions with a busy
-timeout so we coexist with the running MCP server (journal_mode=delete).
-Only scheduling fields and appended Review rows are ever written — card
-existence and content are never modified from the Anki side.
+master.db belongs to flashcard-mcp, so nothing here opens it: cards, reviews and
+tombstones are read through `DeckClient`, and everything a sync decided to write goes
+out as one `syncApply` call, which flashcard-mcp applies in one transaction under its
+own rules (the cascade and tombstone on a delete, the fallback memory state for a card
+Anki never computed FSRS for, the content rules on an import, whole-second review
+dedupe). The sync decides what to write; this only translates it.
 """
 
-import secrets
-import sqlite3
 from datetime import UTC, datetime
-from pathlib import Path
 
-from scripts.ankisync.convert import format_master_dt, parse_master_dt, split_tags
-from scripts.ankisync.merge import AnkiCard, MasterCard, Review, Sched
-from scripts.config import master_db
+from scripts.ankisync.convert import split_tags
+from scripts.ankisync.merge import AnkiCard, HistoryPlan, MasterCard, Review, Sched, SyncPlan
+from scripts.deck.client import CardRecord, DeckClient, iso
 
-
-def db_path() -> Path:
-    return master_db()
+# A plan that imports many cards is one transaction the server may spend a while on.
+SYNC_APPLY_TIMEOUT = 300
 
 
-# Neutral FSRS difficulty (1-10 scale, midpoint) for a card that arrives with
-# no memory_state and therefore no way to infer a real one.
-_DEFAULT_DIFFICULTY = 5.0
-
-
-def _fallback_memory_state(sched: Sched) -> tuple[float, float]:
-    """Approximate stability/difficulty for a card Anki never computed FSRS memory for.
-
-    Anki only populates card.memory_state once a card has been reviewed under
-    the FSRS scheduler; a card that predates FSRS being enabled (or hasn't been
-    reviewed since) reports memory_state=None even though it has a perfectly
-    real SM-2-style interval. Writing 0.0 for "unknown" is indistinguishable
-    from flashcard-mcp's own corruption sentinel (scheduler.ts's
-    sanitizeForReview resets any non-New card with stability<=0 back to a
-    fresh New card, discarding reps/lapses continuity) — so a missing
-    memory_state must never reach the DB as a literal 0.0. The existing
-    interval was calibrated for roughly the same target retention FSRS
-    assumes, so it's a reasonable stability proxy; floored at 1 day so it can
-    never collide with the sentinel.
-    """
-    if sched.stability is not None and sched.difficulty is not None:
-        return sched.stability, sched.difficulty
-    if sched.state == 0:  # New: no memory state is correct, not missing
-        return 0.0, 0.0
-    return max(sched.interval, 1.0), _DEFAULT_DIFFICULTY
-
-
-def connect(readonly: bool = True) -> sqlite3.Connection:
-    db = db_path()
-    if readonly:
-        con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
-    else:
-        con = sqlite3.connect(db, timeout=10)
-        con.execute("PRAGMA busy_timeout = 10000")
-    return con
-
-
-def read_tombstones(con: sqlite3.Connection) -> set[str]:
-    """Card ids deleted here. Absent table means no card has been deleted yet."""
-    rows = con.execute(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name='DeletedCard'"
-    ).fetchall()
-    if not rows:
-        return set()
-    return {r[0] for r in con.execute("SELECT cardId FROM DeletedCard").fetchall()}
-
-
-def soft_delete_card(con: sqlite3.Connection, card_id: str) -> None:
-    """Record a deletion made on another machine and drop our row, history and note for it.
-
-    Review and CardNote rows go explicitly: Python's sqlite3 leaves foreign keys
-    off, so the schema's ON DELETE CASCADE never fires here the way it does for
-    Prisma's delete. Orphaned reviews would still count toward calibration, and
-    an orphaned note makes flashcard-mcp's listCardNotes throw on its card
-    relation. CardNote is skipped on a database that predates the table.
-    """
-    con.execute(
-        """CREATE TABLE IF NOT EXISTS DeletedCard (
-               cardId TEXT NOT NULL PRIMARY KEY,
-               deletedAt DATETIME NOT NULL
-           )"""
-    )
-    con.execute(
-        "INSERT OR IGNORE INTO DeletedCard (cardId, deletedAt) VALUES (?, ?)",
-        (card_id, format_master_dt(now_utc())),
-    )
-    con.execute("DELETE FROM Review WHERE cardId = ?", (card_id,))
-    if con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='CardNote'").fetchone():
-        con.execute("DELETE FROM CardNote WHERE cardId = ?", (card_id,))
-    con.execute("DELETE FROM Card WHERE id = ?", (card_id,))
-
-
-def read_cards(con: sqlite3.Connection) -> list[MasterCard]:
-    rows = con.execute(
-        """SELECT c.id, c.front, c.back, c.tags, d.name, c.suspended,
-                  c.due, c.stability, c.difficulty, c.reps, c.lapses,
-                  c.state, c.lastReview, c.interval, c.inheritedFrom, c.exercise
-           FROM Card c JOIN Deck d ON d.id = c.deckId"""
-    ).fetchall()
-    return [
-        MasterCard(
-            id=r[0],
-            front=r[1],
-            back=r[2],
-            tags=tuple(split_tags(r[3] or "")),
-            deck=r[4],
-            suspended=bool(r[5]),
-            inherited=bool(r[14]),
-            exercise=r[15] or "",
-            sched=Sched(
-                due=parse_master_dt(r[6]),
-                stability=r[7],
-                difficulty=r[8],
-                reps=r[9],
-                lapses=r[10],
-                state=r[11],
-                last_review=parse_master_dt(r[12]),
-                interval=r[13] or 0.0,
-            ),
-        )
-        for r in rows
-    ]
-
-
-def read_reviews(con: sqlite3.Connection) -> list[Review]:
-    rows = con.execute("SELECT cardId, reviewedAt, rating, responseMs, state FROM Review").fetchall()
-    return [
-        Review(card_id=r[0], reviewed_at=parse_master_dt(r[1]), rating=r[2], response_ms=r[3], state=r[4])
-        for r in rows
-    ]
-
-
-def apply_pull_sched(con: sqlite3.Connection, card_id: str, sched: Sched) -> None:
-    """Overwrite a card's scheduling block with the Anki-side winner.
-
-    stability/difficulty keep their current values when Anki has no FSRS memory
-    state (e.g. reviews done on a device with FSRS disabled), but only a real,
-    positive local one: a card that was New here holds 0.0, and a non-New card
-    with stability<=0 is what flashcard-mcp resets to New, so it gets
-    _fallback_memory_state's values instead. A pulled New card keeps its 0.0.
-    """
-    fb_stability, fb_difficulty = _fallback_memory_state(sched)
-    con.execute(
-        """UPDATE Card SET due = ?,
-                  stability = COALESCE(?, CASE WHEN stability > 0 THEN stability ELSE ? END),
-                  difficulty = COALESCE(?, CASE WHEN difficulty > 0 THEN difficulty ELSE ? END),
-                  reps = ?, lapses = ?, state = ?, lastReview = ?, interval = ?
-           WHERE id = ?""",
-        (
-            format_master_dt(sched.due) if sched.due else None,
-            sched.stability,
-            fb_stability,
-            sched.difficulty,
-            fb_difficulty,
-            sched.reps,
-            sched.lapses,
-            sched.state,
-            format_master_dt(sched.last_review) if sched.last_review else None,
-            sched.interval,
-            card_id,
+def _master_card(r: CardRecord) -> MasterCard:
+    return MasterCard(
+        id=r.id,
+        front=r.front,
+        back=r.back,
+        tags=tuple(split_tags(",".join(r.tags))),
+        deck=r.deck,
+        suspended=r.suspended,
+        inherited=bool(r.inherited_from),
+        exercise=r.exercise or "",
+        sched=Sched(
+            due=r.due,
+            stability=r.stability,
+            difficulty=r.difficulty,
+            reps=r.reps,
+            lapses=r.lapses,
+            state=r.state,
+            last_review=r.last_review,
+            interval=r.interval or 0.0,
         ),
     )
 
 
-def _cuid_like() -> str:
-    # Review.id is an app-generated CUID; any unique cuid-shaped string works.
-    return "c" + secrets.token_hex(12)
+def read_cards(deck: DeckClient) -> list[MasterCard]:
+    return [_master_card(r) for r in deck.card_records()]
 
 
-def append_reviews(
-    con: sqlite3.Connection, reviews: list[Review], sched_by_card: dict[str, Sched]
-) -> int:
-    """Append pulled Anki reviews to the Review table.
+def read_reviews(deck: DeckClient) -> list[Review]:
+    return [
+        Review(card_id=r.card_id, reviewed_at=r.reviewed_at, rating=r.rating, response_ms=r.response_ms, state=r.state)
+        for r in deck.review_records()
+    ]
 
-    stability/difficulty are NOT NULL but Anki's revlog doesn't record FSRS
-    snapshots — we store the card's current memory state as an approximation
-    (these columns feed analytics only, never scheduling).
-    """
-    existing = {
-        (r[0], int(parse_master_dt(r[1]).timestamp()))
-        for r in con.execute("SELECT cardId, reviewedAt FROM Review").fetchall()
+
+def read_tombstones(deck: DeckClient) -> set[str]:
+    """Card ids deleted here."""
+    return deck.tombstones()
+
+
+def _sched_wire(sched: Sched) -> dict:
+    return {
+        "due": iso(sched.due) if sched.due else None,
+        "stability": sched.stability,
+        "difficulty": sched.difficulty,
+        "reps": sched.reps,
+        "lapses": sched.lapses,
+        "state": sched.state,
+        "lastReview": iso(sched.last_review) if sched.last_review else None,
+        "interval": sched.interval,
     }
-    last_seen: dict[str, datetime] = {}
-    for card_id, ts in sorted(
-        ((r[0], parse_master_dt(r[1])) for r in
-         con.execute("SELECT cardId, reviewedAt FROM Review").fetchall()),
-        key=lambda x: x[1],
-    ):
-        last_seen[card_id] = max(last_seen.get(card_id, ts), ts)
-
-    added = 0
-    for rev in sorted(reviews, key=lambda r: r.reviewed_at):
-        if (rev.card_id, int(rev.reviewed_at.timestamp())) in existing:
-            continue
-        prev = last_seen.get(rev.card_id)
-        elapsed = max(0.0, (rev.reviewed_at - prev).total_seconds() / 86400) if prev else 0.0
-        sched = sched_by_card.get(rev.card_id)
-        con.execute(
-            """INSERT INTO Review (id, cardId, rating, responseMs, stability,
-                                   difficulty, elapsedDays, reviewedAt, state)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (
-                _cuid_like(),
-                rev.card_id,
-                rev.rating,
-                rev.response_ms,
-                (sched.stability if sched and sched.stability is not None else 0.0),
-                (sched.difficulty if sched and sched.difficulty is not None else 0.0),
-                round(elapsed, 6),
-                format_master_dt(rev.reviewed_at),
-                rev.state,
-            ),
-        )
-        last_seen[rev.card_id] = rev.reviewed_at
-        added += 1
-    return added
 
 
-def now_utc() -> datetime:
-    return datetime.now(tz=UTC)
+def _import_wire(card: AnkiCard) -> dict:
+    """A card seen only in Anki, under the note's own guid (a CUID this deck minted, so identity survives).
 
-
-def get_or_create_deck(con: sqlite3.Connection, name: str) -> str:
-    """Look up a Deck by name, creating it if this is the first card to land there.
-
-    Used when importing Anki-only cards onto an empty master.db: their deck
-    names won't generally match the fixed set of decks a fresh install seeds.
+    createdAt comes from the Anki note id, itself an epoch-ms creation time: these cards are
+    old, and the deck's "added today" pressure axis would otherwise read every import as new
+    intake and block further cards for the day.
     """
-    row = con.execute("SELECT id FROM Deck WHERE name = ?", (name,)).fetchone()
-    if row:
-        return row[0]
-    deck_id = _cuid_like()
-    con.execute(
-        "INSERT INTO Deck (id, name, createdAt) VALUES (?, ?, ?)",
-        (deck_id, name, format_master_dt(now_utc())),
-    )
-    return deck_id
+    return {
+        "id": card.guid,
+        "deck": card.deck,
+        "front": card.front,
+        "back": card.back,
+        "tags": list(card.tags),
+        "exercise": card.exercise or None,
+        "suspended": card.suspended,
+        "createdAt": iso(datetime.fromtimestamp(card.note_id / 1000, tz=UTC)),
+        **_sched_wire(card.sched),
+    }
 
 
-def import_card(con: sqlite3.Connection, card: AnkiCard) -> None:
-    """Insert a Card row recovered from an Anki-only note onto an empty master.db.
+def _review_wire(rev: Review) -> dict:
+    # stability/difficulty are left out: Anki's revlog has no FSRS snapshot, and the deck
+    # falls back to the card's incoming schedule or import from the same call.
+    return {
+        "cardId": rev.card_id,
+        "reviewedAt": iso(rev.reviewed_at),
+        "rating": rev.rating,
+        "responseMs": rev.response_ms,
+        "state": rev.state,
+    }
 
-    Reuses the Anki note's own guid as the new Card.id: it is already a CUID
-    minted by a prior flashcard-mcp instance (that is what made it eligible for
-    import rather than being reported as a foreign/unknown note), so identity
-    is preserved and no guid rewrite is needed on the Anki side afterward.
 
-    createdAt is derived from the Anki note id (itself an epoch-ms creation
-    timestamp), not from the moment of import — these cards are old, and
-    check_pressure's newToday axis would otherwise read all of them as added
-    today and hard-block further intake for the rest of the day.
+def apply_plan(deck: DeckClient, plan: SyncPlan, hist: HistoryPlan) -> dict:
+    """Everything the plan writes to the deck, as one `syncApply` call; returns its result.
+
+    A plan with nothing for the deck makes no call: most runs are only pushes to Anki.
     """
-    deck_id = get_or_create_deck(con, card.deck)
-    sched = card.sched
-    now = format_master_dt(now_utc())
-    created_at = format_master_dt(datetime.fromtimestamp(card.note_id / 1000, tz=UTC))
-    stability, difficulty = _fallback_memory_state(sched)
-    con.execute(
-        """INSERT INTO Card (id, deckId, front, back, tags, due, stability,
-                              difficulty, reps, lapses, state, lastReview,
-                              interval, suspended, createdAt, updatedAt, exercise)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-        (
-            card.guid,
-            deck_id,
-            card.front,
-            card.back,
-            ",".join(card.tags),
-            format_master_dt(sched.due) if sched.due else now,
-            stability,
-            difficulty,
-            sched.reps,
-            sched.lapses,
-            sched.state,
-            format_master_dt(sched.last_review) if sched.last_review else None,
-            sched.interval,
-            int(card.suspended),
-            created_at,
-            now,
-            card.exercise or None,
-        ),
-    )
+    writes = {
+        "imports": [_import_wire(a) for a in plan.import_from_anki],
+        "deletions": [a.guid for a in plan.local_soft_delete],
+        "schedules": [{"cardId": card_id, **_sched_wire(sched)} for card_id, sched in plan.pull_sched],
+        "reviews": [_review_wire(r) for r in hist.pull_reviews],
+    }
+    if not any(writes.values()):
+        return {"imports": {"imported": 0, "rejected": []}}
+    return deck.sync_apply(**writes, timeout=SYNC_APPLY_TIMEOUT)
+
+
+def report(result: dict) -> list[str]:
+    """Lines worth printing from a `syncApply` result: every rejected import, and reviews dropped.
+
+    An Anki-only card that breaks the content rules is rejected on every run until it is fixed,
+    so each rejection is named, not just counted.
+    """
+    lines = [f"import rejected {r['id']}: {r['error']}" for r in result.get("imports", {}).get("rejected", [])]
+    skipped = result.get("reviewsSkipped") or {}
+    parts = [f"{skipped[key]} {what}" for key, what in (("present", "already in the deck"), ("noCard", "of a card the deck lacks"))
+             if skipped.get(key)]
+    if parts:
+        lines.append(f"reviews skipped: {', '.join(parts)}")
+    return lines

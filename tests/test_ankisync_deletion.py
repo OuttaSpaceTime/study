@@ -1,92 +1,60 @@
-"""End-to-end deletion sync: cmd_sync against a real master.db and Anki collection.
+"""End-to-end deletion sync: cmd_sync against a fake deck and a real Anki collection.
 
 merge.py's table is unit-tested in test_ankisync_merge.py; this covers what the
-plan alone cannot see: the tag and suspend really landing on the note, the Card
-row and its history really leaving master, and review history staying where it
-belongs while a deletion is in flight. A deletion that arrives from another
+plan alone cannot see: the tag and suspend really landing on the note, the deck
+being asked to delete the card, and review history staying where it belongs
+while a deletion is in flight. A deletion that arrives from another
 machine used to re-push the card's whole history into Anki on the way out,
 because the card was still in master when history was planned but its tagged
 note's reviews were not read.
 """
 
-import sqlite3
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
 import pytest
 from anki.collection import Collection
+from conftest import FakeDeck, make_card, make_review
 
-from scripts.ankisync import bridge, cli, master
-from scripts.ankisync.convert import format_master_dt
+from scripts.ankisync import bridge, cli
 from scripts.ankisync.merge import DELETED_TAG
 
 KEEP = "cmne7xoxj002z0msoiuekt37c"
 GONE = "cmne7xoz0003d0mso56mopmir"
 REVIEWS_EACH = 3
 
-SCHEMA = """
-CREATE TABLE Deck (id TEXT PRIMARY KEY, name TEXT NOT NULL UNIQUE, description TEXT,
-                   createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);
-CREATE TABLE Card (
-    id TEXT PRIMARY KEY, deckId TEXT NOT NULL REFERENCES Deck(id) ON DELETE CASCADE,
-    front TEXT NOT NULL, back TEXT NOT NULL, tags TEXT NOT NULL DEFAULT '',
-    inheritedFrom TEXT, exercise TEXT, due DATETIME NOT NULL, stability REAL NOT NULL DEFAULT 0,
-    difficulty REAL NOT NULL DEFAULT 0, reps INTEGER NOT NULL DEFAULT 0,
-    lapses INTEGER NOT NULL DEFAULT 0, state INTEGER NOT NULL DEFAULT 0,
-    lastReview DATETIME, interval REAL NOT NULL DEFAULT 0,
-    suspended BOOLEAN NOT NULL DEFAULT false,
-    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, updatedAt DATETIME NOT NULL);
-CREATE TABLE Review (
-    id TEXT PRIMARY KEY, cardId TEXT NOT NULL REFERENCES Card(id) ON DELETE CASCADE,
-    rating INTEGER NOT NULL, responseMs INTEGER, stability REAL NOT NULL,
-    difficulty REAL NOT NULL, elapsedDays REAL NOT NULL, reviewedAt DATETIME NOT NULL, state INTEGER);
-CREATE TABLE DeletedCard (cardId TEXT PRIMARY KEY, deletedAt DATETIME NOT NULL);
-"""
-
 
 @pytest.fixture
 def env(tmp_path, monkeypatch):
-    master_path = tmp_path / "master.db"
     col_path = tmp_path / "bridge.anki2"
     # Relative to now: the fresh collection is created today, and a due day
     # before its creation clamps to day 0 (convert.dt_to_anki_due), which the
     # sync would then see as a moved due date on every run.
     base = datetime.now(UTC).replace(microsecond=0) - timedelta(days=REVIEWS_EACH + 2)
+    last = base + timedelta(days=REVIEWS_EACH - 1)
 
-    with sqlite3.connect(master_path) as con:
-        con.executescript(SCHEMA)
-        con.execute("INSERT INTO Deck (id, name) VALUES ('d1', 'Software Engineering')")
-        for card_id in (KEEP, GONE):
-            last = base + timedelta(days=REVIEWS_EACH - 1)
-            con.execute(
-                """INSERT INTO Card (id, deckId, front, back, due, stability, difficulty,
-                                     reps, state, lastReview, interval, updatedAt)
-                   VALUES (?, 'd1', ?, 'an answer', ?, 10.0, 5.0, ?, 2, ?, 10.0, ?)""",
-                (
-                    card_id,
-                    f"question {card_id}?",
-                    format_master_dt(last + timedelta(days=10)),
-                    REVIEWS_EACH,
-                    format_master_dt(last),
-                    format_master_dt(last),
-                ),
-            )
-            for i in range(REVIEWS_EACH):
-                con.execute(
-                    """INSERT INTO Review (id, cardId, rating, stability, difficulty,
-                                           elapsedDays, reviewedAt)
-                       VALUES (?, ?, 3, 10.0, 5.0, 1.0, ?)""",
-                    (f"r{i}{card_id}", card_id, format_master_dt(base + timedelta(days=i))),
-                )
-
-    monkeypatch.setenv("FLASHCARD_MASTER_DB", str(master_path))
+    deck = FakeDeck(
+        cards=[make_card(c, front=f"question {c}?", due=last + timedelta(days=10), reps=REVIEWS_EACH, last_review=last)
+               for c in (KEEP, GONE)],
+        reviews=[make_review(c, base + timedelta(days=i), 3) for c in (KEEP, GONE) for i in range(REVIEWS_EACH)],
+    )
+    monkeypatch.setattr(cli, "DeckClient", lambda: deck)
     monkeypatch.setattr(bridge, "open_bridge", lambda: Collection(str(col_path)))
     monkeypatch.setattr(bridge, "lookup_password", lambda: None)
     monkeypatch.setattr(cli, "_load_email", lambda: None)
 
-    env = SimpleNamespace(master=master_path, col=col_path)
+    env = SimpleNamespace(deck=deck, col=col_path)
     sync(env)  # push both cards and their history to Anki
     return env
+
+
+def forget(deck, card_id):
+    """The deck's state after a deletion: no card, no reviews, a tombstone. Set up by hand, since the
+    fake does not simulate it; the cascade itself is tested in flashcard-mcp's sync-apply.test.ts."""
+    deck.cards = [c for c in deck.cards if c.id != card_id]
+    deck.reviews = [r for r in deck.reviews if r.card_id != card_id]
+    deck._tombstones.add(card_id)
+    deck.calls.clear()
 
 
 def sync(env, dry_run=False):
@@ -97,11 +65,6 @@ def plan_line(env, capsys):
     capsys.readouterr()
     sync(env, dry_run=True)
     return capsys.readouterr().out.strip().splitlines()[-1]
-
-
-def master_rows(env, sql, *params):
-    with sqlite3.connect(env.master) as con:
-        return con.execute(sql, params).fetchall()
 
 
 def note_of(env, guid):
@@ -126,31 +89,12 @@ def test_fixture_starts_converged(env, capsys):
     assert note_of(env, GONE).revlog == REVIEWS_EACH
 
 
-def test_soft_delete_drops_the_cards_note(env):
-    """No ON DELETE CASCADE here, so a left-behind CardNote would break listCardNotes."""
-    with sqlite3.connect(env.master) as con:
-        con.execute(
-            """CREATE TABLE CardNote (cardId TEXT PRIMARY KEY REFERENCES Card(id) ON DELETE CASCADE,
-                                      body TEXT NOT NULL, createdAt DATETIME, updatedAt DATETIME)"""
-        )
-        con.executemany(
-            "INSERT INTO CardNote (cardId, body) VALUES (?, 'fix later')", [(KEEP,), (GONE,)]
-        )
-        master.soft_delete_card(con, GONE)
-    assert master_rows(env, "SELECT cardId FROM CardNote") == [(KEEP,)]
-
-
 class TestDeletedHere:
     """What flashcard-mcp's deleteCard leaves behind: a tombstone, no Card, no Review."""
 
     @pytest.fixture(autouse=True)
     def delete_here(self, env):
-        with sqlite3.connect(env.master) as con:
-            con.execute(
-                "INSERT INTO DeletedCard VALUES (?, ?)", (GONE, format_master_dt(datetime.now(UTC)))
-            )
-            con.execute("DELETE FROM Review WHERE cardId = ?", (GONE,))
-            con.execute("DELETE FROM Card WHERE id = ?", (GONE,))
+        forget(env.deck, GONE)
 
     def test_tags_and_suspends_the_note(self, env):
         sync(env)
@@ -180,17 +124,11 @@ class TestDeletedElsewhere:
         finally:
             col.close()
 
-    def test_removes_the_card_and_records_a_tombstone(self, env):
+    def test_asks_the_deck_to_delete_the_card_and_nothing_else(self, env):
+        """The tombstone, and the cascade of its reviews and note, are the deck's to do."""
         sync(env)
-        assert master_rows(env, "SELECT id FROM Card WHERE id = ?", GONE) == []
-        assert master_rows(env, "SELECT cardId FROM DeletedCard") == [(GONE,)]
-
-    def test_removes_the_cards_reviews_like_a_local_delete(self, env):
-        sync(env)
-        assert master_rows(env, "SELECT id FROM Review WHERE cardId = ?", GONE) == []
-        assert len(master_rows(env, "SELECT id FROM Review WHERE cardId = ?", KEEP)) == (
-            REVIEWS_EACH
-        )
+        (call,) = [c for c in env.deck.applied() if "scheduler_options" not in c]  # the options go separately
+        assert call == {"imports": [], "deletions": [GONE], "schedules": [], "reviews": []}
 
     def test_does_not_push_the_cards_history_back_to_anki(self, env):
         sync(env)
@@ -198,4 +136,5 @@ class TestDeletedElsewhere:
 
     def test_converges(self, env, capsys):
         sync(env)
+        forget(env.deck, GONE)  # what the deck does with the deletion it was asked for
         assert plan_line(env, capsys) == "plan: nothing to do"

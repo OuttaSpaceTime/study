@@ -2,12 +2,12 @@
 
 import json
 import os
-import sqlite3
 import stat
 import subprocess
 from pathlib import Path
 
 import pytest
+from conftest import FakeDeck, make_card
 
 from scripts import card_quality as gate
 
@@ -45,16 +45,13 @@ def env(tmp_path, monkeypatch):
     fake = tmp_path / "claude"
     fake.write_text(FAKE)
     fake.chmod(fake.stat().st_mode | stat.S_IEXEC)
-    db = tmp_path / "deck.db"
-    con = sqlite3.connect(db)
-    con.execute("CREATE TABLE Card (id TEXT PRIMARY KEY, front TEXT, back TEXT, exercise TEXT, inheritedFrom TEXT)")
-    con.execute("INSERT INTO Card (id, front, back) VALUES ('c1', 'Which header revalidates an ETag?', '<code>If-None-Match</code>.')")
-    con.execute("INSERT INTO Card (id, front, back, inheritedFrom) VALUES ('p1', 'A part', 'Of it', 'c1')")
-    con.commit()
-    con.close()
+    deck = FakeDeck([
+        make_card("c1", front="Which header revalidates an ETag?", back="<code>If-None-Match</code>."),
+        make_card("p1", front="A part", back="Of it", inherited_from="c1"),
+    ])
+    monkeypatch.setattr(gate, "deck", lambda: deck)
     log = tmp_path / "calls.jsonl"
     monkeypatch.setenv("CARD_QUALITY_CLAUDE", str(fake))
-    monkeypatch.setenv("FLASHCARD_MASTER_DB", str(db))
     monkeypatch.setenv("FAKE_LOG", str(log))
     monkeypatch.setenv("CARD_QUALITY_CACHE", str(tmp_path / "verdicts"))
     monkeypatch.setenv("ANTHROPIC_API_KEY", "must-not-reach-the-judge")
@@ -278,3 +275,27 @@ def test_judging_a_stored_card_names_the_parts_a_split_cut_short_left(env, capsy
     monkeypatch.setattr(gate.sys, "argv", ["card-quality-gate", "--judge", "c1"])
     gate.main()
     assert json.loads(capsys.readouterr().out)["parts"] == ["A part"]
+
+
+def test_a_deck_client_that_failed_to_start_is_not_kept(monkeypatch):
+    from scripts.deck import client as deck_client
+
+    starts = []
+
+    class Flaky:
+        def start(self):
+            starts.append(1)
+            if len(starts) == 1:
+                raise deck_client.DeckError("no deck")
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr(gate, "_deck", None)
+    monkeypatch.setattr(gate, "DeckClient", Flaky)
+    monkeypatch.setattr(gate.atexit, "register", lambda *a: None)
+    with pytest.raises(deck_client.DeckError):
+        gate.deck()
+    assert gate._deck is None
+    assert gate.deck() is gate._deck and len(starts) == 2
+    monkeypatch.setattr(gate, "_deck", None)

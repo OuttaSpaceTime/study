@@ -1,19 +1,15 @@
-"""Tests for scripts.ankisync.master — memory-state fallback on Anki import.
+"""scripts.ankisync.master: the adapter between merge.py's dataclasses and the deck client.
 
-Regression coverage for the stability=0.0 corruption bug: import_card used to
-write literal 0.0 whenever Anki reported no FSRS memory_state, which is
-indistinguishable from flashcard-mcp's own "corrupted card" sentinel
-(scheduler.ts's sanitizeForReview resets any non-New card with stability<=0
-back to a fresh New card on its next review, silently discarding its real
-schedule).
+What the deck does with a syncApply (the fallback memory state, the cascade, the content
+rules, the review dedupe) is flashcard-mcp's to test; here is only what is sent, and read.
 """
 
-import sqlite3
-from dataclasses import replace
 from datetime import UTC, datetime
 
-from scripts.ankisync.master import _fallback_memory_state, apply_pull_sched, import_card
-from scripts.ankisync.merge import AnkiCard, Sched
+from conftest import FakeDeck, make_card, make_review
+
+from scripts.ankisync import master
+from scripts.ankisync.merge import AnkiCard, HistoryPlan, Review, Sched, SyncPlan
 
 
 def _sched(**overrides):
@@ -31,76 +27,90 @@ def _sched(**overrides):
     return Sched(**defaults)
 
 
-class TestFallbackMemoryState:
-    def test_real_memory_state_passes_through_unchanged(self):
-        sched = _sched(stability=3.5, difficulty=6.2)
-        assert _fallback_memory_state(sched) == (3.5, 6.2)
-
-    def test_missing_memory_state_on_review_card_falls_back_to_interval(self):
-        sched = _sched(stability=None, difficulty=None, state=2, interval=42.0)
-        stability, difficulty = _fallback_memory_state(sched)
-        assert stability == 42.0
-        assert difficulty == 5.0
-
-    def test_missing_memory_state_never_produces_the_corruption_sentinel(self):
-        # A short interval must still floor above 0 — 0.0 is what
-        # sanitizeForReview treats as corrupted on any non-New card.
-        sched = _sched(stability=None, difficulty=None, state=3, interval=0.0)
-        stability, _difficulty = _fallback_memory_state(sched)
-        assert stability > 0.0
-
-    def test_missing_memory_state_on_new_card_stays_zero(self):
-        # State New genuinely has no memory yet — 0.0 is correct here, not corruption.
-        sched = _sched(stability=None, difficulty=None, state=0, interval=0.0)
-        assert _fallback_memory_state(sched) == (0.0, 0.0)
-
-    def test_partial_memory_state_still_falls_back(self):
-        # Anki only ever reports both fields together in practice, but guard
-        # against a stability/difficulty pair that's only half-populated.
-        sched = _sched(stability=3.5, difficulty=None, state=2, interval=10.0)
-        stability, difficulty = _fallback_memory_state(sched)
-        assert stability == 10.0
-        assert difficulty == 5.0
+NOTE_ID = 1_757_000_000_000  # an epoch-ms creation time, September 2025
+GUID = "cmne7xoxj002z0msoiuekt37c"
 
 
-class TestImportKeepsTheExercise:
-    """A code card first seen on another machine has to arrive able to run."""
-
-    def test_the_exercise_comes_with_the_import(self):
-        con = sqlite3.connect(":memory:")
-        con.executescript(
-            """CREATE TABLE Deck (id TEXT PRIMARY KEY, name TEXT, createdAt TEXT);
-               CREATE TABLE Card (id TEXT PRIMARY KEY, deckId TEXT, front TEXT, back TEXT, tags TEXT,
-                 due TEXT, stability REAL, difficulty REAL, reps INT, lapses INT, state INT, lastReview TEXT,
-                 interval REAL, suspended INT, createdAt TEXT, updatedAt TEXT, exercise TEXT);"""
-        )
-        card = AnkiCard(note_id=1_757_000_000_000, card_id=2, guid="cmne7xoxj002z0msoiuekt37c", front="F", back="B",
-                        tags=(), deck="D", suspended=False, sched=_sched(stability=1.0, difficulty=5.0),
-                        exercise='{"kind":"fill"}')
-        import_card(con, card)
-        import_card(con, replace(card, guid="cmne7xoxj002z0msoiuekt37d", exercise=""))
-        assert [r[0] for r in con.execute("SELECT exercise FROM Card ORDER BY id")] == ['{"kind":"fill"}', None]
+def _anki(**over):
+    fields = dict(note_id=NOTE_ID, card_id=2, guid=GUID, front="F", back="B", tags=("ruby",), deck="D",
+                  suspended=False, sched=_sched(), exercise="")
+    return AnkiCard(**{**fields, **over})
 
 
-class TestPullKeepsAUsableMemoryState:
-    """A pull with no Anki memory state must not leave a non-New card at stability 0."""
+class TestReading:
+    def test_a_card_record_becomes_the_sync_planners_card(self):
+        deck = FakeDeck([make_card("a", tags=("design patterns", "ruby"), suspended=True, exercise='{"kind":"fill"}',
+                                   inherited_from="p", interval=7.0)])
+        (card,) = master.read_cards(deck)
+        assert (card.id, card.deck, card.suspended, card.inherited) == ("a", "Software Engineering", True, True)
+        assert card.tags == ("design_patterns", "ruby"), "a tag has no spaces in Anki"
+        assert card.exercise == '{"kind":"fill"}'
+        assert (card.sched.state, card.sched.interval, card.sched.stability) == (2, 7.0, 10.0)
 
-    def _pulled(self, stability, difficulty, **sched):
-        con = sqlite3.connect(":memory:")
-        con.execute("CREATE TABLE Card (id TEXT, due TEXT, stability REAL, difficulty REAL, reps INT,"
-                    " lapses INT, state INT, lastReview TEXT, interval REAL)")
-        con.execute("INSERT INTO Card (id, stability, difficulty, state) VALUES ('c', ?, ?, 0)",
-                    (stability, difficulty))
-        apply_pull_sched(con, "c", _sched(**sched))
-        return con.execute("SELECT stability, difficulty FROM Card").fetchone()
+    def test_a_plain_card_has_no_exercise_and_was_not_split(self):
+        (card,) = master.read_cards(FakeDeck([make_card("a")]))
+        assert (card.exercise, card.inherited) == ("", False)
 
-    def test_a_locally_new_card_gets_the_fallback(self):
-        stability, difficulty = self._pulled(0.0, 0.0, interval=7.0)
-        assert stability == 7.0
-        assert 1 <= difficulty <= 10
+    def test_reviews_and_tombstones_come_through(self):
+        at = datetime(2026, 9, 1, tzinfo=UTC)
+        deck = FakeDeck(reviews=[make_review("a", at, 4, response_ms=900, state=1)], tombstones=["gone"])
+        assert master.read_reviews(deck) == [Review("a", at, 4, 900, 1)]
+        assert master.read_tombstones(deck) == {"gone"}
 
-    def test_a_real_local_memory_state_is_kept(self):
-        assert self._pulled(12.5, 4.2) == (12.5, 4.2)
 
-    def test_a_pulled_new_card_stays_at_zero(self):
-        assert self._pulled(0.0, 0.0, state=0, reps=0, interval=0.0) == (0.0, 0.0)
+class TestApplyPlan:
+    def test_everything_goes_out_as_one_call(self):
+        deck = FakeDeck()
+        plan = SyncPlan(import_from_anki=[_anki()], local_soft_delete=[_anki(guid="cdeleted0000000000000x")],
+                        pull_sched=[("c1", _sched(stability=3.5, difficulty=6.2))])
+        hist = HistoryPlan(pull_reviews=[Review("c1", datetime(2026, 9, 2, 12, 0, 1, tzinfo=UTC), 3, 1200, 2)])
+        master.apply_plan(deck, plan, hist)
+        (call,) = deck.applied()
+        assert set(call) == {"imports", "deletions", "schedules", "reviews"}
+        assert call["deletions"] == ["cdeleted0000000000000x"]
+        assert call["schedules"][0]["cardId"] == "c1" and call["schedules"][0]["stability"] == 3.5
+        assert call["reviews"] == [{"cardId": "c1", "reviewedAt": "2026-09-02T12:00:01.000Z", "rating": 3,
+                                    "responseMs": 1200, "state": 2}]
+
+    def test_an_import_is_dated_from_its_note_id_not_from_today(self):
+        """Else the deck's cards-added-today axis reads every import as intake and blocks new cards."""
+        deck = FakeDeck()
+        master.apply_plan(deck, SyncPlan(import_from_anki=[_anki()]), HistoryPlan())
+        (imp,) = deck.applied()[0]["imports"]
+        assert imp["createdAt"] == "2025-09-04T15:33:20.000Z"
+        assert imp["id"] == GUID and imp["deck"] == "D" and imp["tags"] == ["ruby"]
+        assert imp["state"] == 2 and imp["interval"] == 42.0
+        assert imp["stability"] is None, "no FSRS memory state is sent as none; the deck fills it in"
+
+    def test_a_code_card_arrives_with_its_exercise_and_a_plain_one_without(self):
+        deck = FakeDeck()
+        plan = SyncPlan(import_from_anki=[_anki(exercise='{"kind":"fill"}'), _anki(guid="cmne7xoxj002z0msoiuekt37d")])
+        master.apply_plan(deck, plan, HistoryPlan())
+        assert [i["exercise"] for i in deck.applied()[0]["imports"]] == ['{"kind":"fill"}', None]
+
+    def test_a_schedule_with_no_due_date_keeps_the_decks(self):
+        deck = FakeDeck()
+        master.apply_plan(deck, SyncPlan(pull_sched=[("c1", _sched(due=None, last_review=None))]), HistoryPlan())
+        (s,) = deck.applied()[0]["schedules"]
+        assert s["due"] is None and s["lastReview"] is None
+
+
+    def test_a_plan_with_nothing_for_the_deck_makes_no_call(self):
+        deck = FakeDeck()
+        result = master.apply_plan(deck, SyncPlan(), HistoryPlan())
+        assert deck.applied() == [] and master.report(result) == []
+
+
+class TestReport:
+    def test_every_rejected_import_is_named_with_its_error(self):
+        lines = master.report({"imports": {"imported": 1, "rejected": [
+            {"id": "ca", "error": "answer too long"}, {"id": "cb", "error": "front asks two questions"}]}})
+        assert lines == ["import rejected ca: answer too long", "import rejected cb: front asks two questions"]
+
+    def test_skipped_reviews_are_said_only_when_there_are_some(self):
+        assert master.report({"imports": {"imported": 0, "rejected": []},
+                              "reviewsSkipped": {"present": 0, "noCard": 0}}) == []
+        assert master.report({"imports": {"imported": 0, "rejected": []},
+                              "reviewsSkipped": {"present": 2, "noCard": 1}}) == [
+            "reviews skipped: 2 already in the deck, 1 of a card the deck lacks"]
+        assert master.report({"imports": {"imported": 0, "rejected": []}}) == [], "an older server"

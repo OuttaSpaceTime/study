@@ -2,7 +2,10 @@
 
 import importlib.machinery
 import importlib.util
+from datetime import UTC, datetime
 from pathlib import Path
+
+from conftest import FakeDeck, make_card
 
 ROOT = Path(__file__).resolve().parent.parent
 loader = importlib.machinery.SourceFileLoader("card_links_sync", str(ROOT / "scripts" / "card-links-sync"))
@@ -64,3 +67,27 @@ def test_prune_removes_what_was_deleted_and_nothing_else():
 def test_prune_keeps_an_id_merely_missing_from_this_deck():
     text, lost = sync.relink(PAGE.format("a, not-synced-yet"), {"a"}, {}, {"something-else"})
     assert text == PAGE.format("a, not-synced-yet") and lost == ["not-synced-yet"]
+
+
+def test_the_deck_is_read_through_the_client_as_alive_ids_parts_and_tombstones(monkeypatch):
+    fake = FakeDeck([make_card("a"), make_card("p1", inherited_from="gone"), make_card("p2", inherited_from="gone")],
+                    tombstones=["gone"])
+    monkeypatch.setattr(sync, "DeckClient", lambda: fake)
+    alive, children, deleted = sync.deck()
+    assert alive == {"a", "p1", "p2"} and children == {"gone": ["p1", "p2"]} and deleted == {"gone"}
+
+
+def test_the_parts_of_a_split_are_listed_oldest_first_though_the_deck_hands_them_over_newest_first(monkeypatch):
+    def at(day):
+        return datetime(2026, 1, day, tzinfo=UTC)
+    fake = FakeDeck([make_card("p2", inherited_from="gone", created_at=at(3)),
+                     make_card("p1", inherited_from="gone", created_at=at(2))])
+    monkeypatch.setattr(sync, "DeckClient", lambda: fake)
+    assert sync.deck()[1] == {"gone": ["p1", "p2"]}
+
+
+def test_parts_made_at_the_same_moment_are_ordered_by_id(monkeypatch):
+    when = datetime(2026, 1, 2, tzinfo=UTC)
+    fake = FakeDeck([make_card(i, inherited_from="gone", created_at=when) for i in ("pb", "pa", "pc")])
+    monkeypatch.setattr(sync, "DeckClient", lambda: fake)
+    assert sync.deck()[1] == {"gone": ["pa", "pb", "pc"]}

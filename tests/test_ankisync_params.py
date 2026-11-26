@@ -1,9 +1,8 @@
 """Anki's scheduling options are mirrored into flashcard-mcp's Config row."""
 
-import sqlite3
-
 import pytest
 from anki.collection import Collection
+from conftest import FakeDeck
 
 from scripts.ankisync import params
 
@@ -40,40 +39,15 @@ def test_changed_options_are_read_and_written(col):
     assert opts["relearningSteps"] == "15m"
     assert opts["requestRetention"] == 0.85
 
-    con = sqlite3.connect(":memory:")
-    con.execute(
-        "create table Config(id, learningSteps, relearningSteps, requestRetention, fsrsWeights, easyDays, newPerDay, reviewsPerDay, newCardsIgnoreReviewLimit)"
-    )
-    con.execute("insert into Config values('default','1m,10m','10m',0.9,'','',20,200,0)")
-    assert params.write_options(con, opts) == [
-        "learningSteps",
-        "relearningSteps",
-        "requestRetention",
-    ]
-    assert params.write_options(con, opts) == []  # nothing changed the second time
+    deck = FakeDeck(apply_result={"schedulerOptions": ["learningSteps", "relearningSteps", "requestRetention"]})
+    assert params.sync_options(col, deck) == "options: learningSteps, relearningSteps, requestRetention updated"
+    (call,) = deck.applied()
+    assert call["scheduler_options"] == opts
 
 
-def test_no_config_row_yet_writes_nothing():
-    con = sqlite3.connect(":memory:")
-    con.execute(
-        "create table Config(id, learningSteps, relearningSteps, requestRetention, fsrsWeights, easyDays, newPerDay, reviewsPerDay, newCardsIgnoreReviewLimit)"
-    )
-    assert (
-        params.write_options(
-            con,
-            {
-                "learningSteps": "1m",
-                "relearningSteps": "1m",
-                "requestRetention": 0.9,
-                "fsrsWeights": "",
-                "easyDays": "",
-                "newPerDay": 20,
-                "reviewsPerDay": 200,
-                "newCardsIgnoreReviewLimit": 0,
-            },
-        )
-        == []
-    )
+def test_nothing_changed_is_one_quiet_line(col):
+    deck = FakeDeck(apply_result={"schedulerOptions": []})
+    assert params.sync_options(col, deck) == "options: unchanged"
 
 
 def test_a_sub_minute_step_stays_in_minutes_since_ts_fsrs_has_no_seconds():

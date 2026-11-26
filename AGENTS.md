@@ -255,7 +255,7 @@ Changing that one line is the whole setup step on a new machine. `$HOME/...` and
 
 Environment variables take precedence over the file: `FLASHCARD_MCP_DIR`, `FLASHCARD_MASTER_DB` / `FLASHCARD_DB` (point at the SQLite file directly), `WIKI_ROOT`.
 
-**Never hardcode an absolute home path** in `.mcp.json`, `scripts/`, or `wiki-viewer/lib/` — it breaks the other machine on the next pull, which has already happened twice. `tests/test_config.py::test_no_machine_specific_path_is_committed` fails on any `/home/<user>/…flashcard-mcp` literal in those files. When the config is absent, every entry point exits with a message naming `.env.local` instead of silently reading a nonexistent path.
+**Never hardcode an absolute home path** in `.mcp.json`, `scripts/`, or `wiki-viewer/lib/` — it breaks the other machine on the next pull, which has already happened twice. `tests/test_config.py::test_no_machine_specific_path_is_committed` fails on any `/home/<user>/…flashcard-mcp` literal in those files. When the config is absent, every entry point exits with a message naming `.env.local` instead of silently reading a nonexistent path. The same holds for the deck file itself: the deck clients refuse a `master.db` that does not exist rather than letting the server create an empty one.
 
 ## Deck access
 

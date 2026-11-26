@@ -3,10 +3,10 @@
 The deck server schedules with ts-fsrs and shows the rating keys' intervals,
 so it must use the options Anki uses or the two disagree ("Good" 10m here, 6d
 there). The bridge collection has the desktop's deck options after a sync
-down, so they are read from it on every sync and written to master.db's
-Config: learning and relearning steps, desired retention, the FSRS weights,
-Easy Days and the daily limits. Only these columns are ever written, and only
-when they differ.
+down, so they are read from it on every sync and written to the deck's
+Config through the deck client: learning and relearning steps, desired
+retention, the FSRS weights, Easy Days and the daily limits. The deck writes
+only these columns, and only when they differ.
 
 One preset is used for everything: the one most cards' decks point at. The
 study repo keeps all its decks on one preset; a deck with its own would need
@@ -14,30 +14,16 @@ per-deck settings in the deck server first.
 """
 
 import json
-import sqlite3
 from collections import Counter
 
 from anki.collection import Collection
 
-from scripts.ankisync import master
+from scripts.deck.client import DeckClient
 
 # FSRS-6 weights have 21 values, FSRS-5's 19, and ts-fsrs takes both. Anki keeps
 # empty params until the user optimizes, which means "its defaults", the same as
 # ts-fsrs's.
 _WEIGHT_COUNTS = (21, 19)
-
-
-# The Config columns mirrored, in master.db's names.
-_COLUMNS = (
-    "learningSteps",
-    "relearningSteps",
-    "requestRetention",
-    "fsrsWeights",
-    "easyDays",
-    "newPerDay",
-    "reviewsPerDay",
-    "newCardsIgnoreReviewLimit",
-)
 
 
 def _fmt_step(minutes: float) -> str:
@@ -81,23 +67,10 @@ def read_options(col: Collection) -> dict | None:
     }
 
 
-def write_options(con: sqlite3.Connection, opts: dict) -> list[str]:
-    """Write the options that changed to Config; returns the changed column names."""
-    names = list(_COLUMNS)
-    row = con.execute(f"select {', '.join(names)} from Config where id = 'default'").fetchone()  # noqa: S608 - fixed list
-    if row is None:  # the deck server creates it on first use; nothing to mirror into yet
-        return []
-    changed = [n for n, old in zip(names, row, strict=True) if old != opts[n]]
-    for n in changed:
-        con.execute(f"update Config set {n} = ? where id = 'default'", (opts[n],))  # noqa: S608 - n is from the fixed list
-    return changed
-
-
-def sync_options(col: Collection) -> str:
-    """Read from Anki, write to master.db; a one-line note for the sync output."""
+def sync_options(col: Collection, deck: DeckClient) -> str:
+    """Read from Anki, write through the deck (only the columns that differ); a one-line note for the sync output."""
     opts = read_options(col)
     if opts is None:
         return "options: unreadable, kept"
-    with master.connect(readonly=False) as con, con:
-        changed = write_options(con, opts)
+    changed = deck.sync_apply(scheduler_options=opts)["schedulerOptions"]
     return f"options: {', '.join(changed)} updated" if changed else "options: unchanged"

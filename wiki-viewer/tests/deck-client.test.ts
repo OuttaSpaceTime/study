@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { createDeckClient, type DeckClient } from "@/lib/deck-client";
+import { createDeckClient, deckCall, type DeckClient } from "@/lib/deck-client";
 
 const FAKE = path.join(import.meta.dirname, "fixtures", "fake-deck-server.mjs");
 
@@ -108,5 +108,24 @@ describe("deck client", () => {
     expect(Date.now() - started).toBeLessThan(100);
     await new Promise((r) => setTimeout(r, 450));
     expect(await client.call("echo", { ok: 1 })).toEqual({ ok: 1 });
+  });
+});
+
+describe("deckCall with a missing deck database", () => {
+  it("fails loudly and creates nothing, before any server is started", async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "deck-missing-"));
+    const missing = path.join(dir, "typo.db");
+    const saved = { dir: process.env.FLASHCARD_MCP_DIR, db: process.env.FLASHCARD_DB };
+    process.env.FLASHCARD_MCP_DIR = dir;
+    process.env.FLASHCARD_DB = missing;
+    try {
+      await expect(deckCall("cardRecords")).rejects.toThrow(/No deck database at .*typo\.db.*\.env\.local/);
+      expect(fs.existsSync(missing)).toBe(false);
+    } finally {
+      for (const [key, value] of [["FLASHCARD_MCP_DIR", saved.dir], ["FLASHCARD_DB", saved.db]] as const) {
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
+    }
   });
 });

@@ -9,6 +9,7 @@
 // tsx, far too much per request. Started on the first call, restarted on the
 // next call after it dies.
 import { spawn, type ChildProcess } from "node:child_process";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { createInterface } from "node:readline";
 import { flashcardMcpDir, masterDbPath } from "./flashcard-path";
@@ -182,11 +183,20 @@ function appClient(): DeckClient {
   if (!dir || !db) {
     throw new Error("FLASHCARD_MCP_DIR is not set — add it to .env.local at the repo root.");
   }
+  // The server creates an empty deck at a path that does not exist and reports
+  // an empty collection; a wrong path must fail loudly instead. Resolved here:
+  // the child runs in the checkout, so a relative path would mean another file.
+  const dbFile = path.resolve(db);
+  if (!existsSync(dbFile)) {
+    throw new Error(
+      `No deck database at ${dbFile} — check FLASHCARD_MCP_DIR in .env.local at the repo root (or FLASHCARD_DB).`,
+    );
+  }
   globalStore.__deckClient = createDeckClient({
     command: path.join(dir, "node_modules", ".bin", "tsx"),
     args: ["src/app/server.ts"],
     cwd: dir,
-    env: { DATABASE_URL: `file:${db}`, NODE_NO_WARNINGS: "1" },
+    env: { DATABASE_URL: `file:${dbFile}`, NODE_NO_WARNINGS: "1" },
   });
   return globalStore.__deckClient;
 }

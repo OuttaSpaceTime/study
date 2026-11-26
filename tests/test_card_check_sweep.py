@@ -7,6 +7,8 @@ import json
 from pathlib import Path
 from types import SimpleNamespace
 
+from conftest import FakeDeck, make_card
+
 ROOT = Path(__file__).resolve().parent.parent
 loader = importlib.machinery.SourceFileLoader("card_check_sweep", str(ROOT / "scripts" / "card-check-sweep"))
 spec = importlib.util.spec_from_loader("card_check_sweep", loader)
@@ -59,6 +61,30 @@ def test_a_batched_card_carries_what_the_session_needs_and_the_verdict(monkeypat
     assert out["asked"] == ["a", "b"] and out["extra"] == ["x"]
     assert {f["issue"] for f in out["flaws"]} == {"not_atomic", "extra_info"}
     assert out["already_has_parts"] == ["a part"]
+
+
+def test_the_deck_is_the_unsuspended_cards_with_tags_as_one_string(monkeypatch):
+    fake = FakeDeck([make_card("a", tags=("ruby", "http"), lapses=2, exercise='{"kind":"fill"}'),
+                     make_card("b", suspended=True)])
+    monkeypatch.setattr(sweep.gate, "deck", lambda: fake)
+    (row,) = sweep.deck()
+    assert row == {"id": "a", "deckId": "d1", "front": "Q a?", "back": "An answer.", "tags": "ruby,http",
+                   "type": "guided", "exercise": '{"kind":"fill"}', "lapses": 2}
+
+
+def test_an_unreachable_deck_is_one_line_not_a_traceback(monkeypatch, tmp_path):
+    def sweep_fails(args):
+        raise sweep.DeckError("no deck database at /x")
+
+    monkeypatch.setattr(sweep, "STATE", tmp_path)
+    monkeypatch.setattr(sweep, "sweep", sweep_fails)
+    monkeypatch.setattr(sweep.sys, "argv", ["card-check-sweep"])
+    try:
+        sweep.main()
+    except SystemExit as e:
+        assert str(e.code) == "card-check-sweep: the deck is unreachable (no deck database at /x)"
+    else:
+        raise AssertionError("main should exit")
 
 
 # ---- what it won't try again ------------------------------------------------------------

@@ -5,7 +5,6 @@ from datetime import UTC, datetime
 from scripts.ankisync.convert import (
     anki_due_to_dt,
     dt_to_anki_due,
-    parse_master_dt,
     revlog_type_to_state,
     split_tags,
     state_to_anki,
@@ -28,19 +27,6 @@ class TestTags:
     def test_spaces_inside_tags_become_underscores(self):
         # Anki tags cannot contain spaces
         assert split_tags("design patterns,ruby") == ["design_patterns", "ruby"]
-
-
-class TestMasterDt:
-    def test_parses_prisma_iso_format(self):
-        dt = parse_master_dt("2026-06-17T18:00:00.000+00:00")
-        assert dt == _dt("2026-06-17T18:00:00")
-
-    def test_none_passthrough(self):
-        assert parse_master_dt(None) is None
-
-    def test_parses_legacy_epoch_ms_integers(self):
-        # older Prisma versions stored DateTime as epoch milliseconds
-        assert parse_master_dt(1749276473164) == _dt("2025-06-07T06:07:53.164")
 
 
 class TestStateMapping:

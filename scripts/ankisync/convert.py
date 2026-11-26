@@ -40,20 +40,6 @@ def split_tags(tags: str) -> list[str]:
     return [t.strip().replace(" ", "_") for t in tags.split(",") if t.strip()]
 
 
-def parse_master_dt(value: str | int | float | None) -> datetime | None:
-    """Parse Prisma datetimes: ISO-8601 text, or epoch-ms integers (older Prisma)."""
-    if value is None:
-        return None
-    if isinstance(value, int | float):
-        return datetime.fromtimestamp(value / 1000, tz=UTC)
-    return datetime.fromisoformat(value).astimezone(UTC)
-
-
-def format_master_dt(dt: datetime) -> str:
-    """Format a datetime the way Prisma writes them to SQLite."""
-    return dt.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "+00:00"
-
-
 def state_to_anki(state: int, suspended: bool) -> tuple[int, int]:
     """Map master state -> (anki ctype, anki queue)."""
     ctype = state

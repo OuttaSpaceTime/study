@@ -15,6 +15,7 @@ from fastanki.core import data_path
 from scripts.ankisync import bridge, master, params
 from scripts.ankisync.htmlize import to_anki_html
 from scripts.ankisync.merge import DELETED_TAG, is_cuid, plan_history, plan_sync
+from scripts.deck.client import DeckClient, DeckError
 
 CONFIG = data_path() / bridge.PROFILE / "sync-config.json"
 
@@ -37,11 +38,10 @@ def cmd_login(args) -> int:
     return 1
 
 
-def _gather(col):
-    with master.connect(readonly=True) as con:
-        cards = master.read_cards(con)
-        reviews = master.read_reviews(con)
-        deleted_ids = master.read_tombstones(con)
+def _gather(col, deck):
+    cards = master.read_cards(deck)
+    reviews = master.read_reviews(deck)
+    deleted_ids = master.read_tombstones(deck)
     anki_cards = bridge.read_anki_cards(col)
     # Deleted on either side: the Card row is gone, or is soft-deleted this run
     # because its note arrived tagged. Their history is excluded on both sides,
@@ -64,7 +64,7 @@ def _warn_format(cards) -> None:
     """Simple HTML is the only supported card format; flag drift on every run."""
     bad = sum(1 for c in cards if to_anki_html(c.front) != c.front or to_anki_html(c.back) != c.back)
     if bad:
-        print(f"format: {bad} card(s) not in simple-HTML form — run scripts/card-htmlize")
+        print(f"format: {bad} card(s) not in simple-HTML form — fix them with update_card")
 
 
 def _reinstated(plan) -> int:
@@ -75,7 +75,8 @@ def _reinstated(plan) -> int:
     return sum(1 for c in plan.create if c.sched.reps > 0 and not c.inherited)
 
 
-def _summary(plan, hist) -> str:
+def _summary(plan, hist, rejected: int = 0) -> str:
+    """`rejected`: imports the deck refused, which are not imported and so not counted."""
     parts = []
     for label, items in (
         ("create", plan.create),
@@ -89,16 +90,28 @@ def _summary(plan, hist) -> str:
         ("history→anki", hist.push_reviews),
         ("history←anki", hist.pull_reviews),
     ):
-        if items:
-            parts.append(f"{label} {len(items)}")
+        count = len(items) - (rejected if label == "import" else 0)
+        if count:
+            parts.append(f"{label} {count}")
             if label == "create" and _reinstated(plan):
                 parts[-1] += f" ({_reinstated(plan)} deleted on Anki, reinstated)"
+    if rejected:
+        parts.append(f"import rejected {rejected}")
     if plan.unknown_anki:
         parts.append(f"unknown(ignored) {len(plan.unknown_anki)}")
     return ", ".join(parts) if parts else "nothing to do"
 
 
 def cmd_sync(args) -> int:
+    try:
+        with DeckClient() as deck:  # one deck server per run
+            return _sync(args, deck)
+    except DeckError as e:
+        print(f"sync: the deck failed ({e})")
+        return 1
+
+
+def _sync(args, deck) -> int:
     email, passw = _load_email(), bridge.lookup_password()
     col = bridge.open_bridge()
     try:
@@ -109,7 +122,7 @@ def cmd_sync(args) -> int:
                 print(f"sync: not logged in ({e}); run anki-sync login first")
                 return 1
 
-        cards, reviews, anki_cards, anki_reviews, deleted_ids = _gather(col)
+        cards, reviews, anki_cards, anki_reviews, deleted_ids = _gather(col, deck)
         _warn_format(cards)
         plan = plan_sync(cards, anki_cards, deleted_ids)
         hist = plan_history(reviews, anki_reviews)
@@ -117,15 +130,11 @@ def cmd_sync(args) -> int:
         if args.dry_run:
             return 0
 
-        if plan.import_from_anki:
-            imported_ids = {a.guid for a in plan.import_from_anki}
-            sched_by_card = {a.guid: a.sched for a in plan.import_from_anki}
-            imported_reviews = [r for r in hist.pull_reviews if r.card_id in imported_ids]
-            with master.connect(readonly=False) as con, con:
-                for anki_card in plan.import_from_anki:
-                    master.import_card(con, anki_card)
-                master.append_reviews(con, imported_reviews, sched_by_card)
-            hist.pull_reviews = [r for r in hist.pull_reviews if r.card_id not in imported_ids]
+        # Master first, in one transaction: imports, deletions, pulled schedules and reviews.
+        result = master.apply_plan(deck, plan, hist)
+        for line in master.report(result):
+            print(line)
+        rejected = len(result["imports"]["rejected"])
 
         for card in plan.create:
             bridge.create_card(col, card)
@@ -136,38 +145,36 @@ def cmd_sync(args) -> int:
         for card, cid in plan.push_suspend:
             bridge.set_suspended(col, cid, card.suspended)
         bridge.tag_deleted(col, plan.tag_deleted)
-        if plan.local_soft_delete:
-            with master.connect(readonly=False) as con, con:
-                for anki_card in plan.local_soft_delete:
-                    master.soft_delete_card(con, anki_card.guid)
         if hist.push_reviews:
             fresh = bridge.read_anki_cards(col)  # creates may have added cards
             cid_by_guid = {a.guid: a.card_id for a in fresh if is_cuid(a.guid)}
             bridge.append_revlog(col, hist.push_reviews, cid_by_guid)
 
-        if plan.pull_sched or hist.pull_reviews:
-            sched_by_card = dict(plan.pull_sched)
-            with master.connect(readonly=False) as con, con:
-                for card_id, sched in plan.pull_sched:
-                    master.apply_pull_sched(con, card_id, sched)
-                master.append_reviews(con, hist.pull_reviews, sched_by_card)
-
         if not args.local:
             bridge.sync_remote(col, email, passw, media=args.media, upload=args.upload)
         try:
-            print(params.sync_options(col))
+            print(params.sync_options(col, deck))
         except Exception as e:  # options are a nicety; never fail the sync over them
             print(f"options: skipped ({e})")
-        print(f"sync: done ({_summary(plan, hist)})")
+        print(f"sync: done ({_summary(plan, hist, rejected)})")
         return 0
     finally:
         col.close()
 
 
 def cmd_status(args) -> int:
+    try:
+        with DeckClient() as deck:
+            return _status(deck)
+    except DeckError as e:
+        print(f"status: the deck failed ({e})")
+        return 1
+
+
+def _status(deck) -> int:
     col = bridge.open_bridge()
     try:
-        cards, reviews, anki_cards, anki_reviews, deleted_ids = _gather(col)
+        cards, reviews, anki_cards, anki_reviews, deleted_ids = _gather(col, deck)
         _warn_format(cards)
         plan = plan_sync(cards, anki_cards, deleted_ids)
         hist = plan_history(reviews, anki_reviews)

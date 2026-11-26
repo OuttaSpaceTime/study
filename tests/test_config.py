@@ -78,7 +78,7 @@ HARDCODED_HOME = re.compile(r"/home/[a-z]+/[\w./-]*flashcard-mcp")
 GUARDED_FILES = [
     ".mcp.json",
     "scripts/ankisync/master.py",
-    "scripts/ankisync/cleanup.py",
+    "scripts/deck/client.py",
     "scripts/flashcard-mcp-server",
     "wiki-viewer/lib/flashcards.ts",
     "wiki-viewer/lib/calibration.ts",
@@ -95,8 +95,40 @@ def test_no_machine_specific_path_is_committed(relpath):
     assert not found, f"{relpath} hardcodes {found}; resolve via .env.local instead"
 
 
-def test_master_module_resolves_db_through_config(monkeypatch, tmp_path):
-    from scripts.ankisync import master
+def test_deck_client_resolves_db_through_config(monkeypatch, tmp_path):
+    """The deck server gets its database from config.master_db(), nowhere else."""
+    from scripts.deck import client
 
-    monkeypatch.setenv("FLASHCARD_MCP_DIR", str(tmp_path / "fc"))
-    assert master.db_path() == tmp_path / "fc" / "prisma" / "master.db"
+    started = {}
+
+    class Stop(Exception):
+        pass
+
+    def fake_popen(argv, cwd, env, **_):
+        started.update(argv=argv, cwd=cwd, env=env)
+        raise Stop
+
+    fc = tmp_path / "fc"
+    (fc / "node_modules" / ".bin").mkdir(parents=True)
+    (fc / "src" / "app").mkdir(parents=True)
+    (fc / "node_modules" / ".bin" / "tsx").write_text("")
+    (fc / "src" / "app" / "server.ts").write_text("")
+    (fc / "prisma").mkdir()
+    (fc / "prisma" / "master.db").write_text("")
+    monkeypatch.setenv("FLASHCARD_MCP_DIR", str(fc))
+    monkeypatch.delenv("FLASHCARD_MASTER_DB", raising=False)
+    monkeypatch.setattr(client.subprocess, "Popen", fake_popen)
+    with pytest.raises(Stop):
+        client.DeckClient().start()
+    assert started["env"]["DATABASE_URL"] == f"file:{(fc / 'prisma' / 'master.db').resolve()}"
+    assert started["cwd"] == fc
+
+
+def test_deck_client_names_env_local_when_the_dir_is_unset(monkeypatch, tmp_path):
+    from scripts.deck import client
+
+    monkeypatch.delenv("FLASHCARD_MCP_DIR", raising=False)
+    monkeypatch.setattr(config, "ENV_FILE", tmp_path / "none")
+    monkeypatch.setattr(client, "flashcard_mcp_dir", lambda: config.flashcard_mcp_dir(tmp_path / "none"))
+    with pytest.raises(client.DeckError, match="FLASHCARD_MCP_DIR"):
+        client.DeckClient().start()
