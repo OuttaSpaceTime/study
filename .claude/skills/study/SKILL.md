@@ -31,7 +31,7 @@ See `~/.claude/skills/references/interactive-principles.md` for shared interacti
 
 ## Anti-Overload Principle
 
-- Sessions are 20 cards by default: due reviews first (up to 20), new cards fill the rest, and at least 2 new cards come in whenever the day's new-card limit has room (so 20 due make 20 + 2). The server does the fill; never pass `maxNewCards` except as the Phase 2 table says
+- Sessions are 30 cards by default: due reviews first (up to 30), new cards fill the rest, and at least 3 new cards come in whenever the day's new-card limit has room (so 30 due make 30 + 3). The server does the fill; never pass `maxNewCards` except as the Phase 2 table says
 - If the developer says "fewer", "less", "short session" — immediately call `adjust_session`
 - Never auto-generate cards. Only suggest when a clear gap is observed.
 - If the developer has studied today already, acknowledge it
@@ -113,7 +113,7 @@ Emit one opening message with the pressure verdict, the clearance numbers, and t
 
 Example when the verdict is `warn`:
 
-> **Pressure: warn** — 31 flashcards due, 2 added today. `maxNewCards: 2`.
+> **Pressure: warn** — 31 flashcards due, 2 added today. `maxNewCards: 3`.
 > **To clear:** review 12 to exit warn (31 → 19).
 > **Calibration: calibrated** — true retention 87%.
 >
@@ -130,17 +130,17 @@ Example when nothing is due:
 
 | Pressure verdict | `maxNewCards` | `maxReviewCards` |
 |------------------|--------------:|-----------------:|
-| `ok` | omit (fill to 20, at least 2) | omit (20) |
-| `warn` (review backlog) | **2** | omit (20) |
-| `pause` (review backlog) | **0** | omit (20) |
+| `ok` | omit (fill to 30, at least 3) | omit (30) |
+| `warn` (review backlog) | **3** | omit (30) |
+| `pause` (review backlog) | **0** | omit (30) |
 
-**How the server fills a session.** `maxReviewCards` is the session size: due reviews up to it, then new cards up to the same size, never fewer than 2 (8 due make 8 + 12; 20 due make 20 + 2). `maxNewCards` only caps that. Both stay under the day's new-card limit from the Anki deck options, floor included, and a rest day brings no new cards. `flashcard-mcp`'s `backlogNewCap` (pressure.ts) is the same table in code, which Omvida uses.
+**How the server fills a session.** `maxReviewCards` is the session size: due reviews up to it, then new cards up to the same size, never fewer than 3 (8 due make 8 + 22; 30 due make 30 + 3). `maxNewCards` only caps that. Both stay under the day's new-card limit from the Anki deck options, floor included, and a rest day brings no new cards. `flashcard-mcp`'s `backlogNewCap` (pressure.ts) is the same table in code, which Omvida uses.
 
-**The trigger is the review backlog axis (`flashcardsDue`) only, never `newToday`.** `warn` raised by the review backlog means `maxNewCards: 2`, so a backlog still lets a couple of new cards in (2026-11-26). `pause` means `maxNewCards: 0`. A `warn` raised only by `newToday` (cards added today) is about creating cards, not studying them: studying cards already made adds no load, and holding them back locked the developer out of their own fresh cards (2026-11-11), so omit `maxNewCards` (the default fill). Omvida applies the same rule. The developer can override explicitly ("include new cards anyway") — pass their requested number and note the override in the session log. At `pause` the server refuses fresh `create_card` calls outright, so an override there can only widen the *study* queue, never create material.
+**The trigger is the review backlog axis (`flashcardsDue`) only, never `newToday`.** `warn` raised by the review backlog means `maxNewCards: 3`, so a backlog still lets a few new cards in (2026-11-26). `pause` means `maxNewCards: 0`. A `warn` raised only by `newToday` (cards added today) is about creating cards, not studying them: studying cards already made adds no load, and holding them back locked the developer out of their own fresh cards (2026-11-11), so omit `maxNewCards` (the default fill). Omvida applies the same rule. The developer can override explicitly ("include new cards anyway") — pass their requested number and note the override in the session log. At `pause` the server refuses fresh `create_card` calls outright, so an override there can only widen the *study* queue, never create material.
 
 **Surface the cap in the opening line of Phase 2** so the developer never wonders where the new cards went. Example:
 
-> Starting session — 20 due + 2 new, 16 new held back (pressure: warn). `maxNewCards: 2`.
+> Starting session — 30 due + 3 new, 15 new held back (pressure: warn). `maxNewCards: 3`.
 
 **Difficulty levers — derive from the Phase 1 calibration verdict.** The band percentages below and the 2-point margin restate the constants in flashcard-mcp's `src/core/calibration.ts` — retune them there, then update this table to match.
 

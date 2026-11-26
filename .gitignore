@@ -12,6 +12,7 @@ Untitled*.canvas
 
 # qmd search index (rebuilt from wiki content via `qmd update` + `qmd embed`)
 .qmd/index.sqlite*
+.qmd/*.lock.sqlite
 
 # Personal journal + working todo (local only, stripped from history)
 daily/
