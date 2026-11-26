@@ -1,0 +1,336 @@
+{
+  "_about": "Wiki parsing rules implemented twice: Python (scripts/wiki/links.py, frontmatter.py) and the wiki-viewer (lib/wiki.ts, lib/markdown.ts). tests/test_wiki_rules_fixture.py and wiki-viewer/tests/wiki-rules-fixture.test.ts run these same cases, so the two readers cannot drift apart unnoticed. Omvida's backend imports the Python side (and has its own copy of heading_slug in render.py slugify_heading, which this fixture also describes).",
+  "link_targets": [
+    {
+      "name": "plain",
+      "markdown": "See [[a/b]] here.",
+      "expected": [
+        "a/b"
+      ]
+    },
+    {
+      "name": "display text",
+      "markdown": "[[a/b|Shown]]",
+      "expected": [
+        "a/b"
+      ]
+    },
+    {
+      "name": "anchor",
+      "markdown": "[[a/b#Heading]]",
+      "expected": [
+        "a/b"
+      ]
+    },
+    {
+      "name": "anchor and display",
+      "markdown": "[[a/b#Heading|Shown]]",
+      "expected": [
+        "a/b"
+      ]
+    },
+    {
+      "name": "empty anchor",
+      "markdown": "[[a/b#]]",
+      "expected": [
+        "a/b"
+      ]
+    },
+    {
+      "name": "same-page anchor has no target",
+      "markdown": "[[#Heading]]",
+      "expected": []
+    },
+    {
+      "name": "whitespace is trimmed",
+      "markdown": "[[ a/b ]]",
+      "expected": [
+        "a/b"
+      ]
+    },
+    {
+      "name": "whitespace-only target is dropped",
+      "markdown": "[[ ]]",
+      "expected": []
+    },
+    {
+      "name": "unicode titles",
+      "markdown": "[[über/日本語 notes]]",
+      "expected": [
+        "über/日本語 notes"
+      ]
+    },
+    {
+      "name": "order and repeats are kept",
+      "markdown": "[[a/one]] [[b/two]] [[a/one]]",
+      "expected": [
+        "a/one",
+        "b/two",
+        "a/one"
+      ]
+    },
+    {
+      "name": "embed is not a link",
+      "markdown": "![[img.png]] and [[a/b]]",
+      "expected": [
+        "a/b"
+      ]
+    },
+    {
+      "name": "embed with anchor is not a link",
+      "markdown": "![[a/b#H]]",
+      "expected": []
+    },
+    {
+      "name": "link right after an embed",
+      "markdown": "![[img.png]][[b/c]]",
+      "expected": [
+        "b/c"
+      ]
+    },
+    {
+      "name": "fenced code is excluded",
+      "markdown": "```\n[[x/y]]\n```\n[[a/b]]",
+      "expected": [
+        "a/b"
+      ]
+    },
+    {
+      "name": "fenced code with a language is excluded",
+      "markdown": "```md\n[[x/y]]\n```",
+      "expected": []
+    },
+    {
+      "name": "inline code is excluded",
+      "markdown": "`[[x/y]]` and [[a/b]]",
+      "expected": [
+        "a/b"
+      ]
+    },
+    {
+      "name": "double-backtick inline code is excluded",
+      "markdown": "``[[x/y]]`` and [[a/b]]",
+      "expected": [
+        "a/b"
+      ]
+    },
+    {
+      "name": "inline code does not span lines",
+      "markdown": "`a\n[[x/y]]`",
+      "expected": [
+        "x/y"
+      ]
+    },
+    {
+      "name": "unclosed backtick excludes nothing",
+      "markdown": "`[[x/y]]",
+      "expected": [
+        "x/y"
+      ]
+    },
+    {
+      "name": "link inside a code fence after prose",
+      "markdown": "[[a/b]]\n```\ncode\n```\n[[c/d]]",
+      "expected": [
+        "a/b",
+        "c/d"
+      ]
+    }
+  ],
+  "link_targets_known_gaps": {
+    "_about": "Cases where both implementations disagree with the correct answer. `expected` is what is right, `current` is what both return today. The tests pin `current` so fixing the rule shows up as a failure to update here.",
+    "cases": [
+      {
+        "name": "tilde fence should exclude links (neither side does yet)",
+        "markdown": "~~~\n[[x/y]]\n~~~",
+        "expected": [],
+        "current": [
+          "x/y"
+        ]
+      }
+    ]
+  },
+  "h2": [
+    {
+      "name": "plain",
+      "markdown": "## One\ntext\n## Two",
+      "expected": [
+        "One",
+        "Two"
+      ]
+    },
+    {
+      "name": "other levels are not sections",
+      "markdown": "# H1\n## H2\n### H3\n#### H4",
+      "expected": [
+        "H2"
+      ]
+    },
+    {
+      "name": "no space after the hashes",
+      "markdown": "##Tight\n## Real",
+      "expected": [
+        "Real"
+      ]
+    },
+    {
+      "name": "surrounding whitespace is trimmed",
+      "markdown": "##  Spaced  \n##\tTab\t",
+      "expected": [
+        "Spaced",
+        "Tab"
+      ]
+    },
+    {
+      "name": "fenced block hides headings",
+      "markdown": "## Real\n```bash\n## a shell comment\n```\n## After",
+      "expected": [
+        "Real",
+        "After"
+      ]
+    },
+    {
+      "name": "tilde fence hides headings",
+      "markdown": "## Real\n~~~\n## not a heading\n~~~\n## After",
+      "expected": [
+        "Real",
+        "After"
+      ]
+    },
+    {
+      "name": "indented fence marker still toggles",
+      "markdown": "## A\n  ```\n## hidden\n  ```\n## B",
+      "expected": [
+        "A",
+        "B"
+      ]
+    },
+    {
+      "name": "unicode and inline code are kept verbatim",
+      "markdown": "## Café `fn()` überblick",
+      "expected": [
+        "Café `fn()` überblick"
+      ]
+    },
+    {
+      "name": "CRLF line endings",
+      "markdown": "## A\r\n## B\r\n",
+      "expected": [
+        "A",
+        "B"
+      ]
+    },
+    {
+      "name": "empty heading is not a section",
+      "markdown": "## \n## Real",
+      "expected": [
+        "Real"
+      ]
+    },
+    {
+      "name": "crlf empty heading",
+      "markdown": "## \r\ntext",
+      "expected": []
+    }
+  ],
+  "slugify": {
+    "_about": "Page filename slug (python scripts/wiki/frontmatter.py slugify; lint requires filename == slugify(title)). The viewer does not slugify, it reads the filename. NOT the same rule as heading_slug: each non-alphanumeric character becomes a hyphen here, while heading anchors drop punctuation.",
+    "cases": [
+      {
+        "name": "lowercase and hyphens",
+        "input": "git restore",
+        "expected": "git-restore"
+      },
+      {
+        "name": "apostrophe and question mark",
+        "input": "What's New?",
+        "expected": "what-s-new"
+      },
+      {
+        "name": "whitespace run collapses",
+        "input": "a   b",
+        "expected": "a-b"
+      },
+      {
+        "name": "outer hyphens stripped",
+        "input": "--hello--",
+        "expected": "hello"
+      },
+      {
+        "name": "title case",
+        "input": "Hello World",
+        "expected": "hello-world"
+      },
+      {
+        "name": "dots become hyphens",
+        "input": "HTTP 2.0 Guide",
+        "expected": "http-2-0-guide"
+      },
+      {
+        "name": "punctuation runs collapse",
+        "input": "a -- b ... c",
+        "expected": "a-b-c"
+      },
+      {
+        "name": "non-ascii letters are dropped to hyphens",
+        "input": "Café Ünï",
+        "expected": "caf-n"
+      },
+      {
+        "name": "nothing ascii left",
+        "input": "日本語",
+        "expected": ""
+      }
+    ]
+  },
+  "heading_slug": {
+    "_about": "Heading anchor id (wiki-viewer lib/markdown.ts slugifyHeading; Omvida backend render.py slugify_heading must agree, since [[page#Heading]] links resolve to these ids).",
+    "cases": [
+      {
+        "name": "lowercase and hyphens",
+        "input": "Hello World",
+        "expected": "hello-world"
+      },
+      {
+        "name": "punctuation is dropped, not hyphenated",
+        "input": "What's New?",
+        "expected": "whats-new"
+      },
+      {
+        "name": "dots are dropped",
+        "input": "HTTP 2.0 Guide",
+        "expected": "http-20-guide"
+      },
+      {
+        "name": "whitespace run collapses",
+        "input": "a   b",
+        "expected": "a-b"
+      },
+      {
+        "name": "spaced hyphen collapses",
+        "input": "a - b",
+        "expected": "a-b"
+      },
+      {
+        "name": "surrounding whitespace is trimmed",
+        "input": "  Spaced  ",
+        "expected": "spaced"
+      },
+      {
+        "name": "underscores are dropped",
+        "input": "snake_case name",
+        "expected": "snakecase-name"
+      },
+      {
+        "name": "existing hyphens survive",
+        "input": "Under-the-Hood",
+        "expected": "under-the-hood"
+      },
+      {
+        "name": "non-ascii letters are dropped",
+        "input": "Café",
+        "expected": "caf"
+      }
+    ]
+  }
+}

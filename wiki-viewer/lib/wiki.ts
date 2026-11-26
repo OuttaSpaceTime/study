@@ -52,11 +52,12 @@ function asStringArray(value: unknown): string[] {
 function stripCode(markdown: string): string {
   return markdown
     .replace(/```[\s\S]*?```/g, "")
-    .replace(/`[^`\n]*`/g, "");
+    // Same inline-code rule as scripts/wiki/links.py, double backticks included.
+    .replace(/``[^`\n]+``|`[^`\n]+`/g, "");
 }
 
 /** Extract wikilink targets (path part only — no #anchor, no |alias, no ![[embeds]]). */
-function extractLinkTargets(markdown: string): string[] {
+export function extractLinkTargets(markdown: string): string[] {
   const targets: string[] = [];
   for (const m of stripCode(markdown).matchAll(/(!?)\[\[([^\]]+)\]\]/g)) {
     const inner = m[2];
@@ -68,7 +69,7 @@ function extractLinkTargets(markdown: string): string[] {
 }
 
 /** H2 headings in document order, skipping fenced code blocks. */
-function extractSections(markdown: string): string[] {
+export function extractSections(markdown: string): string[] {
   const sections: string[] = [];
   let inFence = false;
   for (const line of markdown.split("\n")) {

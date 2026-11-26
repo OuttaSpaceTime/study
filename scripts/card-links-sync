@@ -109,7 +109,9 @@ def main():
             named = ", ".join(f"{i} (removed)" if i in prunable else i for i in lost)
             print(f"{page.relative_to(wiki)}: gone with no parts: {named}")
     if wrote:
-        subprocess.run([str(ROOT / "scripts" / "wiki-reindex")], check=False, capture_output=True)
+        subprocess.run(
+            [str(ROOT / "scripts" / "wiki-write"), "--all", "--wiki-dir", str(wiki)], check=False, capture_output=True
+        )
 
 
 if __name__ == "__main__":

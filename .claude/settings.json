@@ -31,7 +31,6 @@
       "Bash(uv run ruff check:*)",
       "Bash(scripts/lint:*)",
       "Bash(scripts/wiki-write:*)",
-      "Bash(scripts/wiki-search:*)",
       "Bash(scripts/anki-sync:*)",
       "Bash(curl -sf http://localhost:4777/*)",
       "Bash(xdg-open http://localhost:4777/*)",

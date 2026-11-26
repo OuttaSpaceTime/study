@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import argparse
 import json
 import shutil
 import sys
@@ -97,15 +96,3 @@ def update_entry(index: dict, wiki_dir: Path, page_path: Path) -> dict:
     """Record a write: derive the entry and stamp it as updated today."""
     index[get_wiki_key(wiki_dir, page_path)] = derive_entry(wiki_dir, page_path)
     return index
-
-
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Rebuild .wiki-index.json from all wiki pages")
-    parser.add_argument("--wiki-dir", default="wiki")
-    args = parser.parse_args(argv)
-
-    wiki_dir = Path(args.wiki_dir)
-    index = reindex_all(wiki_dir)
-    save_index(wiki_dir / ".wiki-index.json", index)
-    print(f"reindexed {len(index)} pages")
-    return 0

@@ -1,4 +1,7 @@
-"""Wiki write orchestrator — updates index, refreshes the qmd search index, runs lint."""
+"""Wiki write orchestrator — updates index, refreshes the qmd search index, runs lint.
+
+`--all` rebuilds the whole index instead of processing one page (see `reindex_all`).
+"""
 
 from __future__ import annotations
 
@@ -10,7 +13,13 @@ import sys
 from pathlib import Path
 
 from scripts.wiki.frontmatter import dump_page, parse_frontmatter
-from scripts.wiki.index import iter_wiki_pages, load_index, save_index, update_entry
+from scripts.wiki.index import (
+    iter_wiki_pages,
+    load_index,
+    reindex_all,
+    save_index,
+    update_entry,
+)
 from scripts.wiki.lint import lint_wiki
 
 
@@ -69,11 +78,34 @@ def wiki_write(page_path: Path, wiki_dir: Path = Path("wiki")) -> dict:
     return {"status": "ok", "lint": status, "details": details}
 
 
+def rebuild_index(wiki_dir: Path = Path("wiki")) -> int:
+    """Rebuild .wiki-index.json from every page on disk; returns the page count.
+
+    A derive, not a write: no qmd refresh and no lint, and each page keeps its
+    `updated` stamp. Use it after an index schema change or after pages moved.
+    """
+    wiki_dir = Path(wiki_dir)
+    index = reindex_all(wiki_dir)
+    save_index(wiki_dir / ".wiki-index.json", index)
+    return len(index)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Wiki write orchestrator")
-    parser.add_argument("page_path", help="Path to wiki page")
+    parser.add_argument("page_path", nargs="?", help="Path to wiki page")
+    parser.add_argument(
+        "--all", action="store_true", help="Rebuild .wiki-index.json from every page instead"
+    )
     parser.add_argument("--wiki-dir", default="wiki", help="Wiki directory")
     args = parser.parse_args()
+
+    if args.all:
+        if args.page_path:
+            parser.error("--all takes no page path")
+        print(f"reindexed {rebuild_index(Path(args.wiki_dir))} pages")
+        return
+    if not args.page_path:
+        parser.error("a page path is required (or --all)")
 
     result = wiki_write(Path(args.page_path), Path(args.wiki_dir))
     print(json.dumps(result, ensure_ascii=False))

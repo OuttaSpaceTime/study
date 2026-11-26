@@ -47,7 +47,7 @@ def dump_page(meta: dict, body: str) -> str:
     return f"---\n{fm}---\n{body}"
 
 
-_H2_RE = re.compile(r"^##[ \t]+(.+?)\s*$")
+_H2_RE = re.compile(r"^##[ \t]+([^\r\n]+?)\s*$")
 _FENCE_RE = re.compile(r"^\s*(```|~~~)")
 
 
