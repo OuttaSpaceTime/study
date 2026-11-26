@@ -221,7 +221,16 @@ Parse the JSON output:
 
 ### Step 9: Append Session Log
 
-Append to `logs/<MM>/<YYYY-MM-DD>.md` (zero-padded month folder; create if doesn't exist):
+Append with `scripts/log-append "<Skill Name>"` with the fields on stdin through a quoted heredoc (`<<'EOF'`, so backticks and `$` stay literal): one `Name: value` line per bullet below, in this order, and a line indented two spaces continues the previous value. It creates the day's file and header and numbers the session.
+
+```bash
+scripts/log-append "<Skill Name>" <<'EOF'
+Topic: <topic>
+Wiki updates: [[folder/page-name]] created|extended
+EOF
+```
+
+The fields:
 
 ```markdown
 ## Session N — <Skill Name> (HH:MM)
@@ -295,4 +304,4 @@ A topic is a folder and a tag, not a page. There are no index or map-of-content 
 | `flashcard_ids` | array | No | Associated SRS flashcard IDs. Auto-filled to `[]` by `scripts/wiki-write` if missing. Drives the wiki-viewer's per-page flashcard modal and `/study`'s post-session page suggestions, so keep it accurate when a page's cards change. |
 | `explorables` | array | No (optional) | claude.ai artifact URLs of the interactive pages `/study-walkthrough` built for this page (the global `explorable` skill), main one first. Omvida shows an Explore button for each. Lint requires a list of `https://` URLs. |
 
-**The schema is closed.** The table above plus `lint_ignore` is the complete set of permitted keys; `scripts/lint` reports anything else as a `forbidden-field` **error**. That includes the retired scheduling fields (`next_review`, `review_interval`, `last_deepened`) — wiki pages are not scheduled, only flashcards are studied — and earlier retirements like `depth`, `probe_sections` and `allow_orphan` (the orphan check went with the index pages). Adding a genuinely new field means adding it to `ALLOWED_FIELDS` in `scripts/wiki/lint.py` first.
+**The schema is closed.** The table above plus `lint_ignore` is the complete set of permitted keys; `scripts/lint` reports anything else as a `forbidden-field` **error**. That includes the retired scheduling fields (`next_review`, `review_interval`, `last_deepened`) — wiki pages are not scheduled, only flashcards are studied — and earlier retirements like `depth`, `probe_sections` and `allow_orphan` (the orphan check went with the index pages). Adding a genuinely new field means adding it to `ALLOWED_FIELDS` in `scripts/wiki/lint/structure.py` first.

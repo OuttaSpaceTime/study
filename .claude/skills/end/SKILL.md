@@ -84,7 +84,16 @@ If the developer mentioned new items or completions in B2, update `todo.md` with
 
 ### B4: Block Log
 
-Append to `logs/<MM>/<YYYY-MM-DD>.md`:
+Append with `scripts/log-append "Block End"` with the fields on stdin through a quoted heredoc (`<<'EOF'`, so backticks and `$` stay literal): one `Name: value` line per bullet below, in this order, and a line indented two spaces continues the previous value. It writes the header and numbers the session.
+
+```bash
+scripts/log-append "Block End" <<'EOF'
+Block focus: ...
+Achieved: ...
+EOF
+```
+
+The fields:
 
 ```markdown
 ## Session N — Block End (HH:MM)
@@ -169,7 +178,16 @@ Read `todo.md` before editing to work from current state.
 
 ### Phase 6: Session Log
 
-Append to `logs/<MM>/<YYYY-MM-DD>.md`.
+Append with `scripts/log-append End` with the fields on stdin through a quoted heredoc (`<<'EOF'`, so backticks and `$` stay literal): one `Name: value` line per bullet below, in this order, and a line indented two spaces continues the previous value. It writes the header and numbers the session.
+
+```bash
+scripts/log-append End <<'EOF'
+Achieved: ...
+Commits: ...
+EOF
+```
+
+The fields:
 
 ```markdown
 ## Session N — End (HH:MM)

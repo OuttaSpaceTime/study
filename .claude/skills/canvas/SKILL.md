@@ -92,7 +92,7 @@ Ask what's next. The developer may now select different nodes in the GUI; on the
 
 ### Step 6 — Session log
 
-On exit, append a `## Session N — Change (HH:MM)` entry to today's `logs/<MM>/<YYYY-MM-DD>.md` — **Files:** the `.canvas` path, **Change:** what was built, **Why:** the developer's stated intent.
+On exit, append a Change entry with `scripts/log-append Change`, the fields on stdin through a quoted heredoc (`<<'EOF'`, so backticks and `$` stay literal) as `Files: ...`, `Change: ...`, `Why: ...` lines — **Files:** the `.canvas` path, **Change:** what was built, **Why:** the developer's stated intent.
 
 ## Canvas JSON schema (verified)
 

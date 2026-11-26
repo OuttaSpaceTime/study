@@ -85,7 +85,7 @@ Lead with one line on existing coverage when there is any ("You have 4 cards on 
 2. Report in one or two lines: how many were created, and each card's front in short.
 3. **Push to AnkiWeb:** run `scripts/anki-sync sync` silently. Mention it only if it moved something or failed (one line, never blocking).
 4. **Link the wiki:** if a wiki page covers the topic, add the new ids to its `flashcard_ids` and run `scripts/wiki-write <page>` (the wiki-write protocol's index and lint step). Say it in one line. If no page exists, offer once: *No wiki page yet; `/study-walkthrough --write <topic>` writes one.*
-5. Append the session log entry (`## Session N — Flashcard (HH:MM)`: topic, cards created, deck, wiki page linked) to `logs/<MM>/<YYYY-MM-DD>.md`.
+5. Append the session log entry with `scripts/log-append Flashcard`, the fields on stdin through a quoted heredoc (`<<'EOF'`, so backticks and `$` stay literal) as `Topic: ...` style lines (fields: topic, cards created, deck, wiki page linked; a line indented two spaces continues the previous value).
 
 ## Seeding from an explorable
 

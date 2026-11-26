@@ -263,7 +263,16 @@ A session that reviewed nothing is discarded automatically the next time `start_
 
 ### Phase 4: Session Log & Wiki Exploration
 
-**Write session log** — append to `logs/<MM>/<YYYY-MM-DD>.md` (create if doesn't exist):
+**Write session log** — `scripts/log-append Study` with the fields on stdin through a quoted heredoc (`<<'EOF'`, so backticks and `$` stay literal): one `Name: value` line per bullet below, in this order, and a line indented two spaces continues the previous value. It creates the day's file and header and numbers the session.
+
+```bash
+scripts/log-append Study <<'EOF'
+Cards reviewed: 12 (+3 intra-day repeats)
+Accuracy: 83%
+EOF
+```
+
+The fields:
 
 ```markdown
 ## Session N — Study (HH:MM)

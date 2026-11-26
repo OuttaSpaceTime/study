@@ -81,7 +81,15 @@ If the developer names something, log it. If not, log the reflection without one
 
 ### Phase 5: Session Log
 
-Append to today's `logs/<MM>/<YYYY-MM-DD>.md` (zero-padded month folder). Determine session number by counting existing `## Session` headers.
+Append with `scripts/log-append Reflection` with the fields on stdin through a quoted heredoc (`<<'EOF'`, so backticks and `$` stay literal): one `Name: value` line per bullet below, in this order, and a line indented two spaces continues the previous value. It writes the header and numbers the session.
+
+```bash
+scripts/log-append Reflection <<'EOF'
+Growing into: ...
+Pattern: ...
+EOF
+```
+
 
 ```markdown
 ## Session N — Reflection (HH:MM)

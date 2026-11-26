@@ -1,0 +1,10 @@
+#!/usr/bin/env -S uv run python3
+"""Append a session or query entry to today's log (scripts/session_log.py)."""
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from scripts.session_log import main
+
+sys.exit(main())

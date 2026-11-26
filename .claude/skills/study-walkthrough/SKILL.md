@@ -220,7 +220,16 @@ Offered, never forced. Recommended in Learning cadence and whenever Missed is no
 4. Include `flashcard_ids` for related cards, `## Related Concepts`, `## References`, and `## Tradeoffs & Gotchas` when practitioner opinion is load-bearing (see Wiki Page Structure).
 5. Run `scripts/wiki-write <page>`, then offer "show in Omvida": the page now has an Explore button.
 
-**Session log:** append to `logs/<MM>/<YYYY-MM-DD>.md`:
+**Session log:** `scripts/log-append Walkthrough` with the fields on stdin through a quoted heredoc (`<<'EOF'`, so backticks and `$` stay literal): one `Name: value` line per bullet below, in this order, and a line indented two spaces continues the previous value. It writes the header and numbers the session.
+
+```bash
+scripts/log-append Walkthrough <<'EOF'
+Topic: CSRF and SameSite cookies
+Mode: deepen-focused
+EOF
+```
+
+The fields:
 
 ```markdown
 ## Session N — Walkthrough (HH:MM)

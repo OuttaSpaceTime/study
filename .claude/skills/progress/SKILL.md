@@ -126,7 +126,16 @@ If no → close plainly. No pressure.
 
 ### Phase 8: Session Log
 
-Append to today's `logs/<MM>/<YYYY-MM-DD>.md` (zero-padded month folder):
+Append with `scripts/log-append Progression` with the fields on stdin through a quoted heredoc (`<<'EOF'`, so backticks and `$` stay literal): one `Name: value` line per bullet below, in this order, and a line indented two spaces continues the previous value. It writes the header and numbers the session.
+
+```bash
+scripts/log-append Progression <<'EOF'
+Window: ...
+Activity: ...
+EOF
+```
+
+The fields:
 
 ```markdown
 ## Session N — Progression (HH:MM)

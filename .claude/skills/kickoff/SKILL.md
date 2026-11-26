@@ -36,7 +36,7 @@ No mode arguments. The flow adapts to whether it's the first kickoff of the day 
 
 ### Phase 1: Detect Session Type
 
-Read today's `logs/<MM>/<YYYY-MM-DD>.md` (zero-padded month folder; create it with a `# <YYYY-MM-DD>` header if it doesn't exist). Count existing `## Session N — Kickoff` headers.
+Read today's `logs/<MM>/<YYYY-MM-DD>.md` (zero-padded month folder; it may not exist yet). Count existing `## Session N — Kickoff` headers.
 
 - **Zero** → this is the **first kickoff** of the day. Run full cadence.
 - **One or more** → this is a **refocus**. Run delta cadence (skips Feeling + Noticing).
@@ -146,7 +146,14 @@ This creates a hard boundary (no drift into sidetracks) and names the pause as a
 
 ### Phase 5: Session Log
 
-Append to `logs/<MM>/<YYYY-MM-DD>.md` (zero-padded month folder). Determine the session number by counting existing `## Session` headers in today's log.
+Append with `scripts/log-append Kickoff` (add `--suffix Refocus` for a refocus) with the fields on stdin through a quoted heredoc (`<<'EOF'`, so backticks and `$` stay literal): one `Name: value` line per bullet below, in this order, and a line indented two spaces continues the previous value. It finds today's log, creates the day header and numbers the session; the templates below show the header and fields it writes, not markdown to write by hand.
+
+```bash
+scripts/log-append Kickoff <<'EOF'
+Today's tasks: ...
+Pauses: ...
+EOF
+```
 
 **First kickoff of the day:**
 
